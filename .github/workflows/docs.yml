@@ -1,0 +1,38 @@
+name: Docs
+
+on:
+  push:
+    branches:
+    - main
+  schedule:
+  - cron: "0 2 * * *"
+
+jobs:
+  docs:
+    name: generate the doc
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        repository: uutils/coreutils
+        path: './coreutils'
+        fetch-depth: 0
+
+    - name: Install `rust` toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        default: true
+        profile: minimal
+
+    - name: Build Documentation
+      run: |
+        cd coreutils
+        cargo doc --no-deps --all-features --workspace
+
+    - name: Deploy Docs
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./coreutils/target/doc
