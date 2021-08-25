@@ -637,6 +637,12 @@
 <span id="635">635</span>
 <span id="636">636</span>
 <span id="637">637</span>
+<span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
 </pre><pre class="rust">
 <span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
@@ -647,7 +653,7 @@
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
 <span class="comment">//  * file that was distributed with this source code.</span>
 
-<span class="comment">// spell-checker:ignore (ToDO) algo, algoname, regexes, nread</span>
+<span class="comment">// spell-checker:ignore (ToDO) algo, algoname, regexes, nread memmem</span>
 
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">clap</span>;
@@ -662,6 +668,7 @@
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">App</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>};
 <span class="kw">use</span> <span class="ident">hex::ToHex</span>;
 <span class="kw">use</span> <span class="ident">md5::Context</span> <span class="kw">as</span> <span class="ident">Md5</span>;
+<span class="kw">use</span> <span class="ident">memchr::memmem</span>;
 <span class="kw">use</span> <span class="ident">regex::Regex</span>;
 <span class="kw">use</span> <span class="ident">sha1::Sha1</span>;
 <span class="kw">use</span> <span class="ident">sha2</span>::{<span class="ident">Sha224</span>, <span class="ident">Sha256</span>, <span class="ident">Sha384</span>, <span class="ident">Sha512</span>};
@@ -1108,7 +1115,7 @@
             <span class="ident">stdin_buf</span> <span class="op">=</span> <span class="ident">stdin</span>();
             <span class="ident">Box::new</span>(<span class="ident">stdin_buf</span>) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Read</span><span class="op">&gt;</span>
         } <span class="kw">else</span> {
-            <span class="ident">file_buf</span> <span class="op">=</span> <span class="macro">safe_unwrap!</span>(<span class="ident">File::open</span>(<span class="ident">filename</span>));
+            <span class="ident">file_buf</span> <span class="op">=</span> <span class="macro">crash_if_err!</span>(<span class="number">1</span>, <span class="ident">File::open</span>(<span class="ident">filename</span>));
             <span class="ident">Box::new</span>(<span class="ident">file_buf</span>) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Read</span><span class="op">&gt;</span>
         });
         <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">check</span> {
@@ -1125,19 +1132,25 @@
             } <span class="kw">else</span> {
                 <span class="string">&quot;+&quot;</span>.<span class="ident">to_string</span>()
             };
-            <span class="kw">let</span> <span class="ident">gnu_re</span> <span class="op">=</span> <span class="macro">safe_unwrap!</span>(<span class="ident">Regex::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
-                <span class="string">r&quot;^(?P&lt;digest&gt;[a-fA-F0-9]{}) (?P&lt;binary&gt;[ \*])(?P&lt;fileName&gt;.*)&quot;</span>,
-                <span class="ident">modifier</span>,
-            )));
-            <span class="kw">let</span> <span class="ident">bsd_re</span> <span class="op">=</span> <span class="macro">safe_unwrap!</span>(<span class="ident">Regex::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
-                <span class="string">r&quot;^{algorithm} \((?P&lt;fileName&gt;.*)\) = (?P&lt;digest&gt;[a-fA-F0-9]{digest_size})&quot;</span>,
-                <span class="ident">algorithm</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">algoname</span>,
-                <span class="ident">digest_size</span> <span class="op">=</span> <span class="ident">modifier</span>,
-            )));
+            <span class="kw">let</span> <span class="ident">gnu_re</span> <span class="op">=</span> <span class="macro">crash_if_err!</span>(
+                <span class="number">1</span>,
+                <span class="ident">Regex::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+                    <span class="string">r&quot;^(?P&lt;digest&gt;[a-fA-F0-9]{}) (?P&lt;binary&gt;[ \*])(?P&lt;fileName&gt;.*)&quot;</span>,
+                    <span class="ident">modifier</span>,
+                ))
+            );
+            <span class="kw">let</span> <span class="ident">bsd_re</span> <span class="op">=</span> <span class="macro">crash_if_err!</span>(
+                <span class="number">1</span>,
+                <span class="ident">Regex::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+                    <span class="string">r&quot;^{algorithm} \((?P&lt;fileName&gt;.*)\) = (?P&lt;digest&gt;[a-fA-F0-9]{digest_size})&quot;</span>,
+                    <span class="ident">algorithm</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">algoname</span>,
+                    <span class="ident">digest_size</span> <span class="op">=</span> <span class="ident">modifier</span>,
+                ))
+            );
 
             <span class="kw">let</span> <span class="ident">buffer</span> <span class="op">=</span> <span class="ident">file</span>;
             <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">line</span>) <span class="kw">in</span> <span class="ident">buffer</span>.<span class="ident">lines</span>().<span class="ident">enumerate</span>() {
-                <span class="kw">let</span> <span class="ident">line</span> <span class="op">=</span> <span class="macro">safe_unwrap!</span>(<span class="ident">line</span>);
+                <span class="kw">let</span> <span class="ident">line</span> <span class="op">=</span> <span class="macro">crash_if_err!</span>(<span class="number">1</span>, <span class="ident">line</span>);
                 <span class="kw">let</span> (<span class="ident">ck_filename</span>, <span class="ident">sum</span>, <span class="ident">binary_check</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">gnu_re</span>.<span class="ident">captures</span>(<span class="kw-2">&amp;</span><span class="ident">line</span>) {
                     <span class="prelude-val">Some</span>(<span class="ident">caps</span>) <span class="op">=</span><span class="op">&gt;</span> (
                         <span class="ident">caps</span>.<span class="ident">name</span>(<span class="string">&quot;fileName&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>(),
@@ -1167,14 +1180,17 @@
                         }
                     },
                 };
-                <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="macro">safe_unwrap!</span>(<span class="ident">File::open</span>(<span class="ident">ck_filename</span>));
+                <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="macro">crash_if_err!</span>(<span class="number">1</span>, <span class="ident">File::open</span>(<span class="ident">ck_filename</span>));
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ckf</span> <span class="op">=</span> <span class="ident">BufReader::new</span>(<span class="ident">Box::new</span>(<span class="ident">f</span>) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Read</span><span class="op">&gt;</span>);
-                <span class="kw">let</span> <span class="ident">real_sum</span> <span class="op">=</span> <span class="macro">safe_unwrap!</span>(<span class="ident">digest_reader</span>(
-                    <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">options</span>.<span class="ident">digest</span>,
-                    <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ckf</span>,
-                    <span class="ident">binary_check</span>,
-                    <span class="ident">options</span>.<span class="ident">output_bits</span>
-                ))
+                <span class="kw">let</span> <span class="ident">real_sum</span> <span class="op">=</span> <span class="macro">crash_if_err!</span>(
+                    <span class="number">1</span>,
+                    <span class="ident">digest_reader</span>(
+                        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">options</span>.<span class="ident">digest</span>,
+                        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ckf</span>,
+                        <span class="ident">binary_check</span>,
+                        <span class="ident">options</span>.<span class="ident">output_bits</span>
+                    )
+                )
                 .<span class="ident">to_ascii_lowercase</span>();
                 <span class="kw">if</span> <span class="ident">sum</span> <span class="op">=</span><span class="op">=</span> <span class="ident">real_sum</span> {
                     <span class="kw">if</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">quiet</span> {
@@ -1188,12 +1204,15 @@
                 }
             }
         } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">sum</span> <span class="op">=</span> <span class="macro">safe_unwrap!</span>(<span class="ident">digest_reader</span>(
-                <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">options</span>.<span class="ident">digest</span>,
-                <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">file</span>,
-                <span class="ident">options</span>.<span class="ident">binary</span>,
-                <span class="ident">options</span>.<span class="ident">output_bits</span>
-            ));
+            <span class="kw">let</span> <span class="ident">sum</span> <span class="op">=</span> <span class="macro">crash_if_err!</span>(
+                <span class="number">1</span>,
+                <span class="ident">digest_reader</span>(
+                    <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">options</span>.<span class="ident">digest</span>,
+                    <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">file</span>,
+                    <span class="ident">options</span>.<span class="ident">binary</span>,
+                    <span class="ident">options</span>.<span class="ident">output_bits</span>
+                )
+            );
             <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">tag</span> {
                 <span class="macro">println!</span>(<span class="string">&quot;{} ({}) = {}&quot;</span>, <span class="ident">options</span>.<span class="ident">algoname</span>, <span class="ident">filename</span>.<span class="ident">display</span>(), <span class="ident">sum</span>);
             } <span class="kw">else</span> {
@@ -1226,8 +1245,6 @@
     <span class="comment">// Digest file, do not hold too much in memory at any given moment</span>
     <span class="kw">let</span> <span class="ident">windows</span> <span class="op">=</span> <span class="macro">cfg!</span>(<span class="ident">windows</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="number">524_288</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="number">524_288</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">looking_for_newline</span> <span class="op">=</span> <span class="bool-val">false</span>;
     <span class="kw">loop</span> {
         <span class="kw">match</span> <span class="ident">reader</span>.<span class="ident">read_to_end</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>) {
             <span class="prelude-val">Ok</span>(<span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> {
@@ -1235,34 +1252,29 @@
             }
             <span class="prelude-val">Ok</span>(<span class="ident">nread</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="ident">windows</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">binary</span> {
-                    <span class="comment">// Windows text mode returns &#39;\n&#39; when reading &#39;\r\n&#39;</span>
-                    <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">b</span> <span class="kw">in</span> <span class="ident">buffer</span>.<span class="ident">iter</span>().<span class="ident">take</span>(<span class="ident">nread</span>) {
-                        <span class="kw">if</span> <span class="ident">looking_for_newline</span> {
-                            <span class="kw">if</span> <span class="ident">b</span> <span class="op">!</span><span class="op">=</span> <span class="string">b&#39;\n&#39;</span> {
-                                <span class="ident">vec</span>.<span class="ident">push</span>(<span class="string">b&#39;\r&#39;</span>);
-                            }
-                            <span class="kw">if</span> <span class="ident">b</span> <span class="op">!</span><span class="op">=</span> <span class="string">b&#39;\r&#39;</span> {
-                                <span class="ident">vec</span>.<span class="ident">push</span>(<span class="ident">b</span>);
-                                <span class="ident">looking_for_newline</span> <span class="op">=</span> <span class="bool-val">false</span>;
-                            }
-                        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">b</span> <span class="op">!</span><span class="op">=</span> <span class="string">b&#39;\r&#39;</span> {
-                            <span class="ident">vec</span>.<span class="ident">push</span>(<span class="ident">b</span>);
-                        } <span class="kw">else</span> {
-                            <span class="ident">looking_for_newline</span> <span class="op">=</span> <span class="bool-val">true</span>;
-                        }
+                    <span class="comment">// In Windows text mode, replace each occurrence of</span>
+                    <span class="comment">// &quot;\r\n&quot; with &quot;\n&quot;.</span>
+                    <span class="comment">//</span>
+                    <span class="comment">// Find all occurrences of &quot;\r\n&quot;, inputting the</span>
+                    <span class="comment">// slice just before the &quot;\n&quot; in the previous</span>
+                    <span class="comment">// instance of &quot;\r\n&quot; and the beginning of this</span>
+                    <span class="comment">// &quot;\r\n&quot;.</span>
+                    <span class="comment">//</span>
+                    <span class="comment">// FIXME This fails if one call to `read()` ends</span>
+                    <span class="comment">// with the &quot;\r&quot; and the next call to `read()`</span>
+                    <span class="comment">// begins with the &quot;\n&quot;.</span>
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i_prev</span> <span class="op">=</span> <span class="number">0</span>;
+                    <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">memmem::find_iter</span>(<span class="kw-2">&amp;</span><span class="ident">buffer</span>[<span class="number">0</span>..<span class="ident">nread</span>], <span class="string">b&quot;\r\n&quot;</span>) {
+                        <span class="ident">digest</span>.<span class="ident">input</span>(<span class="kw-2">&amp;</span><span class="ident">buffer</span>[<span class="ident">i_prev</span>..<span class="ident">i</span>]);
+                        <span class="ident">i_prev</span> <span class="op">=</span> <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>;
                     }
-                    <span class="ident">digest</span>.<span class="ident">input</span>(<span class="kw-2">&amp;</span><span class="ident">vec</span>);
-                    <span class="ident">vec</span>.<span class="ident">clear</span>();
+                    <span class="ident">digest</span>.<span class="ident">input</span>(<span class="kw-2">&amp;</span><span class="ident">buffer</span>[<span class="ident">i_prev</span>..<span class="ident">nread</span>]);
                 } <span class="kw">else</span> {
                     <span class="ident">digest</span>.<span class="ident">input</span>(<span class="kw-2">&amp;</span><span class="ident">buffer</span>[..<span class="ident">nread</span>]);
                 }
             }
             <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>),
         }
-    }
-    <span class="kw">if</span> <span class="ident">windows</span> <span class="op">&amp;&amp;</span> <span class="ident">looking_for_newline</span> {
-        <span class="ident">vec</span>.<span class="ident">push</span>(<span class="string">b&#39;\r&#39;</span>);
-        <span class="ident">digest</span>.<span class="ident">input</span>(<span class="kw-2">&amp;</span><span class="ident">vec</span>);
     }
 
     <span class="kw">if</span> <span class="ident">digest</span>.<span class="ident">output_bits</span>() <span class="op">&gt;</span> <span class="number">0</span> {
