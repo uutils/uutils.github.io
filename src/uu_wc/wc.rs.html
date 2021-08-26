@@ -468,6 +468,73 @@
 <span id="466">466</span>
 <span id="467">467</span>
 <span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
 </pre><pre class="rust">
 <span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
@@ -479,32 +546,24 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
-<span class="kw">mod</span> <span class="ident">count_bytes</span>;
+<span class="kw">mod</span> <span class="ident">count_fast</span>;
 <span class="kw">mod</span> <span class="ident">countable</span>;
 <span class="kw">mod</span> <span class="ident">word_count</span>;
-<span class="kw">use</span> <span class="ident">count_bytes::count_bytes_fast</span>;
+<span class="kw">use</span> <span class="ident">count_fast</span>::{<span class="ident">count_bytes_and_lines_fast</span>, <span class="ident">count_bytes_fast</span>};
 <span class="kw">use</span> <span class="ident">countable::WordCountable</span>;
+<span class="kw">use</span> <span class="ident">unicode_width::UnicodeWidthChar</span>;
+<span class="kw">use</span> <span class="ident">utf8</span>::{<span class="ident">BufReadDecoder</span>, <span class="ident">BufReadDecoderError</span>};
 <span class="kw">use</span> <span class="ident">word_count</span>::{<span class="ident">TitledWordCount</span>, <span class="ident">WordCount</span>};
 
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>};
-<span class="kw">use</span> <span class="ident">thiserror::Error</span>;
 
+<span class="kw">use</span> <span class="ident">std::cmp::max</span>;
 <span class="kw">use</span> <span class="ident">std::fs</span>::{<span class="self">self</span>, <span class="ident">File</span>};
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">ErrorKind</span>, <span class="ident">Write</span>};
-<span class="kw">use</span> <span class="ident">std::path::Path</span>;
+<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">Write</span>};
+<span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>};
 
 <span class="doccomment">/// The minimum character width for formatting counts when reading from stdin.</span>
 <span class="kw">const</span> <span class="ident">MINIMUM_WIDTH</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">7</span>;
-
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Error</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">WcError</span> {
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;{0}&quot;</span>)]</span>
-    <span class="ident">Io</span>(<span class="attribute">#[<span class="ident">from</span>]</span> <span class="ident">io::Error</span>),
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Expected a file, found directory {0}&quot;</span>)]</span>
-    <span class="ident">IsDirectory</span>(<span class="ident">String</span>),
-}
-
-<span class="kw">type</span> <span class="ident">WcResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">WcError</span><span class="op">&gt;</span>;
 
 <span class="kw">struct</span> <span class="ident">Settings</span> {
     <span class="ident">show_bytes</span>: <span class="ident">bool</span>,
@@ -585,7 +644,7 @@ more than one FILE is specified.&quot;</span>;
 <span class="doccomment">/// Supported inputs.</span>
 <span class="kw">enum</span> <span class="ident">Input</span> {
     <span class="doccomment">/// A regular file.</span>
-    <span class="ident">Path</span>(<span class="ident">String</span>),
+    <span class="ident">Path</span>(<span class="ident">PathBuf</span>),
 
     <span class="doccomment">/// Standard input.</span>
     <span class="ident">Stdin</span>(<span class="ident">StdinKind</span>),
@@ -593,11 +652,18 @@ more than one FILE is specified.&quot;</span>;
 
 <span class="kw">impl</span> <span class="ident">Input</span> {
     <span class="doccomment">/// Converts input to title that appears in stats.</span>
-    <span class="kw">fn</span> <span class="ident">to_title</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">to_title</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">Input::Path</span>(<span class="ident">path</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">path</span>),
-            <span class="ident">Input::Stdin</span>(<span class="ident">StdinKind::Explicit</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="string">&quot;-&quot;</span>),
+            <span class="ident">Input::Stdin</span>(<span class="ident">StdinKind::Explicit</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="string">&quot;-&quot;</span>.<span class="ident">as_ref</span>()),
             <span class="ident">Input::Stdin</span>(<span class="ident">StdinKind::Implicit</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+        }
+    }
+
+    <span class="kw">fn</span> <span class="ident">path_display</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::path::Display</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident">Input::Path</span>(<span class="ident">path</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">path</span>.<span class="ident">display</span>(),
+            <span class="ident">Input::Stdin</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Path::display</span>(<span class="string">&quot;&#39;standard input&#39;&quot;</span>.<span class="ident">as_ref</span>()),
         }
     }
 }
@@ -608,13 +674,13 @@ more than one FILE is specified.&quot;</span>;
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..]).<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">inputs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Input</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">matches</span>
-        .<span class="ident">values_of</span>(<span class="ident">ARG_FILES</span>)
+        .<span class="ident">values_of_os</span>(<span class="ident">ARG_FILES</span>)
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> {
             <span class="ident">v</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> {
                 <span class="kw">if</span> <span class="ident">i</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;-&quot;</span> {
                     <span class="ident">Input::Stdin</span>(<span class="ident">StdinKind::Explicit</span>)
                 } <span class="kw">else</span> {
-                    <span class="ident">Input::Path</span>(<span class="ident">ToString::to_string</span>(<span class="ident">i</span>))
+                    <span class="ident">Input::Path</span>(<span class="ident">i</span>.<span class="ident">into</span>())
                 }
             })
             .<span class="ident">collect</span>()
@@ -674,55 +740,125 @@ more than one FILE is specified.&quot;</span>;
 <span class="kw">fn</span> <span class="ident">word_count_from_reader</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">WordCountable</span><span class="op">&gt;</span>(
     <span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="ident">T</span>,
     <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>,
-    <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">WcResult</span><span class="op">&lt;</span><span class="ident">WordCount</span><span class="op">&gt;</span> {
+) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">WordCount</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">io::Error</span><span class="op">&gt;</span>) {
     <span class="kw">let</span> <span class="ident">only_count_bytes</span> <span class="op">=</span> <span class="ident">settings</span>.<span class="ident">show_bytes</span>
         <span class="op">&amp;&amp;</span> (<span class="op">!</span>(<span class="ident">settings</span>.<span class="ident">show_chars</span>
             <span class="op">|</span><span class="op">|</span> <span class="ident">settings</span>.<span class="ident">show_lines</span>
             <span class="op">|</span><span class="op">|</span> <span class="ident">settings</span>.<span class="ident">show_max_line_length</span>
             <span class="op">|</span><span class="op">|</span> <span class="ident">settings</span>.<span class="ident">show_words</span>));
     <span class="kw">if</span> <span class="ident">only_count_bytes</span> {
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">WordCount</span> {
-            <span class="ident">bytes</span>: <span class="ident">count_bytes_fast</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>)<span class="question-mark">?</span>,
-            ..<span class="ident">WordCount::default</span>()
-        });
+        <span class="kw">let</span> (<span class="ident">bytes</span>, <span class="ident">error</span>) <span class="op">=</span> <span class="ident">count_bytes_fast</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>);
+        <span class="kw">return</span> (
+            <span class="ident">WordCount</span> {
+                <span class="ident">bytes</span>,
+                ..<span class="ident">WordCount::default</span>()
+            },
+            <span class="ident">error</span>,
+        );
     }
 
     <span class="comment">// we do not need to decode the byte stream if we&#39;re only counting bytes/newlines</span>
     <span class="kw">let</span> <span class="ident">decode_chars</span> <span class="op">=</span> <span class="ident">settings</span>.<span class="ident">show_chars</span> <span class="op">|</span><span class="op">|</span> <span class="ident">settings</span>.<span class="ident">show_words</span> <span class="op">|</span><span class="op">|</span> <span class="ident">settings</span>.<span class="ident">show_max_line_length</span>;
 
-    <span class="comment">// Sum the WordCount for each line. Show a warning for each line</span>
-    <span class="comment">// that results in an IO error when trying to read it.</span>
-    <span class="kw">let</span> <span class="ident">total</span> <span class="op">=</span> <span class="ident">reader</span>
-        .<span class="ident">lines</span>()
-        .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">res</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">res</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">line</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">line</span>),
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="macro">show_warning!</span>(<span class="string">&quot;Error while reading {}: {}&quot;</span>, <span class="ident">path</span>, <span class="ident">e</span>);
-                <span class="prelude-val">None</span>
+    <span class="kw">if</span> <span class="op">!</span><span class="ident">decode_chars</span> {
+        <span class="kw">return</span> <span class="ident">count_bytes_and_lines_fast</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>);
+    }
+
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">total</span> <span class="op">=</span> <span class="ident">WordCount::default</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">reader</span> <span class="op">=</span> <span class="ident">BufReadDecoder::new</span>(<span class="ident">reader</span>.<span class="ident">buffered</span>());
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">in_word</span> <span class="op">=</span> <span class="bool-val">false</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_len</span> <span class="op">=</span> <span class="number">0</span>;
+
+    <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">chunk</span>) <span class="op">=</span> <span class="ident">reader</span>.<span class="ident">next_strict</span>() {
+        <span class="kw">match</span> <span class="ident">chunk</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">text</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">for</span> <span class="ident">ch</span> <span class="kw">in</span> <span class="ident">text</span>.<span class="ident">chars</span>() {
+                    <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">show_words</span> {
+                        <span class="kw">if</span> <span class="ident">ch</span>.<span class="ident">is_whitespace</span>() {
+                            <span class="ident">in_word</span> <span class="op">=</span> <span class="bool-val">false</span>;
+                        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">ch</span>.<span class="ident">is_ascii_control</span>() {
+                            <span class="comment">// These count as characters but do not affect the word state</span>
+                        } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">in_word</span> {
+                            <span class="ident">in_word</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                            <span class="ident">total</span>.<span class="ident">words</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                        }
+                    }
+                    <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">show_max_line_length</span> {
+                        <span class="kw">match</span> <span class="ident">ch</span> {
+                            <span class="string">&#39;\n&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                                <span class="ident">total</span>.<span class="ident">max_line_length</span> <span class="op">=</span> <span class="ident">max</span>(<span class="ident">current_len</span>, <span class="ident">total</span>.<span class="ident">max_line_length</span>);
+                                <span class="ident">current_len</span> <span class="op">=</span> <span class="number">0</span>;
+                            }
+                            <span class="comment">// &#39;\x0c&#39; = &#39;\f&#39;</span>
+                            <span class="string">&#39;\r&#39;</span> <span class="op">|</span> <span class="string">&#39;\x0c&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                                <span class="ident">total</span>.<span class="ident">max_line_length</span> <span class="op">=</span> <span class="ident">max</span>(<span class="ident">current_len</span>, <span class="ident">total</span>.<span class="ident">max_line_length</span>);
+                                <span class="ident">current_len</span> <span class="op">=</span> <span class="number">0</span>;
+                            }
+                            <span class="string">&#39;\t&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                                <span class="ident">current_len</span> <span class="op">-</span><span class="op">=</span> <span class="ident">current_len</span> <span class="op">%</span> <span class="number">8</span>;
+                                <span class="ident">current_len</span> <span class="op">+</span><span class="op">=</span> <span class="number">8</span>;
+                            }
+                            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
+                                <span class="ident">current_len</span> <span class="op">+</span><span class="op">=</span> <span class="ident">ch</span>.<span class="ident">width</span>().<span class="ident">unwrap_or</span>(<span class="number">0</span>);
+                            }
+                        }
+                    }
+                    <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">show_lines</span> <span class="op">&amp;&amp;</span> <span class="ident">ch</span> <span class="op">=</span><span class="op">=</span> <span class="string">&#39;\n&#39;</span> {
+                        <span class="ident">total</span>.<span class="ident">lines</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                    }
+                    <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">show_chars</span> {
+                        <span class="ident">total</span>.<span class="ident">chars</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                    }
+                }
+                <span class="ident">total</span>.<span class="ident">bytes</span> <span class="op">+</span><span class="op">=</span> <span class="ident">text</span>.<span class="ident">len</span>();
             }
-        })
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">line</span><span class="op">|</span> <span class="ident">WordCount::from_line</span>(<span class="kw-2">&amp;</span><span class="ident">line</span>, <span class="ident">decode_chars</span>))
-        .<span class="ident">sum</span>();
-    <span class="prelude-val">Ok</span>(<span class="ident">total</span>)
+            <span class="prelude-val">Err</span>(<span class="ident">BufReadDecoderError::InvalidByteSequence</span>(<span class="ident">bytes</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="comment">// GNU wc treats invalid data as neither word nor char nor whitespace,</span>
+                <span class="comment">// so no other counters are affected</span>
+                <span class="ident">total</span>.<span class="ident">bytes</span> <span class="op">+</span><span class="op">=</span> <span class="ident">bytes</span>.<span class="ident">len</span>();
+            }
+            <span class="prelude-val">Err</span>(<span class="ident">BufReadDecoderError::Io</span>(<span class="ident">e</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">return</span> (<span class="ident">total</span>, <span class="prelude-val">Some</span>(<span class="ident">e</span>));
+            }
+        }
+    }
+
+    <span class="ident">total</span>.<span class="ident">max_line_length</span> <span class="op">=</span> <span class="ident">max</span>(<span class="ident">current_len</span>, <span class="ident">total</span>.<span class="ident">max_line_length</span>);
+
+    (<span class="ident">total</span>, <span class="prelude-val">None</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">word_count_from_input</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">Input</span>, <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">WcResult</span><span class="op">&lt;</span><span class="ident">WordCount</span><span class="op">&gt;</span> {
+<span class="kw">enum</span> <span class="ident">CountResult</span> {
+    <span class="doccomment">/// Nothing went wrong.</span>
+    <span class="ident">Success</span>(<span class="ident">WordCount</span>),
+    <span class="doccomment">/// Managed to open but failed to read.</span>
+    <span class="ident">Interrupted</span>(<span class="ident">WordCount</span>, <span class="ident">io::Error</span>),
+    <span class="doccomment">/// Didn&#39;t even manage to open.</span>
+    <span class="ident">Failure</span>(<span class="ident">io::Error</span>),
+}
+
+<span class="doccomment">/// If we fail opening a file we only show the error. If we fail reading it</span>
+<span class="doccomment">/// we show a count for what we managed to read.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Therefore the reading implementations always return a total and sometimes</span>
+<span class="doccomment">/// return an error: (WordCount, Option&lt;io::Error&gt;).</span>
+<span class="kw">fn</span> <span class="ident">word_count_from_input</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">Input</span>, <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CountResult</span> {
     <span class="kw">match</span> <span class="ident">input</span> {
         <span class="ident">Input::Stdin</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">stdin</span> <span class="op">=</span> <span class="ident">io::stdin</span>();
             <span class="kw">let</span> <span class="ident">stdin_lock</span> <span class="op">=</span> <span class="ident">stdin</span>.<span class="ident">lock</span>();
-            <span class="ident">word_count_from_reader</span>(<span class="ident">stdin_lock</span>, <span class="ident">settings</span>, <span class="string">&quot;-&quot;</span>)
-        }
-        <span class="ident">Input::Path</span>(<span class="ident">path</span>) <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="kw">let</span> <span class="ident">path_obj</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="ident">path</span>);
-            <span class="kw">if</span> <span class="ident">path_obj</span>.<span class="ident">is_dir</span>() {
-                <span class="prelude-val">Err</span>(<span class="ident">WcError::IsDirectory</span>(<span class="ident">path</span>.<span class="ident">to_owned</span>()))
-            } <span class="kw">else</span> {
-                <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">File::open</span>(<span class="ident">path</span>)<span class="question-mark">?</span>;
-                <span class="ident">word_count_from_reader</span>(<span class="ident">file</span>, <span class="ident">settings</span>, <span class="ident">path</span>)
+            <span class="kw">match</span> <span class="ident">word_count_from_reader</span>(<span class="ident">stdin_lock</span>, <span class="ident">settings</span>) {
+                (<span class="ident">total</span>, <span class="prelude-val">Some</span>(<span class="ident">error</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">CountResult::Interrupted</span>(<span class="ident">total</span>, <span class="ident">error</span>),
+                (<span class="ident">total</span>, <span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">CountResult::Success</span>(<span class="ident">total</span>),
             }
         }
+        <span class="ident">Input::Path</span>(<span class="ident">path</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">File::open</span>(<span class="ident">path</span>) {
+            <span class="prelude-val">Err</span>(<span class="ident">error</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">CountResult::Failure</span>(<span class="ident">error</span>),
+            <span class="prelude-val">Ok</span>(<span class="ident">file</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">word_count_from_reader</span>(<span class="ident">file</span>, <span class="ident">settings</span>) {
+                (<span class="ident">total</span>, <span class="prelude-val">Some</span>(<span class="ident">error</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">CountResult::Interrupted</span>(<span class="ident">total</span>, <span class="ident">error</span>),
+                (<span class="ident">total</span>, <span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">CountResult::Success</span>(<span class="ident">total</span>),
+            },
+        },
     }
 }
 
@@ -735,18 +871,8 @@ more than one FILE is specified.&quot;</span>;
 <span class="doccomment">/// ```rust,ignore</span>
 <span class="doccomment">/// show_error(Input::Path(&quot;/tmp&quot;), WcError::IsDirectory(&quot;/tmp&quot;))</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">fn</span> <span class="ident">show_error</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">Input</span>, <span class="ident">err</span>: <span class="ident">WcError</span>) {
-    <span class="kw">match</span> (<span class="ident">input</span>, <span class="ident">err</span>) {
-        (<span class="kw">_</span>, <span class="ident">WcError::IsDirectory</span>(<span class="ident">path</span>)) <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="macro">show_error_custom_description!</span>(<span class="ident">path</span>, <span class="string">&quot;Is a directory&quot;</span>);
-        }
-        (<span class="ident">Input::Path</span>(<span class="ident">path</span>), <span class="ident">WcError::Io</span>(<span class="ident">e</span>)) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">kind</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">ErrorKind::NotFound</span> <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="macro">show_error_custom_description!</span>(<span class="ident">path</span>, <span class="string">&quot;No such file or directory&quot;</span>);
-        }
-        (<span class="kw">_</span>, <span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>);
-        }
-    };
+<span class="kw">fn</span> <span class="ident">show_error</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">Input</span>, <span class="ident">err</span>: <span class="ident">io::Error</span>) {
+    <span class="macro">show_error!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">input</span>.<span class="ident">path_display</span>(), <span class="ident">err</span>);
 }
 
 <span class="doccomment">/// Compute the number of digits needed to represent any count for this input.</span>
@@ -768,9 +894,9 @@ more than one FILE is specified.&quot;</span>;
 <span class="doccomment">/// let input = Input::Stdin(StdinKind::Explicit);</span>
 <span class="doccomment">/// assert_eq!(7, digit_width(input));</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">fn</span> <span class="ident">digit_width</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">Input</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">WcResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">digit_width</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">Input</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
     <span class="kw">match</span> <span class="ident">input</span> {
-        <span class="ident">Input::Stdin</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">MINIMUM_WIDTH</span>)),
+        <span class="ident">Input::Stdin</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">MINIMUM_WIDTH</span>),
         <span class="ident">Input::Path</span>(<span class="ident">filename</span>) <span class="op">=</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="ident">filename</span>);
             <span class="kw">let</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">fs::metadata</span>(<span class="ident">path</span>)<span class="question-mark">?</span>;
@@ -781,9 +907,9 @@ more than one FILE is specified.&quot;</span>;
                 <span class="comment">// instead). See GitHub issue #2201.</span>
                 <span class="kw">let</span> <span class="ident">num_bytes</span> <span class="op">=</span> <span class="ident">metadata</span>.<span class="ident">len</span>();
                 <span class="kw">let</span> <span class="ident">num_digits</span> <span class="op">=</span> <span class="ident">num_bytes</span>.<span class="ident">to_string</span>().<span class="ident">len</span>();
-                <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">num_digits</span>))
+                <span class="prelude-val">Ok</span>(<span class="ident">num_digits</span>)
             } <span class="kw">else</span> {
-                <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
+                <span class="prelude-val">Ok</span>(<span class="ident">MINIMUM_WIDTH</span>)
             }
         }
     }
@@ -821,7 +947,7 @@ more than one FILE is specified.&quot;</span>;
 <span class="kw">fn</span> <span class="ident">max_width</span>(<span class="ident">inputs</span>: <span class="kw-2">&amp;</span>[<span class="ident">Input</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="number">1</span>;
     <span class="kw">for</span> <span class="ident">input</span> <span class="kw">in</span> <span class="ident">inputs</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">n</span>)) <span class="op">=</span> <span class="ident">digit_width</span>(<span class="ident">input</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">n</span>) <span class="op">=</span> <span class="ident">digit_width</span>(<span class="ident">input</span>) {
             <span class="ident">result</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">max</span>(<span class="ident">n</span>);
         }
     }
@@ -834,7 +960,7 @@ more than one FILE is specified.&quot;</span>;
     <span class="comment">// The width is the number of digits needed to print the number of</span>
     <span class="comment">// bytes in the largest file. This is true regardless of whether</span>
     <span class="comment">// the `settings` indicate that the bytes will be displayed.</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">error_count</span> <span class="op">=</span> <span class="number">0</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">failure</span> <span class="op">=</span> <span class="bool-val">false</span>;
     <span class="kw">let</span> <span class="ident">max_width</span> <span class="op">=</span> <span class="ident">max_width</span>(<span class="kw-2">&amp;</span><span class="ident">inputs</span>);
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">total_word_count</span> <span class="op">=</span> <span class="ident">WordCount::default</span>();
@@ -842,35 +968,43 @@ more than one FILE is specified.&quot;</span>;
     <span class="kw">let</span> <span class="ident">num_inputs</span> <span class="op">=</span> <span class="ident">inputs</span>.<span class="ident">len</span>();
 
     <span class="kw">for</span> <span class="ident">input</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">inputs</span> {
-        <span class="kw">let</span> <span class="ident">word_count</span> <span class="op">=</span> <span class="ident">word_count_from_input</span>(<span class="ident">input</span>, <span class="ident">settings</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> {
-            <span class="ident">show_error</span>(<span class="ident">input</span>, <span class="ident">err</span>);
-            <span class="ident">error_count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-            <span class="ident">WordCount::default</span>()
-        });
+        <span class="kw">let</span> <span class="ident">word_count</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">word_count_from_input</span>(<span class="ident">input</span>, <span class="ident">settings</span>) {
+            <span class="ident">CountResult::Success</span>(<span class="ident">word_count</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">word_count</span>,
+            <span class="ident">CountResult::Interrupted</span>(<span class="ident">word_count</span>, <span class="ident">error</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">show_error</span>(<span class="ident">input</span>, <span class="ident">error</span>);
+                <span class="ident">failure</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                <span class="ident">word_count</span>
+            }
+            <span class="ident">CountResult::Failure</span>(<span class="ident">error</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">show_error</span>(<span class="ident">input</span>, <span class="ident">error</span>);
+                <span class="ident">failure</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                <span class="kw">continue</span>;
+            }
+        };
         <span class="ident">total_word_count</span> <span class="op">+</span><span class="op">=</span> <span class="ident">word_count</span>;
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">word_count</span>.<span class="ident">with_title</span>(<span class="ident">input</span>.<span class="ident">to_title</span>());
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="ident">print_stats</span>(<span class="ident">settings</span>, <span class="kw-2">&amp;</span><span class="ident">result</span>, <span class="ident">max_width</span>) {
             <span class="macro">show_warning!</span>(
                 <span class="string">&quot;failed to print result for {}: {}&quot;</span>,
-                <span class="ident">result</span>.<span class="ident">title</span>.<span class="ident">unwrap_or</span>(<span class="string">&quot;&lt;stdin&gt;&quot;</span>),
+                <span class="ident">result</span>.<span class="ident">title</span>.<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;&lt;stdin&gt;&quot;</span>.<span class="ident">as_ref</span>()).<span class="ident">display</span>(),
                 <span class="ident">err</span>
             );
-            <span class="ident">error_count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+            <span class="ident">failure</span> <span class="op">=</span> <span class="bool-val">true</span>;
         }
     }
 
     <span class="kw">if</span> <span class="ident">num_inputs</span> <span class="op">&gt;</span> <span class="number">1</span> {
-        <span class="kw">let</span> <span class="ident">total_result</span> <span class="op">=</span> <span class="ident">total_word_count</span>.<span class="ident">with_title</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;total&quot;</span>));
+        <span class="kw">let</span> <span class="ident">total_result</span> <span class="op">=</span> <span class="ident">total_word_count</span>.<span class="ident">with_title</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;total&quot;</span>.<span class="ident">as_ref</span>()));
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="ident">print_stats</span>(<span class="ident">settings</span>, <span class="kw-2">&amp;</span><span class="ident">total_result</span>, <span class="ident">max_width</span>) {
             <span class="macro">show_warning!</span>(<span class="string">&quot;failed to print total: {}&quot;</span>, <span class="ident">err</span>);
-            <span class="ident">error_count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+            <span class="ident">failure</span> <span class="op">=</span> <span class="bool-val">true</span>;
         }
     }
 
-    <span class="kw">if</span> <span class="ident">error_count</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-        <span class="prelude-val">Ok</span>(())
+    <span class="kw">if</span> <span class="ident">failure</span> {
+        <span class="prelude-val">Err</span>(<span class="number">1</span>)
     } <span class="kw">else</span> {
-        <span class="prelude-val">Err</span>(<span class="ident">error_count</span>)
+        <span class="prelude-val">Ok</span>(())
     }
 }
 
@@ -878,7 +1012,7 @@ more than one FILE is specified.&quot;</span>;
     <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>,
     <span class="ident">result</span>: <span class="kw-2">&amp;</span><span class="ident">TitledWordCount</span>,
     <span class="kw-2">mut</span> <span class="ident">min_width</span>: <span class="ident">usize</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">WcResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">stdout</span> <span class="op">=</span> <span class="ident">io::stdout</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stdout_lock</span> <span class="op">=</span> <span class="ident">stdout</span>.<span class="ident">lock</span>();
 
@@ -904,18 +1038,18 @@ more than one FILE is specified.&quot;</span>;
         <span class="macro">write!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot;{:1$}&quot;</span>, <span class="ident">result</span>.<span class="ident">count</span>.<span class="ident">words</span>, <span class="ident">min_width</span>)<span class="question-mark">?</span>;
         <span class="ident">is_first</span> <span class="op">=</span> <span class="bool-val">false</span>;
     }
-    <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">show_bytes</span> {
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">is_first</span> {
-            <span class="macro">write!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot; &quot;</span>)<span class="question-mark">?</span>;
-        }
-        <span class="macro">write!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot;{:1$}&quot;</span>, <span class="ident">result</span>.<span class="ident">count</span>.<span class="ident">bytes</span>, <span class="ident">min_width</span>)<span class="question-mark">?</span>;
-        <span class="ident">is_first</span> <span class="op">=</span> <span class="bool-val">false</span>;
-    }
     <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">show_chars</span> {
         <span class="kw">if</span> <span class="op">!</span><span class="ident">is_first</span> {
             <span class="macro">write!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot; &quot;</span>)<span class="question-mark">?</span>;
         }
         <span class="macro">write!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot;{:1$}&quot;</span>, <span class="ident">result</span>.<span class="ident">count</span>.<span class="ident">chars</span>, <span class="ident">min_width</span>)<span class="question-mark">?</span>;
+        <span class="ident">is_first</span> <span class="op">=</span> <span class="bool-val">false</span>;
+    }
+    <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">show_bytes</span> {
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">is_first</span> {
+            <span class="macro">write!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot; &quot;</span>)<span class="question-mark">?</span>;
+        }
+        <span class="macro">write!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot;{:1$}&quot;</span>, <span class="ident">result</span>.<span class="ident">count</span>.<span class="ident">bytes</span>, <span class="ident">min_width</span>)<span class="question-mark">?</span>;
         <span class="ident">is_first</span> <span class="op">=</span> <span class="bool-val">false</span>;
     }
     <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">show_max_line_length</span> {
@@ -930,7 +1064,7 @@ more than one FILE is specified.&quot;</span>;
     }
 
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">title</span>) <span class="op">=</span> <span class="ident">result</span>.<span class="ident">title</span> {
-        <span class="macro">writeln!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">title</span>)<span class="question-mark">?</span>;
+        <span class="macro">writeln!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">title</span>.<span class="ident">display</span>())<span class="question-mark">?</span>;
     } <span class="kw">else</span> {
         <span class="macro">writeln!</span>(<span class="ident">stdout_lock</span>)<span class="question-mark">?</span>;
     }
