@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["absolute_path",""],["uu_app",""],["uumain",""]]});
+initSidebarItems({"fn":[["uu_app",""],["uumain",""]]});
