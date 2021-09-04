@@ -1424,6 +1424,85 @@
 <span id="1422">1422</span>
 <span id="1423">1423</span>
 <span id="1424">1424</span>
+<span id="1425">1425</span>
+<span id="1426">1426</span>
+<span id="1427">1427</span>
+<span id="1428">1428</span>
+<span id="1429">1429</span>
+<span id="1430">1430</span>
+<span id="1431">1431</span>
+<span id="1432">1432</span>
+<span id="1433">1433</span>
+<span id="1434">1434</span>
+<span id="1435">1435</span>
+<span id="1436">1436</span>
+<span id="1437">1437</span>
+<span id="1438">1438</span>
+<span id="1439">1439</span>
+<span id="1440">1440</span>
+<span id="1441">1441</span>
+<span id="1442">1442</span>
+<span id="1443">1443</span>
+<span id="1444">1444</span>
+<span id="1445">1445</span>
+<span id="1446">1446</span>
+<span id="1447">1447</span>
+<span id="1448">1448</span>
+<span id="1449">1449</span>
+<span id="1450">1450</span>
+<span id="1451">1451</span>
+<span id="1452">1452</span>
+<span id="1453">1453</span>
+<span id="1454">1454</span>
+<span id="1455">1455</span>
+<span id="1456">1456</span>
+<span id="1457">1457</span>
+<span id="1458">1458</span>
+<span id="1459">1459</span>
+<span id="1460">1460</span>
+<span id="1461">1461</span>
+<span id="1462">1462</span>
+<span id="1463">1463</span>
+<span id="1464">1464</span>
+<span id="1465">1465</span>
+<span id="1466">1466</span>
+<span id="1467">1467</span>
+<span id="1468">1468</span>
+<span id="1469">1469</span>
+<span id="1470">1470</span>
+<span id="1471">1471</span>
+<span id="1472">1472</span>
+<span id="1473">1473</span>
+<span id="1474">1474</span>
+<span id="1475">1475</span>
+<span id="1476">1476</span>
+<span id="1477">1477</span>
+<span id="1478">1478</span>
+<span id="1479">1479</span>
+<span id="1480">1480</span>
+<span id="1481">1481</span>
+<span id="1482">1482</span>
+<span id="1483">1483</span>
+<span id="1484">1484</span>
+<span id="1485">1485</span>
+<span id="1486">1486</span>
+<span id="1487">1487</span>
+<span id="1488">1488</span>
+<span id="1489">1489</span>
+<span id="1490">1490</span>
+<span id="1491">1491</span>
+<span id="1492">1492</span>
+<span id="1493">1493</span>
+<span id="1494">1494</span>
+<span id="1495">1495</span>
+<span id="1496">1496</span>
+<span id="1497">1497</span>
+<span id="1498">1498</span>
+<span id="1499">1499</span>
+<span id="1500">1500</span>
+<span id="1501">1501</span>
+<span id="1502">1502</span>
+<span id="1503">1503</span>
 </pre><pre class="rust">
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::missing_safety_doc</span>)]</span>
 
@@ -1494,6 +1573,7 @@
         <span class="ident">IoErrContext</span>(<span class="ident">err</span>: <span class="ident">io::Error</span>, <span class="ident">path</span>: <span class="ident">String</span>) {
             <span class="ident">display</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">path</span>, <span class="ident">err</span>)
             <span class="ident">context</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">err</span>: <span class="ident">io::Error</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">err</span>, <span class="ident">path</span>.<span class="ident">to_owned</span>())
+            <span class="ident">context</span>(<span class="ident">context</span>: <span class="ident">String</span>, <span class="ident">err</span>: <span class="ident">io::Error</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">err</span>, <span class="ident">context</span>)
             <span class="ident">cause</span>(<span class="ident">err</span>)
         }
 
@@ -1607,12 +1687,15 @@
     <span class="ident">AttrOnly</span>,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="comment">// The ordering here determines the order in which attributes are (re-)applied.</span>
+<span class="comment">// In particular, Ownership must be changed first to avoid interfering with mode change.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Attribute</span> {
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-    <span class="ident">Mode</span>,
     <span class="ident">Ownership</span>,
+    <span class="ident">Mode</span>,
     <span class="ident">Timestamps</span>,
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;feat_selinux&quot;</span>)]</span>
     <span class="ident">Context</span>,
     <span class="ident">Links</span>,
     <span class="ident">Xattr</span>,
@@ -1667,7 +1750,7 @@
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LINK</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;link&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NO_CLOBBER</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;no-clobber&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NO_DEREFERENCE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;no-dereference&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NO_DEREFERENCE_PRESERVE_LINKS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;no-dereference-preserve-linkgs&quot;</span>;
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NO_DEREFERENCE_PRESERVE_LINKS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;no-dereference-preserve-links&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NO_PRESERVE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;no-preserve&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NO_TARGET_DIRECTORY</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;no-target-directory&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ONE_FILE_SYSTEM</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;one-file-system&quot;</span>;
@@ -1693,6 +1776,7 @@
     <span class="string">&quot;mode&quot;</span>,
     <span class="string">&quot;ownership&quot;</span>,
     <span class="string">&quot;timestamps&quot;</span>,
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;feat_selinux&quot;</span>)]</span>
     <span class="string">&quot;context&quot;</span>,
     <span class="string">&quot;links&quot;</span>,
     <span class="string">&quot;xattr&quot;</span>,
@@ -1700,18 +1784,12 @@
 ];
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">unix</span>))]</span>
-<span class="kw">static</span> <span class="ident">PRESERVABLE_ATTRIBUTES</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>] <span class="op">=</span> <span class="kw-2">&amp;</span>[
-    <span class="string">&quot;ownership&quot;</span>,
-    <span class="string">&quot;timestamps&quot;</span>,
-    <span class="string">&quot;context&quot;</span>,
-    <span class="string">&quot;links&quot;</span>,
-    <span class="string">&quot;xattr&quot;</span>,
-    <span class="string">&quot;all&quot;</span>,
-];
+<span class="kw">static</span> <span class="ident">PRESERVABLE_ATTRIBUTES</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>] <span class="op">=</span>
+    <span class="kw-2">&amp;</span>[<span class="string">&quot;mode&quot;</span>, <span class="string">&quot;timestamps&quot;</span>, <span class="string">&quot;context&quot;</span>, <span class="string">&quot;links&quot;</span>, <span class="string">&quot;xattr&quot;</span>, <span class="string">&quot;all&quot;</span>];
 
 <span class="kw">static</span> <span class="ident">DEFAULT_ATTRIBUTES</span>: <span class="kw-2">&amp;</span>[<span class="ident">Attribute</span>] <span class="op">=</span> <span class="kw-2">&amp;</span>[
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
     <span class="ident">Attribute::Mode</span>,
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
     <span class="ident">Attribute::Ownership</span>,
     <span class="ident">Attribute::Timestamps</span>,
 ];
@@ -1808,13 +1886,13 @@
              .<span class="ident">conflicts_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::PRESERVE_DEFAULT_ATTRIBUTES</span>, <span class="ident">options::NO_PRESERVE</span>])
              <span class="comment">// -d sets this option</span>
              <span class="comment">// --archive sets this option</span>
-             .<span class="ident">help</span>(<span class="string">&quot;Preserve the specified attributes (default: mode (unix only), ownership, timestamps), \
+             .<span class="ident">help</span>(<span class="string">&quot;Preserve the specified attributes (default: mode, ownership (unix only), timestamps), \
                     if possible additional attributes: context, links, xattr, all&quot;</span>))
         .<span class="ident">arg</span>(<span class="ident">Arg::with_name</span>(<span class="ident">options::PRESERVE_DEFAULT_ATTRIBUTES</span>)
              .<span class="ident">short</span>(<span class="string">&quot;-p&quot;</span>)
              .<span class="ident">long</span>(<span class="ident">options::PRESERVE_DEFAULT_ATTRIBUTES</span>)
              .<span class="ident">conflicts_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::PRESERVE</span>, <span class="ident">options::NO_PRESERVE</span>, <span class="ident">options::ARCHIVE</span>])
-             .<span class="ident">help</span>(<span class="string">&quot;same as --preserve=mode(unix only),ownership,timestamps&quot;</span>))
+             .<span class="ident">help</span>(<span class="string">&quot;same as --preserve=mode,ownership(unix only),timestamps&quot;</span>))
         .<span class="ident">arg</span>(<span class="ident">Arg::with_name</span>(<span class="ident">options::NO_PRESERVE</span>)
              .<span class="ident">long</span>(<span class="ident">options::NO_PRESERVE</span>)
              .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
@@ -1959,10 +2037,11 @@
 
     <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CopyResult</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">value</span>.<span class="ident">to_lowercase</span>() {
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
             <span class="string">&quot;mode&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Attribute::Mode</span>,
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
             <span class="string">&quot;ownership&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Attribute::Ownership</span>,
             <span class="string">&quot;timestamps&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Attribute::Timestamps</span>,
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;feat_selinux&quot;</span>)]</span>
             <span class="string">&quot;context&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Attribute::Context</span>,
             <span class="string">&quot;links&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Attribute::Links</span>,
             <span class="string">&quot;xattr&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Attribute::Xattr</span>,
@@ -1979,14 +2058,16 @@
 <span class="kw">fn</span> <span class="ident">add_all_attributes</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span> {
     <span class="kw">use</span> <span class="ident">Attribute</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;windows&quot;</span>)]</span>
-    <span class="kw">let</span> <span class="ident">attr</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">Ownership</span>, <span class="ident">Timestamps</span>, <span class="ident">Context</span>, <span class="ident">Xattr</span>, <span class="ident">Links</span>];
-
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;windows&quot;</span>))]</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">attr</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">Ownership</span>, <span class="ident">Timestamps</span>, <span class="ident">Context</span>, <span class="ident">Xattr</span>, <span class="ident">Links</span>];
-
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-    <span class="ident">attr</span>.<span class="ident">insert</span>(<span class="number">0</span>, <span class="ident">Mode</span>);
+    <span class="kw">let</span> <span class="ident">attr</span> <span class="op">=</span> <span class="macro">vec!</span>[
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
+        <span class="ident">Ownership</span>,
+        <span class="ident">Mode</span>,
+        <span class="ident">Timestamps</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;feat_selinux&quot;</span>)]</span>
+        <span class="ident">Context</span>,
+        <span class="ident">Links</span>,
+        <span class="ident">Xattr</span>,
+    ];
 
     <span class="ident">attr</span>
 }
@@ -2029,7 +2110,7 @@
             .<span class="ident">map</span>(<span class="ident">ToString::to_string</span>);
 
         <span class="comment">// Parse attributes to preserve</span>
-        <span class="kw">let</span> <span class="ident">preserve_attributes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::PRESERVE</span>) {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">preserve_attributes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::PRESERVE</span>) {
             <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="ident">options::PRESERVE</span>) {
                 <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">DEFAULT_ATTRIBUTES</span>.<span class="ident">to_vec</span>(),
                 <span class="prelude-val">Some</span>(<span class="ident">attribute_strs</span>) <span class="op">=</span><span class="op">&gt;</span> {
@@ -2055,6 +2136,11 @@
         } <span class="kw">else</span> {
             <span class="macro">vec!</span>[]
         };
+
+        <span class="comment">// Make sure ownership is changed before other attributes,</span>
+        <span class="comment">// as chown clears some of the permission and therefore could undo previous changes</span>
+        <span class="comment">// if not executed first.</span>
+        <span class="ident">preserve_attributes</span>.<span class="ident">sort_unstable</span>();
 
         <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">Options</span> {
             <span class="ident">attributes_only</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::ATTRIBUTES_ONLY</span>),
@@ -2477,26 +2563,65 @@
 
 <span class="kw">fn</span> <span class="ident">copy_attribute</span>(<span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">dest</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">attribute</span>: <span class="kw-2">&amp;</span><span class="ident">Attribute</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CopyResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="macro">format!</span>(<span class="string">&quot;&#39;{}&#39; -&gt; &#39;{}&#39;&quot;</span>, <span class="ident">source</span>.<span class="ident">display</span>().<span class="ident">to_string</span>(), <span class="ident">dest</span>.<span class="ident">display</span>());
+    <span class="kw">let</span> <span class="ident">source_metadata</span> <span class="op">=</span> <span class="ident">fs::symlink_metadata</span>(<span class="ident">source</span>).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
     <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">attribute</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
         <span class="ident">Attribute::Mode</span> <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="ident">fs::metadata</span>(<span class="ident">source</span>).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>.<span class="ident">permissions</span>().<span class="ident">mode</span>();
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dest_metadata</span> <span class="op">=</span> <span class="ident">fs::metadata</span>(<span class="ident">source</span>).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>.<span class="ident">permissions</span>();
-            <span class="ident">dest_metadata</span>.<span class="ident">set_mode</span>(<span class="ident">mode</span>);
+            <span class="ident">fs::set_permissions</span>(<span class="ident">dest</span>, <span class="ident">source_metadata</span>.<span class="ident">permissions</span>()).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
+            <span class="comment">// FIXME: Implement this for windows as well</span>
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;feat_acl&quot;</span>)]</span>
+            <span class="ident">exacl::getfacl</span>(<span class="ident">source</span>, <span class="prelude-val">None</span>)
+                .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">acl</span><span class="op">|</span> <span class="ident">exacl::setfacl</span>(<span class="kw-2">&amp;</span>[<span class="ident">dest</span>], <span class="kw-2">&amp;</span><span class="ident">acl</span>, <span class="prelude-val">None</span>))
+                .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="ident">Error::Error</span>(<span class="ident">err</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
         }
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
         <span class="ident">Attribute::Ownership</span> <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="kw">let</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">fs::metadata</span>(<span class="ident">source</span>).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
-            <span class="ident">fs::set_permissions</span>(<span class="ident">dest</span>, <span class="ident">metadata</span>.<span class="ident">permissions</span>()).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
+            <span class="kw">use</span> <span class="ident">std::os::unix::prelude::MetadataExt</span>;
+            <span class="kw">use</span> <span class="ident">uucore::perms::wrap_chown</span>;
+            <span class="kw">use</span> <span class="ident">uucore::perms::Verbosity</span>;
+            <span class="kw">use</span> <span class="ident">uucore::perms::VerbosityLevel</span>;
+
+            <span class="kw">let</span> <span class="ident">dest_uid</span> <span class="op">=</span> <span class="ident">source_metadata</span>.<span class="ident">uid</span>();
+            <span class="kw">let</span> <span class="ident">dest_gid</span> <span class="op">=</span> <span class="ident">source_metadata</span>.<span class="ident">gid</span>();
+
+            <span class="ident">wrap_chown</span>(
+                <span class="ident">dest</span>,
+                <span class="kw-2">&amp;</span><span class="ident">dest</span>.<span class="ident">symlink_metadata</span>().<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>,
+                <span class="prelude-val">Some</span>(<span class="ident">dest_uid</span>),
+                <span class="prelude-val">Some</span>(<span class="ident">dest_gid</span>),
+                <span class="bool-val">false</span>,
+                <span class="ident">Verbosity</span> {
+                    <span class="ident">groups_only</span>: <span class="bool-val">false</span>,
+                    <span class="ident">level</span>: <span class="ident">VerbosityLevel::Normal</span>,
+                },
+            )
+            .<span class="ident">map_err</span>(<span class="ident">Error::Error</span>)<span class="question-mark">?</span>;
         }
         <span class="ident">Attribute::Timestamps</span> <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="kw">let</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">fs::metadata</span>(<span class="ident">source</span>)<span class="question-mark">?</span>;
             <span class="ident">filetime::set_file_times</span>(
                 <span class="ident">Path::new</span>(<span class="ident">dest</span>),
-                <span class="ident">FileTime::from_last_access_time</span>(<span class="kw-2">&amp;</span><span class="ident">metadata</span>),
-                <span class="ident">FileTime::from_last_modification_time</span>(<span class="kw-2">&amp;</span><span class="ident">metadata</span>),
+                <span class="ident">FileTime::from_last_access_time</span>(<span class="kw-2">&amp;</span><span class="ident">source_metadata</span>),
+                <span class="ident">FileTime::from_last_modification_time</span>(<span class="kw-2">&amp;</span><span class="ident">source_metadata</span>),
             )<span class="question-mark">?</span>;
         }
-        <span class="ident">Attribute::Context</span> <span class="op">=</span><span class="op">&gt;</span> {}
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;feat_selinux&quot;</span>)]</span>
+        <span class="ident">Attribute::Context</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">selinux::SecurityContext::of_path</span>(<span class="ident">source</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
+                <span class="macro">format!</span>(
+                    <span class="string">&quot;failed to get security context of {}: {}&quot;</span>,
+                    <span class="ident">source</span>.<span class="ident">display</span>(),
+                    <span class="ident">e</span>
+                )
+            })<span class="question-mark">?</span>;
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">context</span>) <span class="op">=</span> <span class="ident">context</span> {
+                <span class="ident">context</span>.<span class="ident">set_for_path</span>(<span class="ident">dest</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
+                    <span class="macro">format!</span>(
+                        <span class="string">&quot;failed to set security context for {}: {}&quot;</span>,
+                        <span class="ident">dest</span>.<span class="ident">display</span>(),
+                        <span class="ident">e</span>
+                    )
+                })<span class="question-mark">?</span>;
+            }
+        }
         <span class="ident">Attribute::Links</span> <span class="op">=</span><span class="op">&gt;</span> {}
         <span class="ident">Attribute::Xattr</span> <span class="op">=</span><span class="op">&gt;</span> {
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
@@ -2570,8 +2695,8 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="doccomment">/// Copy the a file from `source` to `dest`. No path manipulation is</span>
-<span class="doccomment">/// done on either `source` or `dest`, the are used as provided.</span>
+<span class="doccomment">/// Copy the a file from `source` to `dest`. `source` will be dereferenced if</span>
+<span class="doccomment">/// `options.dereference` is set to true. `dest` will always be dereferenced.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Behavior when copying to existing files is contingent on the</span>
 <span class="doccomment">/// `options.overwrite` mode. If a file is skipped, the return type</span>
@@ -2588,41 +2713,66 @@
         <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">context_for</span>(<span class="ident">source</span>, <span class="ident">dest</span>));
     }
 
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused</span>)]</span>
-    {
-        <span class="comment">// TODO: implement --preserve flag</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">preserve_context</span> <span class="op">=</span> <span class="bool-val">false</span>;
-        <span class="kw">for</span> <span class="ident">attribute</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">options</span>.<span class="ident">preserve_attributes</span> {
-            <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">attribute</span> <span class="op">=</span><span class="op">=</span> <span class="ident">Attribute::Context</span> {
-                <span class="ident">preserve_context</span> <span class="op">=</span> <span class="bool-val">true</span>;
-            }
+    <span class="comment">// Calculate the context upfront before canonicalizing the path</span>
+    <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">context_for</span>(<span class="ident">source</span>, <span class="ident">dest</span>);
+    <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">as_str</span>();
+
+    <span class="comment">// canonicalize dest and source so that later steps can work with the paths directly</span>
+    <span class="kw">let</span> <span class="ident">dest</span> <span class="op">=</span> <span class="ident">canonicalize</span>(<span class="ident">dest</span>, <span class="ident">MissingHandling::Missing</span>, <span class="ident">ResolveMode::Physical</span>).<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">source</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">dereference</span> {
+        <span class="ident">canonicalize</span>(<span class="ident">source</span>, <span class="ident">MissingHandling::Missing</span>, <span class="ident">ResolveMode::Physical</span>).<span class="ident">unwrap</span>()
+    } <span class="kw">else</span> {
+        <span class="ident">source</span>.<span class="ident">to_owned</span>()
+    };
+
+    <span class="kw">let</span> <span class="ident">dest_permissions</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">dest</span>.<span class="ident">exists</span>() {
+        <span class="ident">dest</span>.<span class="ident">symlink_metadata</span>().<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>.<span class="ident">permissions</span>()
+    } <span class="kw">else</span> {
+        <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_mut</span>)]</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">permissions</span> <span class="op">=</span> <span class="ident">source</span>.<span class="ident">symlink_metadata</span>().<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>.<span class="ident">permissions</span>();
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
+        {
+            <span class="kw">use</span> <span class="ident">uucore::mode::get_umask</span>;
+
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mode</span> <span class="op">=</span> <span class="ident">permissions</span>.<span class="ident">mode</span>();
+
+            <span class="comment">// remove sticky bit, suid and gid bit</span>
+            <span class="kw">const</span> <span class="ident">SPECIAL_PERMS_MASK</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0o7000</span>;
+            <span class="ident">mode</span> <span class="op">&amp;=</span> <span class="op">!</span><span class="ident">SPECIAL_PERMS_MASK</span>;
+
+            <span class="comment">// apply umask</span>
+            <span class="ident">mode</span> <span class="op">&amp;=</span> <span class="op">!</span><span class="ident">get_umask</span>();
+
+            <span class="ident">permissions</span>.<span class="ident">set_mode</span>(<span class="ident">mode</span>);
         }
-    }
+        <span class="ident">permissions</span>
+    };
+
     <span class="kw">match</span> <span class="ident">options</span>.<span class="ident">copy_mode</span> {
         <span class="ident">CopyMode::Link</span> <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="ident">fs::hard_link</span>(<span class="ident">source</span>, <span class="ident">dest</span>).<span class="ident">context</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">context_for</span>(<span class="ident">source</span>, <span class="ident">dest</span>))<span class="question-mark">?</span>;
+            <span class="ident">fs::hard_link</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>, <span class="kw-2">&amp;</span><span class="ident">dest</span>).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
         }
         <span class="ident">CopyMode::Copy</span> <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="ident">copy_helper</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">options</span>)<span class="question-mark">?</span>;
+            <span class="ident">copy_helper</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>, <span class="kw-2">&amp;</span><span class="ident">dest</span>, <span class="ident">options</span>, <span class="ident">context</span>)<span class="question-mark">?</span>;
         }
         <span class="ident">CopyMode::SymLink</span> <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="ident">symlink_file</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">context_for</span>(<span class="ident">source</span>, <span class="ident">dest</span>))<span class="question-mark">?</span>;
+            <span class="ident">symlink_file</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>, <span class="kw-2">&amp;</span><span class="ident">dest</span>, <span class="ident">context</span>)<span class="question-mark">?</span>;
         }
         <span class="ident">CopyMode::Sparse</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::NotImplemented</span>(<span class="ident">options::SPARSE</span>.<span class="ident">to_string</span>())),
         <span class="ident">CopyMode::Update</span> <span class="op">=</span><span class="op">&gt;</span> {
             <span class="kw">if</span> <span class="ident">dest</span>.<span class="ident">exists</span>() {
-                <span class="kw">let</span> <span class="ident">src_metadata</span> <span class="op">=</span> <span class="ident">fs::metadata</span>(<span class="ident">source</span>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">dest_metadata</span> <span class="op">=</span> <span class="ident">fs::metadata</span>(<span class="ident">dest</span>)<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">src_metadata</span> <span class="op">=</span> <span class="ident">fs::symlink_metadata</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>)<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">dest_metadata</span> <span class="op">=</span> <span class="ident">fs::symlink_metadata</span>(<span class="kw-2">&amp;</span><span class="ident">dest</span>)<span class="question-mark">?</span>;
 
                 <span class="kw">let</span> <span class="ident">src_time</span> <span class="op">=</span> <span class="ident">src_metadata</span>.<span class="ident">modified</span>()<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">dest_time</span> <span class="op">=</span> <span class="ident">dest_metadata</span>.<span class="ident">modified</span>()<span class="question-mark">?</span>;
                 <span class="kw">if</span> <span class="ident">src_time</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">dest_time</span> {
                     <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
                 } <span class="kw">else</span> {
-                    <span class="ident">copy_helper</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">options</span>)<span class="question-mark">?</span>;
+                    <span class="ident">copy_helper</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>, <span class="kw-2">&amp;</span><span class="ident">dest</span>, <span class="ident">options</span>, <span class="ident">context</span>)<span class="question-mark">?</span>;
                 }
             } <span class="kw">else</span> {
-                <span class="ident">copy_helper</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">options</span>)<span class="question-mark">?</span>;
+                <span class="ident">copy_helper</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>, <span class="kw-2">&amp;</span><span class="ident">dest</span>, <span class="ident">options</span>, <span class="ident">context</span>)<span class="question-mark">?</span>;
             }
         }
         <span class="ident">CopyMode::AttrOnly</span> <span class="op">=</span><span class="op">&gt;</span> {
@@ -2630,53 +2780,51 @@
                 .<span class="ident">write</span>(<span class="bool-val">true</span>)
                 .<span class="ident">truncate</span>(<span class="bool-val">false</span>)
                 .<span class="ident">create</span>(<span class="bool-val">true</span>)
-                .<span class="ident">open</span>(<span class="ident">dest</span>)
+                .<span class="ident">open</span>(<span class="kw-2">&amp;</span><span class="ident">dest</span>)
                 .<span class="ident">unwrap</span>();
         }
     };
+
+    <span class="comment">// TODO: implement something similar to gnu&#39;s lchown</span>
+    <span class="kw">if</span> <span class="ident">fs::symlink_metadata</span>(<span class="kw-2">&amp;</span><span class="ident">dest</span>)
+        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">meta</span><span class="op">|</span> <span class="op">!</span><span class="ident">meta</span>.<span class="ident">file_type</span>().<span class="ident">is_symlink</span>())
+        .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
+    {
+        <span class="ident">fs::set_permissions</span>(<span class="kw-2">&amp;</span><span class="ident">dest</span>, <span class="ident">dest_permissions</span>).<span class="ident">unwrap</span>();
+    }
     <span class="kw">for</span> <span class="ident">attribute</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">options</span>.<span class="ident">preserve_attributes</span> {
-        <span class="ident">copy_attribute</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">attribute</span>)<span class="question-mark">?</span>;
+        <span class="ident">copy_attribute</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>, <span class="kw-2">&amp;</span><span class="ident">dest</span>, <span class="ident">attribute</span>)<span class="question-mark">?</span>;
     }
     <span class="prelude-val">Ok</span>(())
 }
 
 <span class="doccomment">/// Copy the file from `source` to `dest` either using the normal `fs::copy` or a</span>
 <span class="doccomment">/// copy-on-write scheme if --reflink is specified and the filesystem supports it.</span>
-<span class="kw">fn</span> <span class="ident">copy_helper</span>(<span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">dest</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">Options</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CopyResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">copy_helper</span>(<span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">dest</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">Options</span>, <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CopyResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">parents</span> {
         <span class="kw">let</span> <span class="ident">parent</span> <span class="op">=</span> <span class="ident">dest</span>.<span class="ident">parent</span>().<span class="ident">unwrap_or</span>(<span class="ident">dest</span>);
         <span class="ident">fs::create_dir_all</span>(<span class="ident">parent</span>)<span class="question-mark">?</span>;
     }
     <span class="kw">let</span> <span class="ident">is_symlink</span> <span class="op">=</span> <span class="ident">fs::symlink_metadata</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>)<span class="question-mark">?</span>.<span class="ident">file_type</span>().<span class="ident">is_symlink</span>();
-    <span class="kw">if</span> <span class="ident">source</span>.<span class="ident">to_string_lossy</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&quot;/dev/null&quot;</span> {
+    <span class="kw">if</span> <span class="ident">source</span>.<span class="ident">as_os_str</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&quot;/dev/null&quot;</span> {
         <span class="comment">/* workaround a limitation of fs::copy
          * https://github.com/rust-lang/rust/issues/79390
          */</span>
         <span class="ident">File::create</span>(<span class="ident">dest</span>)<span class="question-mark">?</span>;
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">dereference</span> <span class="op">&amp;&amp;</span> <span class="ident">is_symlink</span> {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">is_symlink</span> {
         <span class="ident">copy_link</span>(<span class="ident">source</span>, <span class="ident">dest</span>)<span class="question-mark">?</span>;
     } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">reflink_mode</span> <span class="op">!</span><span class="op">=</span> <span class="ident">ReflinkMode::Never</span> {
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)))]</span>
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;--reflink is only supported on linux and macOS&quot;</span>
             .<span class="ident">to_string</span>()
             .<span class="ident">into</span>());
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>))]</span>
-        <span class="kw">if</span> <span class="ident">is_symlink</span> {
-            <span class="macro">assert!</span>(<span class="ident">options</span>.<span class="ident">dereference</span>);
-            <span class="kw">let</span> <span class="ident">real_path</span> <span class="op">=</span> <span class="ident">std::fs::read_link</span>(<span class="ident">source</span>)<span class="question-mark">?</span>;
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-            <span class="ident">copy_on_write_macos</span>(<span class="kw-2">&amp;</span><span class="ident">real_path</span>, <span class="ident">dest</span>, <span class="ident">options</span>.<span class="ident">reflink_mode</span>)<span class="question-mark">?</span>;
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-            <span class="ident">copy_on_write_linux</span>(<span class="kw-2">&amp;</span><span class="ident">real_path</span>, <span class="ident">dest</span>, <span class="ident">options</span>.<span class="ident">reflink_mode</span>)<span class="question-mark">?</span>;
-        } <span class="kw">else</span> {
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-            <span class="ident">copy_on_write_macos</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">options</span>.<span class="ident">reflink_mode</span>)<span class="question-mark">?</span>;
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-            <span class="ident">copy_on_write_linux</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">options</span>.<span class="ident">reflink_mode</span>)<span class="question-mark">?</span>;
-        }
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+        <span class="ident">copy_on_write_macos</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">options</span>.<span class="ident">reflink_mode</span>, <span class="ident">context</span>)<span class="question-mark">?</span>;
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
+        <span class="ident">copy_on_write_linux</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">options</span>.<span class="ident">reflink_mode</span>, <span class="ident">context</span>)<span class="question-mark">?</span>;
     } <span class="kw">else</span> {
-        <span class="ident">fs::copy</span>(<span class="ident">source</span>, <span class="ident">dest</span>).<span class="ident">context</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">context_for</span>(<span class="ident">source</span>, <span class="ident">dest</span>))<span class="question-mark">?</span>;
+        <span class="ident">fs::copy</span>(<span class="ident">source</span>, <span class="ident">dest</span>).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
     }
 
     <span class="prelude-val">Ok</span>(())
@@ -2707,16 +2855,21 @@
 
 <span class="doccomment">/// Copies `source` to `dest` using copy-on-write if possible.</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">copy_on_write_linux</span>(<span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">dest</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">mode</span>: <span class="ident">ReflinkMode</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CopyResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">copy_on_write_linux</span>(
+    <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
+    <span class="ident">dest</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
+    <span class="ident">mode</span>: <span class="ident">ReflinkMode</span>,
+    <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CopyResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="macro">debug_assert!</span>(<span class="ident">mode</span> <span class="op">!</span><span class="op">=</span> <span class="ident">ReflinkMode::Never</span>);
 
-    <span class="kw">let</span> <span class="ident">src_file</span> <span class="op">=</span> <span class="ident">File::open</span>(<span class="ident">source</span>).<span class="ident">context</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">context_for</span>(<span class="ident">source</span>, <span class="ident">dest</span>))<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">src_file</span> <span class="op">=</span> <span class="ident">File::open</span>(<span class="ident">source</span>).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">dst_file</span> <span class="op">=</span> <span class="ident">OpenOptions::new</span>()
         .<span class="ident">write</span>(<span class="bool-val">true</span>)
         .<span class="ident">truncate</span>(<span class="bool-val">false</span>)
         .<span class="ident">create</span>(<span class="bool-val">true</span>)
         .<span class="ident">open</span>(<span class="ident">dest</span>)
-        .<span class="ident">context</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">context_for</span>(<span class="ident">source</span>, <span class="ident">dest</span>))<span class="question-mark">?</span>;
+        .<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
     <span class="kw">match</span> <span class="ident">mode</span> {
         <span class="ident">ReflinkMode::Always</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">unsafe</span> {
             <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">ficlone</span>(<span class="ident">dst_file</span>.<span class="ident">as_raw_fd</span>(), <span class="ident">src_file</span>.<span class="ident">as_raw_fd</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">i32</span>);
@@ -2735,7 +2888,7 @@
         <span class="ident">ReflinkMode::Auto</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">unsafe</span> {
             <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">ficlone</span>(<span class="ident">dst_file</span>.<span class="ident">as_raw_fd</span>(), <span class="ident">src_file</span>.<span class="ident">as_raw_fd</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">i32</span>);
             <span class="kw">if</span> <span class="ident">result</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-                <span class="ident">fs::copy</span>(<span class="ident">source</span>, <span class="ident">dest</span>).<span class="ident">context</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">context_for</span>(<span class="ident">source</span>, <span class="ident">dest</span>))<span class="question-mark">?</span>;
+                <span class="ident">fs::copy</span>(<span class="ident">source</span>, <span class="ident">dest</span>).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
             }
             <span class="prelude-val">Ok</span>(())
         },
@@ -2745,7 +2898,12 @@
 
 <span class="doccomment">/// Copies `source` to `dest` using copy-on-write if possible.</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">copy_on_write_macos</span>(<span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">dest</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">mode</span>: <span class="ident">ReflinkMode</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CopyResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">copy_on_write_macos</span>(
+    <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
+    <span class="ident">dest</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
+    <span class="ident">mode</span>: <span class="ident">ReflinkMode</span>,
+    <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CopyResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="macro">debug_assert!</span>(<span class="ident">mode</span> <span class="op">!</span><span class="op">=</span> <span class="ident">ReflinkMode::Never</span>);
 
     <span class="comment">// Extract paths in a form suitable to be passed to a syscall.</span>
@@ -2790,7 +2948,7 @@
                     <span class="macro">format!</span>(<span class="string">&quot;failed to clone {:?} from {:?}: {}&quot;</span>, <span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">error</span>).<span class="ident">into</span>(),
                 )
             }
-            <span class="ident">ReflinkMode::Auto</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">fs::copy</span>(<span class="ident">source</span>, <span class="ident">dest</span>).<span class="ident">context</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">context_for</span>(<span class="ident">source</span>, <span class="ident">dest</span>))<span class="question-mark">?</span>,
+            <span class="ident">ReflinkMode::Auto</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">fs::copy</span>(<span class="ident">source</span>, <span class="ident">dest</span>).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>,
             <span class="ident">ReflinkMode::Never</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unreachable!</span>(),
         };
     }
