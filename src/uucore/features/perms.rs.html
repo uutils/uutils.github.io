@@ -1,6 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uucore/src/lib/features/perms.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>perms.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
-<link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../uucore/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img src="../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uucore&#x2F;src&#x2F;lib&#x2F;features&#x2F;perms.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>perms.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../uucore/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input"name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -527,6 +525,7 @@
 <span id="525">525</span>
 <span id="526">526</span>
 <span id="527">527</span>
+<span id="528">528</span>
 </pre><pre class="rust">
 <span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
@@ -535,6 +534,7 @@
 
 <span class="doccomment">//! Common functions to manage permissions</span>
 
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::display::Quotable</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::error::strip_errno</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::error::UResult</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::error::USimpleError</span>;
@@ -610,29 +610,29 @@
             <span class="ident">VerbosityLevel::Silent</span> <span class="op">=</span><span class="op">&gt;</span> (),
             <span class="ident">level</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="ident">out</span> <span class="op">=</span> <span class="macro">format!</span>(
-                    <span class="string">&quot;changing {} of &#39;{}&#39;: {}&quot;</span>,
+                    <span class="string">&quot;changing {} of {}: {}&quot;</span>,
                     <span class="kw">if</span> <span class="ident">verbosity</span>.<span class="ident">groups_only</span> {
                         <span class="string">&quot;group&quot;</span>
                     } <span class="kw">else</span> {
                         <span class="string">&quot;ownership&quot;</span>
                     },
-                    <span class="ident">path</span>.<span class="ident">display</span>(),
+                    <span class="ident">path</span>.<span class="ident">quote</span>(),
                     <span class="ident">e</span>
                 );
                 <span class="kw">if</span> <span class="ident">level</span> <span class="op">=</span><span class="op">=</span> <span class="ident">VerbosityLevel::Verbose</span> {
                     <span class="ident">out</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">verbosity</span>.<span class="ident">groups_only</span> {
                         <span class="macro">format!</span>(
-                            <span class="string">&quot;{}\nfailed to change group of &#39;{}&#39; from {} to {}&quot;</span>,
+                            <span class="string">&quot;{}\nfailed to change group of {} from {} to {}&quot;</span>,
                             <span class="ident">out</span>,
-                            <span class="ident">path</span>.<span class="ident">display</span>(),
+                            <span class="ident">path</span>.<span class="ident">quote</span>(),
                             <span class="ident">entries::gid2grp</span>(<span class="ident">meta</span>.<span class="ident">gid</span>()).<span class="ident">unwrap</span>(),
                             <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap</span>()
                         )
                     } <span class="kw">else</span> {
                         <span class="macro">format!</span>(
-                            <span class="string">&quot;{}\nfailed to change ownership of &#39;{}&#39; from {}:{} to {}:{}&quot;</span>,
+                            <span class="string">&quot;{}\nfailed to change ownership of {} from {}:{} to {}:{}&quot;</span>,
                             <span class="ident">out</span>,
-                            <span class="ident">path</span>.<span class="ident">display</span>(),
+                            <span class="ident">path</span>.<span class="ident">quote</span>(),
                             <span class="ident">entries::uid2usr</span>(<span class="ident">meta</span>.<span class="ident">uid</span>()).<span class="ident">unwrap</span>(),
                             <span class="ident">entries::gid2grp</span>(<span class="ident">meta</span>.<span class="ident">gid</span>()).<span class="ident">unwrap</span>(),
                             <span class="ident">entries::uid2usr</span>(<span class="ident">dest_uid</span>).<span class="ident">unwrap</span>(),
@@ -650,15 +650,15 @@
                 <span class="ident">VerbosityLevel::Changes</span> <span class="op">|</span> <span class="ident">VerbosityLevel::Verbose</span> <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="ident">out</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">verbosity</span>.<span class="ident">groups_only</span> {
                         <span class="macro">format!</span>(
-                            <span class="string">&quot;changed group of &#39;{}&#39; from {} to {}&quot;</span>,
-                            <span class="ident">path</span>.<span class="ident">display</span>(),
+                            <span class="string">&quot;changed group of {} from {} to {}&quot;</span>,
+                            <span class="ident">path</span>.<span class="ident">quote</span>(),
                             <span class="ident">entries::gid2grp</span>(<span class="ident">meta</span>.<span class="ident">gid</span>()).<span class="ident">unwrap</span>(),
                             <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap</span>()
                         )
                     } <span class="kw">else</span> {
                         <span class="macro">format!</span>(
-                            <span class="string">&quot;changed ownership of &#39;{}&#39; from {}:{} to {}:{}&quot;</span>,
-                            <span class="ident">path</span>.<span class="ident">display</span>(),
+                            <span class="string">&quot;changed ownership of {} from {}:{} to {}:{}&quot;</span>,
+                            <span class="ident">path</span>.<span class="ident">quote</span>(),
                             <span class="ident">entries::uid2usr</span>(<span class="ident">meta</span>.<span class="ident">uid</span>()).<span class="ident">unwrap</span>(),
                             <span class="ident">entries::gid2grp</span>(<span class="ident">meta</span>.<span class="ident">gid</span>()).<span class="ident">unwrap</span>(),
                             <span class="ident">entries::uid2usr</span>(<span class="ident">dest_uid</span>).<span class="ident">unwrap</span>(),
@@ -671,14 +671,14 @@
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">verbosity</span>.<span class="ident">level</span> <span class="op">=</span><span class="op">=</span> <span class="ident">VerbosityLevel::Verbose</span> {
             <span class="ident">out</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">verbosity</span>.<span class="ident">groups_only</span> {
                 <span class="macro">format!</span>(
-                    <span class="string">&quot;group of &#39;{}&#39; retained as {}&quot;</span>,
-                    <span class="ident">path</span>.<span class="ident">display</span>(),
+                    <span class="string">&quot;group of {} retained as {}&quot;</span>,
+                    <span class="ident">path</span>.<span class="ident">quote</span>(),
                     <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap_or_default</span>()
                 )
             } <span class="kw">else</span> {
                 <span class="macro">format!</span>(
-                    <span class="string">&quot;ownership of &#39;{}&#39; retained as {}:{}&quot;</span>,
-                    <span class="ident">path</span>.<span class="ident">display</span>(),
+                    <span class="string">&quot;ownership of {} retained as {}:{}&quot;</span>,
+                    <span class="ident">path</span>.<span class="ident">quote</span>(),
                     <span class="ident">entries::uid2usr</span>(<span class="ident">dest_uid</span>).<span class="ident">unwrap</span>(),
                     <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap</span>()
                 )
@@ -888,9 +888,9 @@
                 <span class="kw">match</span> <span class="self">self</span>.<span class="ident">verbosity</span>.<span class="ident">level</span> {
                     <span class="ident">VerbosityLevel::Silent</span> <span class="op">=</span><span class="op">&gt;</span> (),
                     <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">show_error!</span>(
-                        <span class="string">&quot;cannot {} &#39;{}&#39;: {}&quot;</span>,
+                        <span class="string">&quot;cannot {} {}: {}&quot;</span>,
                         <span class="kw">if</span> <span class="ident">follow</span> { <span class="string">&quot;dereference&quot;</span> } <span class="kw">else</span> { <span class="string">&quot;access&quot;</span> },
-                        <span class="ident">path</span>.<span class="ident">display</span>(),
+                        <span class="ident">path</span>.<span class="ident">quote</span>(),
                         <span class="ident">strip_errno</span>(<span class="kw-2">&amp;</span><span class="ident">e</span>)
                     ),
                 }
@@ -1056,4 +1056,6 @@
     <span class="ident">executor</span>.<span class="ident">exec</span>()
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uucore" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uucore" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div>
+    <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script>
+</body></html>

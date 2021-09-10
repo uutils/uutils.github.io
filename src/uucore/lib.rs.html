@@ -1,6 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uucore/src/lib/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
-<link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uucore/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uucore&#x2F;src&#x2F;lib&#x2F;lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uucore/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input"name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -296,6 +294,10 @@
 <span id="294">294</span>
 <span id="295">295</span>
 <span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
 </pre><pre class="rust">
 <span class="comment">// library ~ (core/bundler file)</span>
 
@@ -369,6 +371,10 @@
 <span class="kw">use</span> <span class="ident">std::ffi::OsString</span>;
 <span class="kw">use</span> <span class="ident">std::sync::atomic::Ordering</span>;
 
+<span class="kw">use</span> <span class="ident">once_cell::sync::Lazy</span>;
+
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::display::Quotable</span>;
+
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_utility_is_second_arg</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
     <span class="kw">crate</span><span class="ident">::macros::UTILITY_IS_SECOND_ARG</span>.<span class="ident">load</span>(<span class="ident">Ordering::SeqCst</span>)
 }
@@ -377,36 +383,40 @@
     <span class="kw">crate</span><span class="ident">::macros::UTILITY_IS_SECOND_ARG</span>.<span class="ident">store</span>(<span class="bool-val">true</span>, <span class="ident">Ordering::SeqCst</span>)
 }
 
-<span class="doccomment">/// Get the executable path (as `OsString`).</span>
-<span class="kw">fn</span> <span class="ident">executable_os</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">OsString</span> {
-    <span class="ident">args_os</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>()
-}
+<span class="comment">// args_os() can be expensive to call, it copies all of argv before iterating.</span>
+<span class="comment">// So if we want only the first arg or so it&#39;s overkill. We cache it.</span>
+<span class="kw">static</span> <span class="ident">ARGV</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OsString</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">wild::args_os</span>().<span class="ident">collect</span>());
 
-<span class="doccomment">/// Get the executable path (as `String`).</span>
-<span class="kw">fn</span> <span class="ident">executable</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-    <span class="ident">executable_os</span>().<span class="ident">to_string_lossy</span>().<span class="ident">into_owned</span>()
-}
+<span class="kw">static</span> <span class="ident">UTIL_NAME</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> {
+    <span class="kw">if</span> <span class="ident">get_utility_is_second_arg</span>() {
+        <span class="kw-2">&amp;</span><span class="ident">ARGV</span>[<span class="number">1</span>]
+    } <span class="kw">else</span> {
+        <span class="kw-2">&amp;</span><span class="ident">ARGV</span>[<span class="number">0</span>]
+    }
+    .<span class="ident">to_string_lossy</span>()
+    .<span class="ident">into_owned</span>()
+});
 
 <span class="doccomment">/// Derive the utility name.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">util_name</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-    <span class="kw">if</span> <span class="ident">get_utility_is_second_arg</span>() {
-        <span class="ident">args_os</span>().<span class="ident">nth</span>(<span class="number">1</span>).<span class="ident">unwrap</span>().<span class="ident">to_string_lossy</span>().<span class="ident">into_owned</span>()
-    } <span class="kw">else</span> {
-        <span class="ident">executable</span>()
-    }
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">util_name</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
+    <span class="kw-2">&amp;</span><span class="ident">UTIL_NAME</span>
 }
 
-<span class="doccomment">/// Derive the complete execution phrase for &quot;usage&quot;.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">execution_phrase</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+<span class="kw">static</span> <span class="ident">EXECUTION_PHRASE</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> {
     <span class="kw">if</span> <span class="ident">get_utility_is_second_arg</span>() {
-        <span class="ident">args_os</span>()
+        <span class="ident">ARGV</span>.<span class="ident">iter</span>()
             .<span class="ident">take</span>(<span class="number">2</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">os_str</span><span class="op">|</span> <span class="ident">os_str</span>.<span class="ident">to_string_lossy</span>().<span class="ident">into_owned</span>())
             .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
             .<span class="ident">join</span>(<span class="string">&quot; &quot;</span>)
     } <span class="kw">else</span> {
-        <span class="ident">executable</span>()
+        <span class="ident">ARGV</span>[<span class="number">0</span>].<span class="ident">to_string_lossy</span>().<span class="ident">into_owned</span>()
     }
+});
+
+<span class="doccomment">/// Derive the complete execution phrase for &quot;usage&quot;.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">execution_phrase</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
+    <span class="kw-2">&amp;</span><span class="ident">EXECUTION_PHRASE</span>
 }
 
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">InvalidEncodingHandling</span> {
@@ -464,14 +474,15 @@
                 <span class="prelude-val">Ok</span>(<span class="ident">string</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">string</span>),
                 <span class="prelude-val">Err</span>(<span class="ident">s_ret</span>) <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="ident">full_conversion</span> <span class="op">=</span> <span class="bool-val">false</span>;
-                    <span class="kw">let</span> <span class="ident">lossy_conversion</span> <span class="op">=</span> <span class="ident">s_ret</span>.<span class="ident">to_string_lossy</span>();
                     <span class="macro">eprintln!</span>(
-                        <span class="string">&quot;Input with broken encoding occurred! (s = &#39;{}&#39;) &quot;</span>,
-                        <span class="kw-2">&amp;</span><span class="ident">lossy_conversion</span>
+                        <span class="string">&quot;Input with broken encoding occurred! (s = {}) &quot;</span>,
+                        <span class="ident">s_ret</span>.<span class="ident">quote</span>()
                     );
                     <span class="kw">match</span> <span class="ident">handling</span> {
                         <span class="ident">InvalidEncodingHandling::Ignore</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">String::new</span>()),
-                        <span class="ident">InvalidEncodingHandling::ConvertLossy</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">lossy_conversion</span>.<span class="ident">to_string</span>()),
+                        <span class="ident">InvalidEncodingHandling::ConvertLossy</span> <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="prelude-val">Err</span>(<span class="ident">s_ret</span>.<span class="ident">to_string_lossy</span>().<span class="ident">into_owned</span>())
+                        }
                         <span class="ident">InvalidEncodingHandling::Panic</span> <span class="op">=</span><span class="op">&gt;</span> {
                             <span class="macro">panic!</span>(<span class="string">&quot;Broken encoding found but caller cannot handle it&quot;</span>)
                         }
@@ -503,13 +514,8 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">OsString</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Sized</span><span class="op">&gt;</span> <span class="ident">Args</span> <span class="kw">for</span> <span class="ident">T</span> {}
 
-<span class="comment">// args() ...</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">args</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="ident">wild::args</span>()
-}
-
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">args_os</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">OsString</span><span class="op">&gt;</span> {
-    <span class="ident">wild::args_os</span>()
+    <span class="ident">ARGV</span>.<span class="ident">iter</span>().<span class="ident">cloned</span>()
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
@@ -594,4 +600,6 @@
     }
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uucore" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uucore" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
+    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
+</body></html>
