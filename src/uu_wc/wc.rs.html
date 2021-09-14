@@ -535,9 +535,6 @@
 <span id="535">535</span>
 <span id="536">536</span>
 <span id="537">537</span>
-<span id="538">538</span>
-<span id="539">539</span>
-<span id="540">540</span>
 </pre><pre class="rust">
 <span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
@@ -965,8 +962,15 @@ more than one FILE is specified.&quot;</span>;
     <span class="comment">// The width is the number of digits needed to print the number of</span>
     <span class="comment">// bytes in the largest file. This is true regardless of whether</span>
     <span class="comment">// the `settings` indicate that the bytes will be displayed.</span>
+    <span class="comment">//</span>
+    <span class="comment">// If we only need to display a single number, set this to 0 to</span>
+    <span class="comment">// prevent leading spaces.</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">failure</span> <span class="op">=</span> <span class="bool-val">false</span>;
-    <span class="kw">let</span> <span class="ident">max_width</span> <span class="op">=</span> <span class="ident">max_width</span>(<span class="kw-2">&amp;</span><span class="ident">inputs</span>);
+    <span class="kw">let</span> <span class="ident">max_width</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">number_enabled</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">1</span> {
+        <span class="number">0</span>
+    } <span class="kw">else</span> {
+        <span class="ident">max_width</span>(<span class="kw-2">&amp;</span><span class="ident">inputs</span>)
+    };
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">total_word_count</span> <span class="op">=</span> <span class="ident">WordCount::default</span>();
 
@@ -1016,19 +1020,9 @@ more than one FILE is specified.&quot;</span>;
     }
 }
 
-<span class="kw">fn</span> <span class="ident">print_stats</span>(
-    <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>,
-    <span class="ident">result</span>: <span class="kw-2">&amp;</span><span class="ident">TitledWordCount</span>,
-    <span class="kw-2">mut</span> <span class="ident">min_width</span>: <span class="ident">usize</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">print_stats</span>(<span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>, <span class="ident">result</span>: <span class="kw-2">&amp;</span><span class="ident">TitledWordCount</span>, <span class="ident">min_width</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">stdout</span> <span class="op">=</span> <span class="ident">io::stdout</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stdout_lock</span> <span class="op">=</span> <span class="ident">stdout</span>.<span class="ident">lock</span>();
-
-    <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">number_enabled</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">1</span> {
-        <span class="comment">// Prevent a leading space in case we only need to display a single</span>
-        <span class="comment">// number.</span>
-        <span class="ident">min_width</span> <span class="op">=</span> <span class="number">0</span>;
-    }
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">is_first</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="bool-val">true</span>;
 
