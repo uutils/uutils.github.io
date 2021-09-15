@@ -752,7 +752,6 @@
 <span id="752">752</span>
 <span id="753">753</span>
 <span id="754">754</span>
-<span id="755">755</span>
 </pre><pre class="rust">
 <span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
@@ -1246,11 +1245,10 @@
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">InstallError::TargetDirIsntDir</span>(<span class="ident">target_dir</span>.<span class="ident">to_path_buf</span>()).<span class="ident">into</span>());
     }
     <span class="kw">for</span> <span class="ident">sourcepath</span> <span class="kw">in</span> <span class="ident">files</span>.<span class="ident">iter</span>() {
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">sourcepath</span>.<span class="ident">exists</span>() {
-            <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">UIoError::new</span>(
-                <span class="ident">std::io::ErrorKind::NotFound</span>,
-                <span class="macro">format!</span>(<span class="string">&quot;cannot stat {}&quot;</span>, <span class="ident">sourcepath</span>.<span class="ident">quote</span>()),
-            );
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="ident">sourcepath</span>
+            .<span class="ident">metadata</span>()
+            .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;cannot stat {}&quot;</span>, <span class="ident">sourcepath</span>.<span class="ident">quote</span>()))
+        {
             <span class="macro">show!</span>(<span class="ident">err</span>);
             <span class="kw">continue</span>;
         }

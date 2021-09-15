@@ -573,6 +573,28 @@
 <span id="573">573</span>
 <span id="574">574</span>
 <span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
 </pre><pre class="rust">
 <span class="doccomment">//! All utils return exit with an exit code. Usually, the following scheme is used:</span>
 <span class="doccomment">//! * `0`: succeeded</span>
@@ -969,34 +991,56 @@
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">std::fmt::Error</span><span class="op">&gt;</span> {
         <span class="kw">use</span> <span class="ident">std::io::ErrorKind</span>::<span class="kw-2">*</span>;
 
-        <span class="kw">let</span> <span class="ident">message</span>;
-        <span class="kw">let</span> <span class="ident">message</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span>() {
-            <span class="ident">NotFound</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;No such file or directory&quot;</span>,
-            <span class="ident">PermissionDenied</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Permission denied&quot;</span>,
-            <span class="ident">ConnectionRefused</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Connection refused&quot;</span>,
-            <span class="ident">ConnectionReset</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Connection reset&quot;</span>,
-            <span class="ident">ConnectionAborted</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Connection aborted&quot;</span>,
-            <span class="ident">NotConnected</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Not connected&quot;</span>,
-            <span class="ident">AddrInUse</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Address in use&quot;</span>,
-            <span class="ident">AddrNotAvailable</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Address not available&quot;</span>,
-            <span class="ident">BrokenPipe</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Broken pipe&quot;</span>,
-            <span class="ident">AlreadyExists</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Already exists&quot;</span>,
-            <span class="ident">WouldBlock</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Would block&quot;</span>,
-            <span class="ident">InvalidInput</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Invalid input&quot;</span>,
-            <span class="ident">InvalidData</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Invalid data&quot;</span>,
-            <span class="ident">TimedOut</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Timed out&quot;</span>,
-            <span class="ident">WriteZero</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Write zero&quot;</span>,
-            <span class="ident">Interrupted</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Interrupted&quot;</span>,
-            <span class="ident">UnexpectedEof</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Unexpected end of file&quot;</span>,
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="comment">// TODO: using `strip_errno()` causes the error message</span>
-                <span class="comment">// to not be capitalized. When the new error variants (https://github.com/rust-lang/rust/issues/86442)</span>
-                <span class="comment">// are stabilized, we should add them to the match statement.</span>
-                <span class="ident">message</span> <span class="op">=</span> <span class="ident">strip_errno</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span>);
-                <span class="kw-2">&amp;</span><span class="ident">message</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">message</span>;
+        <span class="kw">let</span> <span class="ident">message</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">raw_os_error</span>().<span class="ident">is_some</span>() {
+            <span class="comment">// These are errors that come directly from the OS.</span>
+            <span class="comment">// We want to normalize their messages across systems,</span>
+            <span class="comment">// and we want to strip the &quot;(os error X)&quot; suffix.</span>
+            <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span>() {
+                <span class="ident">NotFound</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;No such file or directory&quot;</span>,
+                <span class="ident">PermissionDenied</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Permission denied&quot;</span>,
+                <span class="ident">ConnectionRefused</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Connection refused&quot;</span>,
+                <span class="ident">ConnectionReset</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Connection reset&quot;</span>,
+                <span class="ident">ConnectionAborted</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Connection aborted&quot;</span>,
+                <span class="ident">NotConnected</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Not connected&quot;</span>,
+                <span class="ident">AddrInUse</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Address in use&quot;</span>,
+                <span class="ident">AddrNotAvailable</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Address not available&quot;</span>,
+                <span class="ident">BrokenPipe</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Broken pipe&quot;</span>,
+                <span class="ident">AlreadyExists</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Already exists&quot;</span>,
+                <span class="ident">WouldBlock</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Would block&quot;</span>,
+                <span class="ident">InvalidInput</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Invalid input&quot;</span>,
+                <span class="ident">InvalidData</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Invalid data&quot;</span>,
+                <span class="ident">TimedOut</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Timed out&quot;</span>,
+                <span class="ident">WriteZero</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Write zero&quot;</span>,
+                <span class="ident">Interrupted</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Interrupted&quot;</span>,
+                <span class="ident">UnexpectedEof</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Unexpected end of file&quot;</span>,
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="comment">// TODO: When the new error variants</span>
+                    <span class="comment">// (https://github.com/rust-lang/rust/issues/86442)</span>
+                    <span class="comment">// are stabilized, we should add them to the match statement.</span>
+                    <span class="ident">message</span> <span class="op">=</span> <span class="ident">strip_errno</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span>);
+                    <span class="ident">capitalize</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">message</span>);
+                    <span class="kw-2">&amp;</span><span class="ident">message</span>
+                }
             }
+        } <span class="kw">else</span> {
+            <span class="comment">// These messages don&#39;t need as much normalization, and the above</span>
+            <span class="comment">// messages wouldn&#39;t always be a good substitute.</span>
+            <span class="comment">// For example, ErrorKind::NotFound doesn&#39;t necessarily mean it was</span>
+            <span class="comment">// a file that was not found.</span>
+            <span class="comment">// There are also errors with entirely custom messages.</span>
+            <span class="ident">message</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">to_string</span>();
+            <span class="ident">capitalize</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">message</span>);
+            <span class="kw-2">&amp;</span><span class="ident">message</span>
         };
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}: {}&quot;</span>, <span class="self">self</span>.<span class="ident">context</span>, <span class="ident">message</span>,)
+        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}: {}&quot;</span>, <span class="self">self</span>.<span class="ident">context</span>, <span class="ident">message</span>)
+    }
+}
+
+<span class="doccomment">/// Capitalize the first character of an ASCII string.</span>
+<span class="kw">fn</span> <span class="ident">capitalize</span>(<span class="ident">text</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">str</span>) {
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">first</span>) <span class="op">=</span> <span class="ident">text</span>.<span class="ident">get_mut</span>(..<span class="number">1</span>) {
+        <span class="ident">first</span>.<span class="ident">make_ascii_uppercase</span>();
     }
 }
 
@@ -1004,7 +1048,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">strip_errno</span>(<span class="ident">err</span>: <span class="kw-2">&amp;</span><span class="ident">std::io::Error</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">msg</span> <span class="op">=</span> <span class="ident">err</span>.<span class="ident">to_string</span>();
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">pos</span>) <span class="op">=</span> <span class="ident">msg</span>.<span class="ident">find</span>(<span class="string">&quot; (os error &quot;</span>) {
-        <span class="ident">msg</span>.<span class="ident">drain</span>(<span class="ident">pos</span>..);
+        <span class="ident">msg</span>.<span class="ident">truncate</span>(<span class="ident">pos</span>);
     }
     <span class="ident">msg</span>
 }
