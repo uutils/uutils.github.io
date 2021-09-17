@@ -15,22 +15,72 @@
 <span id="15">15</span>
 <span id="16">16</span>
 <span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
 </pre><pre class="rust">
+<span class="doccomment">//! Custom panic hooks that allow silencing certain types of errors.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Use the [`mute_sigpipe_panic`] function to silence panics caused by</span>
+<span class="doccomment">//! broken pipe errors. This can happen when a process is still</span>
+<span class="doccomment">//! producing data when the consuming process terminates and closes the</span>
+<span class="doccomment">//! pipe. For example,</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ```sh</span>
+<span class="doccomment">//! $ seq inf | head -n 1</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//!</span>
 <span class="kw">use</span> <span class="ident">std::panic</span>;
+<span class="kw">use</span> <span class="ident">std::panic::PanicInfo</span>;
 
-<span class="comment">//## SIGPIPE handling background/discussions ...</span>
-<span class="comment">//* `uutils` ~ &lt;https://github.com/uutils/coreutils/issues/374&gt; , &lt;https://github.com/uutils/coreutils/pull/1106&gt;</span>
-<span class="comment">//* rust and `rg` ~ &lt;https://github.com/rust-lang/rust/issues/62569&gt; , &lt;https://github.com/BurntSushi/ripgrep/issues/200&gt; , &lt;https://github.com/crev-dev/cargo-crev/issues/287&gt;</span>
+<span class="doccomment">/// Decide whether a panic was caused by a broken pipe (SIGPIPE) error.</span>
+<span class="kw">fn</span> <span class="ident">is_broken_pipe</span>(<span class="ident">info</span>: <span class="kw-2">&amp;</span><span class="ident">PanicInfo</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">res</span>) <span class="op">=</span> <span class="ident">info</span>.<span class="ident">payload</span>().<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>() {
+        <span class="kw">if</span> <span class="ident">res</span>.<span class="ident">contains</span>(<span class="string">&quot;BrokenPipe&quot;</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">res</span>.<span class="ident">contains</span>(<span class="string">&quot;Broken pipe&quot;</span>) {
+            <span class="kw">return</span> <span class="bool-val">true</span>;
+        }
+    }
+    <span class="bool-val">false</span>
+}
 
+<span class="doccomment">/// Terminate without error on panics that occur due to broken pipe errors.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// For background discussions on `SIGPIPE` handling, see</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * https://github.com/uutils/coreutils/issues/374</span>
+<span class="doccomment">/// * https://github.com/uutils/coreutils/pull/1106</span>
+<span class="doccomment">/// * https://github.com/rust-lang/rust/issues/62569</span>
+<span class="doccomment">/// * https://github.com/BurntSushi/ripgrep/issues/200</span>
+<span class="doccomment">/// * https://github.com/crev-dev/cargo-crev/issues/287</span>
+<span class="doccomment">///</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mute_sigpipe_panic</span>() {
     <span class="kw">let</span> <span class="ident">hook</span> <span class="op">=</span> <span class="ident">panic::take_hook</span>();
     <span class="ident">panic::set_hook</span>(<span class="ident">Box::new</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">info</span><span class="op">|</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">res</span>) <span class="op">=</span> <span class="ident">info</span>.<span class="ident">payload</span>().<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>() {
-            <span class="kw">if</span> <span class="ident">res</span>.<span class="ident">contains</span>(<span class="string">&quot;BrokenPipe&quot;</span>) {
-                <span class="kw">return</span>;
-            }
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">is_broken_pipe</span>(<span class="ident">info</span>) {
+            <span class="ident">hook</span>(<span class="ident">info</span>)
         }
-        <span class="ident">hook</span>(<span class="ident">info</span>)
     }));
 }
 </pre></div>
