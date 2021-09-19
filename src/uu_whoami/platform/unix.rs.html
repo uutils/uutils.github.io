@@ -30,16 +30,16 @@
  * file that was distributed with this source code.
  */</span>
 
-<span class="comment">// spell-checker:ignore (ToDO) getusername</span>
+<span class="kw">use</span> <span class="ident">std::ffi::OsString</span>;
+<span class="kw">use</span> <span class="ident">std::io</span>;
 
-<span class="kw">use</span> <span class="ident">std::io::Result</span>;
 <span class="kw">use</span> <span class="ident">uucore::entries::uid2usr</span>;
-<span class="kw">use</span> <span class="ident">uucore::libc::geteuid</span>;
 
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">get_username</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="comment">// Get effective user id</span>
-    <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">geteuid</span>();
-    <span class="ident">uid2usr</span>(<span class="ident">uid</span>)
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_username</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">OsString</span><span class="op">&gt;</span> {
+    <span class="comment">// SAFETY: getuid() does nothing with memory and is always successful.</span>
+    <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">libc::geteuid</span>() };
+    <span class="comment">// uid2usr should arguably return an OsString but currently doesn&#39;t</span>
+    <span class="ident">uid2usr</span>(<span class="ident">uid</span>).<span class="ident">map</span>(<span class="ident">Into::into</span>)
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uu_whoami" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div>

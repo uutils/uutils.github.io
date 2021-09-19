@@ -291,6 +291,68 @@
 <span id="291">291</span>
 <span id="292">292</span>
 <span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
 </pre><pre class="rust">
 <span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
@@ -318,7 +380,7 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//! use uucore::utmpx::Utmpx;</span>
-<span class="doccomment">//! for ut in Utmpx::iter_all_records().read_from(&quot;/some/where/else&quot;) {</span>
+<span class="doccomment">//! for ut in Utmpx::iter_all_records_from(&quot;/some/where/else&quot;) {</span>
 <span class="doccomment">//!     if ut.is_user_process() {</span>
 <span class="doccomment">//!         println!(&quot;{}: {}&quot;, ut.host(), ut.user())</span>
 <span class="doccomment">//!     }</span>
@@ -329,9 +391,12 @@
 <span class="kw">use</span> <span class="self">self</span><span class="ident">::time</span>::{<span class="ident">Timespec</span>, <span class="ident">Tm</span>};
 
 <span class="kw">use</span> <span class="ident">std::ffi::CString</span>;
-<span class="kw">use</span> <span class="ident">std::io::Error</span> <span class="kw">as</span> <span class="ident">IOError</span>;
 <span class="kw">use</span> <span class="ident">std::io::Result</span> <span class="kw">as</span> <span class="ident">IOResult</span>;
+<span class="kw">use</span> <span class="ident">std::marker::PhantomData</span>;
+<span class="kw">use</span> <span class="ident">std::os::unix::ffi::OsStrExt</span>;
+<span class="kw">use</span> <span class="ident">std::path::Path</span>;
 <span class="kw">use</span> <span class="ident">std::ptr</span>;
+<span class="kw">use</span> <span class="ident">std::sync</span>::{<span class="ident">Mutex</span>, <span class="ident">MutexGuard</span>};
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span><span class="ident">::ut</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">libc::utmpx</span>;
@@ -348,7 +413,9 @@
     <span class="number">0</span>
 }
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="kw-2">*</span>; <span class="comment">// import macros from `../../macros.rs`</span>
+<span class="kw">use</span> <span class="ident">once_cell::sync::Lazy</span>;
+
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="kw-2">*</span>; <span class="comment">// import macros from `../../macros.rs`</span>
 
 <span class="comment">// In case the c_char array doesn&#39;t end with NULL</span>
 <span class="macro">macro_rules!</span> <span class="ident">chars2string</span> {
@@ -542,30 +609,76 @@
         <span class="prelude-val">Ok</span>(<span class="ident">host</span>.<span class="ident">to_string</span>())
     }
 
+    <span class="doccomment">/// Iterate through all the utmp records.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This will use the default location, or the path [`Utmpx::iter_all_records_from`]</span>
+    <span class="doccomment">/// was most recently called with.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Only one instance of [`UtmpxIter`] may be active at a time. This</span>
+    <span class="doccomment">/// function will block as long as one is still active. Beware!</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_all_records</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UtmpxIter</span> {
-        <span class="ident">UtmpxIter</span>
+        <span class="kw">let</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">UtmpxIter::new</span>();
+        <span class="kw">unsafe</span> {
+            <span class="comment">// This can technically fail, and it would be nice to detect that,</span>
+            <span class="comment">// but it doesn&#39;t return anything so we&#39;d have to do nasty things</span>
+            <span class="comment">// with errno.</span>
+            <span class="ident">setutxent</span>();
+        }
+        <span class="ident">iter</span>
+    }
+
+    <span class="doccomment">/// Iterate through all the utmp records from a specific file.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// No failure is reported or detected.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This function affects subsequent calls to [`Utmpx::iter_all_records`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The same caveats as for [`Utmpx::iter_all_records`] apply.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_all_records_from</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">path</span>: <span class="ident">P</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UtmpxIter</span> {
+        <span class="kw">let</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">UtmpxIter::new</span>();
+        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">CString::new</span>(<span class="ident">path</span>.<span class="ident">as_ref</span>().<span class="ident">as_os_str</span>().<span class="ident">as_bytes</span>()).<span class="ident">unwrap</span>();
+        <span class="kw">unsafe</span> {
+            <span class="comment">// In glibc, utmpxname() only fails if there&#39;s not enough memory</span>
+            <span class="comment">// to copy the string.</span>
+            <span class="comment">// Solaris returns 1 on success instead of 0. Supposedly there also</span>
+            <span class="comment">// exist systems where it returns void.</span>
+            <span class="comment">// GNU who on Debian seems to output nothing if an invalid filename</span>
+            <span class="comment">// is specified, no warning or anything.</span>
+            <span class="comment">// So this function is pretty crazy and we don&#39;t try to detect errors.</span>
+            <span class="comment">// Not much we can do besides pray.</span>
+            <span class="ident">utmpxname</span>(<span class="ident">path</span>.<span class="ident">as_ptr</span>());
+            <span class="ident">setutxent</span>();
+        }
+        <span class="ident">iter</span>
     }
 }
 
+<span class="comment">// On some systems these functions are not thread-safe. On others they&#39;re</span>
+<span class="comment">// thread-local. Therefore we use a mutex to allow only one guard to exist at</span>
+<span class="comment">// a time, and make sure UtmpxIter cannot be sent across threads.</span>
+<span class="comment">//</span>
+<span class="comment">// I believe the only technical memory unsafety that could happen is a data</span>
+<span class="comment">// race while copying the data out of the pointer returned by getutxent(), but</span>
+<span class="comment">// ordinary race conditions are also very much possible.</span>
+<span class="kw">static</span> <span class="ident">LOCK</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span>()<span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Mutex::new</span>(()));
+
 <span class="doccomment">/// Iterator of login records</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UtmpxIter</span>;
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UtmpxIter</span> {
+    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
+    <span class="ident">guard</span>: <span class="ident">MutexGuard</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, ()<span class="op">&gt;</span>,
+    <span class="doccomment">/// Ensure UtmpxIter is !Send. Technically redundant because MutexGuard</span>
+    <span class="doccomment">/// is also !Send.</span>
+    <span class="ident">phantom</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">std::rc::Rc</span><span class="op">&lt;</span>()<span class="op">&gt;</span><span class="op">&gt;</span>,
+}
 
 <span class="kw">impl</span> <span class="ident">UtmpxIter</span> {
-    <span class="doccomment">/// Sets the name of the utmpx-format file for the other utmpx functions to access.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If not set, default record file will be used(file path depends on the target OS)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_from</span>(<span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="kw">unsafe</span> {
-            <span class="kw">let</span> <span class="ident">cstring</span> <span class="op">=</span> <span class="ident">CString::new</span>(<span class="ident">f</span>).<span class="ident">unwrap</span>();
-            <span class="ident">utmpxname</span>(<span class="ident">cstring</span>.<span class="ident">as_ptr</span>())
-        };
-        <span class="kw">if</span> <span class="ident">res</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-            <span class="macro">show_warning!</span>(<span class="string">&quot;utmpxname: {}&quot;</span>, <span class="ident">IOError::last_os_error</span>());
+    <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="comment">// PoisonErrors can safely be ignored</span>
+        <span class="kw">let</span> <span class="ident">guard</span> <span class="op">=</span> <span class="ident">LOCK</span>.<span class="ident">lock</span>().<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="ident">err</span>.<span class="ident">into_inner</span>());
+        <span class="ident">UtmpxIter</span> {
+            <span class="ident">guard</span>,
+            <span class="ident">phantom</span>: <span class="ident">PhantomData</span>,
         }
-        <span class="kw">unsafe</span> {
-            <span class="ident">setutxent</span>();
-        }
-        <span class="self">self</span>
     }
 }
 
@@ -575,13 +688,24 @@
         <span class="kw">unsafe</span> {
             <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">getutxent</span>();
             <span class="kw">if</span> <span class="op">!</span><span class="ident">res</span>.<span class="ident">is_null</span>() {
+                <span class="comment">// The data behind this pointer will be replaced by the next</span>
+                <span class="comment">// call to getutxent(), so we have to read it now.</span>
+                <span class="comment">// All the strings live inline in the struct as arrays, which</span>
+                <span class="comment">// makes things easier.</span>
                 <span class="prelude-val">Some</span>(<span class="ident">Utmpx</span> {
                     <span class="ident">inner</span>: <span class="ident">ptr::read</span>(<span class="ident">res</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>),
                 })
             } <span class="kw">else</span> {
-                <span class="ident">endutxent</span>();
                 <span class="prelude-val">None</span>
             }
+        }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">UtmpxIter</span> {
+    <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+        <span class="kw">unsafe</span> {
+            <span class="ident">endutxent</span>();
         }
     }
 }

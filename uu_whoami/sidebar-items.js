@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["exec",""],["uu_app",""],["uumain",""]]});
+initSidebarItems({"fn":[["uu_app",""],["uumain",""]]});
