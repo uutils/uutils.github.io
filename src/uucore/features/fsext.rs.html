@@ -892,10 +892,6 @@
 <span id="892">892</span>
 <span id="893">893</span>
 <span id="894">894</span>
-<span id="895">895</span>
-<span id="896">896</span>
-<span id="897">897</span>
-<span id="898">898</span>
 </pre><pre class="rust">
 <span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
@@ -925,15 +921,11 @@
 <span class="kw">static</span> <span class="ident">EXIT_ERR</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">1</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">std::ffi::OsString</span>;
+<span class="kw">use</span> <span class="ident">std::ffi::OsStr</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::os::windows::ffi::OsStrExt</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">std::os::windows::ffi::OsStringExt</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
 <span class="kw">use</span> <span class="ident">winapi::shared::minwindef::DWORD</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">winapi::um::errhandlingapi::GetLastError</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
 <span class="kw">use</span> <span class="ident">winapi::um::fileapi::GetDiskFreeSpaceW</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
@@ -946,11 +938,12 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
 <span class="kw">use</span> <span class="ident">winapi::um::winbase::DRIVE_REMOTE</span>;
 
+<span class="comment">// Warning: the pointer has to be used *immediately* or the Vec</span>
+<span class="comment">// it points to will be dropped!</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
 <span class="macro">macro_rules!</span> <span class="ident">String2LPWSTR</span> {
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>: <span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
-        <span class="ident">OsString::from</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>.<span class="ident">clone</span>())
-            .<span class="ident">as_os_str</span>()
+        <span class="ident">OsStr::new</span>(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>)
             .<span class="ident">encode_wide</span>()
             .<span class="ident">chain</span>(<span class="prelude-val">Some</span>(<span class="number">0</span>))
             .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span><span class="op">&gt;</span>()
@@ -961,10 +954,8 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_snake_case</span>)]</span>
 <span class="kw">fn</span> <span class="ident">LPWSTR2String</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u16</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-    <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">libc::wcslen</span>(<span class="ident">buf</span>.<span class="ident">as_ptr</span>()) };
-    <span class="ident">OsString::from_wide</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[..<span class="ident">len</span> <span class="kw">as</span> <span class="ident">usize</span>])
-        .<span class="ident">into_string</span>()
-        .<span class="ident">unwrap</span>()
+    <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">iter</span>().<span class="ident">position</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span>).<span class="ident">unwrap</span>();
+    <span class="ident">String::from_utf16</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[..<span class="ident">len</span>]).<span class="ident">unwrap</span>()
 }
 
 <span class="kw">use</span> <span class="self">self</span><span class="ident">::time::Timespec</span>;
@@ -976,7 +967,6 @@
 <span class="kw">use</span> <span class="ident">std::convert</span>::{<span class="ident">AsRef</span>, <span class="ident">From</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::ffi::CString</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::io::Error</span> <span class="kw">as</span> <span class="ident">IOError</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::mem</span>;
@@ -1056,16 +1046,14 @@
     <span class="kw">fn</span> <span class="ident">set_missing_fields</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
         {
+            <span class="kw">use</span> <span class="ident">std::os::unix::fs::MetadataExt</span>;
             <span class="comment">// We want to keep the dev_id on Windows</span>
             <span class="comment">// but set dev_id</span>
-            <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">CString::new</span>(<span class="self">self</span>.<span class="ident">mount_dir</span>.<span class="ident">clone</span>()).<span class="ident">unwrap</span>();
-            <span class="kw">unsafe</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stat</span> <span class="op">=</span> <span class="ident">mem::zeroed</span>();
-                <span class="kw">if</span> <span class="ident">libc::stat</span>(<span class="ident">path</span>.<span class="ident">as_ptr</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">stat</span>) <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-                    <span class="self">self</span>.<span class="ident">dev_id</span> <span class="op">=</span> (<span class="ident">stat</span>.<span class="ident">st_dev</span> <span class="kw">as</span> <span class="ident">i32</span>).<span class="ident">to_string</span>();
-                } <span class="kw">else</span> {
-                    <span class="self">self</span>.<span class="ident">dev_id</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>();
-                }
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">stat</span>) <span class="op">=</span> <span class="ident">std::fs::metadata</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">mount_dir</span>) {
+                <span class="comment">// Why do we cast this to i32?</span>
+                <span class="self">self</span>.<span class="ident">dev_id</span> <span class="op">=</span> (<span class="ident">stat</span>.<span class="ident">dev</span>() <span class="kw">as</span> <span class="ident">i32</span>).<span class="ident">to_string</span>()
+            } <span class="kw">else</span> {
+                <span class="self">self</span>.<span class="ident">dev_id</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>();
             }
         }
         <span class="comment">// set MountInfo::dummy</span>
@@ -1146,8 +1134,7 @@
         <span class="ident">volume_name</span>.<span class="ident">pop</span>();
         <span class="kw">unsafe</span> {
             <span class="ident">QueryDosDeviceW</span>(
-                <span class="ident">OsString::from</span>(<span class="ident">volume_name</span>.<span class="ident">clone</span>())
-                    .<span class="ident">as_os_str</span>()
+                <span class="ident">OsStr::new</span>(<span class="kw-2">&amp;</span><span class="ident">volume_name</span>)
                     .<span class="ident">encode_wide</span>()
                     .<span class="ident">chain</span>(<span class="prelude-val">Some</span>(<span class="number">0</span>))
                     .<span class="ident">skip</span>(<span class="number">4</span>)
@@ -1344,9 +1331,11 @@
             <span class="ident">FindFirstVolumeW</span>(<span class="ident">volume_name_buf</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">volume_name_buf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">DWORD</span>)
         };
         <span class="kw">if</span> <span class="ident">INVALID_HANDLE_VALUE</span> <span class="op">=</span><span class="op">=</span> <span class="ident">find_handle</span> {
-            <span class="macro">crash!</span>(<span class="ident">EXIT_ERR</span>, <span class="string">&quot;FindFirstVolumeW failed: {}&quot;</span>, <span class="kw">unsafe</span> {
-                <span class="ident">GetLastError</span>()
-            });
+            <span class="macro">crash!</span>(
+                <span class="ident">EXIT_ERR</span>,
+                <span class="string">&quot;FindFirstVolumeW failed: {}&quot;</span>,
+                <span class="ident">IOError::last_os_error</span>()
+            );
         }
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mounts</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">MountInfo</span><span class="op">&gt;</span><span class="ident">::new</span>();
         <span class="kw">loop</span> {
@@ -1365,8 +1354,9 @@
                     <span class="ident">volume_name_buf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">DWORD</span>,
                 )
             } {
-                <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">GetLastError</span>() };
-                <span class="kw">if</span> <span class="ident">err</span> <span class="op">!</span><span class="op">=</span> <span class="ident">winapi::shared::winerror::ERROR_NO_MORE_FILES</span> {
+                <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">IOError::last_os_error</span>();
+                <span class="kw">if</span> <span class="ident">err</span>.<span class="ident">raw_os_error</span>() <span class="op">!</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">winapi::shared::winerror::ERROR_NO_MORE_FILES</span> <span class="kw">as</span> <span class="ident">i32</span>)
+                {
                     <span class="macro">crash!</span>(<span class="ident">EXIT_ERR</span>, <span class="string">&quot;FindNextVolumeW failed: {}&quot;</span>, <span class="ident">err</span>);
                 }
                 <span class="kw">break</span>;
@@ -1426,7 +1416,7 @@
             <span class="macro">crash!</span>(
                 <span class="ident">EXIT_ERR</span>,
                 <span class="string">&quot;GetVolumePathNamesForVolumeNameW failed: {}&quot;</span>,
-                <span class="kw">unsafe</span> { <span class="ident">GetLastError</span>() }
+                <span class="ident">IOError::last_os_error</span>()
             );
         }
 
@@ -1446,9 +1436,11 @@
         };
         <span class="kw">if</span> <span class="number">0</span> <span class="op">=</span><span class="op">=</span> <span class="ident">success</span> {
             <span class="comment">// Fails in case of CD for example</span>
-            <span class="comment">//crash!(EXIT_ERR, &quot;GetDiskFreeSpaceW failed: {}&quot;, unsafe {</span>
-            <span class="comment">//GetLastError()</span>
-            <span class="comment">//});</span>
+            <span class="comment">// crash!(</span>
+            <span class="comment">//     EXIT_ERR,</span>
+            <span class="comment">//     &quot;GetDiskFreeSpaceW failed: {}&quot;,</span>
+            <span class="comment">//     IOError::last_os_error()</span>
+            <span class="comment">// );</span>
         }
 
         <span class="kw">let</span> <span class="ident">bytes_per_cluster</span> <span class="op">=</span> <span class="ident">sectors_per_cluster</span> <span class="kw">as</span> <span class="ident">u64</span> <span class="op">*</span> <span class="ident">bytes_per_sector</span> <span class="kw">as</span> <span class="ident">u64</span>;

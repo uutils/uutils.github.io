@@ -169,6 +169,13 @@
 <span id="169">169</span>
 <span id="170">170</span>
 <span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
 </pre><pre class="rust">
 <span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
@@ -315,6 +322,13 @@
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_umask</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
+    <span class="comment">// There&#39;s no portable way to read the umask without changing it.</span>
+    <span class="comment">// We have to replace it and then quickly set it back, hopefully before</span>
+    <span class="comment">// some other thread is affected.</span>
+    <span class="comment">// On modern Linux kernels the current umask could instead be read</span>
+    <span class="comment">// from /proc/self/status. But that&#39;s a lot of work.</span>
+    <span class="comment">// SAFETY: umask always succeeds and doesn&#39;t operate on memory. Races are</span>
+    <span class="comment">// possible but it can&#39;t violate Rust&#39;s guarantees.</span>
     <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">umask</span>(<span class="number">0</span>) };
     <span class="kw">unsafe</span> { <span class="ident">umask</span>(<span class="ident">mask</span>) };
     <span class="ident">mask</span> <span class="kw">as</span> <span class="ident">u32</span>

@@ -140,6 +140,11 @@
 <span id="140">140</span>
 <span id="141">141</span>
 <span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
 </pre><pre class="rust">
 <span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
@@ -161,6 +166,8 @@
 <span class="kw">use</span> <span class="ident">std::process::ExitStatus</span> <span class="kw">as</span> <span class="ident">StdExitStatus</span>;
 <span class="kw">use</span> <span class="ident">std::thread</span>;
 <span class="kw">use</span> <span class="ident">std::time</span>::{<span class="ident">Duration</span>, <span class="ident">Instant</span>};
+
+<span class="comment">// SAFETY: These functions always succeed and return simple integers.</span>
 
 <span class="doccomment">/// `geteuid()` returns the effective user ID of the calling process.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">geteuid</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">uid_t</span> {
@@ -239,6 +246,9 @@
 <span class="doccomment">/// Missing methods for Child objects</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ChildExt</span> {
     <span class="doccomment">/// Send a signal to a Child process.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Caller beware: if the process already exited then you may accidentally</span>
+    <span class="doccomment">/// send the signal to an unrelated process that recycled the PID.</span>
     <span class="kw">fn</span> <span class="ident">send_signal</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">signal</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 
     <span class="doccomment">/// Wait for a process to finish or return after the specified duration.</span>
