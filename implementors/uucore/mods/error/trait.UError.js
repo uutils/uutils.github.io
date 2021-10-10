@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["uu_cp"] = [{"text":"impl <a class=\"trait\" href=\"uucore/mods/error/trait.UError.html\" title=\"trait uucore::mods::error::UError\">UError</a> for <a class=\"enum\" href=\"uu_cp/enum.Error.html\" title=\"enum uu_cp::Error\">Error</a>","synthetic":false,"types":["uu_cp::Error"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
