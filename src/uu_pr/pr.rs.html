@@ -1301,6 +1301,7 @@
 <span id="1301">1301</span>
 <span id="1302">1302</span>
 <span id="1303">1303</span>
+<span id="1304">1304</span>
 </pre><pre class="rust">
 <span class="attribute">#![<span class="ident">crate_name</span> <span class="op">=</span> <span class="string">&quot;uu_pr&quot;</span>]</span>
 
@@ -1324,7 +1325,7 @@
 <span class="kw">use</span> <span class="ident">regex::Regex</span>;
 <span class="kw">use</span> <span class="ident">std::convert::From</span>;
 <span class="kw">use</span> <span class="ident">std::fs</span>::{<span class="ident">metadata</span>, <span class="ident">File</span>};
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">stdout</span>, <span class="ident">BufRead</span>, <span class="ident">BufReader</span>, <span class="ident">Lines</span>, <span class="ident">Read</span>, <span class="ident">Stdout</span>, <span class="ident">Write</span>};
+<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">stdout</span>, <span class="ident">BufRead</span>, <span class="ident">BufReader</span>, <span class="ident">Lines</span>, <span class="ident">Read</span>, <span class="ident">Write</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::os::unix::fs::FileTypeExt</span>;
 
@@ -2340,15 +2341,16 @@
 
     <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="ident">header_content</span>(<span class="ident">options</span>, <span class="ident">page</span>);
     <span class="kw">let</span> <span class="ident">trailer_content</span> <span class="op">=</span> <span class="ident">trailer_content</span>(<span class="ident">options</span>);
-    <span class="kw">let</span> <span class="ident">out</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">stdout</span>();
 
-    <span class="ident">out</span>.<span class="ident">lock</span>();
+    <span class="kw">let</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">stdout</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">out</span>.<span class="ident">lock</span>();
+
     <span class="kw">for</span> <span class="ident">x</span> <span class="kw">in</span> <span class="ident">header</span> {
         <span class="ident">out</span>.<span class="ident">write_all</span>(<span class="ident">x</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
         <span class="ident">out</span>.<span class="ident">write_all</span>(<span class="ident">line_separator</span>)<span class="question-mark">?</span>;
     }
 
-    <span class="kw">let</span> <span class="ident">lines_written</span> <span class="op">=</span> <span class="ident">write_columns</span>(<span class="ident">lines</span>, <span class="ident">options</span>, <span class="ident">out</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">lines_written</span> <span class="op">=</span> <span class="ident">write_columns</span>(<span class="ident">lines</span>, <span class="ident">options</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">out</span>)<span class="question-mark">?</span>;
 
     <span class="kw">for</span> (<span class="ident">index</span>, <span class="ident">x</span>) <span class="kw">in</span> <span class="ident">trailer_content</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
         <span class="ident">out</span>.<span class="ident">write_all</span>(<span class="ident">x</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
@@ -2364,7 +2366,7 @@
 <span class="kw">fn</span> <span class="ident">write_columns</span>(
     <span class="ident">lines</span>: <span class="kw-2">&amp;</span>[<span class="ident">FileLine</span>],
     <span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">OutputOptions</span>,
-    <span class="ident">out</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Stdout</span>,
+    <span class="ident">out</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">impl</span> <span class="ident">Write</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">IOError</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">line_separator</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">content_line_separator</span>.<span class="ident">as_bytes</span>();
 
