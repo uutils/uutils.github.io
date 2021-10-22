@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["CoreOptions",""],["HelpText",""]]});
+initSidebarItems({"macro":[["app",""]],"struct":[["CoreOptions",""],["HelpText",""]]});
