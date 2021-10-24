@@ -176,6 +176,30 @@
 <span id="176">176</span>
 <span id="177">177</span>
 <span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Alex Lyon &lt;arcterus@mail.com&gt;</span>
@@ -331,6 +355,30 @@
     <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">umask</span>(<span class="number">0</span>) };
     <span class="kw">unsafe</span> { <span class="ident">umask</span>(<span class="ident">mask</span>) };
     <span class="ident">mask</span> <span class="kw">as</span> <span class="ident">u32</span>
+}
+
+<span class="comment">// Iterate &#39;args&#39; and delete the first occurrence</span>
+<span class="comment">// of a prefix &#39;-&#39; if it&#39;s associated with MODE</span>
+<span class="comment">// e.g. &quot;chmod -v -xw -R FILE&quot; -&gt; &quot;chmod -v xw -R FILE&quot;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">strip_minus_from_mode</span>(<span class="ident">args</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">for</span> <span class="ident">arg</span> <span class="kw">in</span> <span class="ident">args</span> {
+        <span class="kw">if</span> <span class="ident">arg</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;--&quot;</span> {
+            <span class="kw">break</span>;
+        }
+        <span class="kw">if</span> <span class="ident">arg</span>.<span class="ident">starts_with</span>(<span class="string">&#39;-&#39;</span>) {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">second</span>) <span class="op">=</span> <span class="ident">arg</span>.<span class="ident">chars</span>().<span class="ident">nth</span>(<span class="number">1</span>) {
+                <span class="kw">match</span> <span class="ident">second</span> {
+                    <span class="string">&#39;r&#39;</span> <span class="op">|</span> <span class="string">&#39;w&#39;</span> <span class="op">|</span> <span class="string">&#39;x&#39;</span> <span class="op">|</span> <span class="string">&#39;X&#39;</span> <span class="op">|</span> <span class="string">&#39;s&#39;</span> <span class="op">|</span> <span class="string">&#39;t&#39;</span> <span class="op">|</span> <span class="string">&#39;u&#39;</span> <span class="op">|</span> <span class="string">&#39;g&#39;</span> <span class="op">|</span> <span class="string">&#39;o&#39;</span> <span class="op">|</span> <span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;7&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="comment">// TODO: use strip_prefix() once minimum rust version reaches 1.45.0</span>
+                        <span class="kw-2">*</span><span class="ident">arg</span> <span class="op">=</span> <span class="ident">arg</span>[<span class="number">1</span>..<span class="ident">arg</span>.<span class="ident">len</span>()].<span class="ident">to_string</span>();
+                        <span class="kw">return</span> <span class="bool-val">true</span>;
+                    }
+                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {}
+                }
+            }
+        }
+    }
+    <span class="bool-val">false</span>
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>

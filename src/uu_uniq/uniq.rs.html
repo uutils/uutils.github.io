@@ -419,6 +419,8 @@
 <span id="419">419</span>
 <span id="420">420</span>
 <span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Chirag B Jadwani &lt;chirag.jadwani@gmail.com&gt;</span>
@@ -436,6 +438,7 @@
 <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
 <span class="kw">use</span> <span class="ident">strum_macros</span>::{<span class="ident">AsRefStr</span>, <span class="ident">EnumString</span>};
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
+<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Report or omit repeated lines.&quot;</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">options</span> {
@@ -666,7 +669,8 @@
     )
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i32</span> {
+<span class="attribute">#[<span class="ident">uucore_procs::gen_uumain</span>]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">usage</span>();
     <span class="kw">let</span> <span class="ident">long_usage</span> <span class="op">=</span> <span class="ident">get_long_usage</span>();
 
@@ -686,7 +690,7 @@
         <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">files</span>[<span class="number">0</span>].<span class="ident">clone</span>(), <span class="ident">files</span>[<span class="number">1</span>].<span class="ident">clone</span>()),
         <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
             <span class="comment">// Cannot happen as clap will fail earlier</span>
-            <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;Extra operand: {}&quot;</span>, <span class="ident">files</span>[<span class="number">2</span>]);
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;Extra operand: {}&quot;</span>, <span class="ident">files</span>[<span class="number">2</span>])));
         }
     };
 
@@ -709,7 +713,7 @@
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">open_output_file</span>(<span class="ident">out_file_name</span>),
     );
 
-    <span class="number">0</span>
+    <span class="prelude-val">Ok</span>(())
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="lifetime">&#39;static</span><span class="op">&gt;</span> {

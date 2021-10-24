@@ -368,30 +368,6 @@
 <span id="368">368</span>
 <span id="369">369</span>
 <span id="370">370</span>
-<span id="371">371</span>
-<span id="372">372</span>
-<span id="373">373</span>
-<span id="374">374</span>
-<span id="375">375</span>
-<span id="376">376</span>
-<span id="377">377</span>
-<span id="378">378</span>
-<span id="379">379</span>
-<span id="380">380</span>
-<span id="381">381</span>
-<span id="382">382</span>
-<span id="383">383</span>
-<span id="384">384</span>
-<span id="385">385</span>
-<span id="386">386</span>
-<span id="387">387</span>
-<span id="388">388</span>
-<span id="389">389</span>
-<span id="390">390</span>
-<span id="391">391</span>
-<span id="392">392</span>
-<span id="393">393</span>
-<span id="394">394</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Alex Lyon &lt;arcterus@mail.com&gt;</span>
@@ -451,7 +427,7 @@ or: {0} [OPTION]... --reference=RFILE FILE...&quot;</span>,
 
     <span class="comment">// Before we can parse &#39;args&#39; with clap (and previously getopts),</span>
     <span class="comment">// a possible MODE prefix &#39;-&#39; needs to be removed (e.g. &quot;chmod -x FILE&quot;).</span>
-    <span class="kw">let</span> <span class="ident">mode_had_minus_prefix</span> <span class="op">=</span> <span class="ident">strip_minus_from_mode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">args</span>);
+    <span class="kw">let</span> <span class="ident">mode_had_minus_prefix</span> <span class="op">=</span> <span class="ident">mode::strip_minus_from_mode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">args</span>);
 
     <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">usage</span>();
     <span class="kw">let</span> <span class="ident">after_help</span> <span class="op">=</span> <span class="ident">get_long_usage</span>();
@@ -572,30 +548,6 @@ or: {0} [OPTION]... --reference=RFILE FILE...&quot;</span>,
                 .<span class="ident">required_unless</span>(<span class="ident">options::MODE</span>)
                 .<span class="ident">multiple</span>(<span class="bool-val">true</span>),
         )
-}
-
-<span class="comment">// Iterate &#39;args&#39; and delete the first occurrence</span>
-<span class="comment">// of a prefix &#39;-&#39; if it&#39;s associated with MODE</span>
-<span class="comment">// e.g. &quot;chmod -v -xw -R FILE&quot; -&gt; &quot;chmod -v xw -R FILE&quot;</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">strip_minus_from_mode</span>(<span class="ident">args</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-    <span class="kw">for</span> <span class="ident">arg</span> <span class="kw">in</span> <span class="ident">args</span> {
-        <span class="kw">if</span> <span class="ident">arg</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;--&quot;</span> {
-            <span class="kw">break</span>;
-        }
-        <span class="kw">if</span> <span class="ident">arg</span>.<span class="ident">starts_with</span>(<span class="string">&#39;-&#39;</span>) {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">second</span>) <span class="op">=</span> <span class="ident">arg</span>.<span class="ident">chars</span>().<span class="ident">nth</span>(<span class="number">1</span>) {
-                <span class="kw">match</span> <span class="ident">second</span> {
-                    <span class="string">&#39;r&#39;</span> <span class="op">|</span> <span class="string">&#39;w&#39;</span> <span class="op">|</span> <span class="string">&#39;x&#39;</span> <span class="op">|</span> <span class="string">&#39;X&#39;</span> <span class="op">|</span> <span class="string">&#39;s&#39;</span> <span class="op">|</span> <span class="string">&#39;t&#39;</span> <span class="op">|</span> <span class="string">&#39;u&#39;</span> <span class="op">|</span> <span class="string">&#39;g&#39;</span> <span class="op">|</span> <span class="string">&#39;o&#39;</span> <span class="op">|</span> <span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;7&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
-                        <span class="comment">// TODO: use strip_prefix() once minimum rust version reaches 1.45.0</span>
-                        <span class="kw-2">*</span><span class="ident">arg</span> <span class="op">=</span> <span class="ident">arg</span>[<span class="number">1</span>..<span class="ident">arg</span>.<span class="ident">len</span>()].<span class="ident">to_string</span>();
-                        <span class="kw">return</span> <span class="bool-val">true</span>;
-                    }
-                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {}
-                }
-            }
-        }
-    }
-    <span class="bool-val">false</span>
 }
 
 <span class="kw">struct</span> <span class="ident">Chmoder</span> {
