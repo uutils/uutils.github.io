@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uu&#x2F;sort&#x2F;src&#x2F;merge.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>merge.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uu_sort/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uu&#x2F;sort&#x2F;src&#x2F;merge.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>merge.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uu_sort/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -589,15 +590,15 @@
 <span class="doccomment">/// If the output file occurs in the input files as well, copy the contents of the output file</span>
 <span class="doccomment">/// and replace its occurrences in the inputs with that copy.</span>
 <span class="kw">fn</span> <span class="ident">replace_output_file_in_input_files</span>(
-    <span class="ident">files</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">OsString</span>],
+    <span class="ident">files</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">OsString</span>],
     <span class="ident">output</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
-    <span class="ident">tmp_dir</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TmpDirWrapper</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="ident">tmp_dir</span>: <span class="kw-2">&amp;mut</span> <span class="ident">TmpDirWrapper</span>,
+) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">copy</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(<span class="ident">output_path</span>)) <span class="op">=</span> <span class="ident">output</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">path</span><span class="op">|</span> <span class="ident">Path::new</span>(<span class="ident">path</span>).<span class="ident">canonicalize</span>()) {
         <span class="kw">for</span> <span class="ident">file</span> <span class="kw">in</span> <span class="ident">files</span> {
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">file_path</span>) <span class="op">=</span> <span class="ident">Path::new</span>(<span class="ident">file</span>).<span class="ident">canonicalize</span>() {
-                <span class="kw">if</span> <span class="ident">file_path</span> <span class="op">=</span><span class="op">=</span> <span class="ident">output_path</span> {
+                <span class="kw">if</span> <span class="ident">file_path</span> <span class="op">==</span> <span class="ident">output_path</span> {
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">copy</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">copy</span> {
                         <span class="kw-2">*</span><span class="ident">file</span> <span class="op">=</span> <span class="ident">copy</span>.<span class="ident">clone</span>().<span class="ident">into_os_string</span>();
                     } <span class="kw">else</span> {
@@ -619,11 +620,11 @@
 <span class="doccomment">/// If `settings.merge_batch_size` is greater than the length of `files`, intermediate files will be used.</span>
 <span class="doccomment">/// If `settings.compress_prog` is `Some`, intermediate files will be compressed with it.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">merge</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
-    <span class="ident">files</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">OsString</span>],
+    <span class="ident">files</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">OsString</span>],
     <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">GlobalSettings</span>,
     <span class="ident">output</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
-    <span class="ident">tmp_dir</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TmpDirWrapper</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">FileMerger</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="ident">tmp_dir</span>: <span class="kw-2">&amp;mut</span> <span class="ident">TmpDirWrapper</span>,
+) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">FileMerger</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="ident">replace_output_file_in_input_files</span>(<span class="ident">files</span>, <span class="ident">output</span>, <span class="ident">tmp_dir</span>)<span class="question-mark">?</span>;
     <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">compress_prog</span>.<span class="ident">is_none</span>() {
         <span class="ident">merge_with_file_limit</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span>, <span class="ident">WriteablePlainTmpFile</span><span class="op">&gt;</span>(
@@ -653,8 +654,8 @@
 <span class="op">&gt;</span>(
     <span class="ident">files</span>: <span class="ident">F</span>,
     <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">GlobalSettings</span>,
-    <span class="ident">tmp_dir</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TmpDirWrapper</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">FileMerger</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="ident">tmp_dir</span>: <span class="kw-2">&amp;mut</span> <span class="ident">TmpDirWrapper</span>,
+) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">FileMerger</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="ident">files</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="ident">settings</span>.<span class="ident">merge_batch_size</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">remaining_files</span> <span class="op">=</span> <span class="ident">files</span>.<span class="ident">len</span>();
         <span class="kw">let</span> <span class="ident">batches</span> <span class="op">=</span> <span class="ident">files</span>.<span class="ident">chunks</span>(<span class="ident">settings</span>.<span class="ident">merge_batch_size</span>);
@@ -675,7 +676,7 @@
                 .<span class="ident">into_iter</span>()
                 .<span class="ident">map</span>(<span class="ident">Box::new</span>(<span class="op">|</span><span class="ident">c</span>: <span class="ident">Tmp::Closed</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">reopen</span>())
                     <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span>
-                        <span class="kw">dyn</span> <span class="ident">FnMut</span>(<span class="ident">Tmp::Closed</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">Tmp::Closed</span> <span class="kw">as</span> <span class="ident">ClosedTmpFile</span><span class="op">&gt;</span><span class="ident">::Reopened</span><span class="op">&gt;</span>,
+                        <span class="kw">dyn</span> <span class="ident">FnMut</span>(<span class="ident">Tmp::Closed</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">Tmp::Closed</span> <span class="kw">as</span> <span class="ident">ClosedTmpFile</span><span class="op">&gt;</span><span class="ident">::Reopened</span><span class="op">&gt;</span>,
                     <span class="op">&gt;</span>),
             <span class="ident">settings</span>,
             <span class="ident">tmp_dir</span>,
@@ -692,7 +693,7 @@
 <span class="kw">fn</span> <span class="ident">merge_without_limit</span><span class="op">&lt;</span><span class="ident">M</span>: <span class="ident">MergeInput</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>, <span class="ident">F</span>: <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">files</span>: <span class="ident">F</span>,
     <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">GlobalSettings</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">FileMerger</span><span class="op">&gt;</span> {
+) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">FileMerger</span><span class="op">&gt;</span> {
     <span class="kw">let</span> (<span class="ident">request_sender</span>, <span class="ident">request_receiver</span>) <span class="op">=</span> <span class="ident">channel</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">reader_files</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">files</span>.<span class="ident">size_hint</span>().<span class="number">0</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">loaded_receivers</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">files</span>.<span class="ident">size_hint</span>().<span class="number">0</span>);
@@ -722,7 +723,7 @@
         <span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
             <span class="ident">reader</span>(
                 <span class="ident">request_receiver</span>,
-                <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader_files</span>,
+                <span class="kw-2">&amp;mut</span> <span class="ident">reader_files</span>,
                 <span class="kw-2">&amp;</span><span class="ident">settings</span>,
                 <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">zero_terminated</span> {
                     <span class="string">b&#39;\0&#39;</span>
@@ -766,16 +767,16 @@
 <span class="doccomment">/// The function running on the reader thread.</span>
 <span class="kw">fn</span> <span class="ident">reader</span>(
     <span class="ident">recycled_receiver</span>: <span class="ident">Receiver</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">RecycledChunk</span>)<span class="op">&gt;</span>,
-    <span class="ident">files</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ReaderFile</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">MergeInput</span><span class="op">&gt;</span><span class="op">&gt;</span>],
+    <span class="ident">files</span>: <span class="kw-2">&amp;mut</span> [<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ReaderFile</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">MergeInput</span><span class="op">&gt;</span><span class="op">&gt;</span>],
     <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">GlobalSettings</span>,
     <span class="ident">separator</span>: <span class="ident">u8</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">for</span> (<span class="ident">file_idx</span>, <span class="ident">recycled_chunk</span>) <span class="kw">in</span> <span class="ident">recycled_receiver</span>.<span class="ident">iter</span>() {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ReaderFile</span> {
             <span class="ident">file</span>,
             <span class="ident">sender</span>,
             <span class="ident">carry_over</span>,
-        }) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">files</span>[<span class="ident">file_idx</span>]
+        }) <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="ident">files</span>[<span class="ident">file_idx</span>]
         {
             <span class="kw">let</span> <span class="ident">should_continue</span> <span class="op">=</span> <span class="ident">chunks::read</span>(
                 <span class="ident">sender</span>,
@@ -783,7 +784,7 @@
                 <span class="prelude-val">None</span>,
                 <span class="ident">carry_over</span>,
                 <span class="ident">file</span>.<span class="ident">as_read</span>(),
-                <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">iter::empty</span>(),
+                <span class="kw-2">&amp;mut</span> <span class="ident">iter::empty</span>(),
                 <span class="ident">separator</span>,
                 <span class="ident">settings</span>,
             )<span class="question-mark">?</span>;
@@ -824,18 +825,18 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">FileMerger</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Write the merged contents to the output file.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_all</span>(<span class="self">self</span>, <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">GlobalSettings</span>, <span class="ident">output</span>: <span class="ident">Output</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_all</span>(<span class="self">self</span>, <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">GlobalSettings</span>, <span class="ident">output</span>: <span class="ident">Output</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">output</span>.<span class="ident">into_write</span>();
-        <span class="self">self</span>.<span class="ident">write_all_to</span>(<span class="ident">settings</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">out</span>)
+        <span class="self">self</span>.<span class="ident">write_all_to</span>(<span class="ident">settings</span>, <span class="kw-2">&amp;mut</span> <span class="ident">out</span>)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_all_to</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">GlobalSettings</span>, <span class="ident">out</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">impl</span> <span class="ident">Write</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_all_to</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">GlobalSettings</span>, <span class="ident">out</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <span class="ident">Write</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">while</span> <span class="self">self</span>.<span class="ident">write_next</span>(<span class="ident">settings</span>, <span class="ident">out</span>) {}
         <span class="ident">drop</span>(<span class="self">self</span>.<span class="ident">request_sender</span>);
         <span class="self">self</span>.<span class="ident">reader_join_handle</span>.<span class="ident">join</span>().<span class="ident">unwrap</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">write_next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">GlobalSettings</span>, <span class="ident">out</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">impl</span> <span class="ident">Write</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">write_next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">GlobalSettings</span>, <span class="ident">out</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <span class="ident">Write</span>) -&gt; <span class="ident">bool</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">file</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">heap</span>.<span class="ident">peek</span>() {
             <span class="kw">let</span> <span class="ident">prev</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">prev</span>.<span class="ident">replace</span>(<span class="ident">PreviousLine</span> {
                 <span class="ident">chunk</span>: <span class="ident">file</span>.<span class="ident">current_chunk</span>.<span class="ident">clone</span>(),
@@ -854,7 +855,7 @@
                             <span class="ident">prev</span>.<span class="ident">chunk</span>.<span class="ident">line_data</span>(),
                             <span class="ident">file</span>.<span class="ident">current_chunk</span>.<span class="ident">line_data</span>(),
                         );
-                        <span class="kw">if</span> <span class="ident">cmp</span> <span class="op">=</span><span class="op">=</span> <span class="ident">Ordering::Equal</span> {
+                        <span class="kw">if</span> <span class="ident">cmp</span> <span class="op">==</span> <span class="ident">Ordering::Equal</span> {
                             <span class="kw">return</span>;
                         }
                     }
@@ -862,7 +863,7 @@
                 <span class="ident">current_line</span>.<span class="ident">print</span>(<span class="ident">out</span>, <span class="ident">settings</span>);
             });
 
-            <span class="kw">let</span> <span class="ident">was_last_line_for_file</span> <span class="op">=</span> <span class="ident">file</span>.<span class="ident">current_chunk</span>.<span class="ident">lines</span>().<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">file</span>.<span class="ident">line_idx</span> <span class="op">+</span> <span class="number">1</span>;
+            <span class="kw">let</span> <span class="ident">was_last_line_for_file</span> <span class="op">=</span> <span class="ident">file</span>.<span class="ident">current_chunk</span>.<span class="ident">lines</span>().<span class="ident">len</span>() <span class="op">==</span> <span class="ident">file</span>.<span class="ident">line_idx</span> <span class="op">+</span> <span class="number">1</span>;
 
             <span class="kw">if</span> <span class="ident">was_last_line_for_file</span> {
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">next_chunk</span>) <span class="op">=</span> <span class="ident">file</span>.<span class="ident">receiver</span>.<span class="ident">recv</span>() {
@@ -897,7 +898,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Compare</span><span class="op">&lt;</span><span class="ident">MergeableFile</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">FileComparator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">compare</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">MergeableFile</span>, <span class="ident">b</span>: <span class="kw-2">&amp;</span><span class="ident">MergeableFile</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ordering</span> {
+    <span class="kw">fn</span> <span class="ident">compare</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">MergeableFile</span>, <span class="ident">b</span>: <span class="kw-2">&amp;</span><span class="ident">MergeableFile</span>) -&gt; <span class="ident">Ordering</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cmp</span> <span class="op">=</span> <span class="ident">compare_by</span>(
             <span class="kw-2">&amp;</span><span class="ident">a</span>.<span class="ident">current_chunk</span>.<span class="ident">lines</span>()[<span class="ident">a</span>.<span class="ident">line_idx</span>],
             <span class="kw-2">&amp;</span><span class="ident">b</span>.<span class="ident">current_chunk</span>.<span class="ident">lines</span>()[<span class="ident">b</span>.<span class="ident">line_idx</span>],
@@ -905,7 +906,7 @@
             <span class="ident">a</span>.<span class="ident">current_chunk</span>.<span class="ident">line_data</span>(),
             <span class="ident">b</span>.<span class="ident">current_chunk</span>.<span class="ident">line_data</span>(),
         );
-        <span class="kw">if</span> <span class="ident">cmp</span> <span class="op">=</span><span class="op">=</span> <span class="ident">Ordering::Equal</span> {
+        <span class="kw">if</span> <span class="ident">cmp</span> <span class="op">==</span> <span class="ident">Ordering::Equal</span> {
             <span class="comment">// To make sorting stable, we need to consider the file number as well,</span>
             <span class="comment">// as lines from a file with a lower number are to be considered &quot;earlier&quot;.</span>
             <span class="ident">cmp</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">file_number</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>.<span class="ident">file_number</span>);
@@ -916,7 +917,7 @@
 }
 
 <span class="comment">// Wait for the child to exit and check its exit code.</span>
-<span class="kw">fn</span> <span class="ident">check_child_success</span>(<span class="kw-2">mut</span> <span class="ident">child</span>: <span class="ident">Child</span>, <span class="ident">program</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">check_child_success</span>(<span class="kw-2">mut</span> <span class="ident">child</span>: <span class="ident">Child</span>, <span class="ident">program</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="op">!</span><span class="macro">matches!</span>(
         <span class="ident">child</span>.<span class="ident">wait</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">code</span>()),
         <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="number">0</span>)) <span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) <span class="op">|</span> <span class="prelude-val">Err</span>(<span class="kw">_</span>)
@@ -934,24 +935,24 @@
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">WriteableTmpFile</span>: <span class="ident">Sized</span> {
     <span class="kw">type</span> <span class="ident">Closed</span>: <span class="ident">ClosedTmpFile</span>;
     <span class="kw">type</span> <span class="ident">InnerWrite</span>: <span class="ident">Write</span>;
-    <span class="kw">fn</span> <span class="ident">create</span>(<span class="ident">file</span>: (<span class="ident">File</span>, <span class="ident">PathBuf</span>), <span class="ident">compress_prog</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">create</span>(<span class="ident">file</span>: (<span class="ident">File</span>, <span class="ident">PathBuf</span>), <span class="ident">compress_prog</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
     <span class="doccomment">/// Closes the temporary file.</span>
-    <span class="kw">fn</span> <span class="ident">finished_writing</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Closed</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">as_write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident"><span class="self">Self</span>::InnerWrite</span>;
+    <span class="kw">fn</span> <span class="ident">finished_writing</span>(<span class="self">self</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Closed</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">as_write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident"><span class="self">Self</span>::InnerWrite</span>;
 }
 <span class="doccomment">/// A temporary file that is (temporarily) closed, but can be reopened.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ClosedTmpFile</span> {
     <span class="kw">type</span> <span class="ident">Reopened</span>: <span class="ident">MergeInput</span>;
     <span class="doccomment">/// Reopens the temporary file.</span>
-    <span class="kw">fn</span> <span class="ident">reopen</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Reopened</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">reopen</span>(<span class="self">self</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Reopened</span><span class="op">&gt;</span>;
 }
 <span class="doccomment">/// A pre-sorted input for merging.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">MergeInput</span>: <span class="ident">Send</span> {
     <span class="kw">type</span> <span class="ident">InnerRead</span>: <span class="ident">Read</span>;
     <span class="doccomment">/// Cleans this `MergeInput` up.</span>
     <span class="doccomment">/// Implementations may delete the backing file.</span>
-    <span class="kw">fn</span> <span class="ident">finished_reading</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">as_read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident"><span class="self">Self</span>::InnerRead</span>;
+    <span class="kw">fn</span> <span class="ident">finished_reading</span>(<span class="self">self</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">as_read</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident"><span class="self">Self</span>::InnerRead</span>;
 }
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WriteablePlainTmpFile</span> {
@@ -969,24 +970,24 @@
     <span class="kw">type</span> <span class="ident">Closed</span> <span class="op">=</span> <span class="ident">ClosedPlainTmpFile</span>;
     <span class="kw">type</span> <span class="ident">InnerWrite</span> <span class="op">=</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">File</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">create</span>((<span class="ident">file</span>, <span class="ident">path</span>): (<span class="ident">File</span>, <span class="ident">PathBuf</span>), <span class="kw">_</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">create</span>((<span class="ident">file</span>, <span class="ident">path</span>): (<span class="ident">File</span>, <span class="ident">PathBuf</span>), <span class="kw">_</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">WriteablePlainTmpFile</span> {
             <span class="ident">file</span>: <span class="ident">BufWriter::new</span>(<span class="ident">file</span>),
             <span class="ident">path</span>,
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">finished_writing</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Closed</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">finished_writing</span>(<span class="self">self</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Closed</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">ClosedPlainTmpFile</span> { <span class="ident">path</span>: <span class="self">self</span>.<span class="ident">path</span> })
     }
 
-    <span class="kw">fn</span> <span class="ident">as_write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident"><span class="self">Self</span>::InnerWrite</span> {
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">file</span>
+    <span class="kw">fn</span> <span class="ident">as_write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident"><span class="self">Self</span>::InnerWrite</span> {
+        <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">file</span>
     }
 }
 <span class="kw">impl</span> <span class="ident">ClosedTmpFile</span> <span class="kw">for</span> <span class="ident">ClosedPlainTmpFile</span> {
     <span class="kw">type</span> <span class="ident">Reopened</span> <span class="op">=</span> <span class="ident">PlainTmpMergeInput</span>;
-    <span class="kw">fn</span> <span class="ident">reopen</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Reopened</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">reopen</span>(<span class="self">self</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Reopened</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">PlainTmpMergeInput</span> {
             <span class="ident">file</span>: <span class="ident">File::open</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">path</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">error</span><span class="op">|</span> <span class="ident">SortError::OpenTmpFileFailed</span> { <span class="ident">error</span> })<span class="question-mark">?</span>,
             <span class="ident">path</span>: <span class="self">self</span>.<span class="ident">path</span>,
@@ -996,7 +997,7 @@
 <span class="kw">impl</span> <span class="ident">MergeInput</span> <span class="kw">for</span> <span class="ident">PlainTmpMergeInput</span> {
     <span class="kw">type</span> <span class="ident">InnerRead</span> <span class="op">=</span> <span class="ident">File</span>;
 
-    <span class="kw">fn</span> <span class="ident">finished_reading</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">finished_reading</span>(<span class="self">self</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="comment">// we ignore failures to delete the temporary file,</span>
         <span class="comment">// because there is a race at the end of the execution and the whole</span>
         <span class="comment">// temporary directory might already be gone.</span>
@@ -1004,8 +1005,8 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">as_read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident"><span class="self">Self</span>::InnerRead</span> {
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">file</span>
+    <span class="kw">fn</span> <span class="ident">as_read</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident"><span class="self">Self</span>::InnerRead</span> {
+        <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">file</span>
     }
 }
 
@@ -1029,7 +1030,7 @@
     <span class="kw">type</span> <span class="ident">Closed</span> <span class="op">=</span> <span class="ident">ClosedCompressedTmpFile</span>;
     <span class="kw">type</span> <span class="ident">InnerWrite</span> <span class="op">=</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">ChildStdin</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">create</span>((<span class="ident">file</span>, <span class="ident">path</span>): (<span class="ident">File</span>, <span class="ident">PathBuf</span>), <span class="ident">compress_prog</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">create</span>((<span class="ident">file</span>, <span class="ident">path</span>): (<span class="ident">File</span>, <span class="ident">PathBuf</span>), <span class="ident">compress_prog</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">compress_prog</span> <span class="op">=</span> <span class="ident">compress_prog</span>.<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">command</span> <span class="op">=</span> <span class="ident">Command::new</span>(<span class="ident">compress_prog</span>);
         <span class="ident">command</span>.<span class="ident">stdin</span>(<span class="ident">Stdio::piped</span>()).<span class="ident">stdout</span>(<span class="ident">file</span>);
@@ -1047,7 +1048,7 @@
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">finished_writing</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Closed</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">finished_writing</span>(<span class="self">self</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Closed</span><span class="op">&gt;</span> {
         <span class="ident">drop</span>(<span class="self">self</span>.<span class="ident">child_stdin</span>);
         <span class="ident">check_child_success</span>(<span class="self">self</span>.<span class="ident">child</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">compress_prog</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">ClosedCompressedTmpFile</span> {
@@ -1056,14 +1057,14 @@
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">as_write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident"><span class="self">Self</span>::InnerWrite</span> {
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">child_stdin</span>
+    <span class="kw">fn</span> <span class="ident">as_write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident"><span class="self">Self</span>::InnerWrite</span> {
+        <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">child_stdin</span>
     }
 }
 <span class="kw">impl</span> <span class="ident">ClosedTmpFile</span> <span class="kw">for</span> <span class="ident">ClosedCompressedTmpFile</span> {
     <span class="kw">type</span> <span class="ident">Reopened</span> <span class="op">=</span> <span class="ident">CompressedTmpMergeInput</span>;
 
-    <span class="kw">fn</span> <span class="ident">reopen</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Reopened</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">reopen</span>(<span class="self">self</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Reopened</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">command</span> <span class="op">=</span> <span class="ident">Command::new</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">compress_prog</span>);
         <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">File::open</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">path</span>).<span class="ident">unwrap</span>();
         <span class="ident">command</span>.<span class="ident">stdin</span>(<span class="ident">file</span>).<span class="ident">stdout</span>(<span class="ident">Stdio::piped</span>()).<span class="ident">arg</span>(<span class="string">&quot;-d&quot;</span>);
@@ -1084,15 +1085,15 @@
 <span class="kw">impl</span> <span class="ident">MergeInput</span> <span class="kw">for</span> <span class="ident">CompressedTmpMergeInput</span> {
     <span class="kw">type</span> <span class="ident">InnerRead</span> <span class="op">=</span> <span class="ident">ChildStdout</span>;
 
-    <span class="kw">fn</span> <span class="ident">finished_reading</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">finished_reading</span>(<span class="self">self</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="ident">drop</span>(<span class="self">self</span>.<span class="ident">child_stdout</span>);
         <span class="ident">check_child_success</span>(<span class="self">self</span>.<span class="ident">child</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">compress_prog</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">fs::remove_file</span>(<span class="self">self</span>.<span class="ident">path</span>);
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">as_read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident"><span class="self">Self</span>::InnerRead</span> {
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">child_stdout</span>
+    <span class="kw">fn</span> <span class="ident">as_read</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident"><span class="self">Self</span>::InnerRead</span> {
+        <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">child_stdout</span>
     }
 }
 
@@ -1101,14 +1102,13 @@
 }
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Read</span> <span class="op">+</span> <span class="ident">Send</span><span class="op">&gt;</span> <span class="ident">MergeInput</span> <span class="kw">for</span> <span class="ident">PlainMergeInput</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">InnerRead</span> <span class="op">=</span> <span class="ident">R</span>;
-    <span class="kw">fn</span> <span class="ident">finished_reading</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">finished_reading</span>(<span class="self">self</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(())
     }
-    <span class="kw">fn</span> <span class="ident">as_read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident"><span class="self">Self</span>::InnerRead</span> {
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">inner</span>
+    <span class="kw">fn</span> <span class="ident">as_read</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident"><span class="self">Self</span>::InnerRead</span> {
+        <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">inner</span>
     }
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_sort" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
 </body></html>

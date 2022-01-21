@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uu&#x2F;od&#x2F;src&#x2F;parse_inputs.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>parse_inputs.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uu_od/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uu&#x2F;od&#x2F;src&#x2F;parse_inputs.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>parse_inputs.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uu_od/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -366,48 +367,26 @@
 <span id="366">366</span>
 <span id="367">367</span>
 <span id="368">368</span>
-<span id="369">369</span>
-<span id="370">370</span>
-<span id="371">371</span>
-<span id="372">372</span>
-<span id="373">373</span>
-<span id="374">374</span>
-<span id="375">375</span>
-<span id="376">376</span>
-<span id="377">377</span>
-<span id="378">378</span>
-<span id="379">379</span>
-<span id="380">380</span>
-<span id="381">381</span>
-<span id="382">382</span>
-<span id="383">383</span>
-<span id="384">384</span>
-<span id="385">385</span>
-<span id="386">386</span>
-<span id="387">387</span>
-<span id="388">388</span>
-<span id="389">389</span>
-<span id="390">390</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">super</span>::options</span>;
 <span class="kw">use</span> <span class="ident">clap::ArgMatches</span>;
 
 <span class="doccomment">/// Abstraction for getopts</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">CommandLineOpts</span> {
     <span class="doccomment">/// returns all command line parameters which do not belong to an option.</span>
-    <span class="kw">fn</span> <span class="ident">inputs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">inputs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>;
     <span class="doccomment">/// tests if any of the specified options is present.</span>
-    <span class="kw">fn</span> <span class="ident">opts_present</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>;
+    <span class="kw">fn</span> <span class="ident">opts_present</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]) -&gt; <span class="ident">bool</span>;
 }
 
 <span class="doccomment">/// Implementation for `getopts`</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">CommandLineOpts</span> <span class="kw">for</span> <span class="ident">ArgMatches</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">inputs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">CommandLineOpts</span> <span class="kw">for</span> <span class="ident">ArgMatches</span> {
+    <span class="kw">fn</span> <span class="ident">inputs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">values_of</span>(<span class="ident">options::FILENAME</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">values</span><span class="op">|</span> <span class="ident">values</span>.<span class="ident">collect</span>())
             .<span class="ident">unwrap_or_default</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">opts_present</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">opts</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">opts_present</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">opts</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]) -&gt; <span class="ident">bool</span> {
         <span class="ident">opts</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">opt</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">is_present</span>(<span class="ident">opt</span>))
     }
 }
@@ -432,7 +411,7 @@
 <span class="doccomment">/// Offset and label are specified in bytes.</span>
 <span class="doccomment">/// &#39;-&#39; is used as filename if stdin is meant. This is also returned if</span>
 <span class="doccomment">/// there is no input, as stdin is the default input.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_inputs</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CommandLineOpts</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">CommandLineInputs</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_inputs</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CommandLineOpts</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">CommandLineInputs</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">input_strings</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">inputs</span>();
 
     <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">opts_present</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;traditional&quot;</span>]) {
@@ -441,17 +420,24 @@
 
     <span class="comment">// test if command line contains: [file] &lt;offset&gt;</span>
     <span class="comment">// fall-through if no (valid) offset is found</span>
-    <span class="kw">if</span> <span class="ident">input_strings</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">1</span> <span class="op">|</span><span class="op">|</span> <span class="ident">input_strings</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">2</span> {
+    <span class="kw">if</span> <span class="ident">input_strings</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> <span class="op">|</span><span class="op">|</span> <span class="ident">input_strings</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">2</span> {
         <span class="comment">// if any of the options -A, -j, -N, -t, -v or -w are present there is no offset</span>
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">opts_present</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;A&quot;</span>, <span class="string">&quot;j&quot;</span>, <span class="string">&quot;N&quot;</span>, <span class="string">&quot;t&quot;</span>, <span class="string">&quot;v&quot;</span>, <span class="string">&quot;w&quot;</span>]) {
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">opts_present</span>(<span class="kw-2">&amp;</span>[
+            <span class="ident">options::ADDRESS_RADIX</span>,
+            <span class="ident">options::READ_BYTES</span>,
+            <span class="ident">options::SKIP_BYTES</span>,
+            <span class="ident">options::FORMAT</span>,
+            <span class="ident">options::OUTPUT_DUPLICATES</span>,
+            <span class="ident">options::WIDTH</span>,
+        ]) {
             <span class="comment">// test if the last input can be parsed as an offset.</span>
             <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="ident">parse_offset_operand</span>(<span class="ident">input_strings</span>[<span class="ident">input_strings</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>]);
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">n</span>) <span class="op">=</span> <span class="ident">offset</span> {
                 <span class="comment">// if there is just 1 input (stdin), an offset must start with &#39;+&#39;</span>
-                <span class="kw">if</span> <span class="ident">input_strings</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">input_strings</span>[<span class="number">0</span>].<span class="ident">starts_with</span>(<span class="string">&#39;+&#39;</span>) {
+                <span class="kw">if</span> <span class="ident">input_strings</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">input_strings</span>[<span class="number">0</span>].<span class="ident">starts_with</span>(<span class="string">&#39;+&#39;</span>) {
                     <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">CommandLineInputs::FileAndOffset</span>((<span class="string">&quot;-&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">n</span>, <span class="prelude-val">None</span>)));
                 }
-                <span class="kw">if</span> <span class="ident">input_strings</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">2</span> {
+                <span class="kw">if</span> <span class="ident">input_strings</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">2</span> {
                     <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">CommandLineInputs::FileAndOffset</span>((
                         <span class="ident">input_strings</span>[<span class="number">0</span>].<span class="ident">to_string</span>(),
                         <span class="ident">n</span>,
@@ -474,49 +460,49 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// normally returns CommandLineInputs::FileAndOffset, but if no offset is found,</span>
 <span class="doccomment">/// it returns CommandLineInputs::FileNames (also to differentiate from the offset == 0)</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_inputs_traditional</span>(<span class="ident">input_strings</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">CommandLineInputs</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_inputs_traditional</span>(<span class="ident">input_strings</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">CommandLineInputs</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">match</span> <span class="ident">input_strings</span>.<span class="ident">len</span>() {
-        <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">CommandLineInputs::FileNames</span>(<span class="macro">vec!</span>[<span class="string">&quot;-&quot;</span>.<span class="ident">to_string</span>()])),
-        <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="number">0</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">CommandLineInputs::FileNames</span>(<span class="macro">vec!</span>[<span class="string">&quot;-&quot;</span>.<span class="ident">to_string</span>()])),
+        <span class="number">1</span> =&gt; {
             <span class="kw">let</span> <span class="ident">offset0</span> <span class="op">=</span> <span class="ident">parse_offset_operand</span>(<span class="ident">input_strings</span>[<span class="number">0</span>]);
             <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">offset0</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">n</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">CommandLineInputs::FileAndOffset</span>((<span class="string">&quot;-&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">n</span>, <span class="prelude-val">None</span>)),
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">CommandLineInputs::FileNames</span>(
+                <span class="prelude-val">Ok</span>(<span class="ident">n</span>) =&gt; <span class="ident">CommandLineInputs::FileAndOffset</span>((<span class="string">&quot;-&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">n</span>, <span class="prelude-val">None</span>)),
+                <span class="kw">_</span> =&gt; <span class="ident">CommandLineInputs::FileNames</span>(
                     <span class="ident">input_strings</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_string</span>()).<span class="ident">collect</span>(),
                 ),
             })
         }
-        <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="number">2</span> =&gt; {
             <span class="kw">let</span> <span class="ident">offset0</span> <span class="op">=</span> <span class="ident">parse_offset_operand</span>(<span class="ident">input_strings</span>[<span class="number">0</span>]);
             <span class="kw">let</span> <span class="ident">offset1</span> <span class="op">=</span> <span class="ident">parse_offset_operand</span>(<span class="ident">input_strings</span>[<span class="number">1</span>]);
             <span class="kw">match</span> (<span class="ident">offset0</span>, <span class="ident">offset1</span>) {
-                (<span class="prelude-val">Ok</span>(<span class="ident">n</span>), <span class="prelude-val">Ok</span>(<span class="ident">m</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">CommandLineInputs::FileAndOffset</span>((
+                (<span class="prelude-val">Ok</span>(<span class="ident">n</span>), <span class="prelude-val">Ok</span>(<span class="ident">m</span>)) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">CommandLineInputs::FileAndOffset</span>((
                     <span class="string">&quot;-&quot;</span>.<span class="ident">to_string</span>(),
                     <span class="ident">n</span>,
                     <span class="prelude-val">Some</span>(<span class="ident">m</span>),
                 ))),
-                (<span class="kw">_</span>, <span class="prelude-val">Ok</span>(<span class="ident">m</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">CommandLineInputs::FileAndOffset</span>((
+                (<span class="kw">_</span>, <span class="prelude-val">Ok</span>(<span class="ident">m</span>)) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">CommandLineInputs::FileAndOffset</span>((
                     <span class="ident">input_strings</span>[<span class="number">0</span>].<span class="ident">to_string</span>(),
                     <span class="ident">m</span>,
                     <span class="prelude-val">None</span>,
                 ))),
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;invalid offset: {}&quot;</span>, <span class="ident">input_strings</span>[<span class="number">1</span>])),
+                <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;invalid offset: {}&quot;</span>, <span class="ident">input_strings</span>[<span class="number">1</span>])),
             }
         }
-        <span class="number">3</span> <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="number">3</span> =&gt; {
             <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="ident">parse_offset_operand</span>(<span class="ident">input_strings</span>[<span class="number">1</span>]);
             <span class="kw">let</span> <span class="ident">label</span> <span class="op">=</span> <span class="ident">parse_offset_operand</span>(<span class="ident">input_strings</span>[<span class="number">2</span>]);
             <span class="kw">match</span> (<span class="ident">offset</span>, <span class="ident">label</span>) {
-                (<span class="prelude-val">Ok</span>(<span class="ident">n</span>), <span class="prelude-val">Ok</span>(<span class="ident">m</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">CommandLineInputs::FileAndOffset</span>((
+                (<span class="prelude-val">Ok</span>(<span class="ident">n</span>), <span class="prelude-val">Ok</span>(<span class="ident">m</span>)) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">CommandLineInputs::FileAndOffset</span>((
                     <span class="ident">input_strings</span>[<span class="number">0</span>].<span class="ident">to_string</span>(),
                     <span class="ident">n</span>,
                     <span class="prelude-val">Some</span>(<span class="ident">m</span>),
                 ))),
-                (<span class="prelude-val">Err</span>(<span class="kw">_</span>), <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;invalid offset: {}&quot;</span>, <span class="ident">input_strings</span>[<span class="number">1</span>])),
-                (<span class="kw">_</span>, <span class="prelude-val">Err</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;invalid label: {}&quot;</span>, <span class="ident">input_strings</span>[<span class="number">2</span>])),
+                (<span class="prelude-val">Err</span>(<span class="kw">_</span>), <span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;invalid offset: {}&quot;</span>, <span class="ident">input_strings</span>[<span class="number">1</span>])),
+                (<span class="kw">_</span>, <span class="prelude-val">Err</span>(<span class="kw">_</span>)) =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;invalid label: {}&quot;</span>, <span class="ident">input_strings</span>[<span class="number">2</span>])),
             }
         }
-        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(
+        <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(
             <span class="string">&quot;too many inputs after --traditional: {}&quot;</span>,
             <span class="ident">input_strings</span>[<span class="number">3</span>]
         )),
@@ -524,7 +510,7 @@
 }
 
 <span class="doccomment">/// parses format used by offset and label on the command line</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_offset_operand</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_offset_operand</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">start</span> <span class="op">=</span> <span class="number">0</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">len</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">radix</span> <span class="op">=</span> <span class="number">8</span>;
@@ -548,69 +534,36 @@
         }
     }
     <span class="kw">match</span> <span class="ident">usize::from_str_radix</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>[<span class="ident">start</span>..<span class="ident">len</span>], <span class="ident">radix</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">i</span> <span class="op">*</span> <span class="ident">multiply</span>),
-        <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;parse failed&quot;</span>),
+        <span class="prelude-val">Ok</span>(<span class="ident">i</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">i</span> <span class="op">*</span> <span class="ident">multiply</span>),
+        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(<span class="string">&quot;parse failed&quot;</span>),
     }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-
-    <span class="doccomment">/// A mock for the command line options type</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// `inputs` are all command line parameters which do not belong to an option.</span>
-    <span class="doccomment">/// `option_names` are the names of the options on the command line.</span>
-    <span class="kw">struct</span> <span class="ident">MockOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-        <span class="ident">inputs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-        <span class="ident">option_names</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>,
-    }
-
-    <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">MockOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-        <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">inputs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">option_names</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">MockOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-            <span class="ident">MockOptions</span> {
-                <span class="ident">inputs</span>: <span class="ident">inputs</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_string</span>()).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
-                <span class="ident">option_names</span>,
-            }
-        }
-    }
-
-    <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">CommandLineOpts</span> <span class="kw">for</span> <span class="ident">MockOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-        <span class="kw">fn</span> <span class="ident">inputs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
-            <span class="self">self</span>.<span class="ident">inputs</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>()).<span class="ident">collect</span>()
-        }
-        <span class="kw">fn</span> <span class="ident">opts_present</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">opts</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-            <span class="kw">for</span> <span class="ident">expected</span> <span class="kw">in</span> <span class="ident">opts</span>.<span class="ident">iter</span>() {
-                <span class="kw">for</span> <span class="ident">actual</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">option_names</span>.<span class="ident">iter</span>() {
-                    <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">expected</span> <span class="op">=</span><span class="op">=</span> <span class="kw-2">*</span><span class="ident">actual</span> {
-                        <span class="kw">return</span> <span class="bool-val">true</span>;
-                    }
-                }
-            }
-            <span class="bool-val">false</span>
-        }
-    }
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::uu_app</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_parse_inputs_normal</span>() {
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileNames</span>(<span class="macro">vec!</span>[<span class="string">&quot;-&quot;</span>.<span class="ident">to_string</span>()]),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[], <span class="macro">vec!</span>[])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>])).<span class="ident">unwrap</span>()
         );
 
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileNames</span>(<span class="macro">vec!</span>[<span class="string">&quot;-&quot;</span>.<span class="ident">to_string</span>()]),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;-&quot;</span>], <span class="macro">vec!</span>[])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;-&quot;</span>])).<span class="ident">unwrap</span>()
         );
 
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileNames</span>(<span class="macro">vec!</span>[<span class="string">&quot;file1&quot;</span>.<span class="ident">to_string</span>()]),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;file1&quot;</span>], <span class="macro">vec!</span>[])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;file1&quot;</span>])).<span class="ident">unwrap</span>()
         );
 
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileNames</span>(<span class="macro">vec!</span>[<span class="string">&quot;file1&quot;</span>.<span class="ident">to_string</span>(), <span class="string">&quot;file2&quot;</span>.<span class="ident">to_string</span>()]),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;file1&quot;</span>, <span class="string">&quot;file2&quot;</span>], <span class="macro">vec!</span>[])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;file1&quot;</span>, <span class="string">&quot;file2&quot;</span>])).<span class="ident">unwrap</span>()
         );
 
         <span class="macro">assert_eq!</span>(
@@ -619,7 +572,7 @@
                 <span class="string">&quot;file1&quot;</span>.<span class="ident">to_string</span>(),
                 <span class="string">&quot;file2&quot;</span>.<span class="ident">to_string</span>(),
             ]),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;-&quot;</span>, <span class="string">&quot;file1&quot;</span>, <span class="string">&quot;file2&quot;</span>], <span class="macro">vec!</span>[])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;-&quot;</span>, <span class="string">&quot;file1&quot;</span>, <span class="string">&quot;file2&quot;</span>])).<span class="ident">unwrap</span>()
         );
     }
 
@@ -628,58 +581,58 @@
         <span class="comment">// offset is found without filename, so stdin will be used.</span>
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileAndOffset</span>((<span class="string">&quot;-&quot;</span>.<span class="ident">to_string</span>(), <span class="number">8</span>, <span class="prelude-val">None</span>)),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;+10&quot;</span>], <span class="macro">vec!</span>[])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;+10&quot;</span>])).<span class="ident">unwrap</span>()
         );
 
         <span class="comment">// offset must start with &quot;+&quot; if no input is specified.</span>
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileNames</span>(<span class="macro">vec!</span>[<span class="string">&quot;10&quot;</span>.<span class="ident">to_string</span>()]),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;10&quot;</span>], <span class="macro">vec!</span>[<span class="string">&quot;&quot;</span>])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;10&quot;</span>])).<span class="ident">unwrap</span>()
         );
 
         <span class="comment">// offset is not valid, so it is considered a filename.</span>
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileNames</span>(<span class="macro">vec!</span>[<span class="string">&quot;+10a&quot;</span>.<span class="ident">to_string</span>()]),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;+10a&quot;</span>], <span class="macro">vec!</span>[<span class="string">&quot;&quot;</span>])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;+10a&quot;</span>])).<span class="ident">unwrap</span>()
         );
 
         <span class="comment">// if -j is included in the command line, there cannot be an offset.</span>
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileNames</span>(<span class="macro">vec!</span>[<span class="string">&quot;+10&quot;</span>.<span class="ident">to_string</span>()]),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;+10&quot;</span>], <span class="macro">vec!</span>[<span class="string">&quot;j&quot;</span>])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;-j10&quot;</span>, <span class="string">&quot;+10&quot;</span>])).<span class="ident">unwrap</span>()
         );
 
         <span class="comment">// if -v is included in the command line, there cannot be an offset.</span>
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileNames</span>(<span class="macro">vec!</span>[<span class="string">&quot;+10&quot;</span>.<span class="ident">to_string</span>()]),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;+10&quot;</span>], <span class="macro">vec!</span>[<span class="string">&quot;o&quot;</span>, <span class="string">&quot;v&quot;</span>])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;-o&quot;</span>, <span class="string">&quot;-v&quot;</span>, <span class="string">&quot;+10&quot;</span>])).<span class="ident">unwrap</span>()
         );
 
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileAndOffset</span>((<span class="string">&quot;file1&quot;</span>.<span class="ident">to_string</span>(), <span class="number">8</span>, <span class="prelude-val">None</span>)),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;file1&quot;</span>, <span class="string">&quot;+10&quot;</span>], <span class="macro">vec!</span>[])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;file1&quot;</span>, <span class="string">&quot;+10&quot;</span>])).<span class="ident">unwrap</span>()
         );
 
         <span class="comment">// offset does not need to start with &quot;+&quot; if a filename is included.</span>
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileAndOffset</span>((<span class="string">&quot;file1&quot;</span>.<span class="ident">to_string</span>(), <span class="number">8</span>, <span class="prelude-val">None</span>)),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;file1&quot;</span>, <span class="string">&quot;10&quot;</span>], <span class="macro">vec!</span>[])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;file1&quot;</span>, <span class="string">&quot;10&quot;</span>])).<span class="ident">unwrap</span>()
         );
 
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileNames</span>(<span class="macro">vec!</span>[<span class="string">&quot;file1&quot;</span>.<span class="ident">to_string</span>(), <span class="string">&quot;+10a&quot;</span>.<span class="ident">to_string</span>()]),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;file1&quot;</span>, <span class="string">&quot;+10a&quot;</span>], <span class="macro">vec!</span>[<span class="string">&quot;&quot;</span>])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;file1&quot;</span>, <span class="string">&quot;+10a&quot;</span>])).<span class="ident">unwrap</span>()
         );
 
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileNames</span>(<span class="macro">vec!</span>[<span class="string">&quot;file1&quot;</span>.<span class="ident">to_string</span>(), <span class="string">&quot;+10&quot;</span>.<span class="ident">to_string</span>()]),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;file1&quot;</span>, <span class="string">&quot;+10&quot;</span>], <span class="macro">vec!</span>[<span class="string">&quot;j&quot;</span>])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;-j10&quot;</span>, <span class="string">&quot;file1&quot;</span>, <span class="string">&quot;+10&quot;</span>])).<span class="ident">unwrap</span>()
         );
 
         <span class="comment">// offset must be last on the command line</span>
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileNames</span>(<span class="macro">vec!</span>[<span class="string">&quot;+10&quot;</span>.<span class="ident">to_string</span>(), <span class="string">&quot;file1&quot;</span>.<span class="ident">to_string</span>()]),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;+10&quot;</span>, <span class="string">&quot;file1&quot;</span>], <span class="macro">vec!</span>[<span class="string">&quot;&quot;</span>])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;+10&quot;</span>, <span class="string">&quot;file1&quot;</span>])).<span class="ident">unwrap</span>()
         );
     }
 
@@ -688,63 +641,67 @@
         <span class="comment">// it should not return FileAndOffset to signal no offset was entered on the command line.</span>
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileNames</span>(<span class="macro">vec!</span>[<span class="string">&quot;-&quot;</span>.<span class="ident">to_string</span>()]),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[], <span class="macro">vec!</span>[<span class="string">&quot;traditional&quot;</span>])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;--traditional&quot;</span>])).<span class="ident">unwrap</span>()
         );
 
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileNames</span>(<span class="macro">vec!</span>[<span class="string">&quot;file1&quot;</span>.<span class="ident">to_string</span>()]),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;file1&quot;</span>], <span class="macro">vec!</span>[<span class="string">&quot;traditional&quot;</span>])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;--traditional&quot;</span>, <span class="string">&quot;file1&quot;</span>])).<span class="ident">unwrap</span>()
         );
 
         <span class="comment">// offset does not need to start with a +</span>
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileAndOffset</span>((<span class="string">&quot;-&quot;</span>.<span class="ident">to_string</span>(), <span class="number">8</span>, <span class="prelude-val">None</span>)),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;10&quot;</span>], <span class="macro">vec!</span>[<span class="string">&quot;traditional&quot;</span>])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;--traditional&quot;</span>, <span class="string">&quot;10&quot;</span>])).<span class="ident">unwrap</span>()
         );
 
         <span class="comment">// valid offset and valid label</span>
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileAndOffset</span>((<span class="string">&quot;-&quot;</span>.<span class="ident">to_string</span>(), <span class="number">8</span>, <span class="prelude-val">Some</span>(<span class="number">8</span>))),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;10&quot;</span>, <span class="string">&quot;10&quot;</span>], <span class="macro">vec!</span>[<span class="string">&quot;traditional&quot;</span>])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;--traditional&quot;</span>, <span class="string">&quot;10&quot;</span>, <span class="string">&quot;10&quot;</span>]))
+                .<span class="ident">unwrap</span>()
         );
 
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileAndOffset</span>((<span class="string">&quot;file1&quot;</span>.<span class="ident">to_string</span>(), <span class="number">8</span>, <span class="prelude-val">None</span>)),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;file1&quot;</span>, <span class="string">&quot;10&quot;</span>], <span class="macro">vec!</span>[<span class="string">&quot;traditional&quot;</span>])).<span class="ident">unwrap</span>()
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;--traditional&quot;</span>, <span class="string">&quot;file1&quot;</span>, <span class="string">&quot;10&quot;</span>]))
+                .<span class="ident">unwrap</span>()
         );
 
         <span class="comment">// only one file is allowed, it must be the first</span>
-        <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(<span class="macro">vec!</span>[<span class="string">&quot;10&quot;</span>, <span class="string">&quot;file1&quot;</span>], <span class="macro">vec!</span>[<span class="string">&quot;traditional&quot;</span>])).<span class="ident">unwrap_err</span>();
+        <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;--traditional&quot;</span>, <span class="string">&quot;10&quot;</span>, <span class="string">&quot;file1&quot;</span>]))
+            .<span class="ident">unwrap_err</span>();
 
         <span class="macro">assert_eq!</span>(
             <span class="ident">CommandLineInputs::FileAndOffset</span>((<span class="string">&quot;file1&quot;</span>.<span class="ident">to_string</span>(), <span class="number">8</span>, <span class="prelude-val">Some</span>(<span class="number">8</span>))),
-            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(
-                <span class="macro">vec!</span>[<span class="string">&quot;file1&quot;</span>, <span class="string">&quot;10&quot;</span>, <span class="string">&quot;10&quot;</span>],
-                <span class="macro">vec!</span>[<span class="string">&quot;traditional&quot;</span>]
-            ))
+            <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[
+                <span class="string">&quot;od&quot;</span>,
+                <span class="string">&quot;--traditional&quot;</span>,
+                <span class="string">&quot;file1&quot;</span>,
+                <span class="string">&quot;10&quot;</span>,
+                <span class="string">&quot;10&quot;</span>
+            ]))
             .<span class="ident">unwrap</span>()
         );
 
-        <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(
-            <span class="macro">vec!</span>[<span class="string">&quot;10&quot;</span>, <span class="string">&quot;file1&quot;</span>, <span class="string">&quot;10&quot;</span>],
-            <span class="macro">vec!</span>[<span class="string">&quot;traditional&quot;</span>],
-        ))
-        .<span class="ident">unwrap_err</span>();
+        <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;--traditional&quot;</span>, <span class="string">&quot;10&quot;</span>, <span class="string">&quot;file1&quot;</span>, <span class="string">&quot;10&quot;</span>]))
+            .<span class="ident">unwrap_err</span>();
 
-        <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(
-            <span class="macro">vec!</span>[<span class="string">&quot;10&quot;</span>, <span class="string">&quot;10&quot;</span>, <span class="string">&quot;file1&quot;</span>],
-            <span class="macro">vec!</span>[<span class="string">&quot;traditional&quot;</span>],
-        ))
-        .<span class="ident">unwrap_err</span>();
+        <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;od&quot;</span>, <span class="string">&quot;--traditional&quot;</span>, <span class="string">&quot;10&quot;</span>, <span class="string">&quot;10&quot;</span>, <span class="string">&quot;file1&quot;</span>]))
+            .<span class="ident">unwrap_err</span>();
 
-        <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">MockOptions::new</span>(
-            <span class="macro">vec!</span>[<span class="string">&quot;10&quot;</span>, <span class="string">&quot;10&quot;</span>, <span class="string">&quot;10&quot;</span>, <span class="string">&quot;10&quot;</span>],
-            <span class="macro">vec!</span>[<span class="string">&quot;traditional&quot;</span>],
-        ))
+        <span class="ident">parse_inputs</span>(<span class="kw-2">&amp;</span><span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[
+            <span class="string">&quot;od&quot;</span>,
+            <span class="string">&quot;--traditional&quot;</span>,
+            <span class="string">&quot;10&quot;</span>,
+            <span class="string">&quot;10&quot;</span>,
+            <span class="string">&quot;10&quot;</span>,
+            <span class="string">&quot;10&quot;</span>,
+        ]))
         .<span class="ident">unwrap_err</span>();
     }
 
-    <span class="kw">fn</span> <span class="ident">parse_offset_operand_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">parse_offset_operand_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> {
         <span class="ident">parse_offset_operand</span>(<span class="kw-2">&amp;</span><span class="ident">String::from</span>(<span class="ident">s</span>))
     }
 
@@ -780,5 +737,4 @@
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_od" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
 </body></html>

@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uu&#x2F;chown&#x2F;src&#x2F;chown.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>chown.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uu_chown/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uu&#x2F;chown&#x2F;src&#x2F;chown.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>chown.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uu_chown/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -251,20 +252,20 @@
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;change file owner and group&quot;</span>;
 
-<span class="kw">fn</span> <span class="ident">get_usage</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+<span class="kw">fn</span> <span class="ident">get_usage</span>() -&gt; <span class="ident">String</span> {
     <span class="macro">format!</span>(
         <span class="string">&quot;{0} [OPTION]... [OWNER][:[GROUP]] FILE...\n{0} [OPTION]... --reference=RFILE FILE...&quot;</span>,
         <span class="ident">uucore::execution_phrase</span>()
     )
 }
 
-<span class="kw">fn</span> <span class="ident">parse_gid_uid_and_filter</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">IfFrom</span>)<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">parse_gid_uid_and_filter</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">IfFrom</span>)<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">filter</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">spec</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::FROM</span>) {
         <span class="kw">match</span> <span class="ident">parse_spec</span>(<span class="ident">spec</span>, <span class="string">&#39;:&#39;</span>)<span class="question-mark">?</span> {
-            (<span class="prelude-val">Some</span>(<span class="ident">uid</span>), <span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">IfFrom::User</span>(<span class="ident">uid</span>),
-            (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">gid</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">IfFrom::Group</span>(<span class="ident">gid</span>),
-            (<span class="prelude-val">Some</span>(<span class="ident">uid</span>), <span class="prelude-val">Some</span>(<span class="ident">gid</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">IfFrom::UserGroup</span>(<span class="ident">uid</span>, <span class="ident">gid</span>),
-            (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">IfFrom::All</span>,
+            (<span class="prelude-val">Some</span>(<span class="ident">uid</span>), <span class="prelude-val">None</span>) =&gt; <span class="ident">IfFrom::User</span>(<span class="ident">uid</span>),
+            (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">gid</span>)) =&gt; <span class="ident">IfFrom::Group</span>(<span class="ident">gid</span>),
+            (<span class="prelude-val">Some</span>(<span class="ident">uid</span>), <span class="prelude-val">Some</span>(<span class="ident">gid</span>)) =&gt; <span class="ident">IfFrom::UserGroup</span>(<span class="ident">uid</span>, <span class="ident">gid</span>),
+            (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="ident">IfFrom::All</span>,
         }
     } <span class="kw">else</span> {
         <span class="ident">IfFrom::All</span>
@@ -286,11 +287,11 @@
 }
 
 <span class="attribute">#[<span class="ident">uucore_procs::gen_uumain</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">get_usage</span>();
 
     <span class="ident">chown_base</span>(
-        <span class="ident">uu_app</span>().<span class="ident">usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..]),
+        <span class="ident">uu_app</span>().<span class="ident">override_usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..]),
         <span class="ident">args</span>,
         <span class="ident">options::ARG_OWNER</span>,
         <span class="ident">parse_gid_uid_and_filter</span>,
@@ -298,18 +299,18 @@
     )
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::verbosity::CHANGES</span>)
-                .<span class="ident">short</span>(<span class="string">&quot;c&quot;</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::verbosity::CHANGES</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;c&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::verbosity::CHANGES</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;like verbose but report only when a change is made&quot;</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::dereference::DEREFERENCE</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::dereference::DEREFERENCE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::dereference::DEREFERENCE</span>)
                 .<span class="ident">help</span>(
                     <span class="string">&quot;affect the referent of each symbolic link (this is the default), \
@@ -317,8 +318,8 @@
                 ),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::dereference::NO_DEREFERENCE</span>)
-                .<span class="ident">short</span>(<span class="string">&quot;h&quot;</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::dereference::NO_DEREFERENCE</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;h&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::dereference::NO_DEREFERENCE</span>)
                 .<span class="ident">help</span>(
                     <span class="string">&quot;affect symbolic links instead of any referenced file \
@@ -326,7 +327,7 @@
                 ),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::FROM</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::FROM</span>)
                 .<span class="ident">long</span>(<span class="ident">options::FROM</span>)
                 .<span class="ident">help</span>(
                     <span class="string">&quot;change the owner and/or group of each file only if its \
@@ -337,60 +338,60 @@
                 .<span class="ident">value_name</span>(<span class="string">&quot;CURRENT_OWNER:CURRENT_GROUP&quot;</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::preserve_root::PRESERVE</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::preserve_root::PRESERVE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::preserve_root::PRESERVE</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;fail to operate recursively on &#39;/&#39;&quot;</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::preserve_root::NO_PRESERVE</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::preserve_root::NO_PRESERVE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::preserve_root::NO_PRESERVE</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;do not treat &#39;/&#39; specially (the default)&quot;</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::verbosity::QUIET</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::verbosity::QUIET</span>)
                 .<span class="ident">long</span>(<span class="ident">options::verbosity::QUIET</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;suppress most error messages&quot;</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::RECURSIVE</span>)
-                .<span class="ident">short</span>(<span class="string">&quot;R&quot;</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::RECURSIVE</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;R&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::RECURSIVE</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;operate on files and directories recursively&quot;</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::REFERENCE</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::REFERENCE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::REFERENCE</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;use RFILE&#39;s owner and group rather than specifying OWNER:GROUP values&quot;</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;RFILE&quot;</span>)
                 .<span class="ident">min_values</span>(<span class="number">1</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::verbosity::SILENT</span>)
-                .<span class="ident">short</span>(<span class="string">&quot;f&quot;</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::verbosity::SILENT</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;f&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::verbosity::SILENT</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::traverse::TRAVERSE</span>)
-                .<span class="ident">short</span>(<span class="ident">options::traverse::TRAVERSE</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::traverse::TRAVERSE</span>)
+                .<span class="ident">short</span>(<span class="ident">options::traverse::TRAVERSE</span>.<span class="ident">chars</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>())
                 .<span class="ident">help</span>(<span class="string">&quot;if a command line argument is a symbolic link to a directory, traverse it&quot;</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::traverse::EVERY</span>, <span class="ident">options::traverse::NO_TRAVERSE</span>]),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::traverse::EVERY</span>)
-                .<span class="ident">short</span>(<span class="ident">options::traverse::EVERY</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::traverse::EVERY</span>)
+                .<span class="ident">short</span>(<span class="ident">options::traverse::EVERY</span>.<span class="ident">chars</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>())
                 .<span class="ident">help</span>(<span class="string">&quot;traverse every symbolic link to a directory encountered&quot;</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::traverse::TRAVERSE</span>, <span class="ident">options::traverse::NO_TRAVERSE</span>]),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::traverse::NO_TRAVERSE</span>)
-                .<span class="ident">short</span>(<span class="ident">options::traverse::NO_TRAVERSE</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::traverse::NO_TRAVERSE</span>)
+                .<span class="ident">short</span>(<span class="ident">options::traverse::NO_TRAVERSE</span>.<span class="ident">chars</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>())
                 .<span class="ident">help</span>(<span class="string">&quot;do not traverse any symbolic links (default)&quot;</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::traverse::TRAVERSE</span>, <span class="ident">options::traverse::EVERY</span>]),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::verbosity::VERBOSE</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::verbosity::VERBOSE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::verbosity::VERBOSE</span>)
-                .<span class="ident">short</span>(<span class="string">&quot;v&quot;</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;v&#39;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;output a diagnostic for every file processed&quot;</span>),
         )
 }
@@ -406,7 +407,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// * `spec` - The input from the user</span>
 <span class="doccomment">/// * `sep` - Should be &#39;:&#39; or &#39;.&#39;</span>
-<span class="kw">fn</span> <span class="ident">parse_spec</span>(<span class="ident">spec</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">sep</span>: <span class="ident">char</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UResult</span><span class="op">&lt;</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>)<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">parse_spec</span>(<span class="ident">spec</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">sep</span>: <span class="ident">char</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>)<span class="op">&gt;</span> {
     <span class="macro">assert!</span>([<span class="string">&#39;.&#39;</span>, <span class="string">&#39;:&#39;</span>].<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">sep</span>));
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">spec</span>.<span class="ident">splitn</span>(<span class="number">2</span>, <span class="ident">sep</span>);
     <span class="kw">let</span> <span class="ident">user</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">next</span>().<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>);
@@ -414,12 +415,12 @@
 
     <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">user</span>.<span class="ident">is_empty</span>() {
         <span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="ident">Passwd::locate</span>(<span class="ident">user</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">u</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">u</span>.<span class="ident">uid</span>(), <span class="comment">// We have been able to get the uid</span>
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span>
+            <span class="prelude-val">Ok</span>(<span class="ident">u</span>) =&gt; <span class="ident">u</span>.<span class="ident">uid</span>, <span class="comment">// We have been able to get the uid</span>
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt;
             <span class="comment">// we have NOT been able to find the uid</span>
             <span class="comment">// but we could be in the case where we have user.group</span>
             {
-                <span class="kw">if</span> <span class="ident">spec</span>.<span class="ident">contains</span>(<span class="string">&#39;.&#39;</span>) <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">spec</span>.<span class="ident">contains</span>(<span class="string">&#39;:&#39;</span>) <span class="op">&amp;&amp;</span> <span class="ident">sep</span> <span class="op">=</span><span class="op">=</span> <span class="string">&#39;:&#39;</span> {
+                <span class="kw">if</span> <span class="ident">spec</span>.<span class="ident">contains</span>(<span class="string">&#39;.&#39;</span>) <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">spec</span>.<span class="ident">contains</span>(<span class="string">&#39;:&#39;</span>) <span class="op">&amp;&amp;</span> <span class="ident">sep</span> <span class="op">==</span> <span class="string">&#39;:&#39;</span> {
                     <span class="comment">// but the input contains a &#39;.&#39; but not a &#39;:&#39;</span>
                     <span class="comment">// we might have something like username.groupname</span>
                     <span class="comment">// So, try to parse it this way</span>
@@ -439,7 +440,7 @@
         <span class="prelude-val">Some</span>(
             <span class="ident">Group::locate</span>(<span class="ident">group</span>)
                 .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;invalid group: {}&quot;</span>, <span class="ident">spec</span>.<span class="ident">quote</span>())))<span class="question-mark">?</span>
-                .<span class="ident">gid</span>(),
+                .<span class="ident">gid</span>,
         )
     } <span class="kw">else</span> {
         <span class="prelude-val">None</span>
@@ -462,5 +463,4 @@
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_chown" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
 </body></html>

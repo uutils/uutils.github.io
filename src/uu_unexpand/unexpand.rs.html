@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uu&#x2F;unexpand&#x2F;src&#x2F;unexpand.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>unexpand.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uu_unexpand/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uu&#x2F;unexpand&#x2F;src&#x2F;unexpand.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>unexpand.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uu_unexpand/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -362,6 +363,7 @@
 <span class="kw">use</span> <span class="ident">std::str::from_utf8</span>;
 <span class="kw">use</span> <span class="ident">unicode_width::UnicodeWidthChar</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
+<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UResult</span>};
 <span class="kw">use</span> <span class="ident">uucore::InvalidEncodingHandling</span>;
 
 <span class="kw">static</span> <span class="ident">NAME</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;unexpand&quot;</span>;
@@ -371,7 +373,7 @@
 
 <span class="kw">const</span> <span class="ident">DEFAULT_TABSTOP</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">8</span>;
 
-<span class="kw">fn</span> <span class="ident">tabstops_parse</span>(<span class="ident">s</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">tabstops_parse</span>(<span class="ident">s</span>: <span class="ident">String</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">words</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>);
 
     <span class="kw">let</span> <span class="ident">nums</span> <span class="op">=</span> <span class="ident">words</span>
@@ -381,7 +383,7 @@
         })
         .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
-    <span class="kw">if</span> <span class="ident">nums</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span>) {
+    <span class="kw">if</span> <span class="ident">nums</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span> <span class="op">==</span> <span class="number">0</span>) {
         <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;{}\n&quot;</span>, <span class="string">&quot;tab size cannot be 0&quot;</span>);
     }
 
@@ -411,10 +413,10 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Options</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">matches</span>: <span class="ident">clap::ArgMatches</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Options</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">matches</span>: <span class="ident">clap::ArgMatches</span>) -&gt; <span class="ident">Options</span> {
         <span class="kw">let</span> <span class="ident">tabstops</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::TABS</span>) {
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">vec!</span>[<span class="ident">DEFAULT_TABSTOP</span>],
-            <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">tabstops_parse</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()),
+            <span class="prelude-val">None</span> =&gt; <span class="macro">vec!</span>[<span class="ident">DEFAULT_TABSTOP</span>],
+            <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="ident">tabstops_parse</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()),
         };
 
         <span class="kw">let</span> <span class="ident">aflag</span> <span class="op">=</span> (<span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::ALL</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::TABS</span>))
@@ -422,8 +424,8 @@
         <span class="kw">let</span> <span class="ident">uflag</span> <span class="op">=</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::NO_UTF8</span>);
 
         <span class="kw">let</span> <span class="ident">files</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::FILE</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">vec!</span>[<span class="ident">v</span>.<span class="ident">to_string</span>()],
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">vec!</span>[<span class="string">&quot;-&quot;</span>.<span class="ident">to_owned</span>()],
+            <span class="prelude-val">Some</span>(<span class="ident">v</span>) =&gt; <span class="macro">vec!</span>[<span class="ident">v</span>.<span class="ident">to_string</span>()],
+            <span class="prelude-val">None</span> =&gt; <span class="macro">vec!</span>[<span class="string">&quot;-&quot;</span>.<span class="ident">to_owned</span>()],
         };
 
         <span class="ident">Options</span> {
@@ -435,68 +437,67 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i32</span> {
+<span class="attribute">#[<span class="ident">uucore_procs::gen_uumain</span>]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">args</span>
         .<span class="ident">collect_str</span>(<span class="ident">InvalidEncodingHandling::Ignore</span>)
         .<span class="ident">accept_any</span>();
 
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
-    <span class="ident">unexpand</span>(<span class="ident">Options::new</span>(<span class="ident">matches</span>));
-
-    <span class="number">0</span>
+    <span class="ident">unexpand</span>(<span class="ident">Options::new</span>(<span class="ident">matches</span>)).<span class="ident">map_err_context</span>(<span class="ident">String::new</span>)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">name</span>(<span class="ident">NAME</span>)
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
-        .<span class="ident">usage</span>(<span class="ident">USAGE</span>)
+        .<span class="ident">override_usage</span>(<span class="ident">USAGE</span>)
         .<span class="ident">about</span>(<span class="ident">SUMMARY</span>)
-        .<span class="ident">arg</span>(<span class="ident">Arg::with_name</span>(<span class="ident">options::FILE</span>).<span class="ident">hidden</span>(<span class="bool-val">true</span>).<span class="ident">multiple</span>(<span class="bool-val">true</span>))
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::FILE</span>).<span class="ident">hide</span>(<span class="bool-val">true</span>).<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>))
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::ALL</span>)
-                .<span class="ident">short</span>(<span class="string">&quot;a&quot;</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::ALL</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;a&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::ALL</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;convert all blanks, instead of just initial blanks&quot;</span>)
                 .<span class="ident">takes_value</span>(<span class="bool-val">false</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::FIRST_ONLY</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::FIRST_ONLY</span>)
                 .<span class="ident">long</span>(<span class="ident">options::FIRST_ONLY</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;convert only leading sequences of blanks (overrides -a)&quot;</span>)
                 .<span class="ident">takes_value</span>(<span class="bool-val">false</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::TABS</span>)
-                .<span class="ident">short</span>(<span class="string">&quot;t&quot;</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::TABS</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;t&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::TABS</span>)
                 .<span class="ident">long_help</span>(<span class="string">&quot;use comma separated LIST of tab positions or have tabs N characters apart instead of 8 (enables -a)&quot;</span>)
                 .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="ident">options::NO_UTF8</span>)
-                .<span class="ident">short</span>(<span class="string">&quot;U&quot;</span>)
+            <span class="ident">Arg::new</span>(<span class="ident">options::NO_UTF8</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;U&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::NO_UTF8</span>)
                 .<span class="ident">takes_value</span>(<span class="bool-val">false</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;interpret input file as 8-bit ASCII rather than UTF-8&quot;</span>))
 }
 
-<span class="kw">fn</span> <span class="ident">open</span>(<span class="ident">path</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">BufReader</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Read</span> <span class="op">+</span> <span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">open</span>(<span class="ident">path</span>: <span class="ident">String</span>) -&gt; <span class="ident">BufReader</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Read</span> <span class="op">+</span> <span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">file_buf</span>;
-    <span class="kw">if</span> <span class="ident">path</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;-&quot;</span> {
+    <span class="kw">if</span> <span class="ident">path</span> <span class="op">==</span> <span class="string">&quot;-&quot;</span> {
         <span class="ident">BufReader::new</span>(<span class="ident">Box::new</span>(<span class="ident">stdin</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Read</span><span class="op">&gt;</span>)
     } <span class="kw">else</span> {
         <span class="ident">file_buf</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">File::open</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">a</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">a</span>,
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;{}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">maybe_quote</span>(), <span class="ident">e</span>),
+            <span class="prelude-val">Ok</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>,
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;{}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">maybe_quote</span>(), <span class="ident">e</span>),
         };
         <span class="ident">BufReader::new</span>(<span class="ident">Box::new</span>(<span class="ident">file_buf</span>) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Read</span><span class="op">&gt;</span>)
     }
 }
 
-<span class="kw">fn</span> <span class="ident">next_tabstop</span>(<span class="ident">tabstops</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>], <span class="ident">col</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">tabstops</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">1</span> {
+<span class="kw">fn</span> <span class="ident">next_tabstop</span>(<span class="ident">tabstops</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>], <span class="ident">col</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">if</span> <span class="ident">tabstops</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> {
         <span class="prelude-val">Some</span>(<span class="ident">tabstops</span>[<span class="number">0</span>] <span class="op">-</span> <span class="ident">col</span> <span class="op">%</span> <span class="ident">tabstops</span>[<span class="number">0</span>])
     } <span class="kw">else</span> {
         <span class="comment">// find next larger tab</span>
@@ -506,7 +507,7 @@
 }
 
 <span class="kw">fn</span> <span class="ident">write_tabs</span>(
-    <span class="ident">output</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span>,
+    <span class="ident">output</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span>,
     <span class="ident">tabstops</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>],
     <span class="kw-2">mut</span> <span class="ident">scol</span>: <span class="ident">usize</span>,
     <span class="ident">col</span>: <span class="ident">usize</span>,
@@ -543,7 +544,7 @@
     <span class="ident">Other</span>,
 }
 
-<span class="kw">fn</span> <span class="ident">next_char_info</span>(<span class="ident">uflag</span>: <span class="ident">bool</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">byte</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">CharType</span>, <span class="ident">usize</span>, <span class="ident">usize</span>) {
+<span class="kw">fn</span> <span class="ident">next_char_info</span>(<span class="ident">uflag</span>: <span class="ident">bool</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">byte</span>: <span class="ident">usize</span>) -&gt; (<span class="ident">CharType</span>, <span class="ident">usize</span>, <span class="ident">usize</span>) {
     <span class="kw">let</span> (<span class="ident">ctype</span>, <span class="ident">cwidth</span>, <span class="ident">nbytes</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">uflag</span> {
         <span class="kw">let</span> <span class="ident">nbytes</span> <span class="op">=</span> <span class="ident">char::from</span>(<span class="ident">buf</span>[<span class="ident">byte</span>]).<span class="ident">len_utf8</span>();
 
@@ -553,15 +554,15 @@
         } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">t</span>) <span class="op">=</span> <span class="ident">from_utf8</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[<span class="ident">byte</span>..<span class="ident">byte</span> <span class="op">+</span> <span class="ident">nbytes</span>]) {
             <span class="comment">// Now that we think it&#39;s UTF-8, figure out what kind of char it is</span>
             <span class="kw">match</span> <span class="ident">t</span>.<span class="ident">chars</span>().<span class="ident">next</span>() {
-                <span class="prelude-val">Some</span>(<span class="string">&#39; &#39;</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">CharType::Space</span>, <span class="number">0</span>, <span class="number">1</span>),
-                <span class="prelude-val">Some</span>(<span class="string">&#39;\t&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">CharType::Tab</span>, <span class="number">0</span>, <span class="number">1</span>),
-                <span class="prelude-val">Some</span>(<span class="string">&#39;\x08&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">CharType::Backspace</span>, <span class="number">0</span>, <span class="number">1</span>),
-                <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span><span class="op">&gt;</span> (
+                <span class="prelude-val">Some</span>(<span class="string">&#39; &#39;</span>) =&gt; (<span class="ident">CharType::Space</span>, <span class="number">0</span>, <span class="number">1</span>),
+                <span class="prelude-val">Some</span>(<span class="string">&#39;\t&#39;</span>) =&gt; (<span class="ident">CharType::Tab</span>, <span class="number">0</span>, <span class="number">1</span>),
+                <span class="prelude-val">Some</span>(<span class="string">&#39;\x08&#39;</span>) =&gt; (<span class="ident">CharType::Backspace</span>, <span class="number">0</span>, <span class="number">1</span>),
+                <span class="prelude-val">Some</span>(<span class="ident">c</span>) =&gt; (
                     <span class="ident">CharType::Other</span>,
                     <span class="ident">UnicodeWidthChar::width</span>(<span class="ident">c</span>).<span class="ident">unwrap_or</span>(<span class="number">0</span>),
                     <span class="ident">nbytes</span>,
                 ),
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="prelude-val">None</span> =&gt; {
                     <span class="comment">// invalid char snuck past the utf8_validation_iterator somehow???</span>
                     (<span class="ident">CharType::Other</span>, <span class="number">1</span>, <span class="number">1</span>)
                 }
@@ -574,10 +575,10 @@
         (
             <span class="kw">match</span> <span class="ident">buf</span>[<span class="ident">byte</span>] {
                 <span class="comment">// always take exactly 1 byte in strict ASCII mode</span>
-                <span class="number">0x20</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">CharType::Space</span>,
-                <span class="number">0x09</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">CharType::Tab</span>,
-                <span class="number">0x08</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">CharType::Backspace</span>,
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">CharType::Other</span>,
+                <span class="number">0x20</span> =&gt; <span class="ident">CharType::Space</span>,
+                <span class="number">0x09</span> =&gt; <span class="ident">CharType::Tab</span>,
+                <span class="number">0x08</span> =&gt; <span class="ident">CharType::Backspace</span>,
+                <span class="kw">_</span> =&gt; <span class="ident">CharType::Other</span>,
             },
             <span class="number">1</span>,
             <span class="number">1</span>,
@@ -587,7 +588,7 @@
     (<span class="ident">ctype</span>, <span class="ident">cwidth</span>, <span class="ident">nbytes</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">unexpand</span>(<span class="ident">options</span>: <span class="ident">Options</span>) {
+<span class="kw">fn</span> <span class="ident">unexpand</span>(<span class="ident">options</span>: <span class="ident">Options</span>) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">BufWriter::new</span>(<span class="ident">stdout</span>());
     <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">options</span>.<span class="ident">tabstops</span>[..];
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
@@ -596,9 +597,9 @@
     <span class="kw">for</span> <span class="ident">file</span> <span class="kw">in</span> <span class="ident">options</span>.<span class="ident">files</span>.<span class="ident">into_iter</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fh</span> <span class="op">=</span> <span class="ident">open</span>(<span class="ident">file</span>);
 
-        <span class="kw">while</span> <span class="kw">match</span> <span class="ident">fh</span>.<span class="ident">read_until</span>(<span class="string">b&#39;\n&#39;</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">s</span> <span class="op">&gt;</span> <span class="number">0</span>,
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="op">!</span><span class="ident">buf</span>.<span class="ident">is_empty</span>(),
+        <span class="kw">while</span> <span class="kw">match</span> <span class="ident">fh</span>.<span class="ident">read_until</span>(<span class="string">b&#39;\n&#39;</span>, <span class="kw-2">&amp;mut</span> <span class="ident">buf</span>) {
+            <span class="prelude-val">Ok</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span> <span class="op">&gt;</span> <span class="number">0</span>,
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="op">!</span><span class="ident">buf</span>.<span class="ident">is_empty</span>(),
         } {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">byte</span> <span class="op">=</span> <span class="number">0</span>; <span class="comment">// offset into the buffer</span>
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">col</span> <span class="op">=</span> <span class="number">0</span>; <span class="comment">// the current column</span>
@@ -610,15 +611,15 @@
                 <span class="comment">// when we have a finite number of columns, never convert past the last column</span>
                 <span class="kw">if</span> <span class="ident">lastcol</span> <span class="op">&gt;</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="ident">col</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">lastcol</span> {
                     <span class="ident">write_tabs</span>(
-                        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">output</span>,
+                        <span class="kw-2">&amp;mut</span> <span class="ident">output</span>,
                         <span class="ident">ts</span>,
                         <span class="ident">scol</span>,
                         <span class="ident">col</span>,
-                        <span class="ident">pctype</span> <span class="op">=</span><span class="op">=</span> <span class="ident">CharType::Tab</span>,
+                        <span class="ident">pctype</span> <span class="op">==</span> <span class="ident">CharType::Tab</span>,
                         <span class="ident">init</span>,
                         <span class="bool-val">true</span>,
                     );
-                    <span class="macro">crash_if_err!</span>(<span class="number">1</span>, <span class="ident">output</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[<span class="ident">byte</span>..]));
+                    <span class="ident">output</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[<span class="ident">byte</span>..])<span class="question-mark">?</span>;
                     <span class="ident">scol</span> <span class="op">=</span> <span class="ident">col</span>;
                     <span class="kw">break</span>;
                 }
@@ -629,32 +630,32 @@
                 <span class="comment">// now figure out how many columns this char takes up, and maybe print it</span>
                 <span class="kw">let</span> <span class="ident">tabs_buffered</span> <span class="op">=</span> <span class="ident">init</span> <span class="op">|</span><span class="op">|</span> <span class="ident">options</span>.<span class="ident">aflag</span>;
                 <span class="kw">match</span> <span class="ident">ctype</span> {
-                    <span class="ident">CharType::Space</span> <span class="op">|</span> <span class="ident">CharType::Tab</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="ident">CharType::Space</span> <span class="op">|</span> <span class="ident">CharType::Tab</span> =&gt; {
                         <span class="comment">// compute next col, but only write space or tab chars if not buffering</span>
-                        <span class="ident">col</span> <span class="op">+</span><span class="op">=</span> <span class="kw">if</span> <span class="ident">ctype</span> <span class="op">=</span><span class="op">=</span> <span class="ident">CharType::Space</span> {
+                        <span class="ident">col</span> <span class="op">+</span><span class="op">=</span> <span class="kw">if</span> <span class="ident">ctype</span> <span class="op">==</span> <span class="ident">CharType::Space</span> {
                             <span class="number">1</span>
                         } <span class="kw">else</span> {
                             <span class="ident">next_tabstop</span>(<span class="ident">ts</span>, <span class="ident">col</span>).<span class="ident">unwrap_or</span>(<span class="number">1</span>)
                         };
 
                         <span class="kw">if</span> <span class="op">!</span><span class="ident">tabs_buffered</span> {
-                            <span class="macro">crash_if_err!</span>(<span class="number">1</span>, <span class="ident">output</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[<span class="ident">byte</span>..<span class="ident">byte</span> <span class="op">+</span> <span class="ident">nbytes</span>]));
+                            <span class="ident">output</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[<span class="ident">byte</span>..<span class="ident">byte</span> <span class="op">+</span> <span class="ident">nbytes</span>])<span class="question-mark">?</span>;
                             <span class="ident">scol</span> <span class="op">=</span> <span class="ident">col</span>; <span class="comment">// now printed up to this column</span>
                         }
                     }
-                    <span class="ident">CharType::Other</span> <span class="op">|</span> <span class="ident">CharType::Backspace</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="ident">CharType::Other</span> <span class="op">|</span> <span class="ident">CharType::Backspace</span> =&gt; {
                         <span class="comment">// always</span>
                         <span class="ident">write_tabs</span>(
-                            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">output</span>,
+                            <span class="kw-2">&amp;mut</span> <span class="ident">output</span>,
                             <span class="ident">ts</span>,
                             <span class="ident">scol</span>,
                             <span class="ident">col</span>,
-                            <span class="ident">pctype</span> <span class="op">=</span><span class="op">=</span> <span class="ident">CharType::Tab</span>,
+                            <span class="ident">pctype</span> <span class="op">==</span> <span class="ident">CharType::Tab</span>,
                             <span class="ident">init</span>,
                             <span class="ident">options</span>.<span class="ident">aflag</span>,
                         );
                         <span class="ident">init</span> <span class="op">=</span> <span class="bool-val">false</span>; <span class="comment">// no longer at the start of a line</span>
-                        <span class="ident">col</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">ctype</span> <span class="op">=</span><span class="op">=</span> <span class="ident">CharType::Other</span> {
+                        <span class="ident">col</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">ctype</span> <span class="op">==</span> <span class="ident">CharType::Other</span> {
                             <span class="comment">// use computed width</span>
                             <span class="ident">col</span> <span class="op">+</span> <span class="ident">cwidth</span>
                         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">col</span> <span class="op">&gt;</span> <span class="number">0</span> {
@@ -663,7 +664,7 @@
                         } <span class="kw">else</span> {
                             <span class="number">0</span>
                         };
-                        <span class="macro">crash_if_err!</span>(<span class="number">1</span>, <span class="ident">output</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[<span class="ident">byte</span>..<span class="ident">byte</span> <span class="op">+</span> <span class="ident">nbytes</span>]));
+                        <span class="ident">output</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[<span class="ident">byte</span>..<span class="ident">byte</span> <span class="op">+</span> <span class="ident">nbytes</span>])<span class="question-mark">?</span>;
                         <span class="ident">scol</span> <span class="op">=</span> <span class="ident">col</span>; <span class="comment">// we&#39;ve now printed up to this column</span>
                     }
                 }
@@ -674,21 +675,20 @@
 
             <span class="comment">// write out anything remaining</span>
             <span class="ident">write_tabs</span>(
-                <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">output</span>,
+                <span class="kw-2">&amp;mut</span> <span class="ident">output</span>,
                 <span class="ident">ts</span>,
                 <span class="ident">scol</span>,
                 <span class="ident">col</span>,
-                <span class="ident">pctype</span> <span class="op">=</span><span class="op">=</span> <span class="ident">CharType::Tab</span>,
+                <span class="ident">pctype</span> <span class="op">==</span> <span class="ident">CharType::Tab</span>,
                 <span class="ident">init</span>,
                 <span class="bool-val">true</span>,
             );
-            <span class="macro">crash_if_err!</span>(<span class="number">1</span>, <span class="ident">output</span>.<span class="ident">flush</span>());
+            <span class="ident">output</span>.<span class="ident">flush</span>()<span class="question-mark">?</span>;
             <span class="ident">buf</span>.<span class="ident">truncate</span>(<span class="number">0</span>); <span class="comment">// clear out the buffer</span>
         }
     }
-    <span class="macro">crash_if_err!</span>(<span class="number">1</span>, <span class="ident">output</span>.<span class="ident">flush</span>())
+    <span class="ident">output</span>.<span class="ident">flush</span>()
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_unexpand" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
 </body></html>

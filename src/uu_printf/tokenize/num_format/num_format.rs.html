@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uu&#x2F;printf&#x2F;src&#x2F;tokenize&#x2F;num_format&#x2F;num_format.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>num_format.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../../storage.js"></script><script src="../../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../../uu_printf/index.html'><div class='logo-container rust-logo'><img src='../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uu&#x2F;printf&#x2F;src&#x2F;tokenize&#x2F;num_format&#x2F;num_format.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>num_format.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../../storage.js"></script><script src="../../../../crates.js"></script><script defer src="../../../../main.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../../uu_printf/index.html'><div class='logo-container rust-logo'><img src='../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -297,8 +298,8 @@
 <span class="comment">// issue a warning when POSIXLY_CORRECT is not set</span>
 <span class="kw">fn</span> <span class="ident">warn_char_constant_ign</span>(<span class="ident">remaining_bytes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
     <span class="kw">match</span> <span class="ident">env::var</span>(<span class="string">&quot;POSIXLY_CORRECT&quot;</span>) {
-        <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {}
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; {}
+        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
             <span class="kw">if</span> <span class="kw">let</span> <span class="ident">env::VarError::NotPresent</span> <span class="op">=</span> <span class="ident">e</span> {
                 <span class="macro">show_warning!</span>(
                     <span class="string">&quot;{:?}: character(s) following character \
@@ -313,17 +314,17 @@
 <span class="comment">// this function looks at the first few</span>
 <span class="comment">// characters of an argument and returns a value if we can learn</span>
 <span class="comment">// a value from that (e.g. no argument? return 0, char constant? ret value)</span>
-<span class="kw">fn</span> <span class="ident">get_provided</span>(<span class="ident">str_in_opt</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">String</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">get_provided</span>(<span class="ident">str_in_opt</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">String</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
     <span class="kw">const</span> <span class="ident">C_S_QUOTE</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">39</span>;
     <span class="kw">const</span> <span class="ident">C_D_QUOTE</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">34</span>;
     <span class="kw">match</span> <span class="ident">str_in_opt</span> {
-        <span class="prelude-val">Some</span>(<span class="ident">str_in</span>) <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Some</span>(<span class="ident">str_in</span>) =&gt; {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">byte_it</span> <span class="op">=</span> <span class="ident">str_in</span>.<span class="ident">bytes</span>();
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ch</span>) <span class="op">=</span> <span class="ident">byte_it</span>.<span class="ident">next</span>() {
                 <span class="kw">match</span> <span class="ident">ch</span> {
-                    <span class="ident">C_S_QUOTE</span> <span class="op">|</span> <span class="ident">C_D_QUOTE</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="ident">C_S_QUOTE</span> <span class="op">|</span> <span class="ident">C_D_QUOTE</span> =&gt; {
                         <span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="ident">byte_it</span>.<span class="ident">next</span>() {
-                            <span class="prelude-val">Some</span>(<span class="ident">second_byte</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="prelude-val">Some</span>(<span class="ident">second_byte</span>) =&gt; {
                                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ignored</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
                                 <span class="kw">for</span> <span class="ident">cont</span> <span class="kw">in</span> <span class="ident">byte_it</span> {
                                     <span class="ident">ignored</span>.<span class="ident">push</span>(<span class="ident">cont</span>);
@@ -334,7 +335,7 @@
                                 <span class="ident">second_byte</span> <span class="kw">as</span> <span class="ident">u8</span>
                             }
                             <span class="comment">// no byte after quote</span>
-                            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="prelude-val">None</span> =&gt; {
                                 <span class="kw">let</span> <span class="ident">so_far</span> <span class="op">=</span> (<span class="ident">ch</span> <span class="kw">as</span> <span class="ident">u8</span> <span class="kw">as</span> <span class="ident">char</span>).<span class="ident">to_string</span>();
                                 <span class="ident">warn_expected_numeric</span>(<span class="kw-2">&amp;</span><span class="ident">so_far</span>);
                                 <span class="number">0_u8</span>
@@ -342,13 +343,13 @@
                         })
                     }
                     <span class="comment">// first byte is not quote</span>
-                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>, <span class="comment">// no first byte</span>
+                    <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>, <span class="comment">// no first byte</span>
                 }
             } <span class="kw">else</span> {
                 <span class="prelude-val">Some</span>(<span class="number">0_u8</span>)
             }
         }
-        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="number">0</span>),
+        <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Some</span>(<span class="number">0</span>),
     }
 }
 
@@ -357,7 +358,7 @@
 <span class="comment">// a base,</span>
 <span class="comment">// and an offset for index after all</span>
 <span class="comment">//  initial spacing, sign, base prefix, and leading zeroes</span>
-<span class="kw">fn</span> <span class="ident">get_initial_prefix</span>(<span class="ident">str_in</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">field_type</span>: <span class="kw-2">&amp;</span><span class="ident">FieldType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">InitialPrefix</span> {
+<span class="kw">fn</span> <span class="ident">get_initial_prefix</span>(<span class="ident">str_in</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">field_type</span>: <span class="kw-2">&amp;</span><span class="ident">FieldType</span>) -&gt; <span class="ident">InitialPrefix</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">str_it</span> <span class="op">=</span> <span class="ident">str_in</span>.<span class="ident">chars</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">InitialPrefix</span> {
         <span class="ident">radix_in</span>: <span class="ident">Base::Ten</span>,
@@ -373,16 +374,16 @@
     }
     <span class="comment">// parse sign</span>
     <span class="kw">match</span> <span class="ident">top_char</span> {
-        <span class="prelude-val">Some</span>(<span class="string">&#39;+&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Some</span>(<span class="string">&#39;+&#39;</span>) =&gt; {
             <span class="ident">ret</span>.<span class="ident">offset</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
             <span class="ident">top_char</span> <span class="op">=</span> <span class="ident">str_it</span>.<span class="ident">next</span>();
         }
-        <span class="prelude-val">Some</span>(<span class="string">&#39;-&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Some</span>(<span class="string">&#39;-&#39;</span>) =&gt; {
             <span class="ident">ret</span>.<span class="ident">sign</span> <span class="op">=</span> <span class="op">-</span><span class="number">1</span>;
             <span class="ident">ret</span>.<span class="ident">offset</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
             <span class="ident">top_char</span> <span class="op">=</span> <span class="ident">str_it</span>.<span class="ident">next</span>();
         }
-        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {}
+        <span class="kw">_</span> =&gt; {}
     }
     <span class="comment">// we want to exit with offset being</span>
     <span class="comment">// the index of the first non-zero</span>
@@ -398,28 +399,28 @@
     <span class="comment">// final offset. If the zero could be before</span>
     <span class="comment">// a decimal point we don&#39;t move past the zero.</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">is_hex</span> <span class="op">=</span> <span class="bool-val">false</span>;
-    <span class="kw">if</span> <span class="prelude-val">Some</span>(<span class="string">&#39;0&#39;</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">top_char</span> {
+    <span class="kw">if</span> <span class="prelude-val">Some</span>(<span class="string">&#39;0&#39;</span>) <span class="op">==</span> <span class="ident">top_char</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">base</span>) <span class="op">=</span> <span class="ident">str_it</span>.<span class="ident">next</span>() {
             <span class="comment">// lead zeroes can only exist in</span>
             <span class="comment">// octal and hex base</span>
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">do_clean_lead_zeroes</span> <span class="op">=</span> <span class="bool-val">false</span>;
             <span class="kw">match</span> <span class="ident">base</span> {
-                <span class="string">&#39;x&#39;</span> <span class="op">|</span> <span class="string">&#39;X&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="string">&#39;x&#39;</span> <span class="op">|</span> <span class="string">&#39;X&#39;</span> =&gt; {
                     <span class="ident">is_hex</span> <span class="op">=</span> <span class="bool-val">true</span>;
                     <span class="ident">ret</span>.<span class="ident">offset</span> <span class="op">+</span><span class="op">=</span> <span class="number">2</span>;
                     <span class="ident">ret</span>.<span class="ident">radix_in</span> <span class="op">=</span> <span class="ident">Base::Hex</span>;
                     <span class="ident">do_clean_lead_zeroes</span> <span class="op">=</span> <span class="bool-val">true</span>;
                 }
-                <span class="ident">e</span> @ <span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;9&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">e</span> @ <span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;9&#39;</span> =&gt; {
                     <span class="ident">ret</span>.<span class="ident">offset</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                     <span class="kw">if</span> <span class="kw">let</span> <span class="ident">FieldType::Intf</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">field_type</span> {
                         <span class="ident">ret</span>.<span class="ident">radix_in</span> <span class="op">=</span> <span class="ident">Base::Octal</span>;
                     }
-                    <span class="kw">if</span> <span class="ident">e</span> <span class="op">=</span><span class="op">=</span> <span class="string">&#39;0&#39;</span> {
+                    <span class="kw">if</span> <span class="ident">e</span> <span class="op">==</span> <span class="string">&#39;0&#39;</span> {
                         <span class="ident">do_clean_lead_zeroes</span> <span class="op">=</span> <span class="bool-val">true</span>;
                     }
                 }
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {}
+                <span class="kw">_</span> =&gt; {}
             }
             <span class="kw">if</span> <span class="ident">do_clean_lead_zeroes</span> {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">first</span> <span class="op">=</span> <span class="bool-val">true</span>;
@@ -436,7 +437,7 @@
                     <span class="comment">// whereas at that point octal knows its</span>
                     <span class="comment">// current offset is not the final offset.</span>
                     <span class="kw">match</span> <span class="ident">ch_zero</span> {
-                        <span class="string">&#39;0&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="string">&#39;0&#39;</span> =&gt; {
                             <span class="kw">if</span> <span class="op">!</span>(<span class="ident">is_hex</span> <span class="op">&amp;&amp;</span> <span class="ident">first</span>) {
                                 <span class="ident">ret</span>.<span class="ident">offset</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                             }
@@ -444,9 +445,9 @@
                         <span class="comment">// if decimal, keep last zero if one exists</span>
                         <span class="comment">// (it&#39;s possible for last zero to</span>
                         <span class="comment">// not exist at this branch if we&#39;re in hex input)</span>
-                        <span class="string">&#39;.&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">break</span>,
+                        <span class="string">&#39;.&#39;</span> =&gt; <span class="kw">break</span>,
                         <span class="comment">// other digit, etc.</span>
-                        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="kw">_</span> =&gt; {
                             <span class="kw">if</span> <span class="op">!</span>(<span class="ident">is_hex</span> <span class="op">&amp;&amp;</span> <span class="ident">first</span>) {
                                 <span class="ident">ret</span>.<span class="ident">offset</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                             }
@@ -466,7 +467,7 @@
 <span class="comment">// this is the function a Sub&#39;s print will delegate to</span>
 <span class="comment">// if it is a numeric field, passing the field details</span>
 <span class="comment">// and an iterator to the argument</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">num_format</span>(<span class="ident">field</span>: <span class="kw-2">&amp;</span><span class="ident">FormatField</span>, <span class="ident">in_str_opt</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">String</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">num_format</span>(<span class="ident">field</span>: <span class="kw-2">&amp;</span><span class="ident">FormatField</span>, <span class="ident">in_str_opt</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">String</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">field_char</span> <span class="op">=</span> <span class="ident">field</span>.<span class="ident">field_char</span>;
 
     <span class="comment">// num format mainly operates by further delegating to one of</span>
@@ -475,12 +476,12 @@
 
     <span class="comment">// to do switch to static dispatch</span>
     <span class="kw">let</span> <span class="ident">formatter</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Formatter</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">field</span>.<span class="ident">field_type</span> {
-        <span class="ident">FieldType::Intf</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">Intf::new</span>()),
-        <span class="ident">FieldType::Floatf</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">Floatf::new</span>()),
-        <span class="ident">FieldType::CninetyNineHexFloatf</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">CninetyNineHexFloatf::new</span>()),
-        <span class="ident">FieldType::Scif</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">Scif::new</span>()),
-        <span class="ident">FieldType::Decf</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">Decf::new</span>()),
-        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="ident">FieldType::Intf</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">Intf::new</span>()),
+        <span class="ident">FieldType::Floatf</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">Floatf::new</span>()),
+        <span class="ident">FieldType::CninetyNineHexFloatf</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">CninetyNineHexFloatf::new</span>()),
+        <span class="ident">FieldType::Scif</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">Scif::new</span>()),
+        <span class="ident">FieldType::Decf</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">Decf::new</span>()),
+        <span class="kw">_</span> =&gt; {
             <span class="macro">panic!</span>(<span class="string">&quot;asked to do num format with non-num field type&quot;</span>);
         }
     };
@@ -490,19 +491,19 @@
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">provided_num</span>) <span class="op">=</span> <span class="ident">get_provided</span>(<span class="ident">in_str_opt</span>) {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tmp</span> : <span class="ident">FormatPrimitive</span> <span class="op">=</span> <span class="ident">Default::default</span>();
             <span class="kw">match</span> <span class="ident">field_char</span> {
-                <span class="string">&#39;u&#39;</span> <span class="op">|</span> <span class="string">&#39;i&#39;</span> <span class="op">|</span> <span class="string">&#39;d&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="string">&#39;u&#39;</span> <span class="op">|</span> <span class="string">&#39;i&#39;</span> <span class="op">|</span> <span class="string">&#39;d&#39;</span> =&gt; {
                     <span class="ident">tmp</span>.<span class="ident">pre_decimal</span> <span class="op">=</span> <span class="prelude-val">Some</span>(
                         <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">provided_num</span>));
                 },
-                <span class="string">&#39;x&#39;</span> <span class="op">|</span> <span class="string">&#39;X&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="string">&#39;x&#39;</span> <span class="op">|</span> <span class="string">&#39;X&#39;</span> =&gt; {
                     <span class="ident">tmp</span>.<span class="ident">pre_decimal</span> <span class="op">=</span> <span class="prelude-val">Some</span>(
                         <span class="macro">format!</span>(<span class="string">&quot;{:x}&quot;</span>, <span class="ident">provided_num</span>));
                 },
-                <span class="string">&#39;o&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="string">&#39;o&#39;</span> =&gt; {
                     <span class="ident">tmp</span>.<span class="ident">pre_decimal</span> <span class="op">=</span> <span class="prelude-val">Some</span>(
                         <span class="macro">format!</span>(<span class="string">&quot;{:o}&quot;</span>, <span class="ident">provided_num</span>));
                 },
-                <span class="string">&#39;e&#39;</span> <span class="op">|</span> <span class="string">&#39;E&#39;</span> <span class="op">|</span> <span class="string">&#39;g&#39;</span> <span class="op">|</span> <span class="string">&#39;G&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="string">&#39;e&#39;</span> <span class="op">|</span> <span class="string">&#39;E&#39;</span> <span class="op">|</span> <span class="string">&#39;g&#39;</span> <span class="op">|</span> <span class="string">&#39;G&#39;</span> =&gt; {
                     <span class="kw">let</span> <span class="ident">as_str</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">provided_num</span>);
                     <span class="kw">let</span> <span class="ident">initial_prefix</span> <span class="op">=</span> <span class="ident">get_initial_prefix</span>(
                         <span class="kw-2">&amp;</span><span class="ident">as_str</span>,
@@ -511,7 +512,7 @@
                     <span class="ident">tmp</span><span class="op">=</span><span class="ident">formatter</span>.<span class="ident">get_primitive</span>(<span class="ident">field</span>, <span class="kw-2">&amp;</span><span class="ident">initial_prefix</span>, <span class="kw-2">&amp;</span><span class="ident">as_str</span>)
                         .<span class="ident">expect</span>(<span class="string">&quot;err during default provided num&quot;</span>);
                 },
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">_</span> =&gt; {
                     <span class="ident">tmp</span>.<span class="ident">pre_decimal</span> <span class="op">=</span> <span class="prelude-val">Some</span>(
                         <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">provided_num</span>));
                     <span class="ident">tmp</span>.<span class="ident">post_decimal</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String::from</span>(<span class="string">&quot;0&quot;</span>));
@@ -540,5 +541,4 @@
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uu_printf" data-search-index-js="../../../../search-index.js" data-search-js="../../../../search.js"></div>
-    <script src="../../../../main.js"></script><script src="../../../../source-script.js"></script><script src="../../../../source-files.js"></script>
 </body></html>

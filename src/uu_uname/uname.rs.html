@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uu&#x2F;uname&#x2F;src&#x2F;uname.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>uname.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uu_uname/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uu&#x2F;uname&#x2F;src&#x2F;uname.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>uname.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uu_uname/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -173,11 +174,9 @@
 
 <span class="comment">// spell-checker:ignore (ToDO) nodename kernelname kernelrelease kernelversion sysname hwplatform mnrsv</span>
 
-<span class="attribute">#[<span class="ident">macro_use</span>]</span>
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
-
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">Arg</span>};
 <span class="kw">use</span> <span class="ident">platform_info</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UResult</span>};
 
 <span class="kw">const</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Print certain system information.  With no OPTION, same as -s.&quot;</span>;
 
@@ -212,11 +211,13 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;redox&quot;</span>)]</span>
 <span class="kw">const</span> <span class="ident">HOST_OS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Redox&quot;</span>;
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i32</span> {
+<span class="attribute">#[<span class="ident">uucore_procs::gen_uumain</span>]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{} [OPTION]...&quot;</span>, <span class="ident">uucore::execution_phrase</span>());
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..]).<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">override_usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..]).<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
-    <span class="kw">let</span> <span class="ident">uname</span> <span class="op">=</span> <span class="macro">crash_if_err!</span>(<span class="number">1</span>, <span class="ident">PlatformInfo::new</span>());
+    <span class="kw">let</span> <span class="ident">uname</span> <span class="op">=</span>
+        <span class="ident">PlatformInfo::new</span>().<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to create PlatformInfo&quot;</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">String::new</span>();
 
     <span class="kw">let</span> <span class="ident">all</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::ALL</span>);
@@ -278,53 +279,52 @@
     }
     <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">output</span>.<span class="ident">trim_end</span>());
 
-    <span class="number">0</span>
+    <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
-        .<span class="ident">arg</span>(<span class="ident">Arg::with_name</span>(<span class="ident">options::ALL</span>)
-            .<span class="ident">short</span>(<span class="string">&quot;a&quot;</span>)
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::ALL</span>)
+            .<span class="ident">short</span>(<span class="string">&#39;a&#39;</span>)
             .<span class="ident">long</span>(<span class="ident">options::ALL</span>)
             .<span class="ident">help</span>(<span class="string">&quot;Behave as though all of the options -mnrsv were specified.&quot;</span>))
-        .<span class="ident">arg</span>(<span class="ident">Arg::with_name</span>(<span class="ident">options::KERNELNAME</span>)
-            .<span class="ident">short</span>(<span class="string">&quot;s&quot;</span>)
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::KERNELNAME</span>)
+            .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
             .<span class="ident">long</span>(<span class="ident">options::KERNELNAME</span>)
             .<span class="ident">alias</span>(<span class="string">&quot;sysname&quot;</span>) <span class="comment">// Obsolescent option in GNU uname</span>
             .<span class="ident">help</span>(<span class="string">&quot;print the kernel name.&quot;</span>))
-        .<span class="ident">arg</span>(<span class="ident">Arg::with_name</span>(<span class="ident">options::NODENAME</span>)
-            .<span class="ident">short</span>(<span class="string">&quot;n&quot;</span>)
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::NODENAME</span>)
+            .<span class="ident">short</span>(<span class="string">&#39;n&#39;</span>)
             .<span class="ident">long</span>(<span class="ident">options::NODENAME</span>)
             .<span class="ident">help</span>(<span class="string">&quot;print the nodename (the nodename may be a name that the system is known by to a communications network).&quot;</span>))
-        .<span class="ident">arg</span>(<span class="ident">Arg::with_name</span>(<span class="ident">options::KERNELRELEASE</span>)
-            .<span class="ident">short</span>(<span class="string">&quot;r&quot;</span>)
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::KERNELRELEASE</span>)
+            .<span class="ident">short</span>(<span class="string">&#39;r&#39;</span>)
             .<span class="ident">long</span>(<span class="ident">options::KERNELRELEASE</span>)
             .<span class="ident">alias</span>(<span class="string">&quot;release&quot;</span>) <span class="comment">// Obsolescent option in GNU uname</span>
             .<span class="ident">help</span>(<span class="string">&quot;print the operating system release.&quot;</span>))
-        .<span class="ident">arg</span>(<span class="ident">Arg::with_name</span>(<span class="ident">options::KERNELVERSION</span>)
-            .<span class="ident">short</span>(<span class="string">&quot;v&quot;</span>)
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::KERNELVERSION</span>)
+            .<span class="ident">short</span>(<span class="string">&#39;v&#39;</span>)
             .<span class="ident">long</span>(<span class="ident">options::KERNELVERSION</span>)
             .<span class="ident">help</span>(<span class="string">&quot;print the operating system version.&quot;</span>))
-        .<span class="ident">arg</span>(<span class="ident">Arg::with_name</span>(<span class="ident">options::HWPLATFORM</span>)
-            .<span class="ident">short</span>(<span class="string">&quot;i&quot;</span>)
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::HWPLATFORM</span>)
+            .<span class="ident">short</span>(<span class="string">&#39;i&#39;</span>)
             .<span class="ident">long</span>(<span class="ident">options::HWPLATFORM</span>)
             .<span class="ident">help</span>(<span class="string">&quot;print the hardware platform (non-portable)&quot;</span>))
-        .<span class="ident">arg</span>(<span class="ident">Arg::with_name</span>(<span class="ident">options::MACHINE</span>)
-            .<span class="ident">short</span>(<span class="string">&quot;m&quot;</span>)
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::MACHINE</span>)
+            .<span class="ident">short</span>(<span class="string">&#39;m&#39;</span>)
             .<span class="ident">long</span>(<span class="ident">options::MACHINE</span>)
             .<span class="ident">help</span>(<span class="string">&quot;print the machine hardware name.&quot;</span>))
-        .<span class="ident">arg</span>(<span class="ident">Arg::with_name</span>(<span class="ident">options::PROCESSOR</span>)
-            .<span class="ident">short</span>(<span class="string">&quot;p&quot;</span>)
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::PROCESSOR</span>)
+            .<span class="ident">short</span>(<span class="string">&#39;p&#39;</span>)
             .<span class="ident">long</span>(<span class="ident">options::PROCESSOR</span>)
             .<span class="ident">help</span>(<span class="string">&quot;print the processor type (non-portable)&quot;</span>))
-        .<span class="ident">arg</span>(<span class="ident">Arg::with_name</span>(<span class="ident">options::OS</span>)
-            .<span class="ident">short</span>(<span class="string">&quot;o&quot;</span>)
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::OS</span>)
+            .<span class="ident">short</span>(<span class="string">&#39;o&#39;</span>)
             .<span class="ident">long</span>(<span class="ident">options::OS</span>)
             .<span class="ident">help</span>(<span class="string">&quot;print the operating system name.&quot;</span>))
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_uname" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
 </body></html>

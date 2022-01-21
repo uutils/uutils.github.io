@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uu&#x2F;printf&#x2F;src&#x2F;tokenize&#x2F;unescaped_text.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>unescaped_text.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../uu_printf/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uu&#x2F;printf&#x2F;src&#x2F;tokenize&#x2F;unescaped_text.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>unescaped_text.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><script defer src="../../../main.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../uu_printf/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -275,34 +276,34 @@
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UnescapedText</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>);
 <span class="kw">impl</span> <span class="ident">UnescapedText</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UnescapedText</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="ident">UnescapedText</span> {
         <span class="ident">UnescapedText</span>(<span class="ident">Vec::new</span>())
     }
     <span class="comment">// take an iterator to the format string</span>
     <span class="comment">// consume between min and max chars</span>
     <span class="comment">// and return it as a base-X number</span>
-    <span class="kw">fn</span> <span class="ident">base_to_u32</span>(<span class="ident">min_chars</span>: <span class="ident">u8</span>, <span class="ident">max_chars</span>: <span class="ident">u8</span>, <span class="ident">base</span>: <span class="ident">u32</span>, <span class="ident">it</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">Chars</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">base_to_u32</span>(<span class="ident">min_chars</span>: <span class="ident">u8</span>, <span class="ident">max_chars</span>: <span class="ident">u8</span>, <span class="ident">base</span>: <span class="ident">u32</span>, <span class="ident">it</span>: <span class="kw-2">&amp;mut</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">Chars</span><span class="op">&gt;</span>) -&gt; <span class="ident">u32</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">retval</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">found</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">while</span> <span class="ident">found</span> <span class="op">&lt;</span> <span class="ident">max_chars</span> {
             <span class="comment">// if end of input break</span>
             <span class="kw">let</span> <span class="ident">nc</span> <span class="op">=</span> <span class="ident">it</span>.<span class="ident">next</span>();
             <span class="kw">match</span> <span class="ident">nc</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">digit</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="prelude-val">Some</span>(<span class="ident">digit</span>) =&gt; {
                     <span class="comment">// if end of hexchars break</span>
                     <span class="kw">match</span> <span class="ident">digit</span>.<span class="ident">to_digit</span>(<span class="ident">base</span>) {
-                        <span class="prelude-val">Some</span>(<span class="ident">d</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="prelude-val">Some</span>(<span class="ident">d</span>) =&gt; {
                             <span class="ident">found</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                             <span class="ident">retval</span> <span class="kw-2">*</span><span class="op">=</span> <span class="ident">base</span>;
                             <span class="ident">retval</span> <span class="op">+</span><span class="op">=</span> <span class="ident">d</span>;
                         }
-                        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="prelude-val">None</span> =&gt; {
                             <span class="ident">it</span>.<span class="ident">put_back</span>(<span class="ident">digit</span>);
                             <span class="kw">break</span>;
                         }
                     }
                 }
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="prelude-val">None</span> =&gt; {
                     <span class="kw">break</span>;
                 }
             }
@@ -341,17 +342,17 @@
     <span class="comment">// adding the unescaped bytes</span>
     <span class="comment">// to the passed byte_vec</span>
     <span class="comment">// in subs_mode change octal behavior</span>
-    <span class="kw">fn</span> <span class="ident">handle_escaped</span>(<span class="ident">byte_vec</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">it</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">Chars</span><span class="op">&gt;</span>, <span class="ident">subs_mode</span>: <span class="ident">bool</span>) {
+    <span class="kw">fn</span> <span class="ident">handle_escaped</span>(<span class="ident">byte_vec</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">it</span>: <span class="kw-2">&amp;mut</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">Chars</span><span class="op">&gt;</span>, <span class="ident">subs_mode</span>: <span class="ident">bool</span>) {
         <span class="kw">let</span> <span class="ident">ch</span> <span class="op">=</span> <span class="ident">it</span>.<span class="ident">next</span>().<span class="ident">unwrap_or</span>(<span class="string">&#39;\\&#39;</span>);
         <span class="kw">match</span> <span class="ident">ch</span> {
-            <span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;9&#39;</span> <span class="op">|</span> <span class="string">&#39;x&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;9&#39;</span> <span class="op">|</span> <span class="string">&#39;x&#39;</span> =&gt; {
                 <span class="kw">let</span> <span class="ident">min_len</span> <span class="op">=</span> <span class="number">1</span>;
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">max_len</span> <span class="op">=</span> <span class="number">2</span>;
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">base</span> <span class="op">=</span> <span class="number">16</span>;
                 <span class="kw">let</span> <span class="ident">ignore</span> <span class="op">=</span> <span class="bool-val">false</span>;
                 <span class="kw">match</span> <span class="ident">ch</span> {
-                    <span class="string">&#39;x&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {}
-                    <span class="ident">e</span> @ <span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;9&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="string">&#39;x&#39;</span> =&gt; {}
+                    <span class="ident">e</span> @ <span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;9&#39;</span> =&gt; {
                         <span class="ident">max_len</span> <span class="op">=</span> <span class="number">3</span>;
                         <span class="ident">base</span> <span class="op">=</span> <span class="number">8</span>;
                         <span class="comment">// in practice, gnu coreutils printf</span>
@@ -368,7 +369,7 @@
                             <span class="ident">it</span>.<span class="ident">put_back</span>(<span class="ident">ch</span>);
                         }
                     }
-                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {}
+                    <span class="kw">_</span> =&gt; {}
                 }
                 <span class="kw">if</span> <span class="op">!</span><span class="ident">ignore</span> {
                     <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> (<span class="ident">UnescapedText::base_to_u32</span>(<span class="ident">min_len</span>, <span class="ident">max_len</span>, <span class="ident">base</span>, <span class="ident">it</span>) <span class="op">%</span> <span class="number">256</span>) <span class="kw">as</span> <span class="ident">u8</span>;
@@ -379,7 +380,7 @@
                     <span class="ident">byte_vec</span>.<span class="ident">push</span>(<span class="ident">ch</span> <span class="kw">as</span> <span class="ident">u8</span>);
                 }
             }
-            <span class="ident">e</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">e</span> =&gt; {
                 <span class="comment">// only for hex and octal</span>
                 <span class="comment">// is byte encoding specified.</span>
                 <span class="comment">// otherwise, why not leave the door open</span>
@@ -387,26 +388,26 @@
                 <span class="comment">// a bottleneck.</span>
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">String::new</span>();
                 <span class="kw">let</span> <span class="ident">ch</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">e</span> {
-                    <span class="string">&#39;\\&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&#39;\\&#39;</span>,
-                    <span class="string">&#39;&quot;&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&#39;&quot;&#39;</span>,
-                    <span class="string">&#39;n&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&#39;\n&#39;</span>,
-                    <span class="string">&#39;r&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&#39;\r&#39;</span>,
-                    <span class="string">&#39;t&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&#39;\t&#39;</span>,
+                    <span class="string">&#39;\\&#39;</span> =&gt; <span class="string">&#39;\\&#39;</span>,
+                    <span class="string">&#39;&quot;&#39;</span> =&gt; <span class="string">&#39;&quot;&#39;</span>,
+                    <span class="string">&#39;n&#39;</span> =&gt; <span class="string">&#39;\n&#39;</span>,
+                    <span class="string">&#39;r&#39;</span> =&gt; <span class="string">&#39;\r&#39;</span>,
+                    <span class="string">&#39;t&#39;</span> =&gt; <span class="string">&#39;\t&#39;</span>,
                     <span class="comment">// bell</span>
-                    <span class="string">&#39;a&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&#39;\x07&#39;</span>,
+                    <span class="string">&#39;a&#39;</span> =&gt; <span class="string">&#39;\x07&#39;</span>,
                     <span class="comment">// backspace</span>
-                    <span class="string">&#39;b&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&#39;\x08&#39;</span>,
+                    <span class="string">&#39;b&#39;</span> =&gt; <span class="string">&#39;\x08&#39;</span>,
                     <span class="comment">// vertical tab</span>
-                    <span class="string">&#39;v&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&#39;\x0B&#39;</span>,
+                    <span class="string">&#39;v&#39;</span> =&gt; <span class="string">&#39;\x0B&#39;</span>,
                     <span class="comment">// form feed</span>
-                    <span class="string">&#39;f&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&#39;\x0C&#39;</span>,
+                    <span class="string">&#39;f&#39;</span> =&gt; <span class="string">&#39;\x0C&#39;</span>,
                     <span class="comment">// escape character</span>
-                    <span class="string">&#39;e&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&#39;\x1B&#39;</span>,
-                    <span class="string">&#39;c&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">exit</span>(<span class="ident">cli::EXIT_OK</span>),
-                    <span class="string">&#39;u&#39;</span> <span class="op">|</span> <span class="string">&#39;U&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="string">&#39;e&#39;</span> =&gt; <span class="string">&#39;\x1B&#39;</span>,
+                    <span class="string">&#39;c&#39;</span> =&gt; <span class="ident">exit</span>(<span class="ident">cli::EXIT_OK</span>),
+                    <span class="string">&#39;u&#39;</span> <span class="op">|</span> <span class="string">&#39;U&#39;</span> =&gt; {
                         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">e</span> {
-                            <span class="string">&#39;u&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">4</span>,
-                            <span class="comment">/* &#39;U&#39; | */</span> <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">8</span>,
+                            <span class="string">&#39;u&#39;</span> =&gt; <span class="number">4</span>,
+                            <span class="comment">/* &#39;U&#39; | */</span> <span class="kw">_</span> =&gt; <span class="number">8</span>,
                         };
                         <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="ident">UnescapedText::base_to_u32</span>(<span class="ident">len</span>, <span class="ident">len</span>, <span class="number">16</span>, <span class="ident">it</span>);
                         <span class="ident">UnescapedText::validate_iec</span>(<span class="ident">val</span>, <span class="bool-val">false</span>);
@@ -416,7 +417,7 @@
                             <span class="string">&#39;-&#39;</span>
                         }
                     }
-                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="kw">_</span> =&gt; {
                         <span class="ident">s</span>.<span class="ident">push</span>(<span class="string">&#39;\\&#39;</span>);
                         <span class="ident">ch</span>
                     }
@@ -433,27 +434,27 @@
     <span class="comment">// break on encounter of sub symbol (&#39;%[^%]&#39;) unless called</span>
     <span class="comment">// through %b subst.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_it_core</span>(
-        <span class="ident">it</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">Chars</span><span class="op">&gt;</span>,
+        <span class="ident">it</span>: <span class="kw-2">&amp;mut</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">Chars</span><span class="op">&gt;</span>,
         <span class="ident">subs_mode</span>: <span class="ident">bool</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">token::Token</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">token::Token</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">addchar</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_text</span> <span class="op">=</span> <span class="ident">UnescapedText::new</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tmp_str</span> <span class="op">=</span> <span class="ident">String::new</span>();
         {
-            <span class="kw">let</span> <span class="ident">new_vec</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> (<span class="ident">new_text</span>.<span class="number">0</span>);
+            <span class="kw">let</span> <span class="ident">new_vec</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> (<span class="ident">new_text</span>.<span class="number">0</span>);
             <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ch</span>) <span class="op">=</span> <span class="ident">it</span>.<span class="ident">next</span>() {
                 <span class="kw">if</span> <span class="op">!</span><span class="ident">addchar</span> {
                     <span class="ident">addchar</span> <span class="op">=</span> <span class="bool-val">true</span>;
                 }
                 <span class="kw">match</span> <span class="ident">ch</span> <span class="kw">as</span> <span class="ident">char</span> {
-                    <span class="ident">x</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">!</span><span class="op">=</span> <span class="string">&#39;\\&#39;</span> <span class="op">&amp;&amp;</span> <span class="ident">x</span> <span class="op">!</span><span class="op">=</span> <span class="string">&#39;%&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="ident">x</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">!</span><span class="op">=</span> <span class="string">&#39;\\&#39;</span> <span class="op">&amp;&amp;</span> <span class="ident">x</span> <span class="op">!</span><span class="op">=</span> <span class="string">&#39;%&#39;</span> =&gt; {
                         <span class="comment">// lazy branch eval</span>
                         <span class="comment">// remember this fn could be called</span>
                         <span class="comment">// many times in a single exec through %b</span>
                         <span class="ident">cli::flush_char</span>(<span class="ident">ch</span>);
                         <span class="ident">tmp_str</span>.<span class="ident">push</span>(<span class="ident">ch</span>);
                     }
-                    <span class="string">&#39;\\&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="string">&#39;\\&#39;</span> =&gt; {
                         <span class="comment">// the literal may be a literal bytecode</span>
                         <span class="comment">// and not valid utf-8. Str only supports</span>
                         <span class="comment">// valid utf-8.</span>
@@ -467,9 +468,9 @@
                         }
                         <span class="ident">UnescapedText::handle_escaped</span>(<span class="ident">new_vec</span>, <span class="ident">it</span>, <span class="ident">subs_mode</span>)
                     }
-                    <span class="ident">x</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="string">&#39;%&#39;</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">subs_mode</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="ident">x</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">==</span> <span class="string">&#39;%&#39;</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">subs_mode</span> =&gt; {
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">follow</span>) <span class="op">=</span> <span class="ident">it</span>.<span class="ident">next</span>() {
-                            <span class="kw">if</span> <span class="ident">follow</span> <span class="op">=</span><span class="op">=</span> <span class="string">&#39;%&#39;</span> {
+                            <span class="kw">if</span> <span class="ident">follow</span> <span class="op">==</span> <span class="string">&#39;%&#39;</span> {
                                 <span class="ident">cli::flush_char</span>(<span class="ident">ch</span>);
                                 <span class="ident">tmp_str</span>.<span class="ident">push</span>(<span class="ident">ch</span>);
                             } <span class="kw">else</span> {
@@ -482,7 +483,7 @@
                             <span class="kw">break</span>;
                         }
                     }
-                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="kw">_</span> =&gt; {
                         <span class="ident">cli::flush_char</span>(<span class="ident">ch</span>);
                         <span class="ident">tmp_str</span>.<span class="ident">push</span>(<span class="ident">ch</span>);
                     }
@@ -501,18 +502,17 @@
 }
 <span class="kw">impl</span> <span class="ident">token::Tokenizer</span> <span class="kw">for</span> <span class="ident">UnescapedText</span> {
     <span class="kw">fn</span> <span class="ident">from_it</span>(
-        <span class="ident">it</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">Chars</span><span class="op">&gt;</span>,
-        <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Peekable</span><span class="op">&lt;</span><span class="ident">Iter</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">token::Token</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="ident">it</span>: <span class="kw-2">&amp;mut</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">Chars</span><span class="op">&gt;</span>,
+        <span class="kw">_</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Peekable</span><span class="op">&lt;</span><span class="ident">Iter</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">token::Token</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="ident">UnescapedText::from_it_core</span>(<span class="ident">it</span>, <span class="bool-val">false</span>)
     }
 }
 <span class="kw">impl</span> <span class="ident">token::Token</span> <span class="kw">for</span> <span class="ident">UnescapedText</span> {
-    <span class="kw">fn</span> <span class="ident">print</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Peekable</span><span class="op">&lt;</span><span class="ident">Iter</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">print</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Peekable</span><span class="op">&lt;</span><span class="ident">Iter</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>) {
         <span class="ident">cli::flush_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>[..]);
     }
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uu_printf" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div>
-    <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script>
 </body></html>

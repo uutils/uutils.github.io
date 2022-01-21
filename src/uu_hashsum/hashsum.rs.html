@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uu&#x2F;hashsum&#x2F;src&#x2F;hashsum.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>hashsum.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uu_hashsum/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;uu&#x2F;hashsum&#x2F;src&#x2F;hashsum.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>hashsum.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uu_hashsum/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -632,6 +633,18 @@
 <span id="632">632</span>
 <span id="633">633</span>
 <span id="634">634</span>
+<span id="635">635</span>
+<span id="636">636</span>
+<span id="637">637</span>
+<span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
+<span id="644">644</span>
+<span id="645">645</span>
+<span id="646">646</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Alex Lyon &lt;arcterus@mail.com&gt;</span>
@@ -662,6 +675,7 @@
 <span class="kw">use</span> <span class="ident">sha2</span>::{<span class="ident">Sha224</span>, <span class="ident">Sha256</span>, <span class="ident">Sha384</span>, <span class="ident">Sha512</span>};
 <span class="kw">use</span> <span class="ident">sha3</span>::{<span class="ident">Sha3_224</span>, <span class="ident">Sha3_256</span>, <span class="ident">Sha3_384</span>, <span class="ident">Sha3_512</span>, <span class="ident">Shake128</span>, <span class="ident">Shake256</span>};
 <span class="kw">use</span> <span class="ident">std::cmp::Ordering</span>;
+<span class="kw">use</span> <span class="ident">std::error::Error</span>;
 <span class="kw">use</span> <span class="ident">std::ffi</span>::{<span class="ident">OsStr</span>, <span class="ident">OsString</span>};
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">stdin</span>, <span class="ident">BufRead</span>, <span class="ident">BufReader</span>, <span class="ident">Read</span>};
@@ -669,6 +683,7 @@
 <span class="kw">use</span> <span class="ident">std::num::ParseIntError</span>;
 <span class="kw">use</span> <span class="ident">std::path::Path</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
+<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UError</span>, <span class="ident">UResult</span>};
 
 <span class="kw">const</span> <span class="ident">NAME</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;hashsum&quot;</span>;
 
@@ -685,7 +700,7 @@
     <span class="ident">output_bits</span>: <span class="ident">usize</span>,
 }
 
-<span class="kw">fn</span> <span class="ident">is_custom_binary</span>(<span class="ident">program</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+<span class="kw">fn</span> <span class="ident">is_custom_binary</span>(<span class="ident">program</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">bool</span> {
     <span class="macro">matches!</span>(
         <span class="ident">program</span>,
         <span class="string">&quot;md5sum&quot;</span>
@@ -706,98 +721,98 @@
 }
 
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::cognitive_complexity</span>)]</span>
-<span class="kw">fn</span> <span class="ident">detect_algo</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
+<span class="kw">fn</span> <span class="ident">detect_algo</span>(
     <span class="ident">program</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> (<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span> <span class="op">+</span> <span class="lifetime">&#39;static</span><span class="op">&gt;</span>, <span class="ident">usize</span>) {
+    <span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>,
+) -&gt; (<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span> <span class="op">+</span> <span class="lifetime">&#39;static</span><span class="op">&gt;</span>, <span class="ident">usize</span>) {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">alg</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output_bits</span> <span class="op">=</span> <span class="number">0</span>;
     <span class="kw">match</span> <span class="ident">program</span> {
-        <span class="string">&quot;md5sum&quot;</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="string">&quot;MD5&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">Md5::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>, <span class="number">128</span>),
-        <span class="string">&quot;sha1sum&quot;</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="string">&quot;SHA1&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">Sha1::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>, <span class="number">160</span>),
-        <span class="string">&quot;sha224sum&quot;</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="string">&quot;SHA224&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">Sha224::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>, <span class="number">224</span>),
-        <span class="string">&quot;sha256sum&quot;</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="string">&quot;SHA256&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">Sha256::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>, <span class="number">256</span>),
-        <span class="string">&quot;sha384sum&quot;</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="string">&quot;SHA384&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">Sha384::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>, <span class="number">384</span>),
-        <span class="string">&quot;sha512sum&quot;</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="string">&quot;SHA512&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">Sha512::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>, <span class="number">512</span>),
-        <span class="string">&quot;b2sum&quot;</span> <span class="op">=</span><span class="op">&gt;</span> (
+        <span class="string">&quot;md5sum&quot;</span> =&gt; (<span class="string">&quot;MD5&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">Md5::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>, <span class="number">128</span>),
+        <span class="string">&quot;sha1sum&quot;</span> =&gt; (<span class="string">&quot;SHA1&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">Sha1::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>, <span class="number">160</span>),
+        <span class="string">&quot;sha224sum&quot;</span> =&gt; (<span class="string">&quot;SHA224&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">Sha224::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>, <span class="number">224</span>),
+        <span class="string">&quot;sha256sum&quot;</span> =&gt; (<span class="string">&quot;SHA256&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">Sha256::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>, <span class="number">256</span>),
+        <span class="string">&quot;sha384sum&quot;</span> =&gt; (<span class="string">&quot;SHA384&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">Sha384::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>, <span class="number">384</span>),
+        <span class="string">&quot;sha512sum&quot;</span> =&gt; (<span class="string">&quot;SHA512&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">Sha512::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>, <span class="number">512</span>),
+        <span class="string">&quot;b2sum&quot;</span> =&gt; (
             <span class="string">&quot;BLAKE2&quot;</span>,
             <span class="ident">Box::new</span>(<span class="ident">blake2b_simd::State::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
             <span class="number">512</span>,
         ),
-        <span class="string">&quot;sha3sum&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;bits&quot;</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">bits_str</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> (<span class="ident">bits_str</span>).<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
-                <span class="prelude-val">Ok</span>(<span class="number">224</span>) <span class="op">=</span><span class="op">&gt;</span> (
+        <span class="string">&quot;sha3sum&quot;</span> =&gt; <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;bits&quot;</span>) {
+            <span class="prelude-val">Some</span>(<span class="ident">bits_str</span>) =&gt; <span class="kw">match</span> (<span class="ident">bits_str</span>).<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
+                <span class="prelude-val">Ok</span>(<span class="number">224</span>) =&gt; (
                     <span class="string">&quot;SHA3-224&quot;</span>,
                     <span class="ident">Box::new</span>(<span class="ident">Sha3_224::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
                     <span class="number">224</span>,
                 ),
-                <span class="prelude-val">Ok</span>(<span class="number">256</span>) <span class="op">=</span><span class="op">&gt;</span> (
+                <span class="prelude-val">Ok</span>(<span class="number">256</span>) =&gt; (
                     <span class="string">&quot;SHA3-256&quot;</span>,
                     <span class="ident">Box::new</span>(<span class="ident">Sha3_256::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
                     <span class="number">256</span>,
                 ),
-                <span class="prelude-val">Ok</span>(<span class="number">384</span>) <span class="op">=</span><span class="op">&gt;</span> (
+                <span class="prelude-val">Ok</span>(<span class="number">384</span>) =&gt; (
                     <span class="string">&quot;SHA3-384&quot;</span>,
                     <span class="ident">Box::new</span>(<span class="ident">Sha3_384::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
                     <span class="number">384</span>,
                 ),
-                <span class="prelude-val">Ok</span>(<span class="number">512</span>) <span class="op">=</span><span class="op">&gt;</span> (
+                <span class="prelude-val">Ok</span>(<span class="number">512</span>) =&gt; (
                     <span class="string">&quot;SHA3-512&quot;</span>,
                     <span class="ident">Box::new</span>(<span class="ident">Sha3_512::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
                     <span class="number">512</span>,
                 ),
-                <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">crash!</span>(
+                <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="macro">crash!</span>(
                     <span class="number">1</span>,
                     <span class="string">&quot;Invalid output size for SHA3 (expected 224, 256, 384, or 512)&quot;</span>
                 ),
-                <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>),
+                <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>),
             },
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHA3&quot;</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHA3&quot;</span>),
         },
-        <span class="string">&quot;sha3-224sum&quot;</span> <span class="op">=</span><span class="op">&gt;</span> (
+        <span class="string">&quot;sha3-224sum&quot;</span> =&gt; (
             <span class="string">&quot;SHA3-224&quot;</span>,
             <span class="ident">Box::new</span>(<span class="ident">Sha3_224::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
             <span class="number">224</span>,
         ),
-        <span class="string">&quot;sha3-256sum&quot;</span> <span class="op">=</span><span class="op">&gt;</span> (
+        <span class="string">&quot;sha3-256sum&quot;</span> =&gt; (
             <span class="string">&quot;SHA3-256&quot;</span>,
             <span class="ident">Box::new</span>(<span class="ident">Sha3_256::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
             <span class="number">256</span>,
         ),
-        <span class="string">&quot;sha3-384sum&quot;</span> <span class="op">=</span><span class="op">&gt;</span> (
+        <span class="string">&quot;sha3-384sum&quot;</span> =&gt; (
             <span class="string">&quot;SHA3-384&quot;</span>,
             <span class="ident">Box::new</span>(<span class="ident">Sha3_384::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
             <span class="number">384</span>,
         ),
-        <span class="string">&quot;sha3-512sum&quot;</span> <span class="op">=</span><span class="op">&gt;</span> (
+        <span class="string">&quot;sha3-512sum&quot;</span> =&gt; (
             <span class="string">&quot;SHA3-512&quot;</span>,
             <span class="ident">Box::new</span>(<span class="ident">Sha3_512::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
             <span class="number">512</span>,
         ),
-        <span class="string">&quot;shake128sum&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;bits&quot;</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">bits_str</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> (<span class="ident">bits_str</span>).<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
-                <span class="prelude-val">Ok</span>(<span class="ident">bits</span>) <span class="op">=</span><span class="op">&gt;</span> (
+        <span class="string">&quot;shake128sum&quot;</span> =&gt; <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;bits&quot;</span>) {
+            <span class="prelude-val">Some</span>(<span class="ident">bits_str</span>) =&gt; <span class="kw">match</span> (<span class="ident">bits_str</span>).<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
+                <span class="prelude-val">Ok</span>(<span class="ident">bits</span>) =&gt; (
                     <span class="string">&quot;SHAKE128&quot;</span>,
                     <span class="ident">Box::new</span>(<span class="ident">Shake128::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
                     <span class="ident">bits</span>,
                 ),
-                <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>),
+                <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>),
             },
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHAKE-128&quot;</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHAKE-128&quot;</span>),
         },
-        <span class="string">&quot;shake256sum&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;bits&quot;</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">bits_str</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> (<span class="ident">bits_str</span>).<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
-                <span class="prelude-val">Ok</span>(<span class="ident">bits</span>) <span class="op">=</span><span class="op">&gt;</span> (
+        <span class="string">&quot;shake256sum&quot;</span> =&gt; <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;bits&quot;</span>) {
+            <span class="prelude-val">Some</span>(<span class="ident">bits_str</span>) =&gt; <span class="kw">match</span> (<span class="ident">bits_str</span>).<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
+                <span class="prelude-val">Ok</span>(<span class="ident">bits</span>) =&gt; (
                     <span class="string">&quot;SHAKE256&quot;</span>,
                     <span class="ident">Box::new</span>(<span class="ident">Shake256::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
                     <span class="ident">bits</span>,
                 ),
-                <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>),
+                <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>),
             },
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHAKE-256&quot;</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHAKE-256&quot;</span>),
         },
-        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="kw">_</span> =&gt; {
             {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">set_or_crash</span> <span class="op">=</span> <span class="op">|</span><span class="ident">n</span>, <span class="ident">val</span>, <span class="ident">bits</span><span class="op">|</span> {
                     <span class="kw">if</span> <span class="ident">alg</span>.<span class="ident">is_some</span>() {
@@ -830,34 +845,34 @@
                 }
                 <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;sha3&quot;</span>) {
                     <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;bits&quot;</span>) {
-                        <span class="prelude-val">Some</span>(<span class="ident">bits_str</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> (<span class="ident">bits_str</span>).<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
-                            <span class="prelude-val">Ok</span>(<span class="number">224</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">set_or_crash</span>(
+                        <span class="prelude-val">Some</span>(<span class="ident">bits_str</span>) =&gt; <span class="kw">match</span> (<span class="ident">bits_str</span>).<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
+                            <span class="prelude-val">Ok</span>(<span class="number">224</span>) =&gt; <span class="ident">set_or_crash</span>(
                                 <span class="string">&quot;SHA3-224&quot;</span>,
                                 <span class="ident">Box::new</span>(<span class="ident">Sha3_224::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
                                 <span class="number">224</span>,
                             ),
-                            <span class="prelude-val">Ok</span>(<span class="number">256</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">set_or_crash</span>(
+                            <span class="prelude-val">Ok</span>(<span class="number">256</span>) =&gt; <span class="ident">set_or_crash</span>(
                                 <span class="string">&quot;SHA3-256&quot;</span>,
                                 <span class="ident">Box::new</span>(<span class="ident">Sha3_256::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
                                 <span class="number">256</span>,
                             ),
-                            <span class="prelude-val">Ok</span>(<span class="number">384</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">set_or_crash</span>(
+                            <span class="prelude-val">Ok</span>(<span class="number">384</span>) =&gt; <span class="ident">set_or_crash</span>(
                                 <span class="string">&quot;SHA3-384&quot;</span>,
                                 <span class="ident">Box::new</span>(<span class="ident">Sha3_384::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
                                 <span class="number">384</span>,
                             ),
-                            <span class="prelude-val">Ok</span>(<span class="number">512</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">set_or_crash</span>(
+                            <span class="prelude-val">Ok</span>(<span class="number">512</span>) =&gt; <span class="ident">set_or_crash</span>(
                                 <span class="string">&quot;SHA3-512&quot;</span>,
                                 <span class="ident">Box::new</span>(<span class="ident">Sha3_512::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
                                 <span class="number">512</span>,
                             ),
-                            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">crash!</span>(
+                            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="macro">crash!</span>(
                                 <span class="number">1</span>,
                                 <span class="string">&quot;Invalid output size for SHA3 (expected 224, 256, 384, or 512)&quot;</span>
                             ),
-                            <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>),
+                            <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>),
                         },
-                        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHA3&quot;</span>),
+                        <span class="prelude-val">None</span> =&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHA3&quot;</span>),
                     }
                 }
                 <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;sha3-224&quot;</span>) {
@@ -874,20 +889,20 @@
                 }
                 <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;shake128&quot;</span>) {
                     <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;bits&quot;</span>) {
-                        <span class="prelude-val">Some</span>(<span class="ident">bits_str</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> (<span class="ident">bits_str</span>).<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
-                            <span class="prelude-val">Ok</span>(<span class="ident">bits</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">set_or_crash</span>(<span class="string">&quot;SHAKE128&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">Shake128::new</span>()), <span class="ident">bits</span>),
-                            <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>),
+                        <span class="prelude-val">Some</span>(<span class="ident">bits_str</span>) =&gt; <span class="kw">match</span> (<span class="ident">bits_str</span>).<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
+                            <span class="prelude-val">Ok</span>(<span class="ident">bits</span>) =&gt; <span class="ident">set_or_crash</span>(<span class="string">&quot;SHAKE128&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">Shake128::new</span>()), <span class="ident">bits</span>),
+                            <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>),
                         },
-                        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHAKE-128&quot;</span>),
+                        <span class="prelude-val">None</span> =&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHAKE-128&quot;</span>),
                     }
                 }
                 <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;shake256&quot;</span>) {
                     <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;bits&quot;</span>) {
-                        <span class="prelude-val">Some</span>(<span class="ident">bits_str</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> (<span class="ident">bits_str</span>).<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
-                            <span class="prelude-val">Ok</span>(<span class="ident">bits</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">set_or_crash</span>(<span class="string">&quot;SHAKE256&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">Shake256::new</span>()), <span class="ident">bits</span>),
-                            <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>),
+                        <span class="prelude-val">Some</span>(<span class="ident">bits_str</span>) =&gt; <span class="kw">match</span> (<span class="ident">bits_str</span>).<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
+                            <span class="prelude-val">Ok</span>(<span class="ident">bits</span>) =&gt; <span class="ident">set_or_crash</span>(<span class="string">&quot;SHAKE256&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">Shake256::new</span>()), <span class="ident">bits</span>),
+                            <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>),
                         },
-                        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHAKE-256&quot;</span>),
+                        <span class="prelude-val">None</span> =&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHAKE-256&quot;</span>),
                     }
                 }
             }
@@ -898,17 +913,16 @@
 }
 
 <span class="comment">// TODO: return custom error type</span>
-<span class="kw">fn</span> <span class="ident">parse_bit_num</span>(<span class="ident">arg</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">ParseIntError</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">parse_bit_num</span>(<span class="ident">arg</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">ParseIntError</span><span class="op">&gt;</span> {
     <span class="ident">arg</span>.<span class="ident">parse</span>()
 }
 
-<span class="kw">fn</span> <span class="ident">is_valid_bit_num</span>(<span class="ident">arg</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="ident">parse_bit_num</span>(<span class="kw-2">&amp;</span><span class="ident">arg</span>)
-        .<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> ())
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>))
+<span class="kw">fn</span> <span class="ident">is_valid_bit_num</span>(<span class="ident">arg</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="ident">parse_bit_num</span>(<span class="ident">arg</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> ()).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>))
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="kw-2">mut</span> <span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i32</span> {
+<span class="attribute">#[<span class="ident">uucore_procs::gen_uumain</span>]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="kw-2">mut</span> <span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="comment">// if there is no program name for some reason, default to &quot;hashsum&quot;</span>
     <span class="kw">let</span> <span class="ident">program</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">next</span>().<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">OsString::from</span>(<span class="ident">NAME</span>));
     <span class="kw">let</span> <span class="ident">binary_name</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">program</span>)
@@ -923,7 +937,7 @@
 
     <span class="kw">let</span> <span class="ident">app</span> <span class="op">=</span> <span class="ident">uu_app</span>(<span class="kw-2">&amp;</span><span class="ident">binary_name</span>);
 
-    <span class="comment">// FIXME: this should use get_matches_from_safe() and crash!(), but at the moment that just</span>
+    <span class="comment">// FIXME: this should use try_get_matches_from() and crash!(), but at the moment that just</span>
     <span class="comment">//        causes &quot;error: &quot; to be printed twice (once from crash!() and once from clap).  With</span>
     <span class="comment">//        the current setup, the name of the utility is not printed, but I think this is at</span>
     <span class="comment">//        least somewhat better from a user&#39;s perspective.</span>
@@ -958,18 +972,13 @@
         <span class="ident">warn</span>,
     };
 
-    <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">values_of_os</span>(<span class="string">&quot;FILE&quot;</span>) {
-        <span class="prelude-val">Some</span>(<span class="ident">files</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">hashsum</span>(<span class="ident">opts</span>, <span class="ident">files</span>),
-        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">hashsum</span>(<span class="ident">opts</span>, <span class="ident">iter::once</span>(<span class="ident">OsStr::new</span>(<span class="string">&quot;-&quot;</span>))),
-    };
-
-    <span class="kw">match</span> <span class="ident">res</span> {
-        <span class="prelude-val">Ok</span>(()) <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">e</span>,
+    <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">values_of_os</span>(<span class="string">&quot;FILE&quot;</span>) {
+        <span class="prelude-val">Some</span>(<span class="ident">files</span>) =&gt; <span class="ident">hashsum</span>(<span class="ident">opts</span>, <span class="ident">files</span>),
+        <span class="prelude-val">None</span> =&gt; <span class="ident">hashsum</span>(<span class="ident">opts</span>, <span class="ident">iter::once</span>(<span class="ident">OsStr::new</span>(<span class="string">&quot;-&quot;</span>))),
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app_common</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app_common</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
     <span class="kw">const</span> <span class="ident">BINARY_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;read in binary mode (default)&quot;</span>;
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
@@ -982,55 +991,55 @@
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="string">&quot;Compute and check message digests.&quot;</span>)
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="string">&quot;binary&quot;</span>)
-                .<span class="ident">short</span>(<span class="string">&quot;b&quot;</span>)
+            <span class="ident">Arg::new</span>(<span class="string">&quot;binary&quot;</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;b&#39;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;binary&quot;</span>)
                 .<span class="ident">help</span>(<span class="ident">BINARY_HELP</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="string">&quot;check&quot;</span>)
-                .<span class="ident">short</span>(<span class="string">&quot;c&quot;</span>)
+            <span class="ident">Arg::new</span>(<span class="string">&quot;check&quot;</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;c&#39;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;check&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;read hashsums from the FILEs and check them&quot;</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="string">&quot;tag&quot;</span>)
+            <span class="ident">Arg::new</span>(<span class="string">&quot;tag&quot;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;tag&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;create a BSD-style checksum&quot;</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="string">&quot;text&quot;</span>)
-                .<span class="ident">short</span>(<span class="string">&quot;t&quot;</span>)
+            <span class="ident">Arg::new</span>(<span class="string">&quot;text&quot;</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;t&#39;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;text&quot;</span>)
                 .<span class="ident">help</span>(<span class="ident">TEXT_HELP</span>)
                 .<span class="ident">conflicts_with</span>(<span class="string">&quot;binary&quot;</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="string">&quot;quiet&quot;</span>)
-                .<span class="ident">short</span>(<span class="string">&quot;q&quot;</span>)
+            <span class="ident">Arg::new</span>(<span class="string">&quot;quiet&quot;</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;q&#39;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;quiet&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;don&#39;t print OK for each successfully verified file&quot;</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="string">&quot;status&quot;</span>)
-                .<span class="ident">short</span>(<span class="string">&quot;s&quot;</span>)
+            <span class="ident">Arg::new</span>(<span class="string">&quot;status&quot;</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;status&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;don&#39;t output anything, status code shows success&quot;</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="string">&quot;strict&quot;</span>)
+            <span class="ident">Arg::new</span>(<span class="string">&quot;strict&quot;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;strict&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;exit non-zero for improperly formatted checksum lines&quot;</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="string">&quot;warn&quot;</span>)
-                .<span class="ident">short</span>(<span class="string">&quot;w&quot;</span>)
+            <span class="ident">Arg::new</span>(<span class="string">&quot;warn&quot;</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;w&#39;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;warn&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;warn about improperly formatted checksum lines&quot;</span>),
         )
         <span class="comment">// Needed for variable-length output sums (e.g. SHAKE)</span>
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="string">&quot;bits&quot;</span>)
+            <span class="ident">Arg::new</span>(<span class="string">&quot;bits&quot;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;bits&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;set the size of the output (only for SHAKE)&quot;</span>)
                 .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
@@ -1039,14 +1048,15 @@
                 .<span class="ident">validator</span>(<span class="ident">is_valid_bit_num</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::with_name</span>(<span class="string">&quot;FILE&quot;</span>)
+            <span class="ident">Arg::new</span>(<span class="string">&quot;FILE&quot;</span>)
                 .<span class="ident">index</span>(<span class="number">1</span>)
-                .<span class="ident">multiple</span>(<span class="bool-val">true</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;FILE&quot;</span>),
+                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                .<span class="ident">value_name</span>(<span class="string">&quot;FILE&quot;</span>)
+                .<span class="ident">allow_invalid_utf8</span>(<span class="bool-val">true</span>),
         )
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app_custom</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app_custom</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">app</span> <span class="op">=</span> <span class="ident">uu_app_common</span>();
     <span class="kw">let</span> <span class="ident">algorithms</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[
         (<span class="string">&quot;md5&quot;</span>, <span class="string">&quot;work with MD5&quot;</span>),
@@ -1072,14 +1082,14 @@
     ];
 
     <span class="kw">for</span> (<span class="ident">name</span>, <span class="ident">desc</span>) <span class="kw">in</span> <span class="ident">algorithms</span> {
-        <span class="ident">app</span> <span class="op">=</span> <span class="ident">app</span>.<span class="ident">arg</span>(<span class="ident">Arg::with_name</span>(<span class="ident">name</span>).<span class="ident">long</span>(<span class="ident">name</span>).<span class="ident">help</span>(<span class="ident">desc</span>));
+        <span class="ident">app</span> <span class="op">=</span> <span class="ident">app</span>.<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="kw-2">*</span><span class="ident">name</span>).<span class="ident">long</span>(<span class="ident">name</span>).<span class="ident">help</span>(<span class="kw-2">*</span><span class="ident">desc</span>));
     }
     <span class="ident">app</span>
 }
 
 <span class="comment">// hashsum is handled differently in build.rs, therefore this is not the same</span>
 <span class="comment">// as in other utilities.</span>
-<span class="kw">fn</span> <span class="ident">uu_app</span>(<span class="ident">binary_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">binary_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="op">!</span><span class="ident">is_custom_binary</span>(<span class="ident">binary_name</span>) {
         <span class="ident">uu_app_custom</span>()
     } <span class="kw">else</span> {
@@ -1087,8 +1097,26 @@
     }
 }
 
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">enum</span> <span class="ident">HashsumError</span> {
+    <span class="ident">InvalidRegex</span>,
+    <span class="ident">InvalidFormat</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="ident">HashsumError</span> {}
+<span class="kw">impl</span> <span class="ident">UError</span> <span class="kw">for</span> <span class="ident">HashsumError</span> {}
+
+<span class="kw">impl</span> <span class="ident">std::fmt::Display</span> <span class="kw">for</span> <span class="ident">HashsumError</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::fmt::Formatter</span>) -&gt; <span class="ident">std::fmt::Result</span> {
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident">HashsumError::InvalidRegex</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;invalid regular expression&quot;</span>),
+            <span class="ident">HashsumError::InvalidFormat</span> =&gt; <span class="prelude-val">Ok</span>(()),
+        }
+    }
+}
+
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::cognitive_complexity</span>)]</span>
-<span class="kw">fn</span> <span class="ident">hashsum</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">I</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">options</span>: <span class="ident">Options</span>, <span class="ident">files</span>: <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">i32</span><span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">hashsum</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">I</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">options</span>: <span class="ident">Options</span>, <span class="ident">files</span>: <span class="ident">I</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">I</span>: <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">OsStr</span><span class="op">&gt;</span>,
 {
@@ -1100,11 +1128,12 @@
 
         <span class="kw">let</span> <span class="ident">stdin_buf</span>;
         <span class="kw">let</span> <span class="ident">file_buf</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">BufReader::new</span>(<span class="kw">if</span> <span class="ident">filename</span> <span class="op">=</span><span class="op">=</span> <span class="ident">OsStr::new</span>(<span class="string">&quot;-&quot;</span>) {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">BufReader::new</span>(<span class="kw">if</span> <span class="ident">filename</span> <span class="op">==</span> <span class="ident">OsStr::new</span>(<span class="string">&quot;-&quot;</span>) {
             <span class="ident">stdin_buf</span> <span class="op">=</span> <span class="ident">stdin</span>();
             <span class="ident">Box::new</span>(<span class="ident">stdin_buf</span>) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Read</span><span class="op">&gt;</span>
         } <span class="kw">else</span> {
-            <span class="ident">file_buf</span> <span class="op">=</span> <span class="macro">crash_if_err!</span>(<span class="number">1</span>, <span class="ident">File::open</span>(<span class="ident">filename</span>));
+            <span class="ident">file_buf</span> <span class="op">=</span>
+                <span class="ident">File::open</span>(<span class="ident">filename</span>).<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to open file&quot;</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
             <span class="ident">Box::new</span>(<span class="ident">file_buf</span>) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Read</span><span class="op">&gt;</span>
         });
         <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">check</span> {
@@ -1121,41 +1150,40 @@
             } <span class="kw">else</span> {
                 <span class="string">&quot;+&quot;</span>.<span class="ident">to_string</span>()
             };
-            <span class="kw">let</span> <span class="ident">gnu_re</span> <span class="op">=</span> <span class="macro">crash_if_err!</span>(
-                <span class="number">1</span>,
-                <span class="ident">Regex::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
-                    <span class="string">r&quot;^(?P&lt;digest&gt;[a-fA-F0-9]{}) (?P&lt;binary&gt;[ \*])(?P&lt;fileName&gt;.*)&quot;</span>,
-                    <span class="ident">modifier</span>,
-                ))
-            );
-            <span class="kw">let</span> <span class="ident">bsd_re</span> <span class="op">=</span> <span class="macro">crash_if_err!</span>(
-                <span class="number">1</span>,
-                <span class="ident">Regex::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
-                    <span class="string">r&quot;^{algorithm} \((?P&lt;fileName&gt;.*)\) = (?P&lt;digest&gt;[a-fA-F0-9]{digest_size})&quot;</span>,
-                    <span class="ident">algorithm</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">algoname</span>,
-                    <span class="ident">digest_size</span> <span class="op">=</span> <span class="ident">modifier</span>,
-                ))
-            );
+            <span class="kw">let</span> <span class="ident">gnu_re</span> <span class="op">=</span> <span class="ident">Regex::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+                <span class="string">r&quot;^(?P&lt;digest&gt;[a-fA-F0-9]{}) (?P&lt;binary&gt;[ \*])(?P&lt;fileName&gt;.*)&quot;</span>,
+                <span class="ident">modifier</span>,
+            ))
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">HashsumError::InvalidRegex</span>)<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">bsd_re</span> <span class="op">=</span> <span class="ident">Regex::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+                <span class="string">r&quot;^{algorithm} \((?P&lt;fileName&gt;.*)\) = (?P&lt;digest&gt;[a-fA-F0-9]{digest_size})&quot;</span>,
+                <span class="ident">algorithm</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">algoname</span>,
+                <span class="ident">digest_size</span> <span class="op">=</span> <span class="ident">modifier</span>,
+            ))
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">HashsumError::InvalidRegex</span>)<span class="question-mark">?</span>;
 
             <span class="kw">let</span> <span class="ident">buffer</span> <span class="op">=</span> <span class="ident">file</span>;
-            <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">line</span>) <span class="kw">in</span> <span class="ident">buffer</span>.<span class="ident">lines</span>().<span class="ident">enumerate</span>() {
-                <span class="kw">let</span> <span class="ident">line</span> <span class="op">=</span> <span class="macro">crash_if_err!</span>(<span class="number">1</span>, <span class="ident">line</span>);
+            <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">maybe_line</span>) <span class="kw">in</span> <span class="ident">buffer</span>.<span class="ident">lines</span>().<span class="ident">enumerate</span>() {
+                <span class="kw">let</span> <span class="ident">line</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">maybe_line</span> {
+                    <span class="prelude-val">Ok</span>(<span class="ident">l</span>) =&gt; <span class="ident">l</span>,
+                    <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>.<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to read file&quot;</span>.<span class="ident">to_string</span>())),
+                };
                 <span class="kw">let</span> (<span class="ident">ck_filename</span>, <span class="ident">sum</span>, <span class="ident">binary_check</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">gnu_re</span>.<span class="ident">captures</span>(<span class="kw-2">&amp;</span><span class="ident">line</span>) {
-                    <span class="prelude-val">Some</span>(<span class="ident">caps</span>) <span class="op">=</span><span class="op">&gt;</span> (
+                    <span class="prelude-val">Some</span>(<span class="ident">caps</span>) =&gt; (
                         <span class="ident">caps</span>.<span class="ident">name</span>(<span class="string">&quot;fileName&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>(),
                         <span class="ident">caps</span>.<span class="ident">name</span>(<span class="string">&quot;digest&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>().<span class="ident">to_ascii_lowercase</span>(),
-                        <span class="ident">caps</span>.<span class="ident">name</span>(<span class="string">&quot;binary&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&quot;*&quot;</span>,
+                        <span class="ident">caps</span>.<span class="ident">name</span>(<span class="string">&quot;binary&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>() <span class="op">==</span> <span class="string">&quot;*&quot;</span>,
                     ),
-                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">bsd_re</span>.<span class="ident">captures</span>(<span class="kw-2">&amp;</span><span class="ident">line</span>) {
-                        <span class="prelude-val">Some</span>(<span class="ident">caps</span>) <span class="op">=</span><span class="op">&gt;</span> (
+                    <span class="prelude-val">None</span> =&gt; <span class="kw">match</span> <span class="ident">bsd_re</span>.<span class="ident">captures</span>(<span class="kw-2">&amp;</span><span class="ident">line</span>) {
+                        <span class="prelude-val">Some</span>(<span class="ident">caps</span>) =&gt; (
                             <span class="ident">caps</span>.<span class="ident">name</span>(<span class="string">&quot;fileName&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>(),
                             <span class="ident">caps</span>.<span class="ident">name</span>(<span class="string">&quot;digest&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>().<span class="ident">to_ascii_lowercase</span>(),
                             <span class="bool-val">true</span>,
                         ),
-                        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="prelude-val">None</span> =&gt; {
                             <span class="ident">bad_format</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                             <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">strict</span> {
-                                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="number">1</span>);
+                                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HashsumError::InvalidFormat</span>.<span class="ident">into</span>());
                             }
                             <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">warn</span> {
                                 <span class="macro">show_warning!</span>(
@@ -1169,17 +1197,16 @@
                         }
                     },
                 };
-                <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="macro">crash_if_err!</span>(<span class="number">1</span>, <span class="ident">File::open</span>(<span class="ident">ck_filename</span>));
+                <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">File::open</span>(<span class="ident">ck_filename</span>)
+                    .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to open file&quot;</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ckf</span> <span class="op">=</span> <span class="ident">BufReader::new</span>(<span class="ident">Box::new</span>(<span class="ident">f</span>) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Read</span><span class="op">&gt;</span>);
-                <span class="kw">let</span> <span class="ident">real_sum</span> <span class="op">=</span> <span class="macro">crash_if_err!</span>(
-                    <span class="number">1</span>,
-                    <span class="ident">digest_reader</span>(
-                        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">options</span>.<span class="ident">digest</span>,
-                        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ckf</span>,
-                        <span class="ident">binary_check</span>,
-                        <span class="ident">options</span>.<span class="ident">output_bits</span>
-                    )
+                <span class="kw">let</span> <span class="ident">real_sum</span> <span class="op">=</span> <span class="ident">digest_reader</span>(
+                    <span class="kw-2">&amp;mut</span> <span class="ident">options</span>.<span class="ident">digest</span>,
+                    <span class="kw-2">&amp;mut</span> <span class="ident">ckf</span>,
+                    <span class="ident">binary_check</span>,
+                    <span class="ident">options</span>.<span class="ident">output_bits</span>,
                 )
+                .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to read input&quot;</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>
                 .<span class="ident">to_ascii_lowercase</span>();
                 <span class="comment">// FIXME: Filenames with newlines should be treated specially.</span>
                 <span class="comment">// GNU appears to replace newlines by \n and backslashes by</span>
@@ -1190,7 +1217,7 @@
                 <span class="comment">// If you can, try to preserve invalid unicode using OsStr(ing)Ext</span>
                 <span class="comment">// and display it using uucore::display::print_verbatim(). This is</span>
                 <span class="comment">// easier (and more important) on Unix than on Windows.</span>
-                <span class="kw">if</span> <span class="ident">sum</span> <span class="op">=</span><span class="op">=</span> <span class="ident">real_sum</span> {
+                <span class="kw">if</span> <span class="ident">sum</span> <span class="op">==</span> <span class="ident">real_sum</span> {
                     <span class="kw">if</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">quiet</span> {
                         <span class="macro">println!</span>(<span class="string">&quot;{}: OK&quot;</span>, <span class="ident">ck_filename</span>);
                     }
@@ -1202,15 +1229,13 @@
                 }
             }
         } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">sum</span> <span class="op">=</span> <span class="macro">crash_if_err!</span>(
-                <span class="number">1</span>,
-                <span class="ident">digest_reader</span>(
-                    <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">options</span>.<span class="ident">digest</span>,
-                    <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">file</span>,
-                    <span class="ident">options</span>.<span class="ident">binary</span>,
-                    <span class="ident">options</span>.<span class="ident">output_bits</span>
-                )
-            );
+            <span class="kw">let</span> <span class="ident">sum</span> <span class="op">=</span> <span class="ident">digest_reader</span>(
+                <span class="kw-2">&amp;mut</span> <span class="ident">options</span>.<span class="ident">digest</span>,
+                <span class="kw-2">&amp;mut</span> <span class="ident">file</span>,
+                <span class="ident">options</span>.<span class="ident">binary</span>,
+                <span class="ident">options</span>.<span class="ident">output_bits</span>,
+            )
+            .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to read input&quot;</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
             <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">tag</span> {
                 <span class="macro">println!</span>(<span class="string">&quot;{} ({}) = {}&quot;</span>, <span class="ident">options</span>.<span class="ident">algoname</span>, <span class="ident">filename</span>.<span class="ident">display</span>(), <span class="ident">sum</span>);
             } <span class="kw">else</span> {
@@ -1220,9 +1245,9 @@
     }
     <span class="kw">if</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">status</span> {
         <span class="kw">match</span> <span class="ident">bad_format</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="number">1</span>) {
-            <span class="ident">Ordering::Equal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">show_warning!</span>(<span class="string">&quot;{} line is improperly formatted&quot;</span>, <span class="ident">bad_format</span>),
-            <span class="ident">Ordering::Greater</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">show_warning!</span>(<span class="string">&quot;{} lines are improperly formatted&quot;</span>, <span class="ident">bad_format</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {}
+            <span class="ident">Ordering::Equal</span> =&gt; <span class="macro">show_warning!</span>(<span class="string">&quot;{} line is improperly formatted&quot;</span>, <span class="ident">bad_format</span>),
+            <span class="ident">Ordering::Greater</span> =&gt; <span class="macro">show_warning!</span>(<span class="string">&quot;{} lines are improperly formatted&quot;</span>, <span class="ident">bad_format</span>),
+            <span class="kw">_</span> =&gt; {}
         };
         <span class="kw">if</span> <span class="ident">failed</span> <span class="op">&gt;</span> <span class="number">0</span> {
             <span class="macro">show_warning!</span>(<span class="string">&quot;{} computed checksum did NOT match&quot;</span>, <span class="ident">failed</span>);
@@ -1233,11 +1258,11 @@
 }
 
 <span class="kw">fn</span> <span class="ident">digest_reader</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Read</span><span class="op">&gt;</span>(
-    <span class="ident">digest</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
-    <span class="ident">reader</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">BufReader</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+    <span class="ident">digest</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
+    <span class="ident">reader</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufReader</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
     <span class="ident">binary</span>: <span class="ident">bool</span>,
     <span class="ident">output_bits</span>: <span class="ident">usize</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
     <span class="ident">digest</span>.<span class="ident">reset</span>();
 
     <span class="comment">// Read bytes from `reader` and write those bytes to `digest`.</span>
@@ -1253,7 +1278,7 @@
     <span class="comment">// &quot;\n&quot;. But when &quot;\r&quot; is the last character read, we need to force</span>
     <span class="comment">// it to be written.)</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">digest_writer</span> <span class="op">=</span> <span class="ident">DigestWriter::new</span>(<span class="ident">digest</span>, <span class="ident">binary</span>);
-    <span class="ident">std::io::copy</span>(<span class="ident">reader</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">digest_writer</span>)<span class="question-mark">?</span>;
+    <span class="ident">std::io::copy</span>(<span class="ident">reader</span>, <span class="kw-2">&amp;mut</span> <span class="ident">digest_writer</span>)<span class="question-mark">?</span>;
     <span class="ident">digest_writer</span>.<span class="ident">finalize</span>();
 
     <span class="kw">if</span> <span class="ident">digest</span>.<span class="ident">output_bits</span>() <span class="op">&gt;</span> <span class="number">0</span> {
@@ -1262,11 +1287,10 @@
         <span class="comment">// Assume it&#39;s SHAKE.  result_str() doesn&#39;t work with shake (as of 8/30/2016)</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
         <span class="ident">bytes</span>.<span class="ident">resize</span>((<span class="ident">output_bits</span> <span class="op">+</span> <span class="number">7</span>) <span class="op">/</span> <span class="number">8</span>, <span class="number">0</span>);
-        <span class="ident">digest</span>.<span class="ident">result</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bytes</span>);
+        <span class="ident">digest</span>.<span class="ident">result</span>(<span class="kw-2">&amp;mut</span> <span class="ident">bytes</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">bytes</span>.<span class="ident">to_hex</span>())
     }
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_hashsum" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
 </body></html>
