@@ -5,4 +5,4 @@ The documentation is generated daily from the https://github.com/uutils/coreutil
 It is available on:
 https://uutils.github.io/coreutils-docs/coreutils/
 
-The pages are committed into the gh-pages branch.
+The pages are committed daily into the gh-pages branch.
