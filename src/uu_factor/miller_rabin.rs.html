@@ -205,6 +205,10 @@
 <span id="204">204</span>
 <span id="205">205</span>
 <span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
 </pre><pre class="rust"><code><span class="comment">// * This file is part of the uutils coreutils package.</span>
 <span class="comment">// *</span>
 <span class="comment">// * (c) 2020 nicoo &lt;nicoo@debian.org&gt;</span>
@@ -407,7 +411,11 @@
 
     <span class="macro">quickcheck!</span> {
         <span class="kw">fn</span> <span class="ident">composites</span>(<span class="ident">i</span>: <span class="ident">u64</span>, <span class="ident">j</span>: <span class="ident">u64</span>) -&gt; <span class="ident">bool</span> {
-            <span class="ident">i</span> <span class="op">&lt;</span> <span class="number">2</span> <span class="op">|</span><span class="op">|</span> <span class="ident">j</span> <span class="op">&lt;</span> <span class="number">2</span> <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">is_prime</span>(<span class="ident">i</span><span class="kw-2">*</span><span class="ident">j</span>)
+            <span class="comment">// TODO: #1559 factor n &gt; 2^64 - 1</span>
+            <span class="kw">match</span> <span class="ident">i</span>.<span class="ident">checked_mul</span>(<span class="ident">j</span>) {
+                <span class="prelude-val">Some</span>(<span class="ident">n</span>) =&gt; <span class="ident">i</span> <span class="op">&lt;</span> <span class="number">2</span> <span class="op">|</span><span class="op">|</span> <span class="ident">j</span> <span class="op">&lt;</span> <span class="number">2</span> <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">is_prime</span>(<span class="ident">n</span>),
+                <span class="kw">_</span> =&gt; <span class="bool-val">true</span>,
+            }
         }
     }
 }

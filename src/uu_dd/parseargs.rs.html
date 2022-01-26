@@ -670,6 +670,33 @@
 <span id="669">669</span>
 <span id="670">670</span>
 <span id="671">671</span>
+<span id="672">672</span>
+<span id="673">673</span>
+<span id="674">674</span>
+<span id="675">675</span>
+<span id="676">676</span>
+<span id="677">677</span>
+<span id="678">678</span>
+<span id="679">679</span>
+<span id="680">680</span>
+<span id="681">681</span>
+<span id="682">682</span>
+<span id="683">683</span>
+<span id="684">684</span>
+<span id="685">685</span>
+<span id="686">686</span>
+<span id="687">687</span>
+<span id="688">688</span>
+<span id="689">689</span>
+<span id="690">690</span>
+<span id="691">691</span>
+<span id="692">692</span>
+<span id="693">693</span>
+<span id="694">694</span>
+<span id="695">695</span>
+<span id="696">696</span>
+<span id="697">697</span>
+<span id="698">698</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Tyler Steele &lt;tyler.steele@protonmail.com&gt;</span>
@@ -1116,6 +1143,20 @@
                     <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::MultipleFmtTable</span>);
                 } <span class="kw">else</span> {
                     <span class="ident">fmt</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">flag</span>);
+                    <span class="comment">// From the GNU documentation:</span>
+                    <span class="comment">//</span>
+                    <span class="comment">// &gt; ‘ascii’</span>
+                    <span class="comment">// &gt;</span>
+                    <span class="comment">// &gt; Convert EBCDIC to ASCII, using the conversion</span>
+                    <span class="comment">// &gt; table specified by POSIX. This provides a 1:1</span>
+                    <span class="comment">// &gt; translation for all 256 bytes. This implies</span>
+                    <span class="comment">// &gt; ‘conv=unblock’; input is converted to ASCII</span>
+                    <span class="comment">// &gt; before trailing spaces are deleted.</span>
+                    <span class="comment">//</span>
+                    <span class="comment">// -- https://www.gnu.org/software/coreutils/manual/html_node/dd-invocation.html</span>
+                    <span class="kw">if</span> <span class="ident">cbs</span>.<span class="ident">is_some</span>() {
+                        <span class="ident">iconvflags</span>.<span class="ident">unblock</span> <span class="op">=</span> <span class="ident">cbs</span>;
+                    }
                 }
             }
             <span class="ident">ConvFlag::FmtAtoE</span> =&gt; {
@@ -1123,6 +1164,19 @@
                     <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::MultipleFmtTable</span>);
                 } <span class="kw">else</span> {
                     <span class="ident">fmt</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">flag</span>);
+                    <span class="comment">// From the GNU documentation:</span>
+                    <span class="comment">//</span>
+                    <span class="comment">// &gt; ‘ebcdic’</span>
+                    <span class="comment">// &gt;</span>
+                    <span class="comment">// &gt; Convert ASCII to EBCDIC. This is the inverse</span>
+                    <span class="comment">// &gt; of the ‘ascii’ conversion. This implies</span>
+                    <span class="comment">// &gt; ‘conv=block’; trailing spaces are added before</span>
+                    <span class="comment">// &gt; being converted to EBCDIC.</span>
+                    <span class="comment">//</span>
+                    <span class="comment">// -- https://www.gnu.org/software/coreutils/manual/html_node/dd-invocation.html</span>
+                    <span class="kw">if</span> <span class="ident">cbs</span>.<span class="ident">is_some</span>() {
+                        <span class="ident">iconvflags</span>.<span class="ident">block</span> <span class="op">=</span> <span class="ident">cbs</span>;
+                    }
                 }
             }
             <span class="ident">ConvFlag::FmtAtoI</span> =&gt; {

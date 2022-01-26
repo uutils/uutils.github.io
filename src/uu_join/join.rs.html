@@ -837,6 +837,24 @@
 <span id="836">836</span>
 <span id="837">837</span>
 <span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Konstantin Pospelov &lt;kupospelov@gmail.com&gt;</span>
@@ -1112,6 +1130,7 @@
     <span class="ident">seq</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&gt;</span>,
     <span class="ident">line_num</span>: <span class="ident">usize</span>,
     <span class="ident">has_failed</span>: <span class="ident">bool</span>,
+    <span class="ident">has_unpaired</span>: <span class="ident">bool</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">State</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
@@ -1141,6 +1160,7 @@
             <span class="ident">seq</span>: <span class="ident">Vec::new</span>(),
             <span class="ident">line_num</span>: <span class="number">0</span>,
             <span class="ident">has_failed</span>: <span class="bool-val">false</span>,
+            <span class="ident">has_unpaired</span>: <span class="bool-val">false</span>,
         }
     }
 
@@ -1254,11 +1274,18 @@
     }
 
     <span class="kw">fn</span> <span class="ident">finalize</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">Input</span>, <span class="ident">repr</span>: <span class="kw-2">&amp;</span><span class="ident">Repr</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">std::io::Error</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">has_line</span>() <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">print_unpaired</span> {
-            <span class="self">self</span>.<span class="ident">print_first_line</span>(<span class="ident">repr</span>)<span class="question-mark">?</span>;
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">has_line</span>() {
+            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">print_unpaired</span> {
+                <span class="self">self</span>.<span class="ident">print_first_line</span>(<span class="ident">repr</span>)<span class="question-mark">?</span>;
+            }
 
-            <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">line</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">next_line</span>(<span class="ident">input</span>) {
-                <span class="self">self</span>.<span class="ident">print_line</span>(<span class="kw-2">&amp;</span><span class="ident">line</span>, <span class="ident">repr</span>)<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">next_line</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">next_line</span>(<span class="ident">input</span>);
+            <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">line</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">next_line</span> {
+                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">print_unpaired</span> {
+                    <span class="self">self</span>.<span class="ident">print_line</span>(<span class="ident">line</span>, <span class="ident">repr</span>)<span class="question-mark">?</span>;
+                }
+                <span class="self">self</span>.<span class="ident">reset</span>(<span class="ident">next_line</span>);
+                <span class="ident">next_line</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">next_line</span>(<span class="ident">input</span>);
             }
         }
 
@@ -1283,20 +1310,21 @@
         <span class="kw">let</span> <span class="ident">diff</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">compare</span>(<span class="self">self</span>.<span class="ident">get_current_key</span>(), <span class="ident">line</span>.<span class="ident">get_field</span>(<span class="self">self</span>.<span class="ident">key</span>));
 
         <span class="kw">if</span> <span class="ident">diff</span> <span class="op">==</span> <span class="ident">Ordering::Greater</span> {
-            <span class="macro">eprintln!</span>(
-                <span class="string">&quot;{}: {}:{}: is not sorted: {}&quot;</span>,
-                <span class="ident">uucore::execution_phrase</span>(),
-                <span class="self">self</span>.<span class="ident">file_name</span>.<span class="ident">maybe_quote</span>(),
-                <span class="self">self</span>.<span class="ident">line_num</span>,
-                <span class="ident">String::from_utf8_lossy</span>(<span class="kw-2">&amp;</span><span class="ident">line</span>.<span class="ident">string</span>)
-            );
+            <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">check_order</span> <span class="op">==</span> <span class="ident">CheckOrder::Enabled</span> <span class="op">|</span><span class="op">|</span> (<span class="self">self</span>.<span class="ident">has_unpaired</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">has_failed</span>) {
+                <span class="macro">eprintln!</span>(
+                    <span class="string">&quot;{}: {}:{}: is not sorted: {}&quot;</span>,
+                    <span class="ident">uucore::execution_phrase</span>(),
+                    <span class="self">self</span>.<span class="ident">file_name</span>.<span class="ident">maybe_quote</span>(),
+                    <span class="self">self</span>.<span class="ident">line_num</span>,
+                    <span class="ident">String::from_utf8_lossy</span>(<span class="kw-2">&amp;</span><span class="ident">line</span>.<span class="ident">string</span>)
+                );
 
+                <span class="self">self</span>.<span class="ident">has_failed</span> <span class="op">=</span> <span class="bool-val">true</span>;
+            }
             <span class="comment">// This is fatal if the check is enabled.</span>
             <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">check_order</span> <span class="op">==</span> <span class="ident">CheckOrder::Enabled</span> {
                 <span class="ident">std::process::exit</span>(<span class="number">1</span>);
             }
-
-            <span class="self">self</span>.<span class="ident">has_failed</span> <span class="op">=</span> <span class="bool-val">true</span>;
         }
 
         <span class="prelude-val">Some</span>(<span class="ident">line</span>)
@@ -1599,9 +1627,13 @@ FILENUM is 1 or 2, corresponding to FILE1 or FILE2&quot;</span>,
         <span class="kw">match</span> <span class="ident">diff</span> {
             <span class="ident">Ordering::Less</span> =&gt; {
                 <span class="ident">state1</span>.<span class="ident">skip_line</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>, <span class="kw-2">&amp;</span><span class="ident">repr</span>)<span class="question-mark">?</span>;
+                <span class="ident">state1</span>.<span class="ident">has_unpaired</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                <span class="ident">state2</span>.<span class="ident">has_unpaired</span> <span class="op">=</span> <span class="bool-val">true</span>;
             }
             <span class="ident">Ordering::Greater</span> =&gt; {
                 <span class="ident">state2</span>.<span class="ident">skip_line</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>, <span class="kw-2">&amp;</span><span class="ident">repr</span>)<span class="question-mark">?</span>;
+                <span class="ident">state1</span>.<span class="ident">has_unpaired</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                <span class="ident">state2</span>.<span class="ident">has_unpaired</span> <span class="op">=</span> <span class="bool-val">true</span>;
             }
             <span class="ident">Ordering::Equal</span> =&gt; {
                 <span class="kw">let</span> <span class="ident">next_line1</span> <span class="op">=</span> <span class="ident">state1</span>.<span class="ident">extend</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>);
@@ -1621,6 +1653,10 @@ FILENUM is 1 or 2, corresponding to FILE1 or FILE2&quot;</span>,
     <span class="ident">state2</span>.<span class="ident">finalize</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>, <span class="kw-2">&amp;</span><span class="ident">repr</span>)<span class="question-mark">?</span>;
 
     <span class="kw">if</span> <span class="ident">state1</span>.<span class="ident">has_failed</span> <span class="op">|</span><span class="op">|</span> <span class="ident">state2</span>.<span class="ident">has_failed</span> {
+        <span class="macro">eprintln!</span>(
+            <span class="string">&quot;{}: input is not in sorted order&quot;</span>,
+            <span class="ident">uucore::execution_phrase</span>()
+        );
         <span class="ident">set_exit_code</span>(<span class="number">1</span>);
     }
     <span class="prelude-val">Ok</span>(())

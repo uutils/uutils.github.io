@@ -261,6 +261,80 @@
 <span id="260">260</span>
 <span id="261">261</span>
 <span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Yury Krivopalov &lt;ykrivopalov@yandex.ru&gt;</span>
@@ -270,15 +344,17 @@
 
 <span class="comment">// spell-checker:ignore N&#39;th M&#39;th</span>
 
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::errors</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::format::format_and_print</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::options</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::units</span>::{<span class="prelude-ty">Result</span>, <span class="ident">Unit</span>};
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>};
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">BufRead</span>, <span class="ident">Write</span>};
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
-<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
+<span class="kw">use</span> <span class="ident">uucore::error::UResult</span>;
 <span class="kw">use</span> <span class="ident">uucore::ranges::Range</span>;
 
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">errors</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">format</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">options</span>;
 <span class="kw">mod</span> <span class="ident">units</span>;
@@ -316,28 +392,35 @@ Multiple fields/ranges can be separated with commas
     <span class="macro">format!</span>(<span class="string">&quot;{0} [OPTION]... [NUMBER]...&quot;</span>, <span class="ident">uucore::execution_phrase</span>())
 }
 
-<span class="kw">fn</span> <span class="ident">handle_args</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">options</span>: <span class="ident">NumfmtOptions</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">handle_args</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">options</span>: <span class="ident">NumfmtOptions</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">for</span> <span class="ident">l</span> <span class="kw">in</span> <span class="ident">args</span> {
-        <span class="ident">format_and_print</span>(<span class="ident">l</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>)<span class="question-mark">?</span>;
+        <span class="kw">match</span> <span class="ident">format_and_print</span>(<span class="ident">l</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>) {
+            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">NumfmtError::FormattingError</span>(<span class="ident">e</span>.<span class="ident">to_string</span>())),
+        }<span class="question-mark">?</span>;
     }
 
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">fn</span> <span class="ident">handle_stdin</span>(<span class="ident">options</span>: <span class="ident">NumfmtOptions</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">stdin</span> <span class="op">=</span> <span class="ident">std::io::stdin</span>();
-    <span class="kw">let</span> <span class="ident">locked_stdin</span> <span class="op">=</span> <span class="ident">stdin</span>.<span class="ident">lock</span>();
-
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lines</span> <span class="op">=</span> <span class="ident">locked_stdin</span>.<span class="ident">lines</span>();
-    <span class="kw">for</span> <span class="ident">l</span> <span class="kw">in</span> <span class="ident">lines</span>.<span class="ident">by_ref</span>().<span class="ident">take</span>(<span class="ident">options</span>.<span class="ident">header</span>) {
-        <span class="ident">l</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">s</span>)).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
+<span class="kw">fn</span> <span class="ident">handle_buffer</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="ident">R</span>, <span class="ident">options</span>: <span class="ident">NumfmtOptions</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>
+<span class="kw">where</span>
+    <span class="ident">R</span>: <span class="ident">BufRead</span>,
+{
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lines</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">lines</span>();
+    <span class="kw">for</span> (<span class="ident">idx</span>, <span class="ident">line</span>) <span class="kw">in</span> <span class="ident">lines</span>.<span class="ident">by_ref</span>().<span class="ident">enumerate</span>() {
+        <span class="kw">match</span> <span class="ident">line</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">l</span>) <span class="kw">if</span> <span class="ident">idx</span> <span class="op">&lt;</span> <span class="ident">options</span>.<span class="ident">header</span> =&gt; {
+                <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">l</span>);
+                <span class="prelude-val">Ok</span>(())
+            }
+            <span class="prelude-val">Ok</span>(<span class="ident">l</span>) =&gt; <span class="kw">match</span> <span class="ident">format_and_print</span>(<span class="kw-2">&amp;</span><span class="ident">l</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>) {
+                <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
+                <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">NumfmtError::FormattingError</span>(<span class="ident">e</span>.<span class="ident">to_string</span>())),
+            },
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">NumfmtError::IoError</span>(<span class="ident">e</span>.<span class="ident">to_string</span>())),
+        }<span class="question-mark">?</span>;
     }
-
-    <span class="kw">for</span> <span class="ident">l</span> <span class="kw">in</span> <span class="ident">lines</span> {
-        <span class="ident">l</span>.<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">to_string</span>())
-            .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">l</span><span class="op">|</span> <span class="ident">format_and_print</span>(<span class="kw-2">&amp;</span><span class="ident">l</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>))<span class="question-mark">?</span>;
-    }
-
     <span class="prelude-val">Ok</span>(())
 }
 
@@ -424,18 +507,21 @@ Multiple fields/ranges can be separated with commas
 
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">override_usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..]).<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span>
-        <span class="ident">parse_options</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>).<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">options</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="ident">options::NUMBER</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">values</span>) =&gt; <span class="ident">handle_args</span>(<span class="ident">values</span>, <span class="ident">options</span>),
-            <span class="prelude-val">None</span> =&gt; <span class="ident">handle_stdin</span>(<span class="ident">options</span>),
-        });
+    <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">parse_options</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>).<span class="ident">map_err</span>(<span class="ident">NumfmtError::IllegalArgument</span>)<span class="question-mark">?</span>;
+
+    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="ident">options::NUMBER</span>) {
+        <span class="prelude-val">Some</span>(<span class="ident">values</span>) =&gt; <span class="ident">handle_args</span>(<span class="ident">values</span>, <span class="ident">options</span>),
+        <span class="prelude-val">None</span> =&gt; {
+            <span class="kw">let</span> <span class="ident">stdin</span> <span class="op">=</span> <span class="ident">std::io::stdin</span>();
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">locked_stdin</span> <span class="op">=</span> <span class="ident">stdin</span>.<span class="ident">lock</span>();
+            <span class="ident">handle_buffer</span>(<span class="kw-2">&amp;mut</span> <span class="ident">locked_stdin</span>, <span class="ident">options</span>)
+        }
+    };
 
     <span class="kw">match</span> <span class="ident">result</span> {
         <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
             <span class="ident">std::io::stdout</span>().<span class="ident">flush</span>().<span class="ident">expect</span>(<span class="string">&quot;error flushing stdout&quot;</span>);
-            <span class="comment">// TODO Change `handle_args()` and `handle_stdin()` so that</span>
-            <span class="comment">// they return `UResult`.</span>
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="ident">e</span>));
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>)
         }
         <span class="kw">_</span> =&gt; <span class="prelude-val">Ok</span>(()),
     }
@@ -522,6 +608,68 @@ Multiple fields/ranges can be separated with commas
                 .<span class="ident">hide</span>(<span class="bool-val">true</span>)
                 .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>),
         )
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">mod</span> <span class="ident">tests</span> {
+    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">handle_buffer</span>, <span class="ident">NumfmtOptions</span>, <span class="ident">Range</span>, <span class="ident">RoundMethod</span>, <span class="ident">TransformOptions</span>, <span class="ident">Unit</span>};
+    <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">BufReader</span>, <span class="ident">Error</span>, <span class="ident">ErrorKind</span>, <span class="ident">Read</span>};
+    <span class="kw">struct</span> <span class="ident">MockBuffer</span> {}
+
+    <span class="kw">impl</span> <span class="ident">Read</span> <span class="kw">for</span> <span class="ident">MockBuffer</span> {
+        <span class="kw">fn</span> <span class="ident">read</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Err</span>(<span class="ident">Error::new</span>(<span class="ident">ErrorKind::BrokenPipe</span>, <span class="string">&quot;broken pipe&quot;</span>))
+        }
+    }
+
+    <span class="kw">fn</span> <span class="ident">get_valid_options</span>() -&gt; <span class="ident">NumfmtOptions</span> {
+        <span class="ident">NumfmtOptions</span> {
+            <span class="ident">transform</span>: <span class="ident">TransformOptions</span> {
+                <span class="ident">from</span>: <span class="ident">Unit::None</span>,
+                <span class="ident">to</span>: <span class="ident">Unit::None</span>,
+            },
+            <span class="ident">padding</span>: <span class="number">10</span>,
+            <span class="ident">header</span>: <span class="number">1</span>,
+            <span class="ident">fields</span>: <span class="macro">vec!</span>[<span class="ident">Range</span> { <span class="ident">low</span>: <span class="number">0</span>, <span class="ident">high</span>: <span class="number">1</span> }],
+            <span class="ident">delimiter</span>: <span class="prelude-val">None</span>,
+            <span class="ident">round</span>: <span class="ident">RoundMethod::Nearest</span>,
+            <span class="ident">suffix</span>: <span class="prelude-val">None</span>,
+        }
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">broken_buffer_returns_io_error</span>() {
+        <span class="kw">let</span> <span class="ident">mock_buffer</span> <span class="op">=</span> <span class="ident">MockBuffer</span> {};
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">handle_buffer</span>(<span class="ident">BufReader::new</span>(<span class="ident">mock_buffer</span>), <span class="ident">get_valid_options</span>())
+            .<span class="ident">expect_err</span>(<span class="string">&quot;returned Ok after receiving IO error&quot;</span>);
+        <span class="kw">let</span> <span class="ident">result_debug</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">result</span>);
+        <span class="kw">let</span> <span class="ident">result_display</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">result</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result_debug</span>, <span class="string">&quot;IoError(\&quot;broken pipe\&quot;)&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result_display</span>, <span class="string">&quot;broken pipe&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">code</span>(), <span class="number">1</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">non_numeric_returns_formatting_error</span>() {
+        <span class="kw">let</span> <span class="ident">input_value</span> <span class="op">=</span> <span class="string">b&quot;135\nhello&quot;</span>;
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">handle_buffer</span>(<span class="ident">BufReader::new</span>(<span class="kw-2">&amp;</span><span class="ident">input_value</span>[..]), <span class="ident">get_valid_options</span>())
+            .<span class="ident">expect_err</span>(<span class="string">&quot;returned Ok after receiving improperly formatted input&quot;</span>);
+        <span class="kw">let</span> <span class="ident">result_debug</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">result</span>);
+        <span class="kw">let</span> <span class="ident">result_display</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">result</span>);
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">result_debug</span>,
+            <span class="string">&quot;FormattingError(\&quot;invalid suffix in input: &#39;hello&#39;\&quot;)&quot;</span>
+        );
+        <span class="macro">assert_eq!</span>(<span class="ident">result_display</span>, <span class="string">&quot;invalid suffix in input: &#39;hello&#39;&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">code</span>(), <span class="number">2</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">valid_input_returns_ok</span>() {
+        <span class="kw">let</span> <span class="ident">input_value</span> <span class="op">=</span> <span class="string">b&quot;165\n100\n300\n500&quot;</span>;
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">handle_buffer</span>(<span class="ident">BufReader::new</span>(<span class="kw-2">&amp;</span><span class="ident">input_value</span>[..]), <span class="ident">get_valid_options</span>());
+        <span class="macro">assert!</span>(<span class="ident">result</span>.<span class="ident">is_ok</span>(), <span class="string">&quot;did not return Ok for valid input&quot;</span>);
+    }
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_numfmt" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>

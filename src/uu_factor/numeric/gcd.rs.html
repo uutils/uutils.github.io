@@ -107,6 +107,27 @@
 <span id="106">106</span>
 <span id="107">107</span>
 <span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
 </pre><pre class="rust"><code><span class="comment">// * This file is part of the uutils coreutils package.</span>
 <span class="comment">// *</span>
 <span class="comment">// * (c) 2015 Wiktor Kuropatwa &lt;wiktor.kuropatwa@gmail.com&gt;</span>
@@ -114,6 +135,8 @@
 <span class="comment">// *</span>
 <span class="comment">// * For the full copyright and license information, please view the LICENSE file</span>
 <span class="comment">// * that was distributed with this source code.</span>
+
+<span class="comment">// spell-checker:ignore (vars) kgcdab gcdac gcdbc</span>
 
 <span class="kw">use</span> <span class="ident">std::cmp::min</span>;
 <span class="kw">use</span> <span class="ident">std::mem::swap</span>;
@@ -202,16 +225,35 @@
         }
 
         <span class="kw">fn</span> <span class="ident">scalar_multiplication</span>(<span class="ident">a</span>: <span class="ident">u64</span>, <span class="ident">b</span>: <span class="ident">u64</span>, <span class="ident">k</span>: <span class="ident">u64</span>) -&gt; <span class="ident">bool</span> {
-            <span class="ident">gcd</span>(<span class="ident">k</span> <span class="op">*</span> <span class="ident">a</span>, <span class="ident">k</span> <span class="op">*</span> <span class="ident">b</span>) <span class="op">==</span> <span class="ident">k</span> <span class="op">*</span> <span class="ident">gcd</span>(<span class="ident">a</span>, <span class="ident">b</span>)
+            <span class="comment">// TODO: #1559 factor n &gt; 2^64 - 1</span>
+            <span class="kw">match</span> (<span class="ident">k</span>.<span class="ident">checked_mul</span>(<span class="ident">a</span>), <span class="ident">k</span>.<span class="ident">checked_mul</span>(<span class="ident">b</span>), <span class="ident">k</span>.<span class="ident">checked_mul</span>(<span class="ident">gcd</span>(<span class="ident">a</span>, <span class="ident">b</span>))) {
+                (<span class="prelude-val">Some</span>(<span class="ident">ka</span>), <span class="prelude-val">Some</span>(<span class="ident">kb</span>), <span class="prelude-val">Some</span>(<span class="ident">kgcdab</span>)) =&gt; <span class="ident">gcd</span>(<span class="ident">ka</span>, <span class="ident">kb</span>) <span class="op">==</span> <span class="ident">kgcdab</span>,
+                <span class="kw">_</span> =&gt; <span class="bool-val">true</span>
+            }
         }
 
         <span class="kw">fn</span> <span class="ident">multiplicative</span>(<span class="ident">a</span>: <span class="ident">u64</span>, <span class="ident">b</span>: <span class="ident">u64</span>, <span class="ident">c</span>: <span class="ident">u64</span>) -&gt; <span class="ident">bool</span> {
-            <span class="comment">// gcd(ab, c) = gcd(a, c) gcd(b, c) when a and b coprime</span>
-            <span class="ident">gcd</span>(<span class="ident">a</span>, <span class="ident">b</span>) <span class="op">!</span><span class="op">=</span> <span class="number">1</span> <span class="op">|</span><span class="op">|</span> <span class="ident">gcd</span>(<span class="ident">a</span> <span class="op">*</span> <span class="ident">b</span>, <span class="ident">c</span>) <span class="op">==</span> <span class="ident">gcd</span>(<span class="ident">a</span>, <span class="ident">c</span>) <span class="op">*</span> <span class="ident">gcd</span>(<span class="ident">b</span>, <span class="ident">c</span>)
+            <span class="comment">// TODO: #1559 factor n &gt; 2^64 - 1</span>
+            <span class="kw">match</span> (<span class="ident">a</span>.<span class="ident">checked_mul</span>(<span class="ident">b</span>), <span class="ident">gcd</span>(<span class="ident">a</span>, <span class="ident">c</span>).<span class="ident">checked_mul</span>(<span class="ident">gcd</span>(<span class="ident">b</span>, <span class="ident">c</span>))) {
+                (<span class="prelude-val">Some</span>(<span class="ident">ab</span>), <span class="prelude-val">Some</span>(<span class="ident">gcdac_gcdbc</span>)) =&gt; {
+                    <span class="comment">// gcd(ab, c) = gcd(a, c) gcd(b, c) when a and b coprime</span>
+                    <span class="ident">gcd</span>(<span class="ident">a</span>, <span class="ident">b</span>) <span class="op">!</span><span class="op">=</span> <span class="number">1</span> <span class="op">|</span><span class="op">|</span> <span class="ident">gcd</span>(<span class="ident">ab</span>, <span class="ident">c</span>) <span class="op">==</span> <span class="ident">gcdac_gcdbc</span>
+                },
+                <span class="kw">_</span> =&gt; <span class="bool-val">true</span>,
+            }
         }
 
         <span class="kw">fn</span> <span class="ident">linearity</span>(<span class="ident">a</span>: <span class="ident">u64</span>, <span class="ident">b</span>: <span class="ident">u64</span>, <span class="ident">k</span>: <span class="ident">u64</span>) -&gt; <span class="ident">bool</span> {
-            <span class="ident">gcd</span>(<span class="ident">a</span> <span class="op">+</span> <span class="ident">k</span> <span class="op">*</span> <span class="ident">b</span>, <span class="ident">b</span>) <span class="op">==</span> <span class="ident">gcd</span>(<span class="ident">a</span>, <span class="ident">b</span>)
+            <span class="comment">// TODO: #1559 factor n &gt; 2^64 - 1</span>
+            <span class="kw">match</span> <span class="ident">k</span>.<span class="ident">checked_mul</span>(<span class="ident">b</span>) {
+                <span class="prelude-val">Some</span>(<span class="ident">kb</span>) =&gt; {
+                    <span class="kw">match</span> <span class="ident">a</span>.<span class="ident">checked_add</span>(<span class="ident">kb</span>) {
+                        <span class="prelude-val">Some</span>(<span class="ident">a_plus_kb</span>) =&gt; <span class="ident">gcd</span>(<span class="ident">a_plus_kb</span>, <span class="ident">b</span>) <span class="op">==</span> <span class="ident">gcd</span>(<span class="ident">a</span>, <span class="ident">b</span>),
+                        <span class="kw">_</span> =&gt; <span class="bool-val">true</span>,
+                    }
+                }
+                <span class="kw">_</span> =&gt; <span class="bool-val">true</span>,
+            }
         }
     }
 }
