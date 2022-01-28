@@ -4,12 +4,15 @@ on:
   push:
     branches:
     - main
+  pull_request:
+    branches:
+    - main
   schedule:
   - cron: "0 2 * * *"
 
 jobs:
-  docs:
-    name: generate the doc
+  user-docs:
+    name: generate the user doc
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
@@ -26,7 +29,48 @@ jobs:
         default: true
         profile: minimal
 
-    - name: Build Documentation
+    - name: Install `mdbook`
+      uses: actions-rs/install@v0.1
+      with:
+        crate: mdbook
+        version: latest
+        use-tool-cache: false
+      env:
+        RUSTUP_TOOLCHAIN: stable
+
+    - name: Build user Documentation
+      run: |
+        cd coreutils
+        cargo run --bin uudoc --all-features
+        cd docs
+        mdbook build
+
+    - name: Deploy Docs
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./coreutils/docs/book/
+        destination_dir: user/
+
+  docs:
+    name: generate the dev doc
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        repository: uutils/coreutils
+        path: './coreutils'
+        fetch-depth: 0
+
+    - name: Install `rust` toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        default: true
+        profile: minimal
+
+    - name: Build dev documentation
       run: |
         cd coreutils
         cargo doc --no-deps --all-features --workspace
@@ -36,3 +80,4 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./coreutils/target/doc
+        destination_dir: dev/
