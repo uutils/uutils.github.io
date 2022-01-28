@@ -4,21 +4,24 @@ This repository generates the user and dev documentations of https://github.com/
 
 ## User documentation
 
-Can be generated with
+It is available on:
+https://uutils.github.io/coreutils-docs/user/
+
+Can be generated with:
 ```
 cargo run --bin uudoc --all-features
 cd docs
 mdbook build
 ```
 
-It is available on:
-https://uutils.github.io/coreutils-docs/user/
-
-# Developer documentation:
-
-The code documentation is generated daily from the https://github.com/uutils/coreutils repository.
+## Developer documentation:
 
 It is available on:
-https://uutils.github.io/coreutils-docs/dev/
+https://uutils.github.io/coreutils-docs/dev/coreutils/
+
+Can be generated with:
+``
+cargo doc --no-deps --all-features --workspace
+```
 
 The pages are committed daily into the gh-pages branch.
