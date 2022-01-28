@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["complement",""],["contain","Test if at least one of the given Ranges contain the supplied value."]],"struct":[["Range",""]]});

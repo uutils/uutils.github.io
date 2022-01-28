@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["DELIMITER",""],["FIELD",""],["FIELD_DEFAULT",""],["FROM",""],["FROM_DEFAULT",""],["HEADER",""],["HEADER_DEFAULT",""],["NUMBER",""],["PADDING",""],["ROUND",""],["SUFFIX",""],["TO",""],["TO_DEFAULT",""]],"enum":[["RoundMethod",""]],"struct":[["NumfmtOptions",""],["TransformOptions",""]]});
