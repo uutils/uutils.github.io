@@ -12,13 +12,13 @@ mdbook build
 ```
 
 It is available on:
-https://uutils.github.io/coreutils-docs/coreutils/user/
+https://uutils.github.io/coreutils-docs/user/
 
 # Developer documentation:
 
 The code documentation is generated daily from the https://github.com/uutils/coreutils repository.
 
 It is available on:
-https://uutils.github.io/coreutils-docs/coreutils/dev/
+https://uutils.github.io/coreutils-docs/dev/
 
 The pages are committed daily into the gh-pages branch.
