@@ -20,7 +20,7 @@ It is available on:
 https://uutils.github.io/coreutils-docs/dev/coreutils/
 
 Can be generated with:
-``
+```
 cargo doc --no-deps --all-features --workspace
 ```
 
