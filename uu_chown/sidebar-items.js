@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["uu_app",""],["uumain",""]],"mod":[["entries","Get password/group file entry"]],"struct":[["Group",""],["Passwd",""]],"trait":[["Locate","Fetch desired entry."]]});

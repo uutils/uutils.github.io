@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["RingBuffer","A fixed-size ring buffer backed by a `VecDeque`."]]});

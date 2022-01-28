@@ -1,1 +1,0 @@
-initSidebarItems({"static":[["CLASSIFY",""],["FILE_TYPE",""],["SLASH",""]]});

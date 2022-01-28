@@ -1,1 +1,0 @@
-initSidebarItems({"mod":[["dereference",""],["preserve_root",""],["sym_links",""]],"static":[["RANGE",""],["RECURSIVE",""],["REFERENCE",""],["ROLE",""],["TYPE",""],["USER",""],["VERBOSE",""]]});

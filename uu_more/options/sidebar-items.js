@@ -1,1 +1,0 @@
-initSidebarItems({"constant":[["CLEAN_PRINT",""],["FILES",""],["FROM_LINE",""],["LINES",""],["LOGICAL",""],["NO_PAUSE",""],["NUMBER",""],["PATTERN",""],["PLAIN",""],["PRINT_OVER",""],["SILENT",""],["SQUEEZE",""]]});

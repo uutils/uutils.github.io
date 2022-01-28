@@ -1,1 +1,0 @@
-initSidebarItems({"mod":[["sources",""]],"static":[["ACCESS",""],["MODIFICATION",""],["NO_CREATE",""],["NO_DEREF",""],["SOURCES",""],["TIME",""]]});

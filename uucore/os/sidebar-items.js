@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["is_wsl_1","Test if the program is running under WSL"],["is_wsl_2",""]]});

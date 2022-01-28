@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["is_symlink",""],["uu_app",""],["uumain",""]]});
