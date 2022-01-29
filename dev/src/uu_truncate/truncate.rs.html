@@ -387,17 +387,13 @@
 <span class="comment">//  * file that was distributed with this source code.</span>
 
 <span class="comment">// spell-checker:ignore (ToDO) RFILE refsize rfilename fsize tsize</span>
-
-<span class="attribute">#[<span class="ident">macro_use</span>]</span>
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
-
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">Arg</span>};
 <span class="kw">use</span> <span class="ident">std::convert::TryFrom</span>;
 <span class="kw">use</span> <span class="ident">std::fs</span>::{<span class="ident">metadata</span>, <span class="ident">OpenOptions</span>};
 <span class="kw">use</span> <span class="ident">std::io::ErrorKind</span>;
 <span class="kw">use</span> <span class="ident">std::path::Path</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
-<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UIoError</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>, <span class="ident">UUsageError</span>};
+<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>, <span class="ident">UUsageError</span>};
 <span class="kw">use</span> <span class="ident">uucore::parse_size</span>::{<span class="ident">parse_size</span>, <span class="ident">ParseSizeError</span>};
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
@@ -494,24 +490,7 @@
         <span class="kw">let</span> <span class="ident">no_create</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::NO_CREATE</span>);
         <span class="kw">let</span> <span class="ident">reference</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::REFERENCE</span>).<span class="ident">map</span>(<span class="ident">String::from</span>);
         <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::SIZE</span>).<span class="ident">map</span>(<span class="ident">String::from</span>);
-        <span class="ident">truncate</span>(<span class="ident">no_create</span>, <span class="ident">io_blocks</span>, <span class="ident">reference</span>, <span class="ident">size</span>, <span class="ident">files</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
-            <span class="kw">match</span> <span class="ident">e</span>.<span class="ident">kind</span>() {
-                <span class="ident">ErrorKind::NotFound</span> =&gt; {
-                    <span class="comment">// TODO Improve error-handling so that the error</span>
-                    <span class="comment">// returned by `truncate()` provides the necessary</span>
-                    <span class="comment">// parameter for formatting the error message.</span>
-                    <span class="kw">let</span> <span class="ident">reference</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::REFERENCE</span>).<span class="ident">map</span>(<span class="ident">String::from</span>);
-                    <span class="ident">USimpleError::new</span>(
-                        <span class="number">1</span>,
-                        <span class="macro">format!</span>(
-                            <span class="string">&quot;cannot stat {}: No such file or directory&quot;</span>,
-                            <span class="ident">reference</span>.<span class="ident">as_deref</span>().<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>).<span class="ident">quote</span>()
-                        ),
-                    ) <span class="comment">// TODO: fix &#39;--no-create&#39; see test_reference and test_truncate_bytes_size</span>
-                }
-                <span class="kw">_</span> =&gt; <span class="macro">uio_error!</span>(<span class="ident">e</span>, <span class="string">&quot;&quot;</span>),
-            }
-        })
+        <span class="ident">truncate</span>(<span class="ident">no_create</span>, <span class="ident">io_blocks</span>, <span class="ident">reference</span>, <span class="ident">size</span>, <span class="ident">files</span>)
     }
 }
 
@@ -593,20 +572,34 @@
     <span class="ident">size_string</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
     <span class="ident">filenames</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="ident">create</span>: <span class="ident">bool</span>,
-) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">parse_mode_and_size</span>(<span class="ident">size_string</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">m</span>) =&gt; <span class="kw">match</span> <span class="ident">m</span> {
-            <span class="ident">TruncateMode::Absolute</span>(<span class="kw">_</span>) =&gt; {
-                <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;you must specify a relative &#39;--size&#39; with &#39;--reference&#39;&quot;</span>)
-            }
-            <span class="kw">_</span> =&gt; <span class="ident">m</span>,
-        },
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;Invalid number: {}&quot;</span>, <span class="ident">e</span>.<span class="ident">to_string</span>()),
+        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;Invalid number: {}&quot;</span>, <span class="ident">e</span>))),
+        <span class="prelude-val">Ok</span>(<span class="ident">TruncateMode::Absolute</span>(<span class="kw">_</span>)) =&gt; {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(
+                <span class="number">1</span>,
+                <span class="ident">String::from</span>(<span class="string">&quot;you must specify a relative &#39;--size&#39; with &#39;--reference&#39;&quot;</span>),
+            ))
+        }
+        <span class="prelude-val">Ok</span>(<span class="ident">m</span>) =&gt; <span class="ident">m</span>,
     };
-    <span class="kw">let</span> <span class="ident">fsize</span> <span class="op">=</span> <span class="ident">usize::try_from</span>(<span class="ident">metadata</span>(<span class="ident">rfilename</span>)<span class="question-mark">?</span>.<span class="ident">len</span>()).<span class="ident">unwrap</span>();
+    <span class="kw">if</span> <span class="kw">let</span> <span class="ident">TruncateMode::RoundDown</span>(<span class="number">0</span>) <span class="op">|</span> <span class="ident">TruncateMode::RoundUp</span>(<span class="number">0</span>) <span class="op">=</span> <span class="ident">mode</span> {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;division by zero&quot;</span>));
+    }
+    <span class="kw">let</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">metadata</span>(<span class="ident">rfilename</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">e</span>.<span class="ident">kind</span>() {
+        <span class="ident">ErrorKind::NotFound</span> =&gt; <span class="ident">USimpleError::new</span>(
+            <span class="number">1</span>,
+            <span class="macro">format!</span>(
+                <span class="string">&quot;cannot stat {}: No such file or directory&quot;</span>,
+                <span class="ident">rfilename</span>.<span class="ident">quote</span>()
+            ),
+        ),
+        <span class="kw">_</span> =&gt; <span class="ident">e</span>.<span class="ident">map_err_context</span>(<span class="ident">String::new</span>),
+    })<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">fsize</span> <span class="op">=</span> <span class="ident">metadata</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">usize</span>;
     <span class="kw">let</span> <span class="ident">tsize</span> <span class="op">=</span> <span class="ident">mode</span>.<span class="ident">to_size</span>(<span class="ident">fsize</span>);
     <span class="kw">for</span> <span class="ident">filename</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">filenames</span> {
-        <span class="ident">file_truncate</span>(<span class="ident">filename</span>, <span class="ident">create</span>, <span class="ident">tsize</span>)<span class="question-mark">?</span>;
+        <span class="ident">file_truncate</span>(<span class="ident">filename</span>, <span class="ident">create</span>, <span class="ident">tsize</span>).<span class="ident">map_err_context</span>(<span class="ident">String::new</span>)<span class="question-mark">?</span>;
     }
     <span class="prelude-val">Ok</span>(())
 }
@@ -626,10 +619,20 @@
     <span class="ident">rfilename</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
     <span class="ident">filenames</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="ident">create</span>: <span class="ident">bool</span>,
-) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">tsize</span> <span class="op">=</span> <span class="ident">usize::try_from</span>(<span class="ident">metadata</span>(<span class="ident">rfilename</span>)<span class="question-mark">?</span>.<span class="ident">len</span>()).<span class="ident">unwrap</span>();
+) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">metadata</span>(<span class="ident">rfilename</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">e</span>.<span class="ident">kind</span>() {
+        <span class="ident">ErrorKind::NotFound</span> =&gt; <span class="ident">USimpleError::new</span>(
+            <span class="number">1</span>,
+            <span class="macro">format!</span>(
+                <span class="string">&quot;cannot stat {}: No such file or directory&quot;</span>,
+                <span class="ident">rfilename</span>.<span class="ident">quote</span>()
+            ),
+        ),
+        <span class="kw">_</span> =&gt; <span class="ident">e</span>.<span class="ident">map_err_context</span>(<span class="ident">String::new</span>),
+    })<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">tsize</span> <span class="op">=</span> <span class="ident">metadata</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">usize</span>;
     <span class="kw">for</span> <span class="ident">filename</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">filenames</span> {
-        <span class="ident">file_truncate</span>(<span class="ident">filename</span>, <span class="ident">create</span>, <span class="ident">tsize</span>)<span class="question-mark">?</span>;
+        <span class="ident">file_truncate</span>(<span class="ident">filename</span>, <span class="ident">create</span>, <span class="ident">tsize</span>).<span class="ident">map_err_context</span>(<span class="ident">String::new</span>)<span class="question-mark">?</span>;
     }
     <span class="prelude-val">Ok</span>(())
 }
@@ -649,15 +652,12 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// If the any file could not be opened, or there was a problem setting</span>
 <span class="doccomment">/// the size of at least one file.</span>
-<span class="kw">fn</span> <span class="ident">truncate_size_only</span>(
-    <span class="ident">size_string</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">filenames</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="ident">create</span>: <span class="ident">bool</span>,
-) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">parse_mode_and_size</span>(<span class="ident">size_string</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">m</span>) =&gt; <span class="ident">m</span>,
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;Invalid number: {}&quot;</span>, <span class="ident">e</span>.<span class="ident">to_string</span>()),
-    };
+<span class="kw">fn</span> <span class="ident">truncate_size_only</span>(<span class="ident">size_string</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">filenames</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">create</span>: <span class="ident">bool</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="ident">parse_mode_and_size</span>(<span class="ident">size_string</span>)
+        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;Invalid number: {}&quot;</span>, <span class="ident">e</span>)))<span class="question-mark">?</span>;
+    <span class="kw">if</span> <span class="kw">let</span> <span class="ident">TruncateMode::RoundDown</span>(<span class="number">0</span>) <span class="op">|</span> <span class="ident">TruncateMode::RoundUp</span>(<span class="number">0</span>) <span class="op">=</span> <span class="ident">mode</span> {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;division by zero&quot;</span>));
+    }
     <span class="kw">for</span> <span class="ident">filename</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">filenames</span> {
         <span class="kw">let</span> <span class="ident">fsize</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">metadata</span>(<span class="ident">filename</span>) {
             <span class="prelude-val">Ok</span>(<span class="ident">m</span>) =&gt; <span class="ident">m</span>.<span class="ident">len</span>(),
@@ -667,7 +667,7 @@
         <span class="kw">match</span> <span class="ident">file_truncate</span>(<span class="ident">filename</span>, <span class="ident">create</span>, <span class="ident">tsize</span>) {
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="kw">continue</span>,
             <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">kind</span>() <span class="op">==</span> <span class="ident">ErrorKind::NotFound</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">create</span> =&gt; <span class="kw">continue</span>,
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>),
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>.<span class="ident">map_err_context</span>(<span class="ident">String::new</span>)),
         }
     }
     <span class="prelude-val">Ok</span>(())
@@ -679,7 +679,7 @@
     <span class="ident">reference</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="ident">size</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="ident">filenames</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">create</span> <span class="op">=</span> <span class="op">!</span><span class="ident">no_create</span>;
     <span class="comment">// There are four possibilities</span>
     <span class="comment">// - reference file given and size given,</span>
