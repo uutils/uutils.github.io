@@ -188,9 +188,6 @@
 <span id="187">187</span>
 <span id="188">188</span>
 <span id="189">189</span>
-<span id="190">190</span>
-<span id="191">191</span>
-<span id="192">192</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -204,7 +201,7 @@
 <span class="kw">mod</span> <span class="ident">operation</span>;
 <span class="kw">mod</span> <span class="ident">unicode_table</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">Arg</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>};
 <span class="kw">use</span> <span class="ident">nom::AsBytes</span>;
 <span class="kw">use</span> <span class="ident">operation</span>::{<span class="ident">translate_input</span>, <span class="ident">Sequence</span>, <span class="ident">SqueezeOperation</span>, <span class="ident">TranslateOperation</span>};
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">stdout</span>, <span class="ident">BufReader</span>, <span class="ident">BufWriter</span>};
@@ -234,7 +231,7 @@
         .<span class="ident">to_string</span>()
 }
 
-<span class="attribute">#[<span class="ident">uucore_procs::gen_uumain</span>]</span>
+<span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">args</span>
         .<span class="ident">collect_str</span>(<span class="ident">InvalidEncodingHandling::ConvertLossy</span>)
@@ -249,7 +246,7 @@
         .<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
     <span class="kw">let</span> <span class="ident">delete_flag</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::DELETE</span>);
-    <span class="kw">let</span> <span class="ident">complement_flag</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::COMPLEMENT</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;C&quot;</span>);
+    <span class="kw">let</span> <span class="ident">complement_flag</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::COMPLEMENT</span>);
     <span class="kw">let</span> <span class="ident">squeeze_flag</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::SQUEEZE</span>);
     <span class="kw">let</span> <span class="ident">truncate_set1_flag</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::TRUNCATE_SET1</span>);
 
@@ -341,17 +338,14 @@
     <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
+        .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
+        .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::COMPLEMENT</span>)
-                <span class="comment">// .visible_short_alias(&#39;C&#39;)  // TODO: requires clap &quot;3.0.0-beta.2&quot;</span>
+                .<span class="ident">visible_short_alias</span>(<span class="string">&#39;C&#39;</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;c&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::COMPLEMENT</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;use the complement of SET1&quot;</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="string">&quot;C&quot;</span>) <span class="comment">// work around for `Arg::visible_short_alias`</span>
-                .<span class="ident">short</span>(<span class="string">&#39;C&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;same as -c&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::DELETE</span>)

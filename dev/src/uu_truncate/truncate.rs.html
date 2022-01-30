@@ -379,6 +379,40 @@
 <span id="378">378</span>
 <span id="379">379</span>
 <span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Alex Lyon &lt;arcterus@mail.com&gt;</span>
@@ -387,7 +421,7 @@
 <span class="comment">//  * file that was distributed with this source code.</span>
 
 <span class="comment">// spell-checker:ignore (ToDO) RFILE refsize rfilename fsize tsize</span>
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">Arg</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>};
 <span class="kw">use</span> <span class="ident">std::convert::TryFrom</span>;
 <span class="kw">use</span> <span class="ident">std::fs</span>::{<span class="ident">metadata</span>, <span class="ident">OpenOptions</span>};
 <span class="kw">use</span> <span class="ident">std::io::ErrorKind</span>;
@@ -412,18 +446,38 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// `fsize` is the size of the reference file, in bytes.</span>
     <span class="doccomment">///</span>
+    <span class="doccomment">/// If the mode is [`TruncateMode::Reduce`] and the value to</span>
+    <span class="doccomment">/// reduce by is greater than `fsize`, then this function returns</span>
+    <span class="doccomment">/// 0 (since it cannot return a negative number).</span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # Examples</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Extending a file of 10 bytes by 5 bytes:</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// ```rust,ignore</span>
     <span class="doccomment">/// let mode = TruncateMode::Extend(5);</span>
     <span class="doccomment">/// let fsize = 10;</span>
     <span class="doccomment">/// assert_eq!(mode.to_size(fsize), 15);</span>
     <span class="doccomment">/// ```</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Reducing a file by more than its size results in 0:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```rust,ignore</span>
+    <span class="doccomment">/// let mode = TruncateMode::Reduce(5);</span>
+    <span class="doccomment">/// let fsize = 3;</span>
+    <span class="doccomment">/// assert_eq!(mode.to_size(fsize), 0);</span>
+    <span class="doccomment">/// ```</span>
     <span class="kw">fn</span> <span class="ident">to_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fsize</span>: <span class="ident">usize</span>) -&gt; <span class="ident">usize</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">TruncateMode::Absolute</span>(<span class="ident">size</span>) =&gt; <span class="kw-2">*</span><span class="ident">size</span>,
             <span class="ident">TruncateMode::Extend</span>(<span class="ident">size</span>) =&gt; <span class="ident">fsize</span> <span class="op">+</span> <span class="ident">size</span>,
-            <span class="ident">TruncateMode::Reduce</span>(<span class="ident">size</span>) =&gt; <span class="ident">fsize</span> <span class="op">-</span> <span class="ident">size</span>,
+            <span class="ident">TruncateMode::Reduce</span>(<span class="ident">size</span>) =&gt; {
+                <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">size</span> <span class="op">&gt;</span> <span class="ident">fsize</span> {
+                    <span class="number">0</span>
+                } <span class="kw">else</span> {
+                    <span class="ident">fsize</span> <span class="op">-</span> <span class="ident">size</span>
+                }
+            }
             <span class="ident">TruncateMode::AtMost</span>(<span class="ident">size</span>) =&gt; <span class="ident">fsize</span>.<span class="ident">min</span>(<span class="kw-2">*</span><span class="ident">size</span>),
             <span class="ident">TruncateMode::AtLeast</span>(<span class="ident">size</span>) =&gt; <span class="ident">fsize</span>.<span class="ident">max</span>(<span class="kw-2">*</span><span class="ident">size</span>),
             <span class="ident">TruncateMode::RoundDown</span>(<span class="ident">size</span>) =&gt; <span class="ident">fsize</span> <span class="op">-</span> <span class="ident">fsize</span> <span class="op">%</span> <span class="ident">size</span>,
@@ -468,7 +522,7 @@
     )
 }
 
-<span class="attribute">#[<span class="ident">uucore_procs::gen_uumain</span>]</span>
+<span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">usage</span>();
     <span class="kw">let</span> <span class="ident">long_usage</span> <span class="op">=</span> <span class="ident">get_long_usage</span>();
@@ -498,6 +552,7 @@
     <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
+        .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::IO_BLOCKS</span>)
             .<span class="ident">short</span>(<span class="string">&#39;o&#39;</span>)
@@ -599,7 +654,8 @@
     <span class="kw">let</span> <span class="ident">fsize</span> <span class="op">=</span> <span class="ident">metadata</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">usize</span>;
     <span class="kw">let</span> <span class="ident">tsize</span> <span class="op">=</span> <span class="ident">mode</span>.<span class="ident">to_size</span>(<span class="ident">fsize</span>);
     <span class="kw">for</span> <span class="ident">filename</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">filenames</span> {
-        <span class="ident">file_truncate</span>(<span class="ident">filename</span>, <span class="ident">create</span>, <span class="ident">tsize</span>).<span class="ident">map_err_context</span>(<span class="ident">String::new</span>)<span class="question-mark">?</span>;
+        <span class="ident">file_truncate</span>(<span class="ident">filename</span>, <span class="ident">create</span>, <span class="ident">tsize</span>)
+            .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;cannot open {} for writing&quot;</span>, <span class="ident">filename</span>.<span class="ident">quote</span>()))<span class="question-mark">?</span>;
     }
     <span class="prelude-val">Ok</span>(())
 }
@@ -632,7 +688,8 @@
     })<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">tsize</span> <span class="op">=</span> <span class="ident">metadata</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">usize</span>;
     <span class="kw">for</span> <span class="ident">filename</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">filenames</span> {
-        <span class="ident">file_truncate</span>(<span class="ident">filename</span>, <span class="ident">create</span>, <span class="ident">tsize</span>).<span class="ident">map_err_context</span>(<span class="ident">String::new</span>)<span class="question-mark">?</span>;
+        <span class="ident">file_truncate</span>(<span class="ident">filename</span>, <span class="ident">create</span>, <span class="ident">tsize</span>)
+            .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;cannot open {} for writing&quot;</span>, <span class="ident">filename</span>.<span class="ident">quote</span>()))<span class="question-mark">?</span>;
     }
     <span class="prelude-val">Ok</span>(())
 }
@@ -667,7 +724,11 @@
         <span class="kw">match</span> <span class="ident">file_truncate</span>(<span class="ident">filename</span>, <span class="ident">create</span>, <span class="ident">tsize</span>) {
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="kw">continue</span>,
             <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">kind</span>() <span class="op">==</span> <span class="ident">ErrorKind::NotFound</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">create</span> =&gt; <span class="kw">continue</span>,
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>.<span class="ident">map_err_context</span>(<span class="ident">String::new</span>)),
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(
+                    <span class="ident">e</span>.<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;cannot open {} for writing&quot;</span>, <span class="ident">filename</span>.<span class="ident">quote</span>()))
+                )
+            }
         }
     }
     <span class="prelude-val">Ok</span>(())
@@ -757,6 +818,13 @@
         <span class="macro">assert_eq!</span>(<span class="ident">parse_mode_and_size</span>(<span class="string">&quot;&gt;10&quot;</span>), <span class="prelude-val">Ok</span>(<span class="ident">TruncateMode::AtLeast</span>(<span class="number">10</span>)));
         <span class="macro">assert_eq!</span>(<span class="ident">parse_mode_and_size</span>(<span class="string">&quot;/10&quot;</span>), <span class="prelude-val">Ok</span>(<span class="ident">TruncateMode::RoundDown</span>(<span class="number">10</span>)));
         <span class="macro">assert_eq!</span>(<span class="ident">parse_mode_and_size</span>(<span class="string">&quot;%10&quot;</span>), <span class="prelude-val">Ok</span>(<span class="ident">TruncateMode::RoundUp</span>(<span class="number">10</span>)));
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_to_size</span>() {
+        <span class="macro">assert_eq!</span>(<span class="ident">TruncateMode::Extend</span>(<span class="number">5</span>).<span class="ident">to_size</span>(<span class="number">10</span>), <span class="number">15</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">TruncateMode::Reduce</span>(<span class="number">5</span>).<span class="ident">to_size</span>(<span class="number">10</span>), <span class="number">5</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">TruncateMode::Reduce</span>(<span class="number">5</span>).<span class="ident">to_size</span>(<span class="number">3</span>), <span class="number">0</span>);
     }
 }
 </code></pre></div>

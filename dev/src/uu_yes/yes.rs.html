@@ -82,6 +82,8 @@
 <span id="81">81</span>
 <span id="82">82</span>
 <span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Jordi Boggiano &lt;j.boggiano@seld.be&gt;</span>
@@ -97,7 +99,7 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">clap</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">App</span>, <span class="ident">Arg</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>};
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;android&quot;</span>))]</span>
@@ -107,7 +109,7 @@
 <span class="comment">// systems, but honestly this is good enough</span>
 <span class="kw">const</span> <span class="ident">BUF_SIZE</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">16</span> <span class="op">*</span> <span class="number">1024</span>;
 
-<span class="attribute">#[<span class="ident">uucore_procs::gen_uumain</span>]</span>
+<span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
@@ -131,7 +133,9 @@
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="macro">app_from_crate!</span>().<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="string">&quot;STRING&quot;</span>).<span class="ident">index</span>(<span class="number">1</span>).<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>))
+    <span class="macro">app_from_crate!</span>()
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="string">&quot;STRING&quot;</span>).<span class="ident">index</span>(<span class="number">1</span>).<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>))
+        .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
 }
 
 <span class="kw">fn</span> <span class="ident">prepare_buffer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">buffer</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> [<span class="ident">u8</span>; <span class="ident">BUF_SIZE</span>]) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>] {

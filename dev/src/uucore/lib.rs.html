@@ -302,6 +302,21 @@
 <span id="301">301</span>
 <span id="302">302</span>
 <span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
 </pre><pre class="rust"><code><span class="comment">// library ~ (core/bundler file)</span>
 
 <span class="comment">// Copyright (C) ~ Alex Lyon &lt;arcterus@mail.com&gt;</span>
@@ -319,6 +334,8 @@
 <span class="kw">mod</span> <span class="ident">macros</span>; <span class="comment">// crate macros (macro_rules-type; exported to `crate::...`)</span>
 <span class="kw">mod</span> <span class="ident">mods</span>; <span class="comment">// core cross-platform modules</span>
 <span class="kw">mod</span> <span class="ident">parser</span>; <span class="comment">// string parsing modules</span>
+
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">uucore_procs</span>::<span class="kw-2">*</span>;
 
 <span class="comment">// * cross-platform modules</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::mods::backup_control</span>;
@@ -380,6 +397,19 @@
 <span class="kw">use</span> <span class="ident">once_cell::sync::Lazy</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::display::Quotable</span>;
+
+<span class="attribute">#[<span class="ident">macro_export</span>]</span>
+<span class="macro">macro_rules!</span> <span class="ident">bin</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">util</span>:<span class="ident">ident</span>) =&gt; {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">main</span>() {
+            <span class="kw">use</span> <span class="ident">std::io::Write</span>;
+            <span class="ident">uucore::panic::mute_sigpipe_panic</span>(); <span class="comment">// suppress extraneous error output for SIGPIPE failures/panics</span>
+            <span class="kw">let</span> <span class="ident">code</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">util::uumain</span>(<span class="ident">uucore::args_os</span>()); <span class="comment">// execute utility code</span>
+            <span class="ident">std::io::stdout</span>().<span class="ident">flush</span>().<span class="ident">expect</span>(<span class="string">&quot;could not flush stdout&quot;</span>); <span class="comment">// (defensively) flush stdout for utility prior to exit; see &lt;https://github.com/rust-lang/rust/issues/23818&gt;</span>
+            <span class="ident">std::process::exit</span>(<span class="ident">code</span>);
+        }
+    };
+}
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_utility_is_second_arg</span>() -&gt; <span class="ident">bool</span> {
     <span class="ident"><span class="kw">crate</span>::macros::UTILITY_IS_SECOND_ARG</span>.<span class="ident">load</span>(<span class="ident">Ordering::SeqCst</span>)
