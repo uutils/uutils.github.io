@@ -729,8 +729,8 @@
         <span class="ident">zero_terminated</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::ZERO_TERMINATED</span>),
     };
     <span class="ident">uniq</span>.<span class="ident">print_uniq</span>(
-        <span class="kw-2">&amp;mut</span> <span class="ident">open_input_file</span>(<span class="ident">in_file_name</span>)<span class="question-mark">?</span>,
-        <span class="kw-2">&amp;mut</span> <span class="ident">open_output_file</span>(<span class="ident">out_file_name</span>)<span class="question-mark">?</span>,
+        <span class="kw-2">&amp;mut</span> <span class="ident">open_input_file</span>(<span class="kw-2">&amp;</span><span class="ident">in_file_name</span>)<span class="question-mark">?</span>,
+        <span class="kw-2">&amp;mut</span> <span class="ident">open_output_file</span>(<span class="kw-2">&amp;</span><span class="ident">out_file_name</span>)<span class="question-mark">?</span>,
     )
 }
 
@@ -844,11 +844,11 @@
     }
 }
 
-<span class="kw">fn</span> <span class="ident">open_input_file</span>(<span class="ident">in_file_name</span>: <span class="ident">String</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">BufReader</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Read</span> <span class="op">+</span> <span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">open_input_file</span>(<span class="ident">in_file_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">BufReader</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Read</span> <span class="op">+</span> <span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">in_file</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">in_file_name</span> <span class="op">==</span> <span class="string">&quot;-&quot;</span> {
         <span class="ident">Box::new</span>(<span class="ident">stdin</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Read</span><span class="op">&gt;</span>
     } <span class="kw">else</span> {
-        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">in_file_name</span>[..]);
+        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="ident">in_file_name</span>);
         <span class="kw">let</span> <span class="ident">in_file</span> <span class="op">=</span> <span class="ident">File::open</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>)
             .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Could not open {}&quot;</span>, <span class="ident">in_file_name</span>.<span class="ident">maybe_quote</span>()))<span class="question-mark">?</span>;
         <span class="ident">Box::new</span>(<span class="ident">in_file</span>) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Read</span><span class="op">&gt;</span>
@@ -856,11 +856,11 @@
     <span class="prelude-val">Ok</span>(<span class="ident">BufReader::new</span>(<span class="ident">in_file</span>))
 }
 
-<span class="kw">fn</span> <span class="ident">open_output_file</span>(<span class="ident">out_file_name</span>: <span class="ident">String</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Write</span> <span class="op">+</span> <span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">open_output_file</span>(<span class="ident">out_file_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Write</span> <span class="op">+</span> <span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">out_file</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">out_file_name</span> <span class="op">==</span> <span class="string">&quot;-&quot;</span> {
         <span class="ident">Box::new</span>(<span class="ident">stdout</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Write</span><span class="op">&gt;</span>
     } <span class="kw">else</span> {
-        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">out_file_name</span>[..]);
+        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="ident">out_file_name</span>);
         <span class="kw">let</span> <span class="ident">out_file</span> <span class="op">=</span> <span class="ident">File::create</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>)
             .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Could not create {}&quot;</span>, <span class="ident">out_file_name</span>.<span class="ident">maybe_quote</span>()))<span class="question-mark">?</span>;
         <span class="ident">Box::new</span>(<span class="ident">out_file</span>) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Write</span><span class="op">&gt;</span>

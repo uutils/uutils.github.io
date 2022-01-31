@@ -378,8 +378,6 @@
 <span id="377">377</span>
 <span id="378">378</span>
 <span id="379">379</span>
-<span id="380">380</span>
-<span id="381">381</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;</span>
@@ -592,9 +590,9 @@
         <span class="self">self</span>.<span class="ident">char_indices</span>()
             .<span class="ident">fold</span>(<span class="ident">String::with_capacity</span>(<span class="self">self</span>.<span class="ident">len</span>()), <span class="op">|</span><span class="kw-2">mut</span> <span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> {
                 <span class="kw">if</span> <span class="ident">x</span>.<span class="number">0</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-                    <span class="ident">acc</span>.<span class="ident">push</span>(<span class="ident">x</span>.<span class="number">1</span>)
+                    <span class="ident">acc</span>.<span class="ident">push</span>(<span class="ident">x</span>.<span class="number">1</span>);
                 } <span class="kw">else</span> {
-                    <span class="ident">acc</span>.<span class="ident">push</span>(<span class="ident">x</span>.<span class="number">1</span>.<span class="ident">to_ascii_uppercase</span>())
+                    <span class="ident">acc</span>.<span class="ident">push</span>(<span class="ident">x</span>.<span class="number">1</span>.<span class="ident">to_ascii_uppercase</span>());
                 }
                 <span class="ident">acc</span>
             })
@@ -657,7 +655,7 @@
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">n</span>) <span class="op">=</span> <span class="ident">gecos</span>.<span class="ident">find</span>(<span class="string">&#39;,&#39;</span>) {
                     <span class="ident">gecos</span>.<span class="ident">truncate</span>(<span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>);
                 }
-                <span class="macro">print!</span>(<span class="string">&quot; {:&lt;19.19}&quot;</span>, <span class="ident">gecos</span>.<span class="ident">replace</span>(<span class="string">&quot;&amp;&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">pw</span>.<span class="ident">name</span>.<span class="ident">capitalize</span>()));
+                <span class="macro">print!</span>(<span class="string">&quot; {:&lt;19.19}&quot;</span>, <span class="ident">gecos</span>.<span class="ident">replace</span>(<span class="string">&#39;&amp;&#39;</span>, <span class="kw-2">&amp;</span><span class="ident">pw</span>.<span class="ident">name</span>.<span class="ident">capitalize</span>()));
             } <span class="kw">else</span> {
                 <span class="macro">print!</span>(<span class="string">&quot; {:19}&quot;</span>, <span class="string">&quot;        ???&quot;</span>);
             }
@@ -706,12 +704,10 @@
             <span class="self">self</span>.<span class="ident">print_heading</span>();
         }
         <span class="kw">for</span> <span class="ident">ut</span> <span class="kw">in</span> <span class="ident">Utmpx::iter_all_records</span>() {
-            <span class="kw">if</span> <span class="ident">ut</span>.<span class="ident">is_user_process</span>() {
-                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">names</span>.<span class="ident">is_empty</span>() {
-                    <span class="self">self</span>.<span class="ident">print_entry</span>(<span class="kw-2">&amp;</span><span class="ident">ut</span>)<span class="question-mark">?</span>
-                } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">names</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">as_str</span>() <span class="op">==</span> <span class="ident">ut</span>.<span class="ident">user</span>()) {
-                    <span class="self">self</span>.<span class="ident">print_entry</span>(<span class="kw-2">&amp;</span><span class="ident">ut</span>)<span class="question-mark">?</span>;
-                }
+            <span class="kw">if</span> <span class="ident">ut</span>.<span class="ident">is_user_process</span>()
+                <span class="op">&amp;&amp;</span> (<span class="self">self</span>.<span class="ident">names</span>.<span class="ident">is_empty</span>() <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">names</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">as_str</span>() <span class="op">==</span> <span class="ident">ut</span>.<span class="ident">user</span>()))
+            {
+                <span class="self">self</span>.<span class="ident">print_entry</span>(<span class="kw-2">&amp;</span><span class="ident">ut</span>)<span class="question-mark">?</span>;
             }
         }
         <span class="prelude-val">Ok</span>(())
@@ -721,7 +717,7 @@
         <span class="kw">for</span> <span class="ident">u</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">names</span> {
             <span class="macro">print!</span>(<span class="string">&quot;Login name: {:&lt;28}In real life: &quot;</span>, <span class="ident">u</span>);
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">pw</span>) <span class="op">=</span> <span class="ident">Passwd::locate</span>(<span class="ident">u</span>.<span class="ident">as_str</span>()) {
-                <span class="macro">println!</span>(<span class="string">&quot; {}&quot;</span>, <span class="ident">pw</span>.<span class="ident">user_info</span>.<span class="ident">replace</span>(<span class="string">&quot;&amp;&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">pw</span>.<span class="ident">name</span>.<span class="ident">capitalize</span>()));
+                <span class="macro">println!</span>(<span class="string">&quot; {}&quot;</span>, <span class="ident">pw</span>.<span class="ident">user_info</span>.<span class="ident">replace</span>(<span class="string">&#39;&amp;&#39;</span>, <span class="kw-2">&amp;</span><span class="ident">pw</span>.<span class="ident">name</span>.<span class="ident">capitalize</span>()));
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">include_home_and_shell</span> {
                     <span class="macro">print!</span>(<span class="string">&quot;Directory: {:&lt;29}&quot;</span>, <span class="ident">pw</span>.<span class="ident">user_dir</span>);
                     <span class="macro">println!</span>(<span class="string">&quot;Shell:  {}&quot;</span>, <span class="ident">pw</span>.<span class="ident">user_shell</span>);

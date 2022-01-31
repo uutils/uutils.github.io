@@ -569,11 +569,11 @@
 <span class="kw">impl</span> <span class="ident">UError</span> <span class="kw">for</span> <span class="ident">LnError</span> {
     <span class="kw">fn</span> <span class="ident">code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">i32</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::TargetIsDirectory</span>(<span class="kw">_</span>) =&gt; <span class="number">1</span>,
-            <span class="ident"><span class="self">Self</span>::SomeLinksFailed</span> =&gt; <span class="number">1</span>,
-            <span class="ident"><span class="self">Self</span>::FailedToLink</span>(<span class="kw">_</span>) =&gt; <span class="number">1</span>,
-            <span class="ident"><span class="self">Self</span>::MissingDestination</span>(<span class="kw">_</span>) =&gt; <span class="number">1</span>,
-            <span class="ident"><span class="self">Self</span>::ExtraOperand</span>(<span class="kw">_</span>) =&gt; <span class="number">1</span>,
+            <span class="ident"><span class="self">Self</span>::TargetIsDirectory</span>(<span class="kw">_</span>)
+            <span class="op">|</span> <span class="ident"><span class="self">Self</span>::SomeLinksFailed</span>
+            <span class="op">|</span> <span class="ident"><span class="self">Self</span>::FailedToLink</span>(<span class="kw">_</span>)
+            <span class="op">|</span> <span class="ident"><span class="self">Self</span>::MissingDestination</span>(<span class="kw">_</span>)
+            <span class="op">|</span> <span class="ident"><span class="self">Self</span>::ExtraOperand</span>(<span class="kw">_</span>) =&gt; <span class="number">1</span>,
         }
     }
 }
@@ -796,7 +796,7 @@
                 <span class="kw">if</span> <span class="ident">is_symlink</span>(<span class="ident">target_dir</span>) {
                     <span class="kw">if</span> <span class="ident">target_dir</span>.<span class="ident">is_file</span>() {
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">fs::remove_file</span>(<span class="ident">target_dir</span>) {
-                            <span class="macro">show_error!</span>(<span class="string">&quot;Could not update {}: {}&quot;</span>, <span class="ident">target_dir</span>.<span class="ident">quote</span>(), <span class="ident">e</span>)
+                            <span class="macro">show_error!</span>(<span class="string">&quot;Could not update {}: {}&quot;</span>, <span class="ident">target_dir</span>.<span class="ident">quote</span>(), <span class="ident">e</span>);
                         };
                     }
                     <span class="kw">if</span> <span class="ident">target_dir</span>.<span class="ident">is_dir</span>() {
@@ -804,7 +804,7 @@
                         <span class="comment">// considered as a dir</span>
                         <span class="comment">// See test_ln::test_symlink_no_deref_dir</span>
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">fs::remove_dir</span>(<span class="ident">target_dir</span>) {
-                            <span class="macro">show_error!</span>(<span class="string">&quot;Could not update {}: {}&quot;</span>, <span class="ident">target_dir</span>.<span class="ident">quote</span>(), <span class="ident">e</span>)
+                            <span class="macro">show_error!</span>(<span class="string">&quot;Could not update {}: {}&quot;</span>, <span class="ident">target_dir</span>.<span class="ident">quote</span>(), <span class="ident">e</span>);
                         };
                     }
                 }
@@ -890,7 +890,7 @@
                 <span class="kw">if</span> <span class="op">!</span><span class="ident">read_yes</span>() {
                     <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
                 }
-                <span class="ident">fs::remove_file</span>(<span class="ident">dst</span>)<span class="question-mark">?</span>
+                <span class="ident">fs::remove_file</span>(<span class="ident">dst</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">OverwriteMode::Force</span> =&gt; <span class="ident">fs::remove_file</span>(<span class="ident">dst</span>)<span class="question-mark">?</span>,
         };

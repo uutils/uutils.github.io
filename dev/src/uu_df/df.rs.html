@@ -531,8 +531,6 @@
 <span id="530">530</span>
 <span id="531">531</span>
 <span id="532">532</span>
-<span id="533">533</span>
-<span id="534">534</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Fangxu Hu &lt;framlog@gmail.com&gt;</span>
@@ -587,6 +585,7 @@
 
 <span class="doccomment">/// Store names of file systems as a selector.</span>
 <span class="doccomment">/// Note: `exclude` takes priority over `include`.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
 <span class="kw">struct</span> <span class="ident">FsSelector</span> {
     <span class="ident">include</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="ident">exclude</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
@@ -614,11 +613,8 @@
 }
 
 <span class="kw">impl</span> <span class="ident">FsSelector</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="ident">FsSelector</span> {
-        <span class="ident">FsSelector</span> {
-            <span class="ident">include</span>: <span class="ident">HashSet::new</span>(),
-            <span class="ident">exclude</span>: <span class="ident">HashSet::new</span>(),
-        }
+    <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
+        <span class="ident"><span class="self">Self</span>::default</span>()
     }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
@@ -640,8 +636,8 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Options</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="ident">Options</span> {
-        <span class="ident">Options</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
+        <span class="self">Self</span> {
             <span class="ident">show_local_fs</span>: <span class="bool-val">false</span>,
             <span class="ident">show_all_fs</span>: <span class="bool-val">false</span>,
             <span class="ident">show_listed_fs</span>: <span class="bool-val">false</span>,
@@ -659,7 +655,7 @@
 
 <span class="kw">impl</span> <span class="ident">Filesystem</span> {
     <span class="comment">// TODO: resolve uuid in `mount_info.dev_name` if exists</span>
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">mount_info</span>: <span class="ident">MountInfo</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Filesystem</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">mount_info</span>: <span class="ident">MountInfo</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">_stat_path</span> <span class="op">=</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">mount_info</span>.<span class="ident">mount_dir</span>.<span class="ident">is_empty</span>() {
             <span class="ident">mount_info</span>.<span class="ident">mount_dir</span>.<span class="ident">clone</span>()
         } <span class="kw">else</span> {
@@ -680,14 +676,14 @@
             <span class="kw">if</span> <span class="ident">statfs_fn</span>(<span class="ident">path</span>.<span class="ident">as_ptr</span>(), <span class="kw-2">&amp;mut</span> <span class="ident">statvfs</span>) <span class="op">&lt;</span> <span class="number">0</span> {
                 <span class="prelude-val">None</span>
             } <span class="kw">else</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">Filesystem</span> {
+                <span class="prelude-val">Some</span>(<span class="self">Self</span> {
                     <span class="ident">mount_info</span>,
                     <span class="ident">usage</span>: <span class="ident">FsUsage::new</span>(<span class="ident">statvfs</span>),
                 })
             }
         }
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-        <span class="prelude-val">Some</span>(<span class="ident">Filesystem</span> {
+        <span class="prelude-val">Some</span>(<span class="self">Self</span> {
             <span class="ident">mount_info</span>,
             <span class="ident">usage</span>: <span class="ident">FsUsage::new</span>(<span class="ident">Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">_stat_path</span>)),
         })
@@ -902,7 +898,7 @@
         }
     }
     <span class="macro">println!</span>();
-    <span class="kw">for</span> <span class="ident">fs</span> <span class="kw">in</span> <span class="ident">fs_list</span>.<span class="ident">iter</span>() {
+    <span class="kw">for</span> <span class="ident">fs</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">fs_list</span> {
         <span class="macro">print!</span>(<span class="string">&quot;{0: &lt;16} &quot;</span>, <span class="ident">fs</span>.<span class="ident">mount_info</span>.<span class="ident">dev_name</span>);
         <span class="kw">if</span> <span class="ident">opt</span>.<span class="ident">show_fs_type</span> {
             <span class="macro">print!</span>(<span class="string">&quot;{0: &lt;5} &quot;</span>, <span class="ident">fs</span>.<span class="ident">mount_info</span>.<span class="ident">fs_type</span>);

@@ -1097,7 +1097,7 @@
             <span class="comment">// but set dev_id</span>
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">stat</span>) <span class="op">=</span> <span class="ident">std::fs::metadata</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">mount_dir</span>) {
                 <span class="comment">// Why do we cast this to i32?</span>
-                <span class="self">self</span>.<span class="ident">dev_id</span> <span class="op">=</span> (<span class="ident">stat</span>.<span class="ident">dev</span>() <span class="kw">as</span> <span class="ident">i32</span>).<span class="ident">to_string</span>()
+                <span class="self">self</span>.<span class="ident">dev_id</span> <span class="op">=</span> (<span class="ident">stat</span>.<span class="ident">dev</span>() <span class="kw">as</span> <span class="ident">i32</span>).<span class="ident">to_string</span>();
             } <span class="kw">else</span> {
                 <span class="self">self</span>.<span class="ident">dev_id</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>();
             }
@@ -1138,7 +1138,7 @@
     }
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">file_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">raw</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">MountInfo</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">file_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">raw</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">file_name</span> {
             <span class="comment">// spell-checker:ignore (word) noatime</span>
             <span class="comment">// Format: 36 35 98:0 /mnt1 /mnt2 rw,noatime master:1 - ext3 /dev/root rw,errors=continue</span>
@@ -1148,7 +1148,7 @@
                 <span class="kw">let</span> <span class="ident">after_fields</span> <span class="op">=</span> <span class="ident">raw</span>[<span class="ident">FIELDS_OFFSET</span>..].<span class="ident">iter</span>().<span class="ident">position</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">c</span> <span class="op">==</span> <span class="string">&quot;-&quot;</span>).<span class="ident">unwrap</span>()
                     <span class="op">+</span> <span class="ident">FIELDS_OFFSET</span>
                     <span class="op">+</span> <span class="number">1</span>;
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">MountInfo</span> {
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">m</span> <span class="op">=</span> <span class="self">Self</span> {
                     <span class="ident">dev_id</span>: <span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>(),
                     <span class="ident">dev_name</span>: <span class="ident">raw</span>[<span class="ident">after_fields</span> <span class="op">+</span> <span class="number">1</span>].<span class="ident">to_string</span>(),
                     <span class="ident">fs_type</span>: <span class="ident">raw</span>[<span class="ident">after_fields</span>].<span class="ident">to_string</span>(),
@@ -1162,7 +1162,7 @@
                 <span class="prelude-val">Some</span>(<span class="ident">m</span>)
             }
             <span class="ident">LINUX_MTAB</span> =&gt; {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">MountInfo</span> {
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">m</span> <span class="op">=</span> <span class="self">Self</span> {
                     <span class="ident">dev_id</span>: <span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>(),
                     <span class="ident">dev_name</span>: <span class="ident">raw</span>[<span class="number">0</span>].<span class="ident">to_string</span>(),
                     <span class="ident">fs_type</span>: <span class="ident">raw</span>[<span class="number">2</span>].<span class="ident">to_string</span>(),
@@ -1351,7 +1351,7 @@
             .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">line</span><span class="op">|</span> <span class="ident">line</span>.<span class="ident">ok</span>())
             .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">line</span><span class="op">|</span> {
                 <span class="kw">let</span> <span class="ident">raw_data</span> <span class="op">=</span> <span class="ident">line</span>.<span class="ident">split_whitespace</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-                <span class="ident">MountInfo::new</span>(<span class="ident">file_name</span>, <span class="ident">raw_data</span>)
+                <span class="ident">MountInfo::new</span>(<span class="ident">file_name</span>, <span class="kw-2">&amp;</span><span class="ident">raw_data</span>)
             })
             .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
     }
@@ -1437,9 +1437,9 @@
 
 <span class="kw">impl</span> <span class="ident">FsUsage</span> {
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">statvfs</span>: <span class="ident">StatFs</span>) -&gt; <span class="ident">FsUsage</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">statvfs</span>: <span class="ident">StatFs</span>) -&gt; <span class="self">Self</span> {
         {
-            <span class="ident">FsUsage</span> {
+            <span class="self">Self</span> {
                 <span class="ident">blocksize</span>: <span class="ident">statvfs</span>.<span class="ident">f_bsize</span> <span class="kw">as</span> <span class="ident">u64</span>, <span class="comment">// or `statvfs.f_frsize` ?</span>
                 <span class="ident">blocks</span>: <span class="ident">statvfs</span>.<span class="ident">f_blocks</span> <span class="kw">as</span> <span class="ident">u64</span>,
                 <span class="ident">bfree</span>: <span class="ident">statvfs</span>.<span class="ident">f_bfree</span> <span class="kw">as</span> <span class="ident">u64</span>,
@@ -1451,7 +1451,7 @@
         }
     }
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">unix</span>))]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="ident">FsUsage</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="self">Self</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root_path</span> <span class="op">=</span> [<span class="number">0u16</span>; <span class="ident">MAX_PATH</span>];
         <span class="kw">let</span> <span class="ident">success</span> <span class="op">=</span> <span class="kw">unsafe</span> {
             <span class="ident">GetVolumePathNamesForVolumeNameW</span>(
@@ -1843,9 +1843,9 @@
         <span class="comment">// spell-checker:ignore (word) relatime</span>
         <span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">MountInfo::new</span>(
             <span class="ident">LINUX_MOUNTINFO</span>,
-            <span class="string">&quot;106 109 253:6 / /mnt rw,relatime - xfs /dev/fs0 rw&quot;</span>
+            <span class="kw-2">&amp;</span><span class="string">&quot;106 109 253:6 / /mnt rw,relatime - xfs /dev/fs0 rw&quot;</span>
                 .<span class="ident">split_ascii_whitespace</span>()
-                .<span class="ident">collect</span>(),
+                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
         )
         .<span class="ident">unwrap</span>();
 
@@ -1858,9 +1858,9 @@
         <span class="comment">// Test parsing with different amounts of optional fields.</span>
         <span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">MountInfo::new</span>(
             <span class="ident">LINUX_MOUNTINFO</span>,
-            <span class="string">&quot;106 109 253:6 / /mnt rw,relatime master:1 - xfs /dev/fs0 rw&quot;</span>
+            <span class="kw-2">&amp;</span><span class="string">&quot;106 109 253:6 / /mnt rw,relatime master:1 - xfs /dev/fs0 rw&quot;</span>
                 .<span class="ident">split_ascii_whitespace</span>()
-                .<span class="ident">collect</span>(),
+                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
         )
         .<span class="ident">unwrap</span>();
 
@@ -1869,9 +1869,9 @@
 
         <span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">MountInfo::new</span>(
             <span class="ident">LINUX_MOUNTINFO</span>,
-            <span class="string">&quot;106 109 253:6 / /mnt rw,relatime master:1 shared:2 - xfs /dev/fs0 rw&quot;</span>
+            <span class="kw-2">&amp;</span><span class="string">&quot;106 109 253:6 / /mnt rw,relatime master:1 shared:2 - xfs /dev/fs0 rw&quot;</span>
                 .<span class="ident">split_ascii_whitespace</span>()
-                .<span class="ident">collect</span>(),
+                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
         )
         .<span class="ident">unwrap</span>();
 

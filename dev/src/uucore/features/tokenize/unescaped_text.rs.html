@@ -275,6 +275,7 @@
 <span id="274">274</span>
 <span id="275">275</span>
 <span id="276">276</span>
+<span id="277">277</span>
 </pre><pre class="rust"><code><span class="doccomment">//! UnescapedText is a tokenizer impl</span>
 <span class="doccomment">//! for tokenizing character literals,</span>
 <span class="doccomment">//! and escaped character literals (of allowed escapes),</span>
@@ -312,10 +313,11 @@
     <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">stdout</span>().<span class="ident">flush</span>();
 }
 
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UnescapedText</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>);
 <span class="kw">impl</span> <span class="ident">UnescapedText</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="ident">UnescapedText</span> {
-        <span class="ident">UnescapedText</span>(<span class="ident">Vec::new</span>())
+    <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
+        <span class="ident"><span class="self">Self</span>::default</span>()
     }
     <span class="comment">// take an iterator to the format string</span>
     <span class="comment">// consume between min and max chars</span>
@@ -410,7 +412,7 @@
                     <span class="kw">_</span> =&gt; {}
                 }
                 <span class="kw">if</span> <span class="op">!</span><span class="ident">ignore</span> {
-                    <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> (<span class="ident">UnescapedText::base_to_u32</span>(<span class="ident">min_len</span>, <span class="ident">max_len</span>, <span class="ident">base</span>, <span class="ident">it</span>) <span class="op">%</span> <span class="number">256</span>) <span class="kw">as</span> <span class="ident">u8</span>;
+                    <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> (<span class="ident"><span class="self">Self</span>::base_to_u32</span>(<span class="ident">min_len</span>, <span class="ident">max_len</span>, <span class="ident">base</span>, <span class="ident">it</span>) <span class="op">%</span> <span class="number">256</span>) <span class="kw">as</span> <span class="ident">u8</span>;
                     <span class="ident">byte_vec</span>.<span class="ident">push</span>(<span class="ident">val</span>);
                     <span class="kw">let</span> <span class="ident">bvec</span> <span class="op">=</span> [<span class="ident">val</span>];
                     <span class="ident">flush_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">bvec</span>);
@@ -447,8 +449,8 @@
                             <span class="string">&#39;u&#39;</span> =&gt; <span class="number">4</span>,
                             <span class="comment">/* &#39;U&#39; | */</span> <span class="kw">_</span> =&gt; <span class="number">8</span>,
                         };
-                        <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="ident">UnescapedText::base_to_u32</span>(<span class="ident">len</span>, <span class="ident">len</span>, <span class="number">16</span>, <span class="ident">it</span>);
-                        <span class="ident">UnescapedText::validate_iec</span>(<span class="ident">val</span>, <span class="bool-val">false</span>);
+                        <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::base_to_u32</span>(<span class="ident">len</span>, <span class="ident">len</span>, <span class="number">16</span>, <span class="ident">it</span>);
+                        <span class="ident"><span class="self">Self</span>::validate_iec</span>(<span class="ident">val</span>, <span class="bool-val">false</span>);
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span> <span class="ident">from_u32</span>(<span class="ident">val</span>) {
                             <span class="ident">c</span>
                         } <span class="kw">else</span> {
@@ -476,7 +478,7 @@
         <span class="ident">subs_mode</span>: <span class="ident">bool</span>,
     ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">token::Token</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">addchar</span> <span class="op">=</span> <span class="bool-val">false</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_text</span> <span class="op">=</span> <span class="ident">UnescapedText::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_text</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::new</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tmp_str</span> <span class="op">=</span> <span class="ident">String::new</span>();
         {
             <span class="kw">let</span> <span class="ident">new_vec</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> (<span class="ident">new_text</span>.<span class="number">0</span>);
@@ -504,7 +506,7 @@
                             <span class="ident">new_vec</span>.<span class="ident">extend</span>(<span class="ident">tmp_str</span>.<span class="ident">bytes</span>());
                             <span class="ident">tmp_str</span> <span class="op">=</span> <span class="ident">String::new</span>();
                         }
-                        <span class="ident">UnescapedText::handle_escaped</span>(<span class="ident">new_vec</span>, <span class="ident">it</span>, <span class="ident">subs_mode</span>)
+                        <span class="ident"><span class="self">Self</span>::handle_escaped</span>(<span class="ident">new_vec</span>, <span class="ident">it</span>, <span class="ident">subs_mode</span>);
                     }
                     <span class="ident">x</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">==</span> <span class="string">&#39;%&#39;</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">subs_mode</span> =&gt; {
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">follow</span>) <span class="op">=</span> <span class="ident">it</span>.<span class="ident">next</span>() {
@@ -543,7 +545,7 @@
         <span class="ident">it</span>: <span class="kw-2">&amp;mut</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">Chars</span><span class="op">&gt;</span>,
         <span class="kw">_</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Peekable</span><span class="op">&lt;</span><span class="ident">Iter</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">token::Token</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="ident">UnescapedText::from_it_core</span>(<span class="ident">it</span>, <span class="bool-val">false</span>)
+        <span class="ident"><span class="self">Self</span>::from_it_core</span>(<span class="ident">it</span>, <span class="bool-val">false</span>)
     }
 }
 <span class="kw">impl</span> <span class="ident">token::Token</span> <span class="kw">for</span> <span class="ident">UnescapedText</span> {

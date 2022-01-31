@@ -296,7 +296,7 @@
 <span class="kw">use</span> <span class="ident">std::error::Error</span>;
 <span class="kw">use</span> <span class="ident">std::fmt::Display</span>;
 <span class="kw">use</span> <span class="ident">std::iter</span>;
-<span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">is_separator</span>, <span class="ident">PathBuf</span>};
+<span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">is_separator</span>, <span class="ident">Path</span>, <span class="ident">PathBuf</span>};
 
 <span class="kw">use</span> <span class="ident">rand::Rng</span>;
 <span class="kw">use</span> <span class="ident">tempfile::Builder</span>;
@@ -398,13 +398,13 @@
     }
 
     <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_T</span>) {
-        <span class="ident">tmpdir</span> <span class="op">=</span> <span class="ident">env::temp_dir</span>()
+        <span class="ident">tmpdir</span> <span class="op">=</span> <span class="ident">env::temp_dir</span>();
     }
 
     <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">dry_run</span> {
         <span class="ident">dry_exec</span>(<span class="ident">tmpdir</span>, <span class="ident">prefix</span>, <span class="ident">rand</span>, <span class="ident">suffix</span>)
     } <span class="kw">else</span> {
-        <span class="ident">exec</span>(<span class="ident">tmpdir</span>, <span class="ident">prefix</span>, <span class="ident">rand</span>, <span class="ident">suffix</span>, <span class="ident">make_dir</span>)
+        <span class="ident">exec</span>(<span class="kw-2">&amp;</span><span class="ident">tmpdir</span>, <span class="ident">prefix</span>, <span class="ident">rand</span>, <span class="ident">suffix</span>, <span class="ident">make_dir</span>)
     };
 
     <span class="kw">if</span> <span class="ident">suppress_file_err</span> {
@@ -529,7 +529,7 @@
     <span class="ident">println_verbatim</span>(<span class="ident">tmpdir</span>).<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to print directory name&quot;</span>.<span class="ident">to_owned</span>())
 }
 
-<span class="kw">fn</span> <span class="ident">exec</span>(<span class="ident">dir</span>: <span class="ident">PathBuf</span>, <span class="ident">prefix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">rand</span>: <span class="ident">usize</span>, <span class="ident">suffix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">make_dir</span>: <span class="ident">bool</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">exec</span>(<span class="ident">dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">prefix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">rand</span>: <span class="ident">usize</span>, <span class="ident">suffix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">make_dir</span>: <span class="ident">bool</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> {
         <span class="macro">format!</span>(
             <span class="string">&quot;failed to create file via template &#39;{}{}{}&#39;&quot;</span>,

@@ -393,9 +393,9 @@ Multiple fields/ranges can be separated with commas
     <span class="macro">format!</span>(<span class="string">&quot;{0} [OPTION]... [NUMBER]...&quot;</span>, <span class="ident">uucore::execution_phrase</span>())
 }
 
-<span class="kw">fn</span> <span class="ident">handle_args</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">options</span>: <span class="ident">NumfmtOptions</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">handle_args</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">NumfmtOptions</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">for</span> <span class="ident">l</span> <span class="kw">in</span> <span class="ident">args</span> {
-        <span class="kw">match</span> <span class="ident">format_and_print</span>(<span class="ident">l</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>) {
+        <span class="kw">match</span> <span class="ident">format_and_print</span>(<span class="ident">l</span>, <span class="ident">options</span>) {
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
             <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">NumfmtError::FormattingError</span>(<span class="ident">e</span>.<span class="ident">to_string</span>())),
         }<span class="question-mark">?</span>;
@@ -404,7 +404,7 @@ Multiple fields/ranges can be separated with commas
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">fn</span> <span class="ident">handle_buffer</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="ident">R</span>, <span class="ident">options</span>: <span class="ident">NumfmtOptions</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">handle_buffer</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="ident">R</span>, <span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">NumfmtOptions</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">R</span>: <span class="ident">BufRead</span>,
 {
@@ -415,7 +415,7 @@ Multiple fields/ranges can be separated with commas
                 <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">l</span>);
                 <span class="prelude-val">Ok</span>(())
             }
-            <span class="prelude-val">Ok</span>(<span class="ident">l</span>) =&gt; <span class="kw">match</span> <span class="ident">format_and_print</span>(<span class="kw-2">&amp;</span><span class="ident">l</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>) {
+            <span class="prelude-val">Ok</span>(<span class="ident">l</span>) =&gt; <span class="kw">match</span> <span class="ident">format_and_print</span>(<span class="kw-2">&amp;</span><span class="ident">l</span>, <span class="ident">options</span>) {
                 <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
                 <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">NumfmtError::FormattingError</span>(<span class="ident">e</span>.<span class="ident">to_string</span>())),
             },
@@ -511,11 +511,11 @@ Multiple fields/ranges can be separated with commas
     <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">parse_options</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>).<span class="ident">map_err</span>(<span class="ident">NumfmtError::IllegalArgument</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="ident">options::NUMBER</span>) {
-        <span class="prelude-val">Some</span>(<span class="ident">values</span>) =&gt; <span class="ident">handle_args</span>(<span class="ident">values</span>, <span class="ident">options</span>),
+        <span class="prelude-val">Some</span>(<span class="ident">values</span>) =&gt; <span class="ident">handle_args</span>(<span class="ident">values</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>),
         <span class="prelude-val">None</span> =&gt; {
             <span class="kw">let</span> <span class="ident">stdin</span> <span class="op">=</span> <span class="ident">std::io::stdin</span>();
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">locked_stdin</span> <span class="op">=</span> <span class="ident">stdin</span>.<span class="ident">lock</span>();
-            <span class="ident">handle_buffer</span>(<span class="kw-2">&amp;mut</span> <span class="ident">locked_stdin</span>, <span class="ident">options</span>)
+            <span class="ident">handle_buffer</span>(<span class="kw-2">&amp;mut</span> <span class="ident">locked_stdin</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>)
         }
     };
 
@@ -642,7 +642,7 @@ Multiple fields/ranges can be separated with commas
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">broken_buffer_returns_io_error</span>() {
         <span class="kw">let</span> <span class="ident">mock_buffer</span> <span class="op">=</span> <span class="ident">MockBuffer</span> {};
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">handle_buffer</span>(<span class="ident">BufReader::new</span>(<span class="ident">mock_buffer</span>), <span class="ident">get_valid_options</span>())
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">handle_buffer</span>(<span class="ident">BufReader::new</span>(<span class="ident">mock_buffer</span>), <span class="kw-2">&amp;</span><span class="ident">get_valid_options</span>())
             .<span class="ident">expect_err</span>(<span class="string">&quot;returned Ok after receiving IO error&quot;</span>);
         <span class="kw">let</span> <span class="ident">result_debug</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">result</span>);
         <span class="kw">let</span> <span class="ident">result_display</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">result</span>);
@@ -654,7 +654,7 @@ Multiple fields/ranges can be separated with commas
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">non_numeric_returns_formatting_error</span>() {
         <span class="kw">let</span> <span class="ident">input_value</span> <span class="op">=</span> <span class="string">b&quot;135\nhello&quot;</span>;
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">handle_buffer</span>(<span class="ident">BufReader::new</span>(<span class="kw-2">&amp;</span><span class="ident">input_value</span>[..]), <span class="ident">get_valid_options</span>())
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">handle_buffer</span>(<span class="ident">BufReader::new</span>(<span class="kw-2">&amp;</span><span class="ident">input_value</span>[..]), <span class="kw-2">&amp;</span><span class="ident">get_valid_options</span>())
             .<span class="ident">expect_err</span>(<span class="string">&quot;returned Ok after receiving improperly formatted input&quot;</span>);
         <span class="kw">let</span> <span class="ident">result_debug</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">result</span>);
         <span class="kw">let</span> <span class="ident">result_display</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">result</span>);
@@ -669,7 +669,7 @@ Multiple fields/ranges can be separated with commas
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">valid_input_returns_ok</span>() {
         <span class="kw">let</span> <span class="ident">input_value</span> <span class="op">=</span> <span class="string">b&quot;165\n100\n300\n500&quot;</span>;
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">handle_buffer</span>(<span class="ident">BufReader::new</span>(<span class="kw-2">&amp;</span><span class="ident">input_value</span>[..]), <span class="ident">get_valid_options</span>());
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">handle_buffer</span>(<span class="ident">BufReader::new</span>(<span class="kw-2">&amp;</span><span class="ident">input_value</span>[..]), <span class="kw-2">&amp;</span><span class="ident">get_valid_options</span>());
         <span class="macro">assert!</span>(<span class="ident">result</span>.<span class="ident">is_ok</span>(), <span class="string">&quot;did not return Ok for valid input&quot;</span>);
     }
 }
