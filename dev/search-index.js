@@ -12,7 +12,7 @@ var searchIndex = JSON.parse('{\
 "chroot":{"doc":"","t":[5],"n":["main"],"q":["chroot"],"d":[""],"i":[0],"f":[[[]]],"p":[]},\
 "cksum":{"doc":"","t":[5],"n":["main"],"q":["cksum"],"d":[""],"i":[0],"f":[[[]]],"p":[]},\
 "comm":{"doc":"","t":[5],"n":["main"],"q":["comm"],"d":[""],"i":[0],"f":[[[]]],"p":[]},\
-"coreutils":{"doc":"","t":[6,17,5,5,5,5,5,5,5],"n":["UtilityMap","VERSION","binary_path","gen_completions","gen_coreutils_app","main","name","usage","util_map"],"q":["coreutils","","","","","","","",""],"d":["","","","Prints completions for the utility in the first parameter …","","","","",""],"i":[0,0,0,0,0,0,0,0,0],"f":[null,null,[[],["pathbuf",3]],[[["map",3,[["str",15]]]],["never",15]],[[["map",3,[["str",15]]]],["app",3]],[[]],[[["path",3]],["str",15]],[[["map",3],["str",15]]],[[],["map",3,[["str",15]]]]],"p":[]},\
+"coreutils":{"doc":"","t":[6,17,5,5,5,5,5,5,5],"n":["UtilityMap","VERSION","binary_path","gen_completions","gen_coreutils_app","main","name","usage","util_map"],"q":["coreutils","","","","","","","",""],"d":["","","","Prints completions for the utility in the first parameter …","","","","",""],"i":[0,0,0,0,0,0,0,0,0],"f":[null,null,[[],["pathbuf",3]],[[["map",3]],["never",15]],[[["map",3]],["app",3]],[[]],[[["path",3]],["str",15]],[[["map",3],["str",15]]],[[],["map",3,[["str",15]]]]],"p":[]},\
 "cp":{"doc":"","t":[5],"n":["main"],"q":["cp"],"d":[""],"i":[0],"f":[[[]]],"p":[]},\
 "csplit":{"doc":"","t":[5],"n":["main"],"q":["csplit"],"d":[""],"i":[0],"f":[[[]]],"p":[]},\
 "cut":{"doc":"","t":[5],"n":["main"],"q":["cut"],"d":[""],"i":[0],"f":[[[]]],"p":[]},\
