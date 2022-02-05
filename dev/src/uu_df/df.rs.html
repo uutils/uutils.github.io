@@ -508,29 +508,6 @@
 <span id="507">507</span>
 <span id="508">508</span>
 <span id="509">509</span>
-<span id="510">510</span>
-<span id="511">511</span>
-<span id="512">512</span>
-<span id="513">513</span>
-<span id="514">514</span>
-<span id="515">515</span>
-<span id="516">516</span>
-<span id="517">517</span>
-<span id="518">518</span>
-<span id="519">519</span>
-<span id="520">520</span>
-<span id="521">521</span>
-<span id="522">522</span>
-<span id="523">523</span>
-<span id="524">524</span>
-<span id="525">525</span>
-<span id="526">526</span>
-<span id="527">527</span>
-<span id="528">528</span>
-<span id="529">529</span>
-<span id="530">530</span>
-<span id="531">531</span>
-<span id="532">532</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Fangxu Hu &lt;framlog@gmail.com&gt;</span>
@@ -545,17 +522,17 @@
 <span class="kw">use</span> <span class="ident">uucore::fsext::statfs_fn</span>;
 <span class="kw">use</span> <span class="ident">uucore::fsext</span>::{<span class="ident">read_fs_list</span>, <span class="ident">FsUsage</span>, <span class="ident">MountInfo</span>};
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>};
 
 <span class="kw">use</span> <span class="ident">number_prefix::NumberPrefix</span>;
 <span class="kw">use</span> <span class="ident">std::cell::Cell</span>;
 <span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
 <span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
-
 <span class="kw">use</span> <span class="ident">std::error::Error</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::ffi::CString</span>;
 <span class="kw">use</span> <span class="ident">std::fmt::Display</span>;
+<span class="kw">use</span> <span class="ident">std::iter::FromIterator</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::mem</span>;
 
@@ -602,6 +579,27 @@
     <span class="ident">fs_selector</span>: <span class="ident">FsSelector</span>,
 }
 
+<span class="kw">impl</span> <span class="ident">Options</span> {
+    <span class="doccomment">/// Convert command-line arguments into [`Options`].</span>
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="self">Self</span> {
+        <span class="self">Self</span> {
+            <span class="ident">show_local_fs</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_LOCAL</span>),
+            <span class="ident">show_all_fs</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_ALL</span>),
+            <span class="ident">show_listed_fs</span>: <span class="bool-val">false</span>,
+            <span class="ident">show_fs_type</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_PRINT_TYPE</span>),
+            <span class="ident">show_inode_instead</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_INODES</span>),
+            <span class="ident">human_readable_base</span>: <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE</span>) {
+                <span class="number">1024</span>
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_2</span>) {
+                <span class="number">1000</span>
+            } <span class="kw">else</span> {
+                <span class="op">-</span><span class="number">1</span>
+            },
+            <span class="ident">fs_selector</span>: <span class="ident">FsSelector::from</span>(<span class="ident">matches</span>),
+        }
+    }
+}
+
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">struct</span> <span class="ident">Filesystem</span> {
     <span class="ident">mount_info</span>: <span class="ident">MountInfo</span>,
@@ -613,18 +611,19 @@
 }
 
 <span class="kw">impl</span> <span class="ident">FsSelector</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::default</span>()
-    }
-
-    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">include</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">fs_type</span>: <span class="ident">String</span>) {
-        <span class="self">self</span>.<span class="ident">include</span>.<span class="ident">insert</span>(<span class="ident">fs_type</span>);
-    }
-
-    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">exclude</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">fs_type</span>: <span class="ident">String</span>) {
-        <span class="self">self</span>.<span class="ident">exclude</span>.<span class="ident">insert</span>(<span class="ident">fs_type</span>);
+    <span class="doccomment">/// Convert command-line arguments into a [`FsSelector`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This function reads the include and exclude sets from</span>
+    <span class="doccomment">/// [`ArgMatches`] and returns the corresponding [`FsSelector`]</span>
+    <span class="doccomment">/// instance.</span>
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">include</span> <span class="op">=</span> <span class="ident">HashSet::from_iter</span>(<span class="ident">matches</span>.<span class="ident">values_of_lossy</span>(<span class="ident">OPT_TYPE</span>).<span class="ident">unwrap_or_default</span>());
+        <span class="kw">let</span> <span class="ident">exclude</span> <span class="op">=</span> <span class="ident">HashSet::from_iter</span>(
+            <span class="ident">matches</span>
+                .<span class="ident">values_of_lossy</span>(<span class="ident">OPT_EXCLUDE_TYPE</span>)
+                .<span class="ident">unwrap_or_default</span>(),
+        );
+        <span class="self">Self</span> { <span class="ident">include</span>, <span class="ident">exclude</span> }
     }
 
     <span class="kw">fn</span> <span class="ident">should_select</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fs_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">bool</span> {
@@ -632,24 +631,6 @@
             <span class="kw">return</span> <span class="bool-val">false</span>;
         }
         <span class="self">self</span>.<span class="ident">include</span>.<span class="ident">is_empty</span>() <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">include</span>.<span class="ident">contains</span>(<span class="ident">fs_type</span>)
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">Options</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">show_local_fs</span>: <span class="bool-val">false</span>,
-            <span class="ident">show_all_fs</span>: <span class="bool-val">false</span>,
-            <span class="ident">show_listed_fs</span>: <span class="bool-val">false</span>,
-            <span class="ident">show_fs_type</span>: <span class="bool-val">false</span>,
-            <span class="ident">show_inode_instead</span>: <span class="bool-val">false</span>,
-            <span class="comment">// block_size: match env::var(&quot;BLOCKSIZE&quot;) {</span>
-            <span class="comment">//     Ok(size) =&gt; size.parse().unwrap(),</span>
-            <span class="comment">//     Err(_) =&gt; 512,</span>
-            <span class="comment">// },</span>
-            <span class="ident">human_readable_base</span>: <span class="op">-</span><span class="number">1</span>,
-            <span class="ident">fs_selector</span>: <span class="ident">FsSelector::new</span>(),
-        }
     }
 }
 
@@ -826,34 +807,7 @@
         }
     }
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">opt</span> <span class="op">=</span> <span class="ident">Options::new</span>();
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_LOCAL</span>) {
-        <span class="ident">opt</span>.<span class="ident">show_local_fs</span> <span class="op">=</span> <span class="bool-val">true</span>;
-    }
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_ALL</span>) {
-        <span class="ident">opt</span>.<span class="ident">show_all_fs</span> <span class="op">=</span> <span class="bool-val">true</span>;
-    }
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_INODES</span>) {
-        <span class="ident">opt</span>.<span class="ident">show_inode_instead</span> <span class="op">=</span> <span class="bool-val">true</span>;
-    }
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_PRINT_TYPE</span>) {
-        <span class="ident">opt</span>.<span class="ident">show_fs_type</span> <span class="op">=</span> <span class="bool-val">true</span>;
-    }
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE</span>) {
-        <span class="ident">opt</span>.<span class="ident">human_readable_base</span> <span class="op">=</span> <span class="number">1024</span>;
-    }
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_2</span>) {
-        <span class="ident">opt</span>.<span class="ident">human_readable_base</span> <span class="op">=</span> <span class="number">1000</span>;
-    }
-    <span class="kw">for</span> <span class="ident">fs_type</span> <span class="kw">in</span> <span class="ident">matches</span>.<span class="ident">values_of_lossy</span>(<span class="ident">OPT_TYPE</span>).<span class="ident">unwrap_or_default</span>() {
-        <span class="ident">opt</span>.<span class="ident">fs_selector</span>.<span class="ident">include</span>(<span class="ident">fs_type</span>.<span class="ident">to_owned</span>());
-    }
-    <span class="kw">for</span> <span class="ident">fs_type</span> <span class="kw">in</span> <span class="ident">matches</span>
-        .<span class="ident">values_of_lossy</span>(<span class="ident">OPT_EXCLUDE_TYPE</span>)
-        .<span class="ident">unwrap_or_default</span>()
-    {
-        <span class="ident">opt</span>.<span class="ident">fs_selector</span>.<span class="ident">exclude</span>(<span class="ident">fs_type</span>.<span class="ident">to_owned</span>());
-    }
+    <span class="kw">let</span> <span class="ident">opt</span> <span class="op">=</span> <span class="ident">Options::from</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>);
 
     <span class="kw">let</span> <span class="ident">fs_list</span> <span class="op">=</span> <span class="ident">filter_mount_list</span>(<span class="ident">read_fs_list</span>(), <span class="kw-2">&amp;</span><span class="ident">paths</span>, <span class="kw-2">&amp;</span><span class="ident">opt</span>)
         .<span class="ident">into_iter</span>()
