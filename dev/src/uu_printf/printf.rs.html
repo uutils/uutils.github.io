@@ -305,10 +305,6 @@
 <span id="304">304</span>
 <span id="305">305</span>
 <span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
-<span id="310">310</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
 <span class="comment">// spell-checker:ignore (change!) each&#39;s</span>
 <span class="comment">// spell-checker:ignore (ToDO) LONGHELP FORMATSTRING templating parameterizing formatstr</span>
@@ -322,22 +318,13 @@
 <span class="kw">const</span> <span class="ident">HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;help&quot;</span>;
 <span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;printf FORMATSTRING [ARGUMENT]...&quot;</span>;
 <span class="kw">const</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Print output based off of the format string and proceeding arguments.&quot;</span>;
-<span class="kw">static</span> <span class="ident">LONGHELP_LEAD</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;printf
-
-USAGE: printf FORMATSTRING [ARGUMENT]...
-
+<span class="kw">const</span> <span class="ident">AFTER_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;
 basic anonymous string templating:
 
 prints format string at least once, repeating as long as there are remaining arguments
 output prints escaped literals in the format string as character literals
 output replaces anonymous fields with the next unused argument, formatted according to the field.
 
-Options:
-    --help              display this help and exit
-    --version           output version information and exit
-
-&quot;</span>;
-<span class="kw">static</span> <span class="ident">LONGHELP_BODY</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;
 Prints the , replacing escaped character sequences with character literals
   and substitution field sequences with passed arguments
 
@@ -584,32 +571,36 @@ COPYRIGHT :
 
 &quot;</span>;
 
+<span class="kw">mod</span> <span class="ident">options</span> {
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FORMATSTRING</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;FORMATSTRING&quot;</span>;
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ARGUMENT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;ARGUMENT&quot;</span>;
+}
+
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">args</span>
         .<span class="ident">collect_str</span>(<span class="ident">InvalidEncodingHandling::Ignore</span>)
         .<span class="ident">accept_any</span>();
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
-    <span class="kw">if</span> <span class="ident">args</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">1</span> {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">UUsageError::new</span>(<span class="number">1</span>, <span class="string">&quot;missing operand&quot;</span>));
-    }
-    <span class="kw">let</span> <span class="ident">formatstr</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">args</span>[<span class="number">1</span>];
+    <span class="kw">let</span> <span class="ident">format_string</span> <span class="op">=</span> <span class="ident">matches</span>
+        .<span class="ident">value_of</span>(<span class="ident">options::FORMATSTRING</span>)
+        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">UUsageError::new</span>(<span class="number">1</span>, <span class="string">&quot;missing operand&quot;</span>))<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">values</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="ident">options::ARGUMENT</span>) {
+        <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_string</span>()).<span class="ident">collect</span>(),
+        <span class="prelude-val">None</span> =&gt; <span class="macro">vec!</span>[],
+    };
 
-    <span class="kw">if</span> <span class="ident">formatstr</span> <span class="op">==</span> <span class="string">&quot;--help&quot;</span> {
-        <span class="macro">print!</span>(<span class="string">&quot;{} {}&quot;</span>, <span class="ident">LONGHELP_LEAD</span>, <span class="ident">LONGHELP_BODY</span>);
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">formatstr</span> <span class="op">==</span> <span class="string">&quot;--version&quot;</span> {
-        <span class="macro">println!</span>(<span class="string">&quot;{} {}&quot;</span>, <span class="ident">uucore::util_name</span>(), <span class="macro">crate_version!</span>());
-    } <span class="kw">else</span> {
-        <span class="kw">let</span> <span class="ident">printf_args</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">args</span>[<span class="number">2</span>..];
-        <span class="ident">memo::Memo::run_all</span>(<span class="ident">formatstr</span>, <span class="ident">printf_args</span>);
-    }
+    <span class="ident">memo::Memo::run_all</span>(<span class="ident">format_string</span>, <span class="kw-2">&amp;</span><span class="ident">values</span>[..]);
     <span class="prelude-val">Ok</span>(())
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
+        .<span class="ident">setting</span>(<span class="ident">AppSettings::AllowHyphenValues</span>)
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
+        .<span class="ident">after_help</span>(<span class="ident">AFTER_HELP</span>)
         .<span class="ident">override_usage</span>(<span class="ident">USAGE</span>)
         .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">HELP</span>).<span class="ident">long</span>(<span class="ident">HELP</span>).<span class="ident">help</span>(<span class="string">&quot;Print help information&quot;</span>))
         .<span class="ident">arg</span>(
@@ -617,7 +608,8 @@ COPYRIGHT :
                 .<span class="ident">long</span>(<span class="ident">VERSION</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Print version information&quot;</span>),
         )
-        .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::FORMATSTRING</span>))
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::ARGUMENT</span>).<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>))
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_printf" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
