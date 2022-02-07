@@ -780,6 +780,14 @@
 <span id="779">779</span>
 <span id="780">780</span>
 <span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Tyler Steele &lt;tyler.steele@protonmail.com&gt;</span>
@@ -795,6 +803,7 @@
 <span class="kw">use</span> <span class="ident">std::error::Error</span>;
 <span class="kw">use</span> <span class="ident">uucore::error::UError</span>;
 <span class="kw">use</span> <span class="ident">uucore::parse_size::ParseSizeError</span>;
+<span class="kw">use</span> <span class="ident">uucore::show_warning</span>;
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Matches</span> <span class="op">=</span> <span class="ident">ArgMatches</span>;
 
@@ -1138,6 +1147,13 @@
 <span class="doccomment">/// assert_eq!(parse_bytes_no_x(&quot;2k&quot;).unwrap(), 2 * 1024);</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">fn</span> <span class="ident">parse_bytes_no_x</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
+    <span class="kw">if</span> <span class="ident">s</span> <span class="op">==</span> <span class="string">&quot;0&quot;</span> {
+        <span class="macro">show_warning!</span>(
+            <span class="string">&quot;{} is a zero multiplier; use {} if that is intended&quot;</span>,
+            <span class="string">&quot;0x&quot;</span>.<span class="ident">quote</span>(),
+            <span class="string">&quot;00x&quot;</span>.<span class="ident">quote</span>()
+        );
+    }
     <span class="kw">let</span> (<span class="ident">num</span>, <span class="ident">multiplier</span>) <span class="op">=</span> <span class="kw">match</span> (<span class="ident">s</span>.<span class="ident">find</span>(<span class="string">&#39;c&#39;</span>), <span class="ident">s</span>.<span class="ident">rfind</span>(<span class="string">&#39;w&#39;</span>), <span class="ident">s</span>.<span class="ident">rfind</span>(<span class="string">&#39;b&#39;</span>)) {
         (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="kw">match</span> <span class="ident">uucore::parse_size::parse_size</span>(<span class="ident">s</span>) {
             <span class="prelude-val">Ok</span>(<span class="ident">n</span>) =&gt; (<span class="ident">n</span>, <span class="number">1</span>),
