@@ -184,15 +184,13 @@ a work in progress.</p>
 <h2 id="requirements"><a class="header" href="#requirements">Requirements</a></h2>
 <ul>
 <li>Rust (<code>cargo</code>, <code>rustc</code>)</li>
-<li>GNU Make (required to build documentation)</li>
-<li><a href="http://www.sphinx-doc.org/">Sphinx</a> (for documentation)</li>
-<li>gzip (for installing documentation)</li>
+<li>GNU Make (optional)</li>
 </ul>
 <h3 id="rust-version"><a class="header" href="#rust-version">Rust Version</a></h3>
 <p>uutils follows Rust's release channels and is tested against stable, beta and nightly.
 The current oldest supported version of the Rust compiler is <code>1.54</code>.</p>
 <p>On both Windows and Redox, only the nightly version is tested currently.</p>
-<h2 id="build-instructions"><a class="header" href="#build-instructions">Build Instructions</a></h2>
+<h2 id="building"><a class="header" href="#building">Building</a></h2>
 <p>There are currently two methods to build the uutils binaries: either Cargo
 or GNU Make.</p>
 <blockquote>
@@ -242,7 +240,7 @@ specific packages (using the <code>--package</code> [aka <code>-p</code>] option
 <p>To build only a few of the available utilities:</p>
 <pre><code class="language-bash">$ make UTILS='UTILITY_1 UTILITY_2'
 </code></pre>
-<h2 id="installation-instructions"><a class="header" href="#installation-instructions">Installation Instructions</a></h2>
+<h2 id="installation-1"><a class="header" href="#installation-1">Installation</a></h2>
 <h3 id="cargo-1"><a class="header" href="#cargo-1">Cargo</a></h3>
 <p>Likewise, installing can simply be done using:</p>
 <pre><code class="language-bash">$ cargo install --path .
@@ -291,7 +289,7 @@ and <code>zsh</code> shells. It prints the result to stdout.</p>
 run:</p>
 <pre><code class="language-bash">cargo run completion ls bash &gt; /usr/local/share/bash-completion/completions/ls
 </code></pre>
-<h2 id="un-installation-instructions"><a class="header" href="#un-installation-instructions">Un-installation Instructions</a></h2>
+<h2 id="un-installation"><a class="header" href="#un-installation">Un-installation</a></h2>
 <p>Un-installation differs depending on how you have installed uutils.  If you used
 Cargo to install, use Cargo to uninstall.  If you used GNU Make to install, use
 Make to uninstall.</p>
@@ -600,12 +598,6 @@ from any other non-alphabet bytes in the encoded stream.</p>
 <dd>
 </dd>
 <dt><code>--z85</code></dt>
-<dd>
-</dd>
-<dt><code>--base2l</code></dt>
-<dd>
-</dd>
-<dt><code>--base2m</code></dt>
 <dd>
 </dd>
 </dl>
@@ -1832,14 +1824,22 @@ If none are specified, read from standard input.</p>
 </dd>
 </dl>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="false"><a class="header" href="#false">false</a></h1>
-<div class="version">version: 
+<div class="version">version: 0.0.12
 </div>
 <pre><code>false
 </code></pre>
+<p>Returns false, an unsuccessful exit status.</p>
+<p>Immediately returns with the exit status <code>1</code>. When invoked with one of the recognized options it
+will try to write the help or version text. Any IO error during this operation is diagnosed, yet
+the program will also return <code>1</code>.</p>
 <h2 id="options-27"><a class="header" href="#options-27">Options</a></h2>
-<dl><dt><code>--help</code>, <code>-h</code></dt>
+<dl><dt><code>--help</code></dt>
 <dd>
 <p>Print help information</p>
+</dd>
+<dt><code>--version</code></dt>
+<dd>
+<p>Print version information</p>
 </dd>
 </dl>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="fmt"><a class="header" href="#fmt">fmt</a></h1>
@@ -2127,6 +2127,7 @@ NUM lines of each file</p>
 </div>
 <pre><code>[options]
 </code></pre>
+<p>Print the numeric identifier (in hexadecimal) for the current host</p>
 <h2 id="options-33"><a class="header" href="#options-33">Options</a></h2>
 <dl><dt><code>--help</code>, <code>-h</code></dt>
 <dd>
@@ -3495,15 +3496,24 @@ FILE, separated by TABs, to standard output.</p>
 </dd>
 </dl>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="printf"><a class="header" href="#printf">printf</a></h1>
-<div class="version">version: 
+<div class="version">version: 0.0.12
 </div>
-<pre><code>printf
+<pre><code>printf FORMATSTRING [ARGUMENT]...
 </code></pre>
+<p>Print output based off of the format string and proceeding arguments.</p>
 <h2 id="options-61"><a class="header" href="#options-61">Options</a></h2>
-<dl><dt><code>--version</code></dt>
+<dl><dt><code>--help</code></dt>
+<dd>
+<p>Print help information</p>
+</dd>
+<dt><code>--version</code></dt>
+<dd>
+<p>Print version information</p>
+</dd>
+<dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code></dt>
+<dt></dt>
 <dd>
 </dd>
 </dl>
@@ -4623,6 +4633,7 @@ this is the default for non-regular files</p>
 </div>
 <pre><code>shuf [OPTION]... [FILE]
 </code></pre>
+<p>Shuffle the input by outputting a random permutation of input lines. Each output permutation is equally likely.</p>
 <h2 id="options-84"><a class="header" href="#options-84">Options</a></h2>
 <dl><dt><code>--help</code>, <code>-h</code></dt>
 <dd>
@@ -4840,6 +4851,10 @@ this is the default for non-regular files</p>
 <dt><code>--lines</code>, <code>-l</code></dt>
 <dd>
 <p>put NUMBER lines/records per output file</p>
+</dd>
+<dt><code>--number</code>, <code>-n</code></dt>
+<dd>
+<p>generate CHUNKS output files; see explanation below</p>
 </dd>
 <dt><code>--additional-suffix</code></dt>
 <dd>
@@ -5111,12 +5126,21 @@ With no FILE, or when FILE is -, read standard input.</p>
 </dd>
 </dl>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="test"><a class="header" href="#test">test</a></h1>
-<div class="version">version: 
+<div class="version">version: 0.0.12
 </div>
-<pre><code>test
+<pre><code>test EXPRESSION
 </code></pre>
+<p>Check file types and compare values.</p>
 <h2 id="options-95"><a class="header" href="#options-95">Options</a></h2>
-<dl></dl>
+<dl><dt><code>--help</code>, <code>-h</code></dt>
+<dd>
+<p>Print help information</p>
+</dd>
+<dt><code>--version</code>, <code>-V</code></dt>
+<dd>
+<p>Print version information</p>
+</dd>
+</dl>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="timeout"><a class="header" href="#timeout">timeout</a></h1>
 <div class="version">version: 0.0.12
 </div>
@@ -5224,13 +5248,9 @@ With no FILE, or when FILE is -, read standard input.</p>
 <dd>
 <p>Print version information</p>
 </dd>
-<dt><code>--complement</code>, <code>-c</code></dt>
+<dt><code>--complement</code>, <code>-c</code>, <code>-C</code></dt>
 <dd>
 <p>use the complement of SET1</p>
-</dd>
-<dt><code>-C</code></dt>
-<dd>
-<p>same as -c</p>
 </dd>
 <dt><code>--delete</code>, <code>-d</code></dt>
 <dd>
@@ -5249,14 +5269,22 @@ With no FILE, or when FILE is -, read standard input.</p>
 </dd>
 </dl>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="true"><a class="header" href="#true">true</a></h1>
-<div class="version">version: 
+<div class="version">version: 0.0.12
 </div>
 <pre><code>true
 </code></pre>
+<p>Returns true, a successful exit status.</p>
+<p>Immediately returns with the exit status <code>0</code>, except when invoked with one of the recognized
+options. In those cases it will try to write the help or version text. Any IO error during this
+operation causes the program to return <code>1</code> instead.</p>
 <h2 id="options-99"><a class="header" href="#options-99">Options</a></h2>
-<dl><dt><code>--help</code>, <code>-h</code></dt>
+<dl><dt><code>--help</code></dt>
 <dd>
 <p>Print help information</p>
+</dd>
+<dt><code>--version</code></dt>
+<dd>
+<p>Print version information</p>
 </dd>
 </dl>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="truncate"><a class="header" href="#truncate">truncate</a></h1>
