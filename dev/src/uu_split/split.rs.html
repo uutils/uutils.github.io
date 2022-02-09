@@ -513,6 +513,63 @@
 <span id="512">512</span>
 <span id="513">513</span>
 <span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Akira Hayakawa &lt;ruby.wktk@gmail.com&gt;</span>
@@ -530,12 +587,14 @@
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>};
 <span class="kw">use</span> <span class="ident">std::convert::TryFrom</span>;
 <span class="kw">use</span> <span class="ident">std::env</span>;
+<span class="kw">use</span> <span class="ident">std::fmt</span>;
 <span class="kw">use</span> <span class="ident">std::fs</span>::{<span class="ident">metadata</span>, <span class="ident">remove_file</span>, <span class="ident">File</span>};
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">BufRead</span>, <span class="ident">BufReader</span>, <span class="ident">BufWriter</span>, <span class="ident">Read</span>, <span class="ident">Write</span>};
+<span class="kw">use</span> <span class="ident">std::num::ParseIntError</span>;
 <span class="kw">use</span> <span class="ident">std::path::Path</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>, <span class="ident">UUsageError</span>};
-<span class="kw">use</span> <span class="ident">uucore::parse_size::parse_size</span>;
+<span class="kw">use</span> <span class="ident">uucore::parse_size</span>::{<span class="ident">parse_size</span>, <span class="ident">ParseSizeError</span>};
 
 <span class="kw">static</span> <span class="ident">OPT_BYTES</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;bytes&quot;</span>;
 <span class="kw">static</span> <span class="ident">OPT_LINE_BYTES</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;line-bytes&quot;</span>;
@@ -577,8 +636,11 @@ size is 1000, and default PREFIX is &#39;x&#39;. With no INPUT, or when INPUT is
         .<span class="ident">override_usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..])
         .<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="ident">long_usage</span>[..])
         .<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
-    <span class="kw">let</span> <span class="ident">settings</span> <span class="op">=</span> <span class="ident">Settings::from</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>)<span class="question-mark">?</span>;
-    <span class="ident">split</span>(<span class="kw-2">&amp;</span><span class="ident">settings</span>)
+    <span class="kw">match</span> <span class="ident">Settings::from</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>) {
+        <span class="prelude-val">Ok</span>(<span class="ident">settings</span>) =&gt; <span class="ident">split</span>(<span class="kw-2">&amp;</span><span class="ident">settings</span>),
+        <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">requires_usage</span>() =&gt; <span class="prelude-val">Err</span>(<span class="ident">UUsageError::new</span>(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>))),
+        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>))),
+    }
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
@@ -684,9 +746,35 @@ size is 1000, and default PREFIX is &#39;x&#39;. With no INPUT, or when INPUT is
     <span class="ident">Number</span>(<span class="ident">usize</span>),
 }
 
+<span class="doccomment">/// An error when parsing a chunking strategy from command-line arguments.</span>
+<span class="kw">enum</span> <span class="ident">StrategyError</span> {
+    <span class="doccomment">/// Invalid number of lines.</span>
+    <span class="ident">Lines</span>(<span class="ident">ParseSizeError</span>),
+
+    <span class="doccomment">/// Invalid number of bytes.</span>
+    <span class="ident">Bytes</span>(<span class="ident">ParseSizeError</span>),
+
+    <span class="doccomment">/// Invalid number of chunks.</span>
+    <span class="ident">NumberOfChunks</span>(<span class="ident">ParseIntError</span>),
+
+    <span class="doccomment">/// Multiple chunking strategies were specified (but only one should be).</span>
+    <span class="ident">MultipleWays</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">StrategyError</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident"><span class="self">Self</span>::Lines</span>(<span class="ident">e</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;invalid number of lines: {}&quot;</span>, <span class="ident">e</span>),
+            <span class="ident"><span class="self">Self</span>::Bytes</span>(<span class="ident">e</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;invalid number of bytes: {}&quot;</span>, <span class="ident">e</span>),
+            <span class="ident"><span class="self">Self</span>::NumberOfChunks</span>(<span class="ident">e</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;invalid number of chunks: {}&quot;</span>, <span class="ident">e</span>),
+            <span class="ident"><span class="self">Self</span>::MultipleWays</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;cannot split in more than one way&quot;</span>),
+        }
+    }
+}
+
 <span class="kw">impl</span> <span class="ident">Strategy</span> {
     <span class="doccomment">/// Parse a strategy from the command-line arguments.</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">StrategyError</span><span class="op">&gt;</span> {
         <span class="comment">// Check that the user is not specifying more than one strategy.</span>
         <span class="comment">//</span>
         <span class="comment">// Note: right now, this exact behavior cannot be handled by</span>
@@ -701,30 +789,25 @@ size is 1000, and default PREFIX is &#39;x&#39;. With no INPUT, or when INPUT is
             (<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Lines</span>(<span class="number">1000</span>)),
             (<span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_LINES</span>).<span class="ident">unwrap</span>();
-                <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">parse_size</span>(<span class="ident">s</span>)
-                    .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;invalid number of lines: {}&quot;</span>, <span class="ident">e</span>)))<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">parse_size</span>(<span class="ident">s</span>).<span class="ident">map_err</span>(<span class="ident">StrategyError::Lines</span>)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Lines</span>(<span class="ident">n</span>))
             }
             (<span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_BYTES</span>).<span class="ident">unwrap</span>();
-                <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">parse_size</span>(<span class="ident">s</span>)
-                    .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;invalid number of bytes: {}&quot;</span>, <span class="ident">e</span>)))<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">parse_size</span>(<span class="ident">s</span>).<span class="ident">map_err</span>(<span class="ident">StrategyError::Bytes</span>)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Bytes</span>(<span class="ident">n</span>))
             }
             (<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_LINE_BYTES</span>).<span class="ident">unwrap</span>();
-                <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">parse_size</span>(<span class="ident">s</span>)
-                    .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;invalid number of bytes: {}&quot;</span>, <span class="ident">e</span>)))<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">parse_size</span>(<span class="ident">s</span>).<span class="ident">map_err</span>(<span class="ident">StrategyError::Bytes</span>)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::LineBytes</span>(<span class="ident">n</span>))
             }
             (<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_NUMBER</span>).<span class="ident">unwrap</span>();
-                <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
-                    <span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;invalid number of chunks: {}&quot;</span>, <span class="ident">e</span>))
-                })<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>().<span class="ident">map_err</span>(<span class="ident">StrategyError::NumberOfChunks</span>)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Number</span>(<span class="ident">n</span>))
             }
-            <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">UUsageError::new</span>(<span class="number">1</span>, <span class="string">&quot;cannot split in more than one way&quot;</span>)),
+            <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">StrategyError::MultipleWays</span>),
         }
     }
 }
@@ -745,19 +828,53 @@ size is 1000, and default PREFIX is &#39;x&#39;. With no INPUT, or when INPUT is
     <span class="ident">verbose</span>: <span class="ident">bool</span>,
 }
 
+<span class="doccomment">/// An error when parsing settings from command-line arguments.</span>
+<span class="kw">enum</span> <span class="ident">SettingsError</span> {
+    <span class="doccomment">/// Invalid chunking strategy.</span>
+    <span class="ident">Strategy</span>(<span class="ident">StrategyError</span>),
+
+    <span class="doccomment">/// Invalid suffix length parameter.</span>
+    <span class="ident">SuffixLength</span>(<span class="ident">String</span>),
+
+    <span class="doccomment">/// The `--filter` option is not supported on Windows.</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
+    <span class="ident">NotSupported</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">SettingsError</span> {
+    <span class="doccomment">/// Whether the error demands a usage message.</span>
+    <span class="kw">fn</span> <span class="ident">requires_usage</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
+        <span class="macro">matches!</span>(<span class="self">self</span>, <span class="ident"><span class="self">Self</span>::Strategy</span>(<span class="ident">StrategyError::MultipleWays</span>))
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">SettingsError</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident"><span class="self">Self</span>::Strategy</span>(<span class="ident">e</span>) =&gt; <span class="ident">e</span>.<span class="ident">fmt</span>(<span class="ident">f</span>),
+            <span class="ident"><span class="self">Self</span>::SuffixLength</span>(<span class="ident">s</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;invalid suffix length: {}&quot;</span>, <span class="ident">s</span>.<span class="ident">quote</span>()),
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
+            <span class="ident"><span class="self">Self</span>::NotSupported</span> =&gt; <span class="macro">write!</span>(
+                <span class="ident">f</span>,
+                <span class="string">&quot;{} is currently not supported in this platform&quot;</span>,
+                <span class="ident">OPT_FILTER</span>
+            ),
+        }
+    }
+}
+
 <span class="kw">impl</span> <span class="ident">Settings</span> {
     <span class="doccomment">/// Parse a strategy from the command-line arguments.</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">SettingsError</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">suffix_length_str</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_SUFFIX_LENGTH</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="self">Self</span> {
-            <span class="ident">suffix_length</span>: <span class="ident">matches</span>
-                .<span class="ident">value_of</span>(<span class="ident">OPT_SUFFIX_LENGTH</span>)
-                .<span class="ident">unwrap</span>()
+            <span class="ident">suffix_length</span>: <span class="ident">suffix_length_str</span>
                 .<span class="ident">parse</span>()
-                .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">panic!</span>(<span class="string">&quot;Invalid number for {}&quot;</span>, <span class="ident">OPT_SUFFIX_LENGTH</span>)),
+                .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">SettingsError::SuffixLength</span>(<span class="ident">suffix_length_str</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>,
             <span class="ident">numeric_suffix</span>: <span class="ident">matches</span>.<span class="ident">occurrences_of</span>(<span class="ident">OPT_NUMERIC_SUFFIXES</span>) <span class="op">&gt;</span> <span class="number">0</span>,
             <span class="ident">additional_suffix</span>: <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_ADDITIONAL_SUFFIX</span>).<span class="ident">unwrap</span>().<span class="ident">to_owned</span>(),
             <span class="ident">verbose</span>: <span class="ident">matches</span>.<span class="ident">occurrences_of</span>(<span class="string">&quot;verbose&quot;</span>) <span class="op">&gt;</span> <span class="number">0</span>,
-            <span class="ident">strategy</span>: <span class="ident">Strategy::from</span>(<span class="ident">matches</span>)<span class="question-mark">?</span>,
+            <span class="ident">strategy</span>: <span class="ident">Strategy::from</span>(<span class="ident">matches</span>).<span class="ident">map_err</span>(<span class="ident">SettingsError::Strategy</span>)<span class="question-mark">?</span>,
             <span class="ident">input</span>: <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">ARG_INPUT</span>).<span class="ident">unwrap</span>().<span class="ident">to_owned</span>(),
             <span class="ident">prefix</span>: <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">ARG_PREFIX</span>).<span class="ident">unwrap</span>().<span class="ident">to_owned</span>(),
             <span class="ident">filter</span>: <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_FILTER</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_owned</span>()),
@@ -765,10 +882,7 @@ size is 1000, and default PREFIX is &#39;x&#39;. With no INPUT, or when INPUT is
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
         <span class="kw">if</span> <span class="ident">result</span>.<span class="ident">filter</span>.<span class="ident">is_some</span>() {
             <span class="comment">// see https://github.com/rust-lang/rust/issues/29494</span>
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(
-                <span class="op">-</span><span class="number">1</span>,
-                <span class="macro">format!</span>(<span class="string">&quot;{} is currently not supported in this platform&quot;</span>, <span class="ident">OPT_FILTER</span>),
-            ));
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SettingsError::NotSupported</span>);
         }
 
         <span class="prelude-val">Ok</span>(<span class="ident">result</span>)
