@@ -2565,6 +2565,36 @@
 <span id="2564">2564</span>
 <span id="2565">2565</span>
 <span id="2566">2566</span>
+<span id="2567">2567</span>
+<span id="2568">2568</span>
+<span id="2569">2569</span>
+<span id="2570">2570</span>
+<span id="2571">2571</span>
+<span id="2572">2572</span>
+<span id="2573">2573</span>
+<span id="2574">2574</span>
+<span id="2575">2575</span>
+<span id="2576">2576</span>
+<span id="2577">2577</span>
+<span id="2578">2578</span>
+<span id="2579">2579</span>
+<span id="2580">2580</span>
+<span id="2581">2581</span>
+<span id="2582">2582</span>
+<span id="2583">2583</span>
+<span id="2584">2584</span>
+<span id="2585">2585</span>
+<span id="2586">2586</span>
+<span id="2587">2587</span>
+<span id="2588">2588</span>
+<span id="2589">2589</span>
+<span id="2590">2590</span>
+<span id="2591">2591</span>
+<span id="2592">2592</span>
+<span id="2593">2593</span>
+<span id="2594">2594</span>
+<span id="2595">2595</span>
+<span id="2596">2596</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jeremiah Peschka &lt;jeremiah.peschka@gmail.com&gt;</span>
@@ -3150,8 +3180,19 @@
                 <span class="string">&quot;slash&quot;</span> =&gt; <span class="ident">IndicatorStyle::Slash</span>,
                 <span class="kw-2">&amp;</span><span class="kw">_</span> =&gt; <span class="ident">IndicatorStyle::None</span>,
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::indicator_style::CLASSIFY</span>) {
-            <span class="ident">IndicatorStyle::Classify</span>
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">field</span>) <span class="op">=</span> <span class="ident">options</span>.<span class="ident">value_of</span>(<span class="ident">options::indicator_style::CLASSIFY</span>) {
+            <span class="kw">match</span> <span class="ident">field</span> {
+                <span class="string">&quot;never&quot;</span> <span class="op">|</span> <span class="string">&quot;no&quot;</span> <span class="op">|</span> <span class="string">&quot;none&quot;</span> =&gt; <span class="ident">IndicatorStyle::None</span>,
+                <span class="string">&quot;always&quot;</span> <span class="op">|</span> <span class="string">&quot;yes&quot;</span> <span class="op">|</span> <span class="string">&quot;force&quot;</span> =&gt; <span class="ident">IndicatorStyle::Classify</span>,
+                <span class="string">&quot;auto&quot;</span> <span class="op">|</span> <span class="string">&quot;tty&quot;</span> <span class="op">|</span> <span class="string">&quot;if-tty&quot;</span> =&gt; {
+                    <span class="kw">if</span> <span class="ident">atty::is</span>(<span class="ident">atty::Stream::Stdout</span>) {
+                        <span class="ident">IndicatorStyle::Classify</span>
+                    } <span class="kw">else</span> {
+                        <span class="ident">IndicatorStyle::None</span>
+                    }
+                }
+                <span class="kw-2">&amp;</span><span class="kw">_</span> =&gt; <span class="ident">IndicatorStyle::None</span>,
+            }
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::indicator_style::SLASH</span>) {
             <span class="ident">IndicatorStyle::Slash</span>
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::indicator_style::FILE_TYPE</span>) {
@@ -3769,6 +3810,11 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
                 ]),
         )
         .<span class="ident">arg</span>(
+            <span class="comment">// The --classify flag can take an optional when argument to</span>
+            <span class="comment">// control its behavior from version 9 of GNU coreutils.</span>
+            <span class="comment">// There is currently an inconsistency where GNU coreutils allows only</span>
+            <span class="comment">// the long form of the flag to take the argument while we allow it</span>
+            <span class="comment">// for both the long and short form of the flag.</span>
             <span class="ident">Arg::new</span>(<span class="ident">options::indicator_style::CLASSIFY</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;F&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::indicator_style::CLASSIFY</span>)
@@ -3776,8 +3822,22 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
                     <span class="string">&quot;Append a character to each file name indicating the file type. Also, for \
                 regular files that are executable, append &#39;*&#39;. The file type indicators are \
                 &#39;/&#39; for directories, &#39;@&#39; for symbolic links, &#39;|&#39; for FIFOs, &#39;=&#39; for sockets, \
-                &#39;&gt;&#39; for doors, and nothing for regular files.&quot;</span>,
+                &#39;&gt;&#39; for doors, and nothing for regular files. when may be omitted, or one of:\n\
+                    \tnone - Do not classify. This is the default.\n\
+                    \tauto - Only classify if standard output is a terminal.\n\
+                    \talways - Always classify.\n\
+                Specifying --classify and no when is equivalent to --classify=always. This will not follow\
+                symbolic links listed on the command line unless the --dereference-command-line (-H),\
+                --dereference (-L), or --dereference-command-line-symlink-to-dir options are specified.&quot;</span>,
                 )
+                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                .<span class="ident">value_name</span>(<span class="string">&quot;when&quot;</span>)
+                .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span>[
+                    <span class="string">&quot;always&quot;</span>, <span class="string">&quot;yes&quot;</span>, <span class="string">&quot;force&quot;</span>, <span class="string">&quot;auto&quot;</span>, <span class="string">&quot;tty&quot;</span>, <span class="string">&quot;if-tty&quot;</span>, <span class="string">&quot;never&quot;</span>, <span class="string">&quot;no&quot;</span>, <span class="string">&quot;none&quot;</span>,
+                ])
+                .<span class="ident">default_missing_value</span>(<span class="string">&quot;always&quot;</span>)
+                .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
+                .<span class="ident">min_values</span>(<span class="number">0</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
                     <span class="ident">options::indicator_style::FILE_TYPE</span>,
                     <span class="ident">options::indicator_style::SLASH</span>,
