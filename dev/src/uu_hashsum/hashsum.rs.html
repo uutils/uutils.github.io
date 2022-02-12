@@ -646,6 +646,16 @@
 <span id="645">645</span>
 <span id="646">646</span>
 <span id="647">647</span>
+<span id="648">648</span>
+<span id="649">649</span>
+<span id="650">650</span>
+<span id="651">651</span>
+<span id="652">652</span>
+<span id="653">653</span>
+<span id="654">654</span>
+<span id="655">655</span>
+<span id="656">656</span>
+<span id="657">657</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Alex Lyon &lt;arcterus@mail.com&gt;</span>
@@ -718,6 +728,7 @@
             <span class="op">|</span> <span class="string">&quot;shake128sum&quot;</span>
             <span class="op">|</span> <span class="string">&quot;shake256sum&quot;</span>
             <span class="op">|</span> <span class="string">&quot;b2sum&quot;</span>
+            <span class="op">|</span> <span class="string">&quot;b3sum&quot;</span>
     )
 }
 
@@ -740,6 +751,11 @@
             <span class="string">&quot;BLAKE2&quot;</span>,
             <span class="ident">Box::new</span>(<span class="ident">blake2b_simd::State::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
             <span class="number">512</span>,
+        ),
+        <span class="string">&quot;b3sum&quot;</span> =&gt; (
+            <span class="string">&quot;BLAKE3&quot;</span>,
+            <span class="ident">Box::new</span>(<span class="ident">blake3::Hasher::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
+            <span class="number">256</span>,
         ),
         <span class="string">&quot;sha3sum&quot;</span> =&gt; <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;bits&quot;</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">bits_str</span>) =&gt; <span class="kw">match</span> (<span class="ident">bits_str</span>).<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
@@ -843,6 +859,9 @@
                 }
                 <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;b2sum&quot;</span>) {
                     <span class="ident">set_or_crash</span>(<span class="string">&quot;BLAKE2&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">blake2b_simd::State::new</span>()), <span class="number">512</span>);
+                }
+                <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;b3sum&quot;</span>) {
+                    <span class="ident">set_or_crash</span>(<span class="string">&quot;BLAKE3&quot;</span>, <span class="ident">Box::new</span>(<span class="ident">blake3::Hasher::new</span>()), <span class="number">256</span>);
                 }
                 <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;sha3&quot;</span>) {
                     <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;bits&quot;</span>) {
@@ -1081,6 +1100,7 @@
             <span class="string">&quot;work with SHAKE256 using BITS for the output size&quot;</span>,
         ),
         (<span class="string">&quot;b2sum&quot;</span>, <span class="string">&quot;work with BLAKE2&quot;</span>),
+        (<span class="string">&quot;b3sum&quot;</span>, <span class="string">&quot;work with BLAKE3&quot;</span>),
     ];
 
     <span class="kw">for</span> (<span class="ident">name</span>, <span class="ident">desc</span>) <span class="kw">in</span> <span class="ident">algorithms</span> {
