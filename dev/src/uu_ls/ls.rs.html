@@ -2583,18 +2583,6 @@
 <span id="2582">2582</span>
 <span id="2583">2583</span>
 <span id="2584">2584</span>
-<span id="2585">2585</span>
-<span id="2586">2586</span>
-<span id="2587">2587</span>
-<span id="2588">2588</span>
-<span id="2589">2589</span>
-<span id="2590">2590</span>
-<span id="2591">2591</span>
-<span id="2592">2592</span>
-<span id="2593">2593</span>
-<span id="2594">2594</span>
-<span id="2595">2595</span>
-<span id="2596">2596</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jeremiah Peschka &lt;jeremiah.peschka@gmail.com&gt;</span>
@@ -2921,16 +2909,16 @@
 
 <span class="kw">struct</span> <span class="ident">PaddingCollection</span> {
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-    <span class="ident">longest_inode_len</span>: <span class="ident">usize</span>,
-    <span class="ident">longest_link_count_len</span>: <span class="ident">usize</span>,
-    <span class="ident">longest_uname_len</span>: <span class="ident">usize</span>,
-    <span class="ident">longest_group_len</span>: <span class="ident">usize</span>,
-    <span class="ident">longest_context_len</span>: <span class="ident">usize</span>,
-    <span class="ident">longest_size_len</span>: <span class="ident">usize</span>,
+    <span class="ident">inode</span>: <span class="ident">usize</span>,
+    <span class="ident">link_count</span>: <span class="ident">usize</span>,
+    <span class="ident">uname</span>: <span class="ident">usize</span>,
+    <span class="ident">group</span>: <span class="ident">usize</span>,
+    <span class="ident">context</span>: <span class="ident">usize</span>,
+    <span class="ident">size</span>: <span class="ident">usize</span>,
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-    <span class="ident">longest_major_len</span>: <span class="ident">usize</span>,
+    <span class="ident">major</span>: <span class="ident">usize</span>,
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-    <span class="ident">longest_minor_len</span>: <span class="ident">usize</span>,
+    <span class="ident">minor</span>: <span class="ident">usize</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Config</span> {
@@ -3902,9 +3890,9 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
         )
 }
 
-<span class="doccomment">/// Represents a Path along with it&#39;s associated data</span>
-<span class="doccomment">/// Any data that will be reused several times makes sense to be added to this structure</span>
-<span class="doccomment">/// Caching data here helps eliminate redundant syscalls to fetch same information</span>
+<span class="doccomment">/// Represents a Path along with it&#39;s associated data.</span>
+<span class="doccomment">/// Any data that will be reused several times makes sense to be added to this structure.</span>
+<span class="doccomment">/// Caching data here helps eliminate redundant syscalls to fetch same information.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">struct</span> <span class="ident">PathData</span> {
     <span class="comment">// Result&lt;MetaData&gt; got from symlink_metadata() or metadata() based on config</span>
@@ -4305,92 +4293,10 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
     <span class="comment">// option, print the security context to the left of the size column.</span>
 
     <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">format</span> <span class="op">==</span> <span class="ident">Format::Long</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-        <span class="kw">let</span> (
-            <span class="kw-2">mut</span> <span class="ident">longest_inode_len</span>,
-            <span class="kw-2">mut</span> <span class="ident">longest_link_count_len</span>,
-            <span class="kw-2">mut</span> <span class="ident">longest_uname_len</span>,
-            <span class="kw-2">mut</span> <span class="ident">longest_group_len</span>,
-            <span class="kw-2">mut</span> <span class="ident">longest_context_len</span>,
-            <span class="kw-2">mut</span> <span class="ident">longest_size_len</span>,
-            <span class="kw-2">mut</span> <span class="ident">longest_major_len</span>,
-            <span class="kw-2">mut</span> <span class="ident">longest_minor_len</span>,
-        ) <span class="op">=</span> (<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>);
-
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">unix</span>))]</span>
-        <span class="kw">let</span> (
-            <span class="kw-2">mut</span> <span class="ident">longest_link_count_len</span>,
-            <span class="kw-2">mut</span> <span class="ident">longest_uname_len</span>,
-            <span class="kw-2">mut</span> <span class="ident">longest_group_len</span>,
-            <span class="kw-2">mut</span> <span class="ident">longest_context_len</span>,
-            <span class="kw-2">mut</span> <span class="ident">longest_size_len</span>,
-        ) <span class="op">=</span> (<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>);
-
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-        <span class="kw">for</span> <span class="ident">item</span> <span class="kw">in</span> <span class="ident">items</span> {
-            <span class="kw">let</span> <span class="ident">context_len</span> <span class="op">=</span> <span class="ident">item</span>.<span class="ident">security_context</span>.<span class="ident">len</span>();
-            <span class="kw">let</span> (<span class="ident">link_count_len</span>, <span class="ident">uname_len</span>, <span class="ident">group_len</span>, <span class="ident">size_len</span>, <span class="ident">major_len</span>, <span class="ident">minor_len</span>, <span class="ident">inode_len</span>) <span class="op">=</span>
-                <span class="ident">display_dir_entry_size</span>(<span class="ident">item</span>, <span class="ident">config</span>, <span class="ident">out</span>);
-            <span class="ident">longest_inode_len</span> <span class="op">=</span> <span class="ident">inode_len</span>.<span class="ident">max</span>(<span class="ident">longest_inode_len</span>);
-            <span class="ident">longest_link_count_len</span> <span class="op">=</span> <span class="ident">link_count_len</span>.<span class="ident">max</span>(<span class="ident">longest_link_count_len</span>);
-            <span class="ident">longest_uname_len</span> <span class="op">=</span> <span class="ident">uname_len</span>.<span class="ident">max</span>(<span class="ident">longest_uname_len</span>);
-            <span class="ident">longest_group_len</span> <span class="op">=</span> <span class="ident">group_len</span>.<span class="ident">max</span>(<span class="ident">longest_group_len</span>);
-            <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">context</span> {
-                <span class="ident">longest_context_len</span> <span class="op">=</span> <span class="ident">context_len</span>.<span class="ident">max</span>(<span class="ident">longest_context_len</span>);
-            }
-            <span class="kw">if</span> <span class="ident">items</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1usize</span> {
-                <span class="ident">longest_size_len</span> <span class="op">=</span> <span class="number">0usize</span>;
-                <span class="ident">longest_major_len</span> <span class="op">=</span> <span class="number">0usize</span>;
-                <span class="ident">longest_minor_len</span> <span class="op">=</span> <span class="number">0usize</span>;
-            } <span class="kw">else</span> {
-                <span class="ident">longest_major_len</span> <span class="op">=</span> <span class="ident">major_len</span>.<span class="ident">max</span>(<span class="ident">longest_major_len</span>);
-                <span class="ident">longest_minor_len</span> <span class="op">=</span> <span class="ident">minor_len</span>.<span class="ident">max</span>(<span class="ident">longest_minor_len</span>);
-                <span class="ident">longest_size_len</span> <span class="op">=</span> <span class="ident">size_len</span>
-                    .<span class="ident">max</span>(<span class="ident">longest_size_len</span>)
-                    .<span class="ident">max</span>(<span class="ident">longest_major_len</span> <span class="op">+</span> <span class="ident">longest_minor_len</span> <span class="op">+</span> <span class="number">2usize</span>);
-            }
-        }
-
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">unix</span>))]</span>
-        <span class="kw">for</span> <span class="ident">item</span> <span class="kw">in</span> <span class="ident">items</span> {
-            <span class="kw">let</span> <span class="ident">context_len</span> <span class="op">=</span> <span class="ident">item</span>.<span class="ident">security_context</span>.<span class="ident">len</span>();
-            <span class="kw">let</span> (
-                <span class="ident">link_count_len</span>,
-                <span class="ident">uname_len</span>,
-                <span class="ident">group_len</span>,
-                <span class="ident">size_len</span>,
-                <span class="ident">_major_len</span>,
-                <span class="ident">_minor_len</span>,
-                <span class="ident">_inode_len</span>,
-            ) <span class="op">=</span> <span class="ident">display_dir_entry_size</span>(<span class="ident">item</span>, <span class="ident">config</span>, <span class="ident">out</span>);
-            <span class="ident">longest_link_count_len</span> <span class="op">=</span> <span class="ident">link_count_len</span>.<span class="ident">max</span>(<span class="ident">longest_link_count_len</span>);
-            <span class="ident">longest_uname_len</span> <span class="op">=</span> <span class="ident">uname_len</span>.<span class="ident">max</span>(<span class="ident">longest_uname_len</span>);
-            <span class="ident">longest_group_len</span> <span class="op">=</span> <span class="ident">group_len</span>.<span class="ident">max</span>(<span class="ident">longest_group_len</span>);
-            <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">context</span> {
-                <span class="ident">longest_context_len</span> <span class="op">=</span> <span class="ident">context_len</span>.<span class="ident">max</span>(<span class="ident">longest_context_len</span>);
-            }
-            <span class="ident">longest_size_len</span> <span class="op">=</span> <span class="ident">size_len</span>.<span class="ident">max</span>(<span class="ident">longest_size_len</span>);
-        }
+        <span class="kw">let</span> <span class="ident">padding_collection</span> <span class="op">=</span> <span class="ident">calculate_padding_collection</span>(<span class="ident">items</span>, <span class="ident">config</span>, <span class="ident">out</span>);
 
         <span class="kw">for</span> <span class="ident">item</span> <span class="kw">in</span> <span class="ident">items</span> {
-            <span class="ident">display_item_long</span>(
-                <span class="ident">item</span>,
-                <span class="kw-2">&amp;</span><span class="ident">PaddingCollection</span> {
-                    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-                    <span class="ident">longest_inode_len</span>,
-                    <span class="ident">longest_link_count_len</span>,
-                    <span class="ident">longest_uname_len</span>,
-                    <span class="ident">longest_group_len</span>,
-                    <span class="ident">longest_context_len</span>,
-                    <span class="ident">longest_size_len</span>,
-                    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-                    <span class="ident">longest_major_len</span>,
-                    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-                    <span class="ident">longest_minor_len</span>,
-                },
-                <span class="ident">config</span>,
-                <span class="ident">out</span>,
-            );
+            <span class="ident">display_item_long</span>(<span class="ident">item</span>, <span class="kw-2">&amp;</span><span class="ident">padding_collection</span>, <span class="ident">config</span>, <span class="ident">out</span>);
         }
     } <span class="kw">else</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">longest_context_len</span> <span class="op">=</span> <span class="number">1</span>;
@@ -4563,11 +4469,7 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
         {
             <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">inode</span> {
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(
-                    <span class="ident">out</span>,
-                    <span class="string">&quot;{} &quot;</span>,
-                    <span class="ident">pad_left</span>(<span class="kw-2">&amp;</span><span class="ident">get_inode</span>(<span class="ident">md</span>), <span class="ident">padding</span>.<span class="ident">longest_inode_len</span>),
-                );
+                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;{} &quot;</span>, <span class="ident">pad_left</span>(<span class="kw-2">&amp;</span><span class="ident">get_inode</span>(<span class="ident">md</span>), <span class="ident">padding</span>.<span class="ident">inode</span>),);
             }
         }
 
@@ -4582,14 +4484,14 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
             } <span class="kw">else</span> {
                 <span class="string">&quot;&quot;</span>
             },
-            <span class="ident">pad_left</span>(<span class="kw-2">&amp;</span><span class="ident">display_symlink_count</span>(<span class="ident">md</span>), <span class="ident">padding</span>.<span class="ident">longest_link_count_len</span>),
+            <span class="ident">pad_left</span>(<span class="kw-2">&amp;</span><span class="ident">display_symlink_count</span>(<span class="ident">md</span>), <span class="ident">padding</span>.<span class="ident">link_count</span>),
         );
 
         <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">long</span>.<span class="ident">owner</span> {
             <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(
                 <span class="ident">out</span>,
                 <span class="string">&quot; {}&quot;</span>,
-                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">display_uname</span>(<span class="ident">md</span>, <span class="ident">config</span>), <span class="ident">padding</span>.<span class="ident">longest_uname_len</span>),
+                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">display_uname</span>(<span class="ident">md</span>, <span class="ident">config</span>), <span class="ident">padding</span>.<span class="ident">uname</span>),
             );
         }
 
@@ -4597,7 +4499,7 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
             <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(
                 <span class="ident">out</span>,
                 <span class="string">&quot; {}&quot;</span>,
-                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">display_group</span>(<span class="ident">md</span>, <span class="ident">config</span>), <span class="ident">padding</span>.<span class="ident">longest_group_len</span>),
+                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">display_group</span>(<span class="ident">md</span>, <span class="ident">config</span>), <span class="ident">padding</span>.<span class="ident">group</span>),
             );
         }
 
@@ -4605,7 +4507,7 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
             <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(
                 <span class="ident">out</span>,
                 <span class="string">&quot; {}&quot;</span>,
-                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">item</span>.<span class="ident">security_context</span>, <span class="ident">padding</span>.<span class="ident">longest_context_len</span>),
+                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">item</span>.<span class="ident">security_context</span>, <span class="ident">padding</span>.<span class="ident">context</span>),
             );
         }
 
@@ -4615,13 +4517,13 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
             <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(
                 <span class="ident">out</span>,
                 <span class="string">&quot; {}&quot;</span>,
-                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">display_uname</span>(<span class="ident">md</span>, <span class="ident">config</span>), <span class="ident">padding</span>.<span class="ident">longest_uname_len</span>),
+                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">display_uname</span>(<span class="ident">md</span>, <span class="ident">config</span>), <span class="ident">padding</span>.<span class="ident">uname</span>),
             );
         }
 
         <span class="kw">match</span> <span class="ident">display_size_or_rdev</span>(<span class="ident">md</span>, <span class="ident">config</span>) {
             <span class="ident">SizeOrDeviceId::Size</span>(<span class="ident">size</span>) =&gt; {
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">pad_left</span>(<span class="kw-2">&amp;</span><span class="ident">size</span>, <span class="ident">padding</span>.<span class="ident">longest_size_len</span>),);
+                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">pad_left</span>(<span class="kw-2">&amp;</span><span class="ident">size</span>, <span class="ident">padding</span>.<span class="ident">size</span>),);
             }
             <span class="ident">SizeOrDeviceId::Device</span>(<span class="ident">major</span>, <span class="ident">minor</span>) =&gt; {
                 <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(
@@ -4632,10 +4534,10 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
                         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">unix</span>))]</span>
                         <span class="number">0usize</span>,
                         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-                        <span class="ident">padding</span>.<span class="ident">longest_major_len</span>.<span class="ident">max</span>(
+                        <span class="ident">padding</span>.<span class="ident">major</span>.<span class="ident">max</span>(
                             <span class="ident">padding</span>
-                                .<span class="ident">longest_size_len</span>
-                                .<span class="ident">saturating_sub</span>(<span class="ident">padding</span>.<span class="ident">longest_minor_len</span>.<span class="ident">saturating_add</span>(<span class="number">2usize</span>))
+                                .<span class="ident">size</span>
+                                .<span class="ident">saturating_sub</span>(<span class="ident">padding</span>.<span class="ident">minor</span>.<span class="ident">saturating_add</span>(<span class="number">2usize</span>))
                         )
                     ),
                     <span class="ident">pad_left</span>(
@@ -4643,7 +4545,7 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
                         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">unix</span>))]</span>
                         <span class="number">0usize</span>,
                         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-                        <span class="ident">padding</span>.<span class="ident">longest_minor_len</span>,
+                        <span class="ident">padding</span>.<span class="ident">minor</span>,
                     ),
                 );
             }
@@ -4657,7 +4559,7 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
         {
             <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">inode</span> {
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;{} &quot;</span>, <span class="ident">pad_left</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">longest_inode_len</span>),);
+                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;{} &quot;</span>, <span class="ident">pad_left</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">inode</span>),);
             }
         }
 
@@ -4705,29 +4607,29 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
             } <span class="kw">else</span> {
                 <span class="string">&quot;&quot;</span>
             },
-            <span class="ident">pad_left</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">longest_link_count_len</span>),
+            <span class="ident">pad_left</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">link_count</span>),
         );
 
         <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">long</span>.<span class="ident">owner</span> {
-            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">pad_right</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">longest_uname_len</span>));
+            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">pad_right</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">uname</span>));
         }
 
         <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">long</span>.<span class="ident">group</span> {
-            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">pad_right</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">longest_group_len</span>));
+            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">pad_right</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">group</span>));
         }
 
         <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">context</span> {
             <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(
                 <span class="ident">out</span>,
                 <span class="string">&quot; {}&quot;</span>,
-                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">item</span>.<span class="ident">security_context</span>, <span class="ident">padding</span>.<span class="ident">longest_context_len</span>)
+                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">item</span>.<span class="ident">security_context</span>, <span class="ident">padding</span>.<span class="ident">context</span>)
             );
         }
 
         <span class="comment">// Author is only different from owner on GNU/Hurd, so we reuse</span>
         <span class="comment">// the owner, since GNU/Hurd is not currently supported by Rust.</span>
         <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">long</span>.<span class="ident">author</span> {
-            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">pad_right</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">longest_uname_len</span>));
+            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">pad_right</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">uname</span>));
         }
 
         <span class="kw">let</span> <span class="ident">dfn</span> <span class="op">=</span> <span class="ident">display_file_name</span>(<span class="ident">item</span>, <span class="ident">config</span>, <span class="prelude-val">None</span>, <span class="number">0</span>, <span class="ident">out</span>).<span class="ident">contents</span>;
@@ -4736,7 +4638,7 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
         <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">writeln!</span>(
             <span class="ident">out</span>,
             <span class="string">&quot; {} {} {}&quot;</span>,
-            <span class="ident">pad_left</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">longest_size_len</span>),
+            <span class="ident">pad_left</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">size</span>),
             <span class="ident">pad_left</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">date_len</span>),
             <span class="ident">dfn</span>,
         );
@@ -5190,6 +5092,80 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
     } <span class="kw">else</span> {
         <span class="ident">substitute_string</span>
     }
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
+<span class="kw">fn</span> <span class="ident">calculate_padding_collection</span>(
+    <span class="ident">items</span>: <span class="kw-2">&amp;</span>[<span class="ident">PathData</span>],
+    <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>,
+    <span class="ident">out</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span>,
+) -&gt; <span class="ident">PaddingCollection</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">padding_collections</span> <span class="op">=</span> <span class="ident">PaddingCollection</span> {
+        <span class="ident">inode</span>: <span class="number">1</span>,
+        <span class="ident">link_count</span>: <span class="number">1</span>,
+        <span class="ident">uname</span>: <span class="number">1</span>,
+        <span class="ident">group</span>: <span class="number">1</span>,
+        <span class="ident">context</span>: <span class="number">1</span>,
+        <span class="ident">size</span>: <span class="number">1</span>,
+        <span class="ident">major</span>: <span class="number">1</span>,
+        <span class="ident">minor</span>: <span class="number">1</span>,
+    };
+
+    <span class="kw">for</span> <span class="ident">item</span> <span class="kw">in</span> <span class="ident">items</span> {
+        <span class="kw">let</span> <span class="ident">context_len</span> <span class="op">=</span> <span class="ident">item</span>.<span class="ident">security_context</span>.<span class="ident">len</span>();
+        <span class="kw">let</span> (<span class="ident">link_count_len</span>, <span class="ident">uname_len</span>, <span class="ident">group_len</span>, <span class="ident">size_len</span>, <span class="ident">major_len</span>, <span class="ident">minor_len</span>, <span class="ident">inode_len</span>) <span class="op">=</span>
+            <span class="ident">display_dir_entry_size</span>(<span class="ident">item</span>, <span class="ident">config</span>, <span class="ident">out</span>);
+        <span class="ident">padding_collections</span>.<span class="ident">inode</span> <span class="op">=</span> <span class="ident">inode_len</span>.<span class="ident">max</span>(<span class="ident">padding_collections</span>.<span class="ident">inode</span>);
+        <span class="ident">padding_collections</span>.<span class="ident">link_count</span> <span class="op">=</span> <span class="ident">link_count_len</span>.<span class="ident">max</span>(<span class="ident">padding_collections</span>.<span class="ident">link_count</span>);
+        <span class="ident">padding_collections</span>.<span class="ident">uname</span> <span class="op">=</span> <span class="ident">uname_len</span>.<span class="ident">max</span>(<span class="ident">padding_collections</span>.<span class="ident">uname</span>);
+        <span class="ident">padding_collections</span>.<span class="ident">group</span> <span class="op">=</span> <span class="ident">group_len</span>.<span class="ident">max</span>(<span class="ident">padding_collections</span>.<span class="ident">group</span>);
+        <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">context</span> {
+            <span class="ident">padding_collections</span>.<span class="ident">context</span> <span class="op">=</span> <span class="ident">context_len</span>.<span class="ident">max</span>(<span class="ident">padding_collections</span>.<span class="ident">context</span>);
+        }
+        <span class="kw">if</span> <span class="ident">items</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1usize</span> {
+            <span class="ident">padding_collections</span>.<span class="ident">size</span> <span class="op">=</span> <span class="number">0usize</span>;
+            <span class="ident">padding_collections</span>.<span class="ident">major</span> <span class="op">=</span> <span class="number">0usize</span>;
+            <span class="ident">padding_collections</span>.<span class="ident">minor</span> <span class="op">=</span> <span class="number">0usize</span>;
+        } <span class="kw">else</span> {
+            <span class="ident">padding_collections</span>.<span class="ident">major</span> <span class="op">=</span> <span class="ident">major_len</span>.<span class="ident">max</span>(<span class="ident">padding_collections</span>.<span class="ident">major</span>);
+            <span class="ident">padding_collections</span>.<span class="ident">minor</span> <span class="op">=</span> <span class="ident">minor_len</span>.<span class="ident">max</span>(<span class="ident">padding_collections</span>.<span class="ident">minor</span>);
+            <span class="ident">padding_collections</span>.<span class="ident">size</span> <span class="op">=</span> <span class="ident">size_len</span>
+                .<span class="ident">max</span>(<span class="ident">padding_collections</span>.<span class="ident">size</span>)
+                .<span class="ident">max</span>(<span class="ident">padding_collections</span>.<span class="ident">major</span> <span class="op">+</span> <span class="ident">padding_collections</span>.<span class="ident">minor</span> <span class="op">+</span> <span class="number">2usize</span>);
+        }
+    }
+
+    <span class="ident">padding_collections</span>
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">unix</span>))]</span>
+<span class="kw">fn</span> <span class="ident">calculate_padding_collection</span>(
+    <span class="ident">items</span>: <span class="kw-2">&amp;</span>[<span class="ident">PathData</span>],
+    <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>,
+    <span class="ident">out</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span>,
+) -&gt; <span class="ident">PaddingCollection</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">padding_collections</span> <span class="op">=</span> <span class="ident">PaddingCollection</span> {
+        <span class="ident">link_count</span>: <span class="number">1</span>,
+        <span class="ident">uname</span>: <span class="number">1</span>,
+        <span class="ident">group</span>: <span class="number">1</span>,
+        <span class="ident">context</span>: <span class="number">1</span>,
+        <span class="ident">size</span>: <span class="number">1</span>,
+    };
+
+    <span class="kw">for</span> <span class="ident">item</span> <span class="kw">in</span> <span class="ident">items</span> {
+        <span class="kw">let</span> <span class="ident">context_len</span> <span class="op">=</span> <span class="ident">item</span>.<span class="ident">security_context</span>.<span class="ident">len</span>();
+        <span class="kw">let</span> (<span class="ident">link_count_len</span>, <span class="ident">uname_len</span>, <span class="ident">group_len</span>, <span class="ident">size_len</span>, <span class="ident">_major_len</span>, <span class="ident">_minor_len</span>, <span class="ident">_inode_len</span>) <span class="op">=</span>
+            <span class="ident">display_dir_entry_size</span>(<span class="ident">item</span>, <span class="ident">config</span>, <span class="ident">out</span>);
+        <span class="ident">padding_collections</span>.<span class="ident">link_count</span> <span class="op">=</span> <span class="ident">link_count_len</span>.<span class="ident">max</span>(<span class="ident">padding_collections</span>.<span class="ident">link_count</span>);
+        <span class="ident">padding_collections</span>.<span class="ident">uname</span> <span class="op">=</span> <span class="ident">uname_len</span>.<span class="ident">max</span>(<span class="ident">padding_collections</span>.<span class="ident">uname</span>);
+        <span class="ident">padding_collections</span>.<span class="ident">group</span> <span class="op">=</span> <span class="ident">group_len</span>.<span class="ident">max</span>(<span class="ident">padding_collections</span>.<span class="ident">group</span>);
+        <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">context</span> {
+            <span class="ident">padding_collections</span>.<span class="ident">context</span> <span class="op">=</span> <span class="ident">context_len</span>.<span class="ident">max</span>(<span class="ident">padding_collections</span>.<span class="ident">context</span>);
+        }
+        <span class="ident">padding_collections</span>.<span class="ident">size</span> <span class="op">=</span> <span class="ident">size_len</span>.<span class="ident">max</span>(<span class="ident">padding_collections</span>.<span class="ident">size</span>);
+    }
+
+    <span class="ident">padding_collections</span>
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_ls" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>

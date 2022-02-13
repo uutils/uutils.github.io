@@ -1165,6 +1165,16 @@
 <span id="1164">1164</span>
 <span id="1165">1165</span>
 <span id="1166">1166</span>
+<span id="1167">1167</span>
+<span id="1168">1168</span>
+<span id="1169">1169</span>
+<span id="1170">1170</span>
+<span id="1171">1171</span>
+<span id="1172">1172</span>
+<span id="1173">1173</span>
+<span id="1174">1174</span>
+<span id="1175">1175</span>
+<span id="1176">1176</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Tyler Steele &lt;tyler.steele@protonmail.com&gt;</span>
@@ -1209,6 +1219,7 @@
 <span class="kw">use</span> <span class="ident">signal_hook::consts::signal</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
+<span class="kw">use</span> <span class="ident">uucore::show_error</span>;
 <span class="kw">use</span> <span class="ident">uucore::InvalidEncodingHandling</span>;
 
 <span class="kw">const</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;copy, and optionally convert, a file system resource&quot;</span>;
@@ -1247,9 +1258,12 @@
         };
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">amt</span>) <span class="op">=</span> <span class="ident">skip</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">BUF_INIT_BYTE</span>; <span class="ident">amt</span>];
-            <span class="ident">i</span>.<span class="ident">force_fill</span>(<span class="kw-2">&amp;mut</span> <span class="ident">buf</span>, <span class="ident">amt</span>)
+            <span class="kw">let</span> <span class="ident">num_bytes_read</span> <span class="op">=</span> <span class="ident">i</span>
+                .<span class="ident">force_fill</span>(<span class="ident">amt</span>.<span class="ident">try_into</span>().<span class="ident">unwrap</span>())
                 .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to read input&quot;</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
+            <span class="kw">if</span> <span class="ident">num_bytes_read</span> <span class="op">&lt;</span> <span class="ident">amt</span> {
+                <span class="macro">show_error!</span>(<span class="string">&quot;&#39;standard input&#39;: cannot skip to specified offset&quot;</span>);
+            }
         }
 
         <span class="prelude-val">Ok</span>(<span class="ident">i</span>)
@@ -1431,17 +1445,19 @@
         })
     }
 
-    <span class="doccomment">/// Force-fills a buffer, ignoring zero-length reads which would otherwise be</span>
-    <span class="doccomment">/// interpreted as EOF.</span>
-    <span class="doccomment">/// Note: This will not return unless the source (eventually) produces</span>
-    <span class="doccomment">/// enough bytes to meet target_len.</span>
-    <span class="kw">fn</span> <span class="ident">force_fill</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">u8</span>], <span class="ident">target_len</span>: <span class="ident">usize</span>) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">base_idx</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">while</span> <span class="ident">base_idx</span> <span class="op">&lt;</span> <span class="ident">target_len</span> {
-            <span class="ident">base_idx</span> <span class="op">+</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">read</span>(<span class="kw-2">&amp;mut</span> <span class="ident">buf</span>[<span class="ident">base_idx</span>..<span class="ident">target_len</span>])<span class="question-mark">?</span>;
-        }
-
-        <span class="prelude-val">Ok</span>(<span class="ident">base_idx</span>)
+    <span class="doccomment">/// Read the specified number of bytes from this reader.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// On success, this method returns the number of bytes read. If</span>
+    <span class="doccomment">/// this reader has fewer than `n` bytes available, then it reads</span>
+    <span class="doccomment">/// as many as possible. In that case, this method returns a</span>
+    <span class="doccomment">/// number less than `n`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Errors</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If there is a problem reading.</span>
+    <span class="kw">fn</span> <span class="ident">force_fill</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">n</span>: <span class="ident">u64</span>) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+        <span class="self">self</span>.<span class="ident">take</span>(<span class="ident">n</span>).<span class="ident">read_to_end</span>(<span class="kw-2">&amp;mut</span> <span class="ident">buf</span>)
     }
 }
 
@@ -2027,10 +2043,14 @@
             }
         });
 
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">progress_as_secs</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">update</span>) <span class="op">=</span> <span class="ident">rx</span>.<span class="ident">recv</span>() {
             <span class="comment">// (Re)print status line if progress is requested.</span>
-            <span class="kw">if</span> <span class="prelude-val">Some</span>(<span class="ident">StatusLevel::Progress</span>) <span class="op">==</span> <span class="ident">print_level</span> {
+            <span class="kw">if</span> <span class="prelude-val">Some</span>(<span class="ident">StatusLevel::Progress</span>) <span class="op">==</span> <span class="ident">print_level</span>
+                <span class="op">&amp;&amp;</span> <span class="ident">update</span>.<span class="ident">duration</span>.<span class="ident">as_secs</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="ident">progress_as_secs</span>
+            {
                 <span class="ident">reprint_prog_line</span>(<span class="kw-2">&amp;</span><span class="ident">update</span>);
+                <span class="ident">progress_as_secs</span> <span class="op">=</span> <span class="ident">update</span>.<span class="ident">duration</span>.<span class="ident">as_secs</span>() <span class="op">+</span> <span class="number">1</span>;
             }
             <span class="comment">// Handle signals</span>
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
