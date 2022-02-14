@@ -1172,9 +1172,6 @@
 <span id="1171">1171</span>
 <span id="1172">1172</span>
 <span id="1173">1173</span>
-<span id="1174">1174</span>
-<span id="1175">1175</span>
-<span id="1176">1176</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Tyler Steele &lt;tyler.steele@protonmail.com&gt;</span>
@@ -1511,16 +1508,13 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bytes_total</span> <span class="op">=</span> <span class="number">0</span>;
 
         <span class="kw">for</span> <span class="ident">chunk</span> <span class="kw">in</span> <span class="ident">buf</span>.<span class="ident">chunks</span>(<span class="self">self</span>.<span class="ident">obs</span>) {
-            <span class="kw">match</span> <span class="self">self</span>.<span class="ident">write</span>(<span class="ident">chunk</span>)<span class="question-mark">?</span> {
-                <span class="ident">wlen</span> <span class="kw">if</span> <span class="ident">wlen</span> <span class="op">&lt;</span> <span class="ident">chunk</span>.<span class="ident">len</span>() =&gt; {
-                    <span class="ident">writes_partial</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                    <span class="ident">bytes_total</span> <span class="op">+</span><span class="op">=</span> <span class="ident">wlen</span>;
-                }
-                <span class="ident">wlen</span> =&gt; {
-                    <span class="ident">writes_complete</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                    <span class="ident">bytes_total</span> <span class="op">+</span><span class="op">=</span> <span class="ident">wlen</span>;
-                }
+            <span class="kw">let</span> <span class="ident">wlen</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">write</span>(<span class="ident">chunk</span>)<span class="question-mark">?</span>;
+            <span class="kw">if</span> <span class="ident">wlen</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">obs</span> {
+                <span class="ident">writes_partial</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+            } <span class="kw">else</span> {
+                <span class="ident">writes_complete</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
             }
+            <span class="ident">bytes_total</span> <span class="op">+</span><span class="op">=</span> <span class="ident">wlen</span>;
         }
 
         <span class="prelude-val">Ok</span>(<span class="ident">WriteStat</span> {
