@@ -332,10 +332,6 @@
 <span id="331">331</span>
 <span id="332">332</span>
 <span id="333">333</span>
-<span id="334">334</span>
-<span id="335">335</span>
-<span id="336">336</span>
-<span id="337">337</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Alex Lyon &lt;arcterus@mail.com&gt;</span>
@@ -352,7 +348,7 @@
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">stdout</span>, <span class="ident">BufReader</span>, <span class="ident">BufWriter</span>, <span class="ident">Read</span>, <span class="ident">Write</span>};
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
-<span class="kw">use</span> <span class="ident">uucore::InvalidEncodingHandling</span>;
+<span class="kw">use</span> <span class="ident">uucore</span>::{<span class="ident">execution_phrase</span>, <span class="ident">InvalidEncodingHandling</span>};
 
 <span class="kw">mod</span> <span class="ident">rand_read_adapter</span>;
 
@@ -364,14 +360,9 @@
 
 <span class="kw">static</span> <span class="ident">NAME</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;shuf&quot;</span>;
 <span class="kw">static</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">r#&quot;shuf [OPTION]... [FILE]
-  or:  shuf -e [OPTION]... [ARG]...
-  or:  shuf -i LO-HI [OPTION]...
-Write a random permutation of the input lines to standard output.
-
-With no FILE, or when FILE is -, read standard input.
-&quot;#</span>;
+    or:  shuf -e [OPTION]... [ARG]...
+    or:  shuf -i LO-HI [OPTION]...&quot;#</span>;
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Shuffle the input by outputting a random permutation of input lines. Each output permutation is equally likely.&quot;</span>;
-<span class="kw">static</span> <span class="ident">TEMPLATE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Usage: {usage}\nMandatory arguments to long options are mandatory for short options too.\n{options}&quot;</span>;
 
 <span class="kw">struct</span> <span class="ident">Options</span> {
     <span class="ident">head_count</span>: <span class="ident">usize</span>,
@@ -398,7 +389,9 @@ With no FILE, or when FILE is -, read standard input.
         .<span class="ident">collect_str</span>(<span class="ident">InvalidEncodingHandling::ConvertLossy</span>)
         .<span class="ident">accept_any</span>();
 
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>()
+        .<span class="ident">override_usage</span>(<span class="kw-2">&amp;</span><span class="ident">USAGE</span>.<span class="ident">replace</span>(<span class="ident">NAME</span>, <span class="ident">execution_phrase</span>())[..])
+        .<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
     <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">args</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="ident">options::ECHO</span>) {
         <span class="ident">Mode::Echo</span>(<span class="ident">args</span>.<span class="ident">map</span>(<span class="ident">String::from</span>).<span class="ident">collect</span>())
@@ -463,7 +456,6 @@ With no FILE, or when FILE is -, read standard input.
         .<span class="ident">name</span>(<span class="ident">NAME</span>)
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
-        .<span class="ident">help_template</span>(<span class="ident">TEMPLATE</span>)
         .<span class="ident">override_usage</span>(<span class="ident">USAGE</span>)
         .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
         .<span class="ident">arg</span>(
