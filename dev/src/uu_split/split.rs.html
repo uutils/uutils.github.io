@@ -710,6 +710,27 @@
 <span id="709">709</span>
 <span id="710">710</span>
 <span id="711">711</span>
+<span id="712">712</span>
+<span id="713">713</span>
+<span id="714">714</span>
+<span id="715">715</span>
+<span id="716">716</span>
+<span id="717">717</span>
+<span id="718">718</span>
+<span id="719">719</span>
+<span id="720">720</span>
+<span id="721">721</span>
+<span id="722">722</span>
+<span id="723">723</span>
+<span id="724">724</span>
+<span id="725">725</span>
+<span id="726">726</span>
+<span id="727">727</span>
+<span id="728">728</span>
+<span id="729">729</span>
+<span id="730">730</span>
+<span id="731">731</span>
+<span id="732">732</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Akira Hayakawa &lt;ruby.wktk@gmail.com&gt;</span>
@@ -724,6 +745,7 @@
 <span class="kw">mod</span> <span class="ident">platform</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::filenames::FilenameIterator</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::filenames::SuffixType</span>;
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>};
 <span class="kw">use</span> <span class="ident">std::env</span>;
 <span class="kw">use</span> <span class="ident">std::fmt</span>;
@@ -743,6 +765,7 @@
 <span class="kw">static</span> <span class="ident">OPT_FILTER</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;filter&quot;</span>;
 <span class="kw">static</span> <span class="ident">OPT_NUMBER</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;number&quot;</span>;
 <span class="kw">static</span> <span class="ident">OPT_NUMERIC_SUFFIXES</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;numeric-suffixes&quot;</span>;
+<span class="kw">static</span> <span class="ident">OPT_HEX_SUFFIXES</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;hex-suffixes&quot;</span>;
 <span class="kw">static</span> <span class="ident">OPT_SUFFIX_LENGTH</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;suffix-length&quot;</span>;
 <span class="kw">static</span> <span class="ident">OPT_DEFAULT_SUFFIX_LENGTH</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;0&quot;</span>;
 <span class="kw">static</span> <span class="ident">OPT_VERBOSE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;verbose&quot;</span>;
@@ -855,6 +878,14 @@ size is 1000, and default PREFIX is &#39;x&#39;. With no INPUT, or when INPUT is
                 .<span class="ident">help</span>(<span class="string">&quot;use suffixes of length N (default 2)&quot;</span>),
         )
         .<span class="ident">arg</span>(
+            <span class="ident">Arg::new</span>(<span class="ident">OPT_HEX_SUFFIXES</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;x&#39;</span>)
+                .<span class="ident">long</span>(<span class="ident">OPT_HEX_SUFFIXES</span>)
+                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                .<span class="ident">default_missing_value</span>(<span class="string">&quot;0&quot;</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;use hex suffixes starting at 0, not alphabetic&quot;</span>),
+        )
+        .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_VERBOSE</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_VERBOSE</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;print a diagnostic just before each output file is opened&quot;</span>),
@@ -962,13 +993,24 @@ size is 1000, and default PREFIX is &#39;x&#39;. With no INPUT, or when INPUT is
     }
 }
 
+<span class="doccomment">/// Parse the suffix type from the command-line arguments.</span>
+<span class="kw">fn</span> <span class="ident">suffix_type_from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="ident">SuffixType</span> {
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">occurrences_of</span>(<span class="ident">OPT_NUMERIC_SUFFIXES</span>) <span class="op">&gt;</span> <span class="number">0</span> {
+        <span class="ident">SuffixType::NumericDecimal</span>
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">occurrences_of</span>(<span class="ident">OPT_HEX_SUFFIXES</span>) <span class="op">&gt;</span> <span class="number">0</span> {
+        <span class="ident">SuffixType::NumericHexadecimal</span>
+    } <span class="kw">else</span> {
+        <span class="ident">SuffixType::Alphabetic</span>
+    }
+}
+
 <span class="doccomment">/// Parameters that control how a file gets split.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// You can convert an [`ArgMatches`] instance into a [`Settings`]</span>
 <span class="doccomment">/// instance by calling [`Settings::from`].</span>
 <span class="kw">struct</span> <span class="ident">Settings</span> {
     <span class="ident">prefix</span>: <span class="ident">String</span>,
-    <span class="ident">numeric_suffix</span>: <span class="ident">bool</span>,
+    <span class="ident">suffix_type</span>: <span class="ident">SuffixType</span>,
     <span class="ident">suffix_length</span>: <span class="ident">usize</span>,
     <span class="ident">additional_suffix</span>: <span class="ident">String</span>,
     <span class="ident">input</span>: <span class="ident">String</span>,
@@ -1036,7 +1078,7 @@ size is 1000, and default PREFIX is &#39;x&#39;. With no INPUT, or when INPUT is
             <span class="ident">suffix_length</span>: <span class="ident">suffix_length_str</span>
                 .<span class="ident">parse</span>()
                 .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">SettingsError::SuffixLength</span>(<span class="ident">suffix_length_str</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>,
-            <span class="ident">numeric_suffix</span>: <span class="ident">matches</span>.<span class="ident">occurrences_of</span>(<span class="ident">OPT_NUMERIC_SUFFIXES</span>) <span class="op">&gt;</span> <span class="number">0</span>,
+            <span class="ident">suffix_type</span>: <span class="ident">suffix_type_from</span>(<span class="ident">matches</span>),
             <span class="ident">additional_suffix</span>,
             <span class="ident">verbose</span>: <span class="ident">matches</span>.<span class="ident">occurrences_of</span>(<span class="string">&quot;verbose&quot;</span>) <span class="op">&gt;</span> <span class="number">0</span>,
             <span class="ident">strategy</span>: <span class="ident">Strategy::from</span>(<span class="ident">matches</span>).<span class="ident">map_err</span>(<span class="ident">SettingsError::Strategy</span>)<span class="question-mark">?</span>,
@@ -1096,7 +1138,7 @@ size is 1000, and default PREFIX is &#39;x&#39;. With no INPUT, or when INPUT is
             <span class="kw-2">&amp;</span><span class="ident">settings</span>.<span class="ident">prefix</span>,
             <span class="kw-2">&amp;</span><span class="ident">settings</span>.<span class="ident">additional_suffix</span>,
             <span class="ident">settings</span>.<span class="ident">suffix_length</span>,
-            <span class="ident">settings</span>.<span class="ident">numeric_suffix</span>,
+            <span class="ident">settings</span>.<span class="ident">suffix_type</span>,
         );
         <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">filename_iterator</span>.<span class="ident">next</span>()<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">verbose</span> {
@@ -1224,7 +1266,7 @@ size is 1000, and default PREFIX is &#39;x&#39;. With no INPUT, or when INPUT is
             <span class="kw-2">&amp;</span><span class="ident">settings</span>.<span class="ident">prefix</span>,
             <span class="kw-2">&amp;</span><span class="ident">settings</span>.<span class="ident">additional_suffix</span>,
             <span class="ident">settings</span>.<span class="ident">suffix_length</span>,
-            <span class="ident">settings</span>.<span class="ident">numeric_suffix</span>,
+            <span class="ident">settings</span>.<span class="ident">suffix_type</span>,
         );
         <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">filename_iterator</span>.<span class="ident">next</span>()<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">verbose</span> {
@@ -1316,7 +1358,7 @@ size is 1000, and default PREFIX is &#39;x&#39;. With no INPUT, or when INPUT is
         <span class="kw-2">&amp;</span><span class="ident">settings</span>.<span class="ident">prefix</span>,
         <span class="kw-2">&amp;</span><span class="ident">settings</span>.<span class="ident">additional_suffix</span>,
         <span class="ident">settings</span>.<span class="ident">suffix_length</span>,
-        <span class="ident">settings</span>.<span class="ident">numeric_suffix</span>,
+        <span class="ident">settings</span>.<span class="ident">suffix_type</span>,
     );
 
     <span class="comment">// Create one writer for each chunk. This will create each</span>
