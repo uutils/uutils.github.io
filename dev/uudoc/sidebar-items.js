@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["main",""],["util_map",""],["write_description",""],["write_markdown",""],["write_options",""],["write_usage",""],["write_version",""]],"type":[["UtilityMap",""]]});
+initSidebarItems({"fn":[["get_zip_content",""],["main",""],["util_map",""],["write_description",""],["write_examples",""],["write_markdown",""],["write_options",""],["write_usage",""],["write_version",""]],"type":[["UtilityMap",""]]});
