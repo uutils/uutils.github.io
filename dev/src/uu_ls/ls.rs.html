@@ -2583,6 +2583,16 @@
 <span id="2582">2582</span>
 <span id="2583">2583</span>
 <span id="2584">2584</span>
+<span id="2585">2585</span>
+<span id="2586">2586</span>
+<span id="2587">2587</span>
+<span id="2588">2588</span>
+<span id="2589">2589</span>
+<span id="2590">2590</span>
+<span id="2591">2591</span>
+<span id="2592">2592</span>
+<span id="2593">2593</span>
+<span id="2594">2594</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jeremiah Peschka &lt;jeremiah.peschka@gmail.com&gt;</span>
@@ -3994,7 +4004,8 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
                 <span class="comment">// if not, check if we can use Path metadata</span>
                 <span class="kw">match</span> <span class="ident">get_metadata</span>(<span class="self">self</span>.<span class="ident">p_buf</span>.<span class="ident">as_path</span>(), <span class="self">self</span>.<span class="ident">must_dereference</span>) {
                     <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
-                        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">out</span>.<span class="ident">flush</span>();
+                        <span class="comment">// FIXME: A bit tricky to propagate the result here</span>
+                        <span class="ident">out</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
                         <span class="kw">let</span> <span class="ident">errno</span> <span class="op">=</span> <span class="ident">err</span>.<span class="ident">raw_os_error</span>().<span class="ident">unwrap_or</span>(<span class="number">1i32</span>);
                         <span class="comment">// a bad fd will throw an error when dereferenced,</span>
                         <span class="comment">// but GNU will not throw an error until a bad fd &quot;dir&quot;</span>
@@ -4058,7 +4069,7 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
     <span class="ident">sort_entries</span>(<span class="kw-2">&amp;mut</span> <span class="ident">files</span>, <span class="ident">config</span>, <span class="kw-2">&amp;mut</span> <span class="ident">out</span>);
     <span class="ident">sort_entries</span>(<span class="kw-2">&amp;mut</span> <span class="ident">dirs</span>, <span class="ident">config</span>, <span class="kw-2">&amp;mut</span> <span class="ident">out</span>);
 
-    <span class="ident">display_items</span>(<span class="kw-2">&amp;</span><span class="ident">files</span>, <span class="ident">config</span>, <span class="kw-2">&amp;mut</span> <span class="ident">out</span>);
+    <span class="ident">display_items</span>(<span class="kw-2">&amp;</span><span class="ident">files</span>, <span class="ident">config</span>, <span class="kw-2">&amp;mut</span> <span class="ident">out</span>)<span class="question-mark">?</span>;
 
     <span class="kw">for</span> (<span class="ident">pos</span>, <span class="ident">path_data</span>) <span class="kw">in</span> <span class="ident">dirs</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
         <span class="comment">// Do read_dir call here to match GNU semantics by printing</span>
@@ -4066,7 +4077,7 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
         <span class="kw">let</span> <span class="ident">read_dir</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">fs::read_dir</span>(<span class="kw-2">&amp;</span><span class="ident">path_data</span>.<span class="ident">p_buf</span>) {
             <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
                 <span class="comment">// flush stdout buffer before the error to preserve formatting and order</span>
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">out</span>.<span class="ident">flush</span>();
+                <span class="ident">out</span>.<span class="ident">flush</span>()<span class="question-mark">?</span>;
                 <span class="macro">show!</span>(<span class="ident">LsError::IOErrorContext</span>(<span class="ident">err</span>, <span class="ident">path_data</span>.<span class="ident">p_buf</span>.<span class="ident">clone</span>()));
                 <span class="kw">continue</span>;
             }
@@ -4076,12 +4087,12 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
         <span class="comment">// Print dir heading - name... &#39;total&#39; comes after error display</span>
         <span class="kw">if</span> <span class="ident">initial_locs_len</span> <span class="op">&gt;</span> <span class="number">1</span> <span class="op">|</span><span class="op">|</span> <span class="ident">config</span>.<span class="ident">recursive</span> {
             <span class="kw">if</span> <span class="ident">pos</span>.<span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="number">0usize</span>) <span class="op">&amp;&amp;</span> <span class="ident">files</span>.<span class="ident">is_empty</span>() {
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">writeln!</span>(<span class="ident">out</span>, <span class="string">&quot;{}:&quot;</span>, <span class="ident">path_data</span>.<span class="ident">p_buf</span>.<span class="ident">display</span>());
+                <span class="macro">writeln!</span>(<span class="ident">out</span>, <span class="string">&quot;{}:&quot;</span>, <span class="ident">path_data</span>.<span class="ident">p_buf</span>.<span class="ident">display</span>())<span class="question-mark">?</span>;
             } <span class="kw">else</span> {
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">writeln!</span>(<span class="ident">out</span>, <span class="string">&quot;\n{}:&quot;</span>, <span class="ident">path_data</span>.<span class="ident">p_buf</span>.<span class="ident">display</span>());
+                <span class="macro">writeln!</span>(<span class="ident">out</span>, <span class="string">&quot;\n{}:&quot;</span>, <span class="ident">path_data</span>.<span class="ident">p_buf</span>.<span class="ident">display</span>())<span class="question-mark">?</span>;
             }
         }
-        <span class="ident">enter_directory</span>(<span class="ident">path_data</span>, <span class="ident">read_dir</span>, <span class="ident">config</span>, <span class="kw-2">&amp;mut</span> <span class="ident">out</span>);
+        <span class="ident">enter_directory</span>(<span class="ident">path_data</span>, <span class="ident">read_dir</span>, <span class="ident">config</span>, <span class="kw-2">&amp;mut</span> <span class="ident">out</span>)<span class="question-mark">?</span>;
     }
 
     <span class="prelude-val">Ok</span>(())
@@ -4155,7 +4166,7 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
     <span class="ident">read_dir</span>: <span class="ident">ReadDir</span>,
     <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>,
     <span class="ident">out</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span>,
-) {
+) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="comment">// Create vec of entries with initial dot files</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">entries</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PathData</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">files</span> <span class="op">==</span> <span class="ident">Files::All</span> {
         <span class="macro">vec!</span>[
@@ -4185,7 +4196,7 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
         <span class="kw">let</span> <span class="ident">dir_entry</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">raw_entry</span> {
             <span class="prelude-val">Ok</span>(<span class="ident">path</span>) =&gt; <span class="ident">path</span>,
             <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">out</span>.<span class="ident">flush</span>();
+                <span class="ident">out</span>.<span class="ident">flush</span>()<span class="question-mark">?</span>;
                 <span class="macro">show!</span>(<span class="ident">LsError::IOError</span>(<span class="ident">err</span>));
                 <span class="kw">continue</span>;
             }
@@ -4203,10 +4214,10 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
 
     <span class="comment">// Print total after any error display</span>
     <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">format</span> <span class="op">==</span> <span class="ident">Format::Long</span> {
-        <span class="ident">display_total</span>(<span class="kw-2">&amp;</span><span class="ident">entries</span>, <span class="ident">config</span>, <span class="ident">out</span>);
+        <span class="ident">display_total</span>(<span class="kw-2">&amp;</span><span class="ident">entries</span>, <span class="ident">config</span>, <span class="ident">out</span>)<span class="question-mark">?</span>;
     }
 
-    <span class="ident">display_items</span>(<span class="kw-2">&amp;</span><span class="ident">entries</span>, <span class="ident">config</span>, <span class="ident">out</span>);
+    <span class="ident">display_items</span>(<span class="kw-2">&amp;</span><span class="ident">entries</span>, <span class="ident">config</span>, <span class="ident">out</span>)<span class="question-mark">?</span>;
 
     <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">recursive</span> {
         <span class="kw">for</span> <span class="ident">e</span> <span class="kw">in</span> <span class="ident">entries</span>
@@ -4218,17 +4229,19 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
         {
             <span class="kw">match</span> <span class="ident">fs::read_dir</span>(<span class="kw-2">&amp;</span><span class="ident">e</span>.<span class="ident">p_buf</span>) {
                 <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
-                    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">out</span>.<span class="ident">flush</span>();
+                    <span class="ident">out</span>.<span class="ident">flush</span>()<span class="question-mark">?</span>;
                     <span class="macro">show!</span>(<span class="ident">LsError::IOErrorContext</span>(<span class="ident">err</span>, <span class="ident">e</span>.<span class="ident">p_buf</span>.<span class="ident">clone</span>()));
                     <span class="kw">continue</span>;
                 }
                 <span class="prelude-val">Ok</span>(<span class="ident">rd</span>) =&gt; {
-                    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">writeln!</span>(<span class="ident">out</span>, <span class="string">&quot;\n{}:&quot;</span>, <span class="ident">e</span>.<span class="ident">p_buf</span>.<span class="ident">display</span>());
-                    <span class="ident">enter_directory</span>(<span class="ident">e</span>, <span class="ident">rd</span>, <span class="ident">config</span>, <span class="ident">out</span>);
+                    <span class="macro">writeln!</span>(<span class="ident">out</span>, <span class="string">&quot;\n{}:&quot;</span>, <span class="ident">e</span>.<span class="ident">p_buf</span>.<span class="ident">display</span>())<span class="question-mark">?</span>;
+                    <span class="ident">enter_directory</span>(<span class="ident">e</span>, <span class="ident">rd</span>, <span class="ident">config</span>, <span class="ident">out</span>)<span class="question-mark">?</span>;
                 }
             }
         }
     }
+
+    <span class="prelude-val">Ok</span>(())
 }
 
 <span class="kw">fn</span> <span class="ident">get_metadata</span>(<span class="ident">p_buf</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">dereference</span>: <span class="ident">bool</span>) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span><span class="ident">Metadata</span><span class="op">&gt;</span> {
@@ -4276,7 +4289,7 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
     <span class="macro">format!</span>(<span class="string">&quot;{:&lt;width$}&quot;</span>, <span class="ident">string</span>, <span class="ident">width</span> <span class="op">=</span> <span class="ident">count</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">display_total</span>(<span class="ident">items</span>: <span class="kw-2">&amp;</span>[<span class="ident">PathData</span>], <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>, <span class="ident">out</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span>) {
+<span class="kw">fn</span> <span class="ident">display_total</span>(<span class="ident">items</span>: <span class="kw-2">&amp;</span>[<span class="ident">PathData</span>], <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>, <span class="ident">out</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">total_size</span> <span class="op">=</span> <span class="number">0</span>;
     <span class="kw">for</span> <span class="ident">item</span> <span class="kw">in</span> <span class="ident">items</span> {
         <span class="ident">total_size</span> <span class="op">+</span><span class="op">=</span> <span class="ident">item</span>
@@ -4284,10 +4297,11 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
             .<span class="ident">as_ref</span>()
             .<span class="ident">map_or</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">md</span><span class="op">|</span> <span class="ident">get_block_size</span>(<span class="ident">md</span>, <span class="ident">config</span>));
     }
-    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">writeln!</span>(<span class="ident">out</span>, <span class="string">&quot;total {}&quot;</span>, <span class="ident">display_size</span>(<span class="ident">total_size</span>, <span class="ident">config</span>));
+    <span class="macro">writeln!</span>(<span class="ident">out</span>, <span class="string">&quot;total {}&quot;</span>, <span class="ident">display_size</span>(<span class="ident">total_size</span>, <span class="ident">config</span>))<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">fn</span> <span class="ident">display_items</span>(<span class="ident">items</span>: <span class="kw-2">&amp;</span>[<span class="ident">PathData</span>], <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>, <span class="ident">out</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span>) {
+<span class="kw">fn</span> <span class="ident">display_items</span>(<span class="ident">items</span>: <span class="kw-2">&amp;</span>[<span class="ident">PathData</span>], <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>, <span class="ident">out</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="comment">// `-Z`, `--context`:</span>
     <span class="comment">// Display the SELinux security context or &#39;?&#39; if none is found. When used with the `-l`</span>
     <span class="comment">// option, print the security context to the left of the size column.</span>
@@ -4296,7 +4310,7 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
         <span class="kw">let</span> <span class="ident">padding_collection</span> <span class="op">=</span> <span class="ident">calculate_padding_collection</span>(<span class="ident">items</span>, <span class="ident">config</span>, <span class="ident">out</span>);
 
         <span class="kw">for</span> <span class="ident">item</span> <span class="kw">in</span> <span class="ident">items</span> {
-            <span class="ident">display_item_long</span>(<span class="ident">item</span>, <span class="kw-2">&amp;</span><span class="ident">padding_collection</span>, <span class="ident">config</span>, <span class="ident">out</span>);
+            <span class="ident">display_item_long</span>(<span class="ident">item</span>, <span class="kw-2">&amp;</span><span class="ident">padding_collection</span>, <span class="ident">config</span>, <span class="ident">out</span>)<span class="question-mark">?</span>;
         }
     } <span class="kw">else</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">longest_context_len</span> <span class="op">=</span> <span class="number">1</span>;
@@ -4333,13 +4347,13 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
             .<span class="ident">into_iter</span>();
 
         <span class="kw">match</span> <span class="ident">config</span>.<span class="ident">format</span> {
-            <span class="ident">Format::Columns</span> =&gt; <span class="ident">display_grid</span>(<span class="ident">names</span>, <span class="ident">config</span>.<span class="ident">width</span>, <span class="ident">Direction::TopToBottom</span>, <span class="ident">out</span>),
-            <span class="ident">Format::Across</span> =&gt; <span class="ident">display_grid</span>(<span class="ident">names</span>, <span class="ident">config</span>.<span class="ident">width</span>, <span class="ident">Direction::LeftToRight</span>, <span class="ident">out</span>),
+            <span class="ident">Format::Columns</span> =&gt; <span class="ident">display_grid</span>(<span class="ident">names</span>, <span class="ident">config</span>.<span class="ident">width</span>, <span class="ident">Direction::TopToBottom</span>, <span class="ident">out</span>)<span class="question-mark">?</span>,
+            <span class="ident">Format::Across</span> =&gt; <span class="ident">display_grid</span>(<span class="ident">names</span>, <span class="ident">config</span>.<span class="ident">width</span>, <span class="ident">Direction::LeftToRight</span>, <span class="ident">out</span>)<span class="question-mark">?</span>,
             <span class="ident">Format::Commas</span> =&gt; {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_col</span> <span class="op">=</span> <span class="number">0</span>;
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">names</span> <span class="op">=</span> <span class="ident">names</span>;
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">name</span>) <span class="op">=</span> <span class="ident">names</span>.<span class="ident">next</span>() {
-                    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">name</span>.<span class="ident">contents</span>);
+                    <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">name</span>.<span class="ident">contents</span>)<span class="question-mark">?</span>;
                     <span class="ident">current_col</span> <span class="op">=</span> <span class="ident">name</span>.<span class="ident">width</span> <span class="kw">as</span> <span class="ident">u16</span> <span class="op">+</span> <span class="number">2</span>;
                 }
                 <span class="kw">for</span> <span class="ident">name</span> <span class="kw">in</span> <span class="ident">names</span> {
@@ -4347,25 +4361,27 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
                     <span class="comment">// If the width is 0 we print one single line</span>
                     <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">width</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="ident">current_col</span> <span class="op">+</span> <span class="ident">name_width</span> <span class="op">+</span> <span class="number">1</span> <span class="op">&gt;</span> <span class="ident">config</span>.<span class="ident">width</span> {
                         <span class="ident">current_col</span> <span class="op">=</span> <span class="ident">name_width</span> <span class="op">+</span> <span class="number">2</span>;
-                        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;,\n{}&quot;</span>, <span class="ident">name</span>.<span class="ident">contents</span>);
+                        <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;,\n{}&quot;</span>, <span class="ident">name</span>.<span class="ident">contents</span>)<span class="question-mark">?</span>;
                     } <span class="kw">else</span> {
                         <span class="ident">current_col</span> <span class="op">+</span><span class="op">=</span> <span class="ident">name_width</span> <span class="op">+</span> <span class="number">2</span>;
-                        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;, {}&quot;</span>, <span class="ident">name</span>.<span class="ident">contents</span>);
+                        <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;, {}&quot;</span>, <span class="ident">name</span>.<span class="ident">contents</span>)<span class="question-mark">?</span>;
                     }
                 }
                 <span class="comment">// Current col is never zero again if names have been printed.</span>
                 <span class="comment">// So we print a newline.</span>
                 <span class="kw">if</span> <span class="ident">current_col</span> <span class="op">&gt;</span> <span class="number">0</span> {
-                    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">writeln!</span>(<span class="ident">out</span>,);
+                    <span class="macro">writeln!</span>(<span class="ident">out</span>,)<span class="question-mark">?</span>;
                 }
             }
             <span class="kw">_</span> =&gt; {
                 <span class="kw">for</span> <span class="ident">name</span> <span class="kw">in</span> <span class="ident">names</span> {
-                    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">writeln!</span>(<span class="ident">out</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">name</span>.<span class="ident">contents</span>);
+                    <span class="macro">writeln!</span>(<span class="ident">out</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">name</span>.<span class="ident">contents</span>)<span class="question-mark">?</span>;
                 }
             }
-        }
+        };
     }
+
+    <span class="prelude-val">Ok</span>(())
 }
 
 <span class="kw">fn</span> <span class="ident">get_block_size</span>(<span class="ident">md</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span>, <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>) -&gt; <span class="ident">u64</span> {
@@ -4384,6 +4400,7 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">unix</span>))]</span>
     {
+        <span class="comment">// Silence linter warning about `config` being unused for windows.</span>
         <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">config</span>;
         <span class="comment">// no way to get block size for windows, fall-back to file size</span>
         <span class="ident">md</span>.<span class="ident">len</span>()
@@ -4395,19 +4412,19 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
     <span class="ident">width</span>: <span class="ident">u16</span>,
     <span class="ident">direction</span>: <span class="ident">Direction</span>,
     <span class="ident">out</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span>,
-) {
+) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="ident">width</span> <span class="op">==</span> <span class="number">0</span> {
         <span class="comment">// If the width is 0 we print one single line</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">printed_something</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="kw">for</span> <span class="ident">name</span> <span class="kw">in</span> <span class="ident">names</span> {
             <span class="kw">if</span> <span class="ident">printed_something</span> {
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;  &quot;</span>);
+                <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;  &quot;</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">printed_something</span> <span class="op">=</span> <span class="bool-val">true</span>;
-            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">name</span>.<span class="ident">contents</span>);
+            <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">name</span>.<span class="ident">contents</span>)<span class="question-mark">?</span>;
         }
         <span class="kw">if</span> <span class="ident">printed_something</span> {
-            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">writeln!</span>(<span class="ident">out</span>);
+            <span class="macro">writeln!</span>(<span class="ident">out</span>)<span class="question-mark">?</span>;
         }
     } <span class="kw">else</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">grid</span> <span class="op">=</span> <span class="ident">Grid::new</span>(<span class="ident">GridOptions</span> {
@@ -4421,14 +4438,15 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
 
         <span class="kw">match</span> <span class="ident">grid</span>.<span class="ident">fit_into_width</span>(<span class="ident">width</span> <span class="kw">as</span> <span class="ident">usize</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">output</span>) =&gt; {
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">output</span>);
+                <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">output</span>)<span class="question-mark">?</span>;
             }
             <span class="comment">// Width is too small for the grid, so we fit it in one column</span>
             <span class="prelude-val">None</span> =&gt; {
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">grid</span>.<span class="ident">fit_into_columns</span>(<span class="number">1</span>));
+                <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">grid</span>.<span class="ident">fit_into_columns</span>(<span class="number">1</span>))<span class="question-mark">?</span>;
             }
         }
     }
+    <span class="prelude-val">Ok</span>(())
 }
 
 <span class="doccomment">/// This writes to the BufWriter out a single string of the output of `ls -l`.</span>
@@ -4464,16 +4482,16 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
     <span class="ident">padding</span>: <span class="kw-2">&amp;</span><span class="ident">PaddingCollection</span>,
     <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>,
     <span class="ident">out</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span>,
-) {
+) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">md</span>) <span class="op">=</span> <span class="ident">item</span>.<span class="ident">md</span>(<span class="ident">out</span>) {
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
         {
             <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">inode</span> {
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;{} &quot;</span>, <span class="ident">pad_left</span>(<span class="kw-2">&amp;</span><span class="ident">get_inode</span>(<span class="ident">md</span>), <span class="ident">padding</span>.<span class="ident">inode</span>),);
+                <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;{} &quot;</span>, <span class="ident">pad_left</span>(<span class="kw-2">&amp;</span><span class="ident">get_inode</span>(<span class="ident">md</span>), <span class="ident">padding</span>.<span class="ident">inode</span>))<span class="question-mark">?</span>;
             }
         }
 
-        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(
+        <span class="macro">write!</span>(
             <span class="ident">out</span>,
             <span class="string">&quot;{}{} {}&quot;</span>,
             <span class="ident">display_permissions</span>(<span class="ident">md</span>, <span class="bool-val">true</span>),
@@ -4484,49 +4502,49 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
             } <span class="kw">else</span> {
                 <span class="string">&quot;&quot;</span>
             },
-            <span class="ident">pad_left</span>(<span class="kw-2">&amp;</span><span class="ident">display_symlink_count</span>(<span class="ident">md</span>), <span class="ident">padding</span>.<span class="ident">link_count</span>),
-        );
+            <span class="ident">pad_left</span>(<span class="kw-2">&amp;</span><span class="ident">display_symlink_count</span>(<span class="ident">md</span>), <span class="ident">padding</span>.<span class="ident">link_count</span>)
+        )<span class="question-mark">?</span>;
 
         <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">long</span>.<span class="ident">owner</span> {
-            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(
+            <span class="macro">write!</span>(
                 <span class="ident">out</span>,
                 <span class="string">&quot; {}&quot;</span>,
-                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">display_uname</span>(<span class="ident">md</span>, <span class="ident">config</span>), <span class="ident">padding</span>.<span class="ident">uname</span>),
-            );
+                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">display_uname</span>(<span class="ident">md</span>, <span class="ident">config</span>), <span class="ident">padding</span>.<span class="ident">uname</span>)
+            )<span class="question-mark">?</span>;
         }
 
         <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">long</span>.<span class="ident">group</span> {
-            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(
+            <span class="macro">write!</span>(
                 <span class="ident">out</span>,
                 <span class="string">&quot; {}&quot;</span>,
-                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">display_group</span>(<span class="ident">md</span>, <span class="ident">config</span>), <span class="ident">padding</span>.<span class="ident">group</span>),
-            );
+                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">display_group</span>(<span class="ident">md</span>, <span class="ident">config</span>), <span class="ident">padding</span>.<span class="ident">group</span>)
+            )<span class="question-mark">?</span>;
         }
 
         <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">context</span> {
-            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(
+            <span class="macro">write!</span>(
                 <span class="ident">out</span>,
                 <span class="string">&quot; {}&quot;</span>,
-                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">item</span>.<span class="ident">security_context</span>, <span class="ident">padding</span>.<span class="ident">context</span>),
-            );
+                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">item</span>.<span class="ident">security_context</span>, <span class="ident">padding</span>.<span class="ident">context</span>)
+            )<span class="question-mark">?</span>;
         }
 
         <span class="comment">// Author is only different from owner on GNU/Hurd, so we reuse</span>
         <span class="comment">// the owner, since GNU/Hurd is not currently supported by Rust.</span>
         <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">long</span>.<span class="ident">author</span> {
-            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(
+            <span class="macro">write!</span>(
                 <span class="ident">out</span>,
                 <span class="string">&quot; {}&quot;</span>,
-                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">display_uname</span>(<span class="ident">md</span>, <span class="ident">config</span>), <span class="ident">padding</span>.<span class="ident">uname</span>),
-            );
+                <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">display_uname</span>(<span class="ident">md</span>, <span class="ident">config</span>), <span class="ident">padding</span>.<span class="ident">uname</span>)
+            )<span class="question-mark">?</span>;
         }
 
         <span class="kw">match</span> <span class="ident">display_size_or_rdev</span>(<span class="ident">md</span>, <span class="ident">config</span>) {
             <span class="ident">SizeOrDeviceId::Size</span>(<span class="ident">size</span>) =&gt; {
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">pad_left</span>(<span class="kw-2">&amp;</span><span class="ident">size</span>, <span class="ident">padding</span>.<span class="ident">size</span>),);
+                <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">pad_left</span>(<span class="kw-2">&amp;</span><span class="ident">size</span>, <span class="ident">padding</span>.<span class="ident">size</span>))<span class="question-mark">?</span>;
             }
             <span class="ident">SizeOrDeviceId::Device</span>(<span class="ident">major</span>, <span class="ident">minor</span>) =&gt; {
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(
+                <span class="macro">write!</span>(
                     <span class="ident">out</span>,
                     <span class="string">&quot; {}, {}&quot;</span>,
                     <span class="ident">pad_left</span>(
@@ -4547,19 +4565,19 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
                         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
                         <span class="ident">padding</span>.<span class="ident">minor</span>,
                     ),
-                );
+                )<span class="question-mark">?</span>;
             }
         };
 
         <span class="kw">let</span> <span class="ident">dfn</span> <span class="op">=</span> <span class="ident">display_file_name</span>(<span class="ident">item</span>, <span class="ident">config</span>, <span class="prelude-val">None</span>, <span class="number">0</span>, <span class="ident">out</span>).<span class="ident">contents</span>;
 
-        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">writeln!</span>(<span class="ident">out</span>, <span class="string">&quot; {} {}&quot;</span>, <span class="ident">display_date</span>(<span class="ident">md</span>, <span class="ident">config</span>), <span class="ident">dfn</span>);
+        <span class="macro">writeln!</span>(<span class="ident">out</span>, <span class="string">&quot; {} {}&quot;</span>, <span class="ident">display_date</span>(<span class="ident">md</span>, <span class="ident">config</span>), <span class="ident">dfn</span>)<span class="question-mark">?</span>;
     } <span class="kw">else</span> {
         <span class="comment">// this &#39;else&#39; is expressly for the case of a dangling symlink/restricted file</span>
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
         {
             <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">inode</span> {
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;{} &quot;</span>, <span class="ident">pad_left</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">inode</span>),);
+                <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot;{} &quot;</span>, <span class="ident">pad_left</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">inode</span>))<span class="question-mark">?</span>;
             }
         }
 
@@ -4596,7 +4614,7 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
             }
         };
 
-        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(
+        <span class="macro">write!</span>(
             <span class="ident">out</span>,
             <span class="string">&quot;{}{} {}&quot;</span>,
             <span class="macro">format_args!</span>(<span class="string">&quot;{}?????????&quot;</span>, <span class="ident">leading_char</span>),
@@ -4607,42 +4625,44 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
             } <span class="kw">else</span> {
                 <span class="string">&quot;&quot;</span>
             },
-            <span class="ident">pad_left</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">link_count</span>),
-        );
+            <span class="ident">pad_left</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">link_count</span>)
+        )<span class="question-mark">?</span>;
 
         <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">long</span>.<span class="ident">owner</span> {
-            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">pad_right</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">uname</span>));
+            <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">pad_right</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">uname</span>))<span class="question-mark">?</span>;
         }
 
         <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">long</span>.<span class="ident">group</span> {
-            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">pad_right</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">group</span>));
+            <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">pad_right</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">group</span>))<span class="question-mark">?</span>;
         }
 
         <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">context</span> {
-            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(
+            <span class="macro">write!</span>(
                 <span class="ident">out</span>,
                 <span class="string">&quot; {}&quot;</span>,
                 <span class="ident">pad_right</span>(<span class="kw-2">&amp;</span><span class="ident">item</span>.<span class="ident">security_context</span>, <span class="ident">padding</span>.<span class="ident">context</span>)
-            );
+            )<span class="question-mark">?</span>;
         }
 
         <span class="comment">// Author is only different from owner on GNU/Hurd, so we reuse</span>
         <span class="comment">// the owner, since GNU/Hurd is not currently supported by Rust.</span>
         <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">long</span>.<span class="ident">author</span> {
-            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">pad_right</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">uname</span>));
+            <span class="macro">write!</span>(<span class="ident">out</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">pad_right</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">uname</span>))<span class="question-mark">?</span>;
         }
 
         <span class="kw">let</span> <span class="ident">dfn</span> <span class="op">=</span> <span class="ident">display_file_name</span>(<span class="ident">item</span>, <span class="ident">config</span>, <span class="prelude-val">None</span>, <span class="number">0</span>, <span class="ident">out</span>).<span class="ident">contents</span>;
         <span class="kw">let</span> <span class="ident">date_len</span> <span class="op">=</span> <span class="number">12</span>;
 
-        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">writeln!</span>(
+        <span class="macro">writeln!</span>(
             <span class="ident">out</span>,
             <span class="string">&quot; {} {} {}&quot;</span>,
             <span class="ident">pad_left</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">padding</span>.<span class="ident">size</span>),
             <span class="ident">pad_left</span>(<span class="string">&quot;?&quot;</span>, <span class="ident">date_len</span>),
             <span class="ident">dfn</span>,
-        );
+        )<span class="question-mark">?</span>;
     }
+
+    <span class="prelude-val">Ok</span>(())
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>

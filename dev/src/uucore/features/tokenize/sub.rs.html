@@ -420,6 +420,30 @@
 <span id="419">419</span>
 <span id="420">420</span>
 <span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
 </pre><pre class="rust"><code><span class="comment">// spell-checker:ignore (vars) charf decf floatf intf scif strf Cninety</span>
 
 <span class="doccomment">//! Sub is a token that represents a</span>
@@ -427,8 +451,10 @@
 <span class="doccomment">//! it is created by Sub&#39;s implementation of the Tokenizer trait</span>
 <span class="doccomment">//! Subs which have numeric field chars make use of the num_format</span>
 <span class="doccomment">//! submodule</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::show_error</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error</span>::{<span class="ident">UError</span>, <span class="ident">UResult</span>};
 <span class="kw">use</span> <span class="ident">itertools</span>::{<span class="ident">put_back_n</span>, <span class="ident">PutBackN</span>};
+<span class="kw">use</span> <span class="ident">std::error::Error</span>;
+<span class="kw">use</span> <span class="ident">std::fmt::Display</span>;
 <span class="kw">use</span> <span class="ident">std::iter::Peekable</span>;
 <span class="kw">use</span> <span class="ident">std::process::exit</span>;
 <span class="kw">use</span> <span class="ident">std::slice::Iter</span>;
@@ -442,10 +468,22 @@
 
 <span class="kw">const</span> <span class="ident">EXIT_ERR</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">1</span>;
 
-<span class="kw">fn</span> <span class="ident">err_conv</span>(<span class="ident">sofar</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-    <span class="macro">show_error!</span>(<span class="string">&quot;%{}: invalid conversion specification&quot;</span>, <span class="ident">sofar</span>);
-    <span class="ident">exit</span>(<span class="ident">EXIT_ERR</span>);
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">SubError</span> {
+    <span class="ident">InvalidSpec</span>(<span class="ident">String</span>),
 }
+
+<span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">SubError</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">std::fmt::Error</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident"><span class="self">Self</span>::InvalidSpec</span>(<span class="ident">s</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;%{}: invalid conversion specification&quot;</span>, <span class="ident">s</span>),
+        }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="ident">SubError</span> {}
+
+<span class="kw">impl</span> <span class="ident">UError</span> <span class="kw">for</span> <span class="ident">SubError</span> {}
 
 <span class="kw">fn</span> <span class="ident">convert_asterisk_arg_int</span>(<span class="ident">asterisk_arg</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">isize</span> {
     <span class="comment">// this is a costly way to parse the</span>
@@ -538,14 +576,14 @@
     <span class="kw">fn</span> <span class="ident">from_it</span>(
         <span class="ident">it</span>: <span class="kw-2">&amp;mut</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">Chars</span><span class="op">&gt;</span>,
         <span class="ident">args</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Peekable</span><span class="op">&lt;</span><span class="ident">Iter</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">token::Token</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">token::Token</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">parser</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::new</span>();
-        <span class="kw">if</span> <span class="ident">parser</span>.<span class="ident">sub_vals_retrieved</span>(<span class="ident">it</span>) {
+        <span class="kw">if</span> <span class="ident">parser</span>.<span class="ident">sub_vals_retrieved</span>(<span class="ident">it</span>)<span class="question-mark">?</span> {
             <span class="kw">let</span> <span class="ident">t</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">token::Token</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::build_token</span>(<span class="ident">parser</span>);
             <span class="ident">t</span>.<span class="ident">print</span>(<span class="ident">args</span>);
-            <span class="prelude-val">Some</span>(<span class="ident">t</span>)
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">t</span>))
         } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
         }
     }
     <span class="kw">fn</span> <span class="ident">build_token</span>(<span class="ident">parser</span>: <span class="self">Self</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">token::Token</span><span class="op">&gt;</span> {
@@ -573,9 +611,9 @@
         ));
         <span class="ident">t</span>
     }
-    <span class="kw">fn</span> <span class="ident">sub_vals_retrieved</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">it</span>: <span class="kw-2">&amp;mut</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">Chars</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw">if</span> <span class="op">!</span><span class="ident"><span class="self">Self</span>::successfully_eat_prefix</span>(<span class="ident">it</span>, <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">text_so_far</span>) {
-            <span class="kw">return</span> <span class="bool-val">false</span>;
+    <span class="kw">fn</span> <span class="ident">sub_vals_retrieved</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">it</span>: <span class="kw-2">&amp;mut</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">Chars</span><span class="op">&gt;</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="op">!</span><span class="ident"><span class="self">Self</span>::successfully_eat_prefix</span>(<span class="ident">it</span>, <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">text_so_far</span>)<span class="question-mark">?</span> {
+            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>);
         }
         <span class="comment">// this fn in particular is much longer than it needs to be</span>
         <span class="comment">// .could get a lot</span>
@@ -599,7 +637,7 @@
                 <span class="string">&#39;-&#39;</span> <span class="op">|</span> <span class="string">&#39;*&#39;</span> <span class="op">|</span> <span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;9&#39;</span> =&gt; {
                     <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">past_decimal</span> {
                         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">min_width_is_asterisk</span> <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">specifiers_found</span> {
-                            <span class="ident">err_conv</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">text_so_far</span>);
+                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SubError::InvalidSpec</span>(<span class="self">self</span>.<span class="ident">text_so_far</span>.<span class="ident">clone</span>()).<span class="ident">into</span>());
                         }
                         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">min_width_tmp</span>.<span class="ident">is_none</span>() {
                             <span class="self">self</span>.<span class="ident">min_width_tmp</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String::new</span>());
@@ -607,7 +645,9 @@
                         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">min_width_tmp</span>.<span class="ident">as_mut</span>() {
                             <span class="prelude-val">Some</span>(<span class="ident">x</span>) =&gt; {
                                 <span class="kw">if</span> (<span class="ident">ch</span> <span class="op">==</span> <span class="string">&#39;-&#39;</span> <span class="op">|</span><span class="op">|</span> <span class="ident">ch</span> <span class="op">==</span> <span class="string">&#39;*&#39;</span>) <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">x</span>.<span class="ident">is_empty</span>() {
-                                    <span class="ident">err_conv</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">text_so_far</span>);
+                                    <span class="kw">return</span> <span class="prelude-val">Err</span>(
+                                        <span class="ident">SubError::InvalidSpec</span>(<span class="self">self</span>.<span class="ident">text_so_far</span>.<span class="ident">clone</span>()).<span class="ident">into</span>()
+                                    );
                                 }
                                 <span class="kw">if</span> <span class="ident">ch</span> <span class="op">==</span> <span class="string">&#39;*&#39;</span> {
                                     <span class="self">self</span>.<span class="ident">min_width_is_asterisk</span> <span class="op">=</span> <span class="bool-val">true</span>;
@@ -622,7 +662,7 @@
                         <span class="comment">// second field should never have a</span>
                         <span class="comment">// negative value</span>
                         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">second_field_is_asterisk</span> <span class="op">|</span><span class="op">|</span> <span class="ident">ch</span> <span class="op">==</span> <span class="string">&#39;-&#39;</span> <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">specifiers_found</span> {
-                            <span class="ident">err_conv</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">text_so_far</span>);
+                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SubError::InvalidSpec</span>(<span class="self">self</span>.<span class="ident">text_so_far</span>.<span class="ident">clone</span>()).<span class="ident">into</span>());
                         }
                         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">second_field_tmp</span>.<span class="ident">is_none</span>() {
                             <span class="self">self</span>.<span class="ident">second_field_tmp</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String::new</span>());
@@ -630,7 +670,9 @@
                         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">second_field_tmp</span>.<span class="ident">as_mut</span>() {
                             <span class="prelude-val">Some</span>(<span class="ident">x</span>) =&gt; {
                                 <span class="kw">if</span> <span class="ident">ch</span> <span class="op">==</span> <span class="string">&#39;*&#39;</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">x</span>.<span class="ident">is_empty</span>() {
-                                    <span class="ident">err_conv</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">text_so_far</span>);
+                                    <span class="kw">return</span> <span class="prelude-val">Err</span>(
+                                        <span class="ident">SubError::InvalidSpec</span>(<span class="self">self</span>.<span class="ident">text_so_far</span>.<span class="ident">clone</span>()).<span class="ident">into</span>()
+                                    );
                                 }
                                 <span class="kw">if</span> <span class="ident">ch</span> <span class="op">==</span> <span class="string">&#39;*&#39;</span> {
                                     <span class="self">self</span>.<span class="ident">second_field_is_asterisk</span> <span class="op">=</span> <span class="bool-val">true</span>;
@@ -647,7 +689,7 @@
                     <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">past_decimal</span> {
                         <span class="self">self</span>.<span class="ident">past_decimal</span> <span class="op">=</span> <span class="bool-val">true</span>;
                     } <span class="kw">else</span> {
-                        <span class="ident">err_conv</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">text_so_far</span>);
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SubError::InvalidSpec</span>(<span class="self">self</span>.<span class="ident">text_so_far</span>.<span class="ident">clone</span>()).<span class="ident">into</span>());
                     }
                 }
                 <span class="ident">x</span> <span class="kw">if</span> <span class="ident">legal_fields</span>.<span class="ident">binary_search</span>(<span class="kw-2">&amp;</span><span class="ident">x</span>).<span class="ident">is_ok</span>() =&gt; {
@@ -664,18 +706,18 @@
                     }
                 }
                 <span class="kw">_</span> =&gt; {
-                    <span class="ident">err_conv</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">text_so_far</span>);
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SubError::InvalidSpec</span>(<span class="self">self</span>.<span class="ident">text_so_far</span>.<span class="ident">clone</span>()).<span class="ident">into</span>());
                 }
             }
         }
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">field_char</span>.<span class="ident">is_none</span>() {
-            <span class="ident">err_conv</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">text_so_far</span>);
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SubError::InvalidSpec</span>(<span class="self">self</span>.<span class="ident">text_so_far</span>.<span class="ident">clone</span>()).<span class="ident">into</span>());
         }
         <span class="kw">let</span> <span class="ident">field_char_retrieved</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">field_char</span>.<span class="ident">unwrap</span>();
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">past_decimal</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">second_field_tmp</span>.<span class="ident">is_none</span>() {
             <span class="self">self</span>.<span class="ident">second_field_tmp</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String::from</span>(<span class="string">&quot;0&quot;</span>));
         }
-        <span class="self">self</span>.<span class="ident">validate_field_params</span>(<span class="ident">field_char_retrieved</span>);
+        <span class="self">self</span>.<span class="ident">validate_field_params</span>(<span class="ident">field_char_retrieved</span>)<span class="question-mark">?</span>;
         <span class="comment">// if the dot is provided without a second field</span>
         <span class="comment">// printf interprets it as 0.</span>
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">second_field_tmp</span>.<span class="ident">as_mut</span>() {
@@ -684,9 +726,12 @@
             }
         }
 
-        <span class="bool-val">true</span>
+        <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
     }
-    <span class="kw">fn</span> <span class="ident">successfully_eat_prefix</span>(<span class="ident">it</span>: <span class="kw-2">&amp;mut</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">Chars</span><span class="op">&gt;</span>, <span class="ident">text_so_far</span>: <span class="kw-2">&amp;mut</span> <span class="ident">String</span>) -&gt; <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">successfully_eat_prefix</span>(
+        <span class="ident">it</span>: <span class="kw-2">&amp;mut</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">Chars</span><span class="op">&gt;</span>,
+        <span class="ident">text_so_far</span>: <span class="kw-2">&amp;mut</span> <span class="ident">String</span>,
+    ) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
         <span class="comment">// get next two chars,</span>
         <span class="comment">// if they&#39;re &#39;%%&#39; we&#39;re not tokenizing it</span>
         <span class="comment">// else put chars back</span>
@@ -696,12 +741,11 @@
             <span class="kw">match</span> <span class="ident">n_ch</span> {
                 <span class="prelude-val">Some</span>(<span class="ident">x</span>) =&gt; {
                     <span class="ident">it</span>.<span class="ident">put_back</span>(<span class="ident">x</span>);
-                    <span class="bool-val">true</span>
+                    <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
                 }
                 <span class="prelude-val">None</span> =&gt; {
                     <span class="ident">text_so_far</span>.<span class="ident">push</span>(<span class="string">&#39;%&#39;</span>);
-                    <span class="ident">err_conv</span>(<span class="ident">text_so_far</span>);
-                    <span class="bool-val">false</span>
+                    <span class="prelude-val">Err</span>(<span class="ident">SubError::InvalidSpec</span>(<span class="ident">text_so_far</span>.<span class="ident">clone</span>()).<span class="ident">into</span>())
                 }
             }
         } <span class="kw">else</span> {
@@ -711,10 +755,10 @@
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="ident">preface</span> {
                 <span class="ident">it</span>.<span class="ident">put_back</span>(<span class="ident">x</span>);
             };
-            <span class="bool-val">false</span>
+            <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>)
         }
     }
-    <span class="kw">fn</span> <span class="ident">validate_field_params</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">field_char</span>: <span class="ident">char</span>) {
+    <span class="kw">fn</span> <span class="ident">validate_field_params</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">field_char</span>: <span class="ident">char</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="comment">// check for illegal combinations here when possible vs</span>
         <span class="comment">// on each application so we check less per application</span>
         <span class="comment">// to do: move these checks to Sub::new</span>
@@ -726,8 +770,12 @@
                     <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">past_decimal</span>
                     <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">second_field_tmp</span>.<span class="ident">is_some</span>()))
         {
-            <span class="ident">err_conv</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">text_so_far</span>);
+            <span class="comment">// invalid string substitution</span>
+            <span class="comment">// to do: include information about an invalid</span>
+            <span class="comment">// string substitution</span>
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SubError::InvalidSpec</span>(<span class="self">self</span>.<span class="ident">text_so_far</span>.<span class="ident">clone</span>()).<span class="ident">into</span>());
         }
+        <span class="prelude-val">Ok</span>(())
     }
 }
 
@@ -735,7 +783,7 @@
     <span class="kw">fn</span> <span class="ident">from_it</span>(
         <span class="ident">it</span>: <span class="kw-2">&amp;mut</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">Chars</span><span class="op">&gt;</span>,
         <span class="ident">args</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Peekable</span><span class="op">&lt;</span><span class="ident">Iter</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">token::Token</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">token::Token</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="ident">SubParser::from_it</span>(<span class="ident">it</span>, <span class="ident">args</span>)
     }
 }

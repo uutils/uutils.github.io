@@ -364,6 +364,14 @@
 <span id="363">363</span>
 <span id="364">364</span>
 <span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -371,6 +379,7 @@
 <span class="comment">// TODO: Support -f flag</span>
 <span class="comment">// spell-checker:ignore (ToDO) istr chiter argptr ilen extendedbigdecimal extendedbigint numberparse</span>
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdout</span>, <span class="ident">ErrorKind</span>, <span class="ident">Write</span>};
+<span class="kw">use</span> <span class="ident">std::process::exit</span>;
 
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>};
 <span class="kw">use</span> <span class="ident">num_traits::Zero</span>;
@@ -378,6 +387,7 @@
 <span class="kw">use</span> <span class="ident">uucore::error::FromIo</span>;
 <span class="kw">use</span> <span class="ident">uucore::error::UResult</span>;
 <span class="kw">use</span> <span class="ident">uucore::memo::Memo</span>;
+<span class="kw">use</span> <span class="ident">uucore::show</span>;
 
 <span class="kw">mod</span> <span class="ident">error</span>;
 <span class="kw">mod</span> <span class="ident">extendedbigdecimal</span>;
@@ -653,7 +663,10 @@
         <span class="kw">match</span> <span class="ident">format</span> {
             <span class="prelude-val">Some</span>(<span class="ident">f</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">value</span>);
-                <span class="ident">Memo::run_all</span>(<span class="ident">f</span>, <span class="kw-2">&amp;</span>[<span class="ident">s</span>]);
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="ident">Memo::run_all</span>(<span class="ident">f</span>, <span class="kw-2">&amp;</span>[<span class="ident">s</span>]) {
+                    <span class="macro">show!</span>(<span class="ident">x</span>);
+                    <span class="ident">exit</span>(<span class="number">1</span>);
+                }
             }
             <span class="prelude-val">None</span> =&gt; <span class="ident">write_value_float</span>(
                 <span class="kw-2">&amp;mut</span> <span class="ident">stdout</span>,
@@ -715,7 +728,10 @@
         <span class="kw">match</span> <span class="ident">format</span> {
             <span class="prelude-val">Some</span>(<span class="ident">f</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">value</span>);
-                <span class="ident">Memo::run_all</span>(<span class="ident">f</span>, <span class="kw-2">&amp;</span>[<span class="ident">s</span>]);
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="ident">Memo::run_all</span>(<span class="ident">f</span>, <span class="kw-2">&amp;</span>[<span class="ident">s</span>]) {
+                    <span class="macro">show!</span>(<span class="ident">x</span>);
+                    <span class="ident">exit</span>(<span class="number">1</span>);
+                }
             }
             <span class="prelude-val">None</span> =&gt; <span class="ident">write_value_int</span>(<span class="kw-2">&amp;mut</span> <span class="ident">stdout</span>, <span class="kw-2">&amp;</span><span class="ident">value</span>, <span class="ident">padding</span>, <span class="ident">pad</span>, <span class="ident">is_first_iteration</span>)<span class="question-mark">?</span>,
         }

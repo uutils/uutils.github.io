@@ -783,6 +783,14 @@
 <span id="782">782</span>
 <span id="783">783</span>
 <span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Tyler Steele &lt;tyler.steele@protonmail.com&gt;</span>
@@ -1110,6 +1118,14 @@
     }
 }
 
+<span class="kw">fn</span> <span class="ident">show_zero_multiplier_warning</span>() {
+    <span class="macro">show_warning!</span>(
+        <span class="string">&quot;{} is a zero multiplier; use {} if that is intended&quot;</span>,
+        <span class="string">&quot;0x&quot;</span>.<span class="ident">quote</span>(),
+        <span class="string">&quot;00x&quot;</span>.<span class="ident">quote</span>()
+    );
+}
+
 <span class="doccomment">/// Parse bytes using str::parse, then map error if needed.</span>
 <span class="kw">fn</span> <span class="ident">parse_bytes_only</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
     <span class="ident">s</span>.<span class="ident">parse</span>()
@@ -1142,13 +1158,6 @@
 <span class="doccomment">/// assert_eq!(parse_bytes_no_x(&quot;2k&quot;).unwrap(), 2 * 1024);</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">fn</span> <span class="ident">parse_bytes_no_x</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">s</span> <span class="op">==</span> <span class="string">&quot;0&quot;</span> {
-        <span class="macro">show_warning!</span>(
-            <span class="string">&quot;{} is a zero multiplier; use {} if that is intended&quot;</span>,
-            <span class="string">&quot;0x&quot;</span>.<span class="ident">quote</span>(),
-            <span class="string">&quot;00x&quot;</span>.<span class="ident">quote</span>()
-        );
-    }
     <span class="kw">let</span> (<span class="ident">num</span>, <span class="ident">multiplier</span>) <span class="op">=</span> <span class="kw">match</span> (<span class="ident">s</span>.<span class="ident">find</span>(<span class="string">&#39;c&#39;</span>), <span class="ident">s</span>.<span class="ident">rfind</span>(<span class="string">&#39;w&#39;</span>), <span class="ident">s</span>.<span class="ident">rfind</span>(<span class="string">&#39;b&#39;</span>)) {
         (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="kw">match</span> <span class="ident">uucore::parse_size::parse_size</span>(<span class="ident">s</span>) {
             <span class="prelude-val">Ok</span>(<span class="ident">n</span>) =&gt; (<span class="ident">n</span>, <span class="number">1</span>),
@@ -1186,13 +1195,20 @@
 
     <span class="comment">// Split on the &#39;x&#39; characters. Each component will be parsed</span>
     <span class="comment">// individually, then multiplied together.</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">total</span> <span class="op">=</span> <span class="number">1</span>;
-    <span class="kw">for</span> <span class="ident">part</span> <span class="kw">in</span> <span class="ident">s</span>.<span class="ident">split</span>(<span class="string">&#39;x&#39;</span>) {
-        <span class="kw">let</span> <span class="ident">num</span> <span class="op">=</span> <span class="ident">parse_bytes_no_x</span>(<span class="ident">part</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">with_arg</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
-        <span class="ident">total</span> <span class="kw-2">*</span><span class="op">=</span> <span class="ident">num</span>;
+    <span class="kw">let</span> <span class="ident">parts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">split</span>(<span class="string">&#39;x&#39;</span>).<span class="ident">collect</span>();
+    <span class="kw">if</span> <span class="ident">parts</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> {
+        <span class="ident">parse_bytes_no_x</span>(<span class="ident">parts</span>[<span class="number">0</span>]).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">with_arg</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()))
+    } <span class="kw">else</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">total</span> <span class="op">=</span> <span class="number">1</span>;
+        <span class="kw">for</span> <span class="ident">part</span> <span class="kw">in</span> <span class="ident">parts</span> {
+            <span class="kw">if</span> <span class="ident">part</span> <span class="op">==</span> <span class="string">&quot;0&quot;</span> {
+                <span class="ident">show_zero_multiplier_warning</span>();
+            }
+            <span class="kw">let</span> <span class="ident">num</span> <span class="op">=</span> <span class="ident">parse_bytes_no_x</span>(<span class="ident">part</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">with_arg</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
+            <span class="ident">total</span> <span class="kw-2">*</span><span class="op">=</span> <span class="ident">num</span>;
+        }
+        <span class="prelude-val">Ok</span>(<span class="ident">total</span>)
     }
-
-    <span class="prelude-val">Ok</span>(<span class="ident">total</span>)
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_ibs</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">Matches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
