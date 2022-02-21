@@ -248,19 +248,19 @@
     <span class="ident">Alphabetic</span>,
 
     <span class="doccomment">/// Decimal numbers.</span>
-    <span class="ident">NumericDecimal</span>,
+    <span class="ident">Decimal</span>,
 
     <span class="doccomment">/// Hexadecimal numbers.</span>
-    <span class="ident">NumericHexadecimal</span>,
+    <span class="ident">Hexadecimal</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">SuffixType</span> {
     <span class="doccomment">/// The radix to use when representing the suffix string as digits.</span>
-    <span class="kw">fn</span> <span class="ident">radix</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u8</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">radix</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u8</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">SuffixType::Alphabetic</span> =&gt; <span class="number">26</span>,
-            <span class="ident">SuffixType::NumericDecimal</span> =&gt; <span class="number">10</span>,
-            <span class="ident">SuffixType::NumericHexadecimal</span> =&gt; <span class="number">16</span>,
+            <span class="ident">SuffixType::Decimal</span> =&gt; <span class="number">10</span>,
+            <span class="ident">SuffixType::Hexadecimal</span> =&gt; <span class="number">16</span>,
         }
     }
 }
@@ -302,7 +302,7 @@
 <span class="doccomment">/// assert_eq!(it.next().unwrap(), &quot;chunk_ac.txt&quot;);</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// For decimal numeric filenames, use `SuffixType::NumericDecimal`:</span>
+<span class="doccomment">/// For decimal numeric filenames, use `SuffixType::Decimal`:</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```rust,ignore</span>
 <span class="doccomment">/// use crate::filenames::FilenameIterator;</span>
@@ -311,7 +311,7 @@
 <span class="doccomment">/// let prefix = &quot;chunk_&quot;.to_string();</span>
 <span class="doccomment">/// let suffix = &quot;.txt&quot;.to_string();</span>
 <span class="doccomment">/// let width = 2;</span>
-<span class="doccomment">/// let suffix_type = SuffixType::NumericDecimal;</span>
+<span class="doccomment">/// let suffix_type = SuffixType::Decimal;</span>
 <span class="doccomment">/// let it = FilenameIterator::new(prefix, suffix, width, suffix_type);</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// assert_eq!(it.next().unwrap(), &quot;chunk_00.txt&quot;);</span>
@@ -385,12 +385,12 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_filename_iterator_numeric_fixed_width</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> <span class="op">=</span> <span class="ident">FilenameIterator::new</span>(<span class="string">&quot;chunk_&quot;</span>, <span class="string">&quot;.txt&quot;</span>, <span class="number">2</span>, <span class="ident">SuffixType::NumericDecimal</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> <span class="op">=</span> <span class="ident">FilenameIterator::new</span>(<span class="string">&quot;chunk_&quot;</span>, <span class="string">&quot;.txt&quot;</span>, <span class="number">2</span>, <span class="ident">SuffixType::Decimal</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">it</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">&quot;chunk_00.txt&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">it</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">&quot;chunk_01.txt&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">it</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">&quot;chunk_02.txt&quot;</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> <span class="op">=</span> <span class="ident">FilenameIterator::new</span>(<span class="string">&quot;chunk_&quot;</span>, <span class="string">&quot;.txt&quot;</span>, <span class="number">2</span>, <span class="ident">SuffixType::NumericDecimal</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> <span class="op">=</span> <span class="ident">FilenameIterator::new</span>(<span class="string">&quot;chunk_&quot;</span>, <span class="string">&quot;.txt&quot;</span>, <span class="number">2</span>, <span class="ident">SuffixType::Decimal</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">it</span>.<span class="ident">nth</span>(<span class="number">10</span> <span class="op">*</span> <span class="number">10</span> <span class="op">-</span> <span class="number">1</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;chunk_99.txt&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">it</span>.<span class="ident">next</span>(), <span class="prelude-val">None</span>);
     }
@@ -410,12 +410,12 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_filename_iterator_numeric_dynamic_width</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> <span class="op">=</span> <span class="ident">FilenameIterator::new</span>(<span class="string">&quot;chunk_&quot;</span>, <span class="string">&quot;.txt&quot;</span>, <span class="number">0</span>, <span class="ident">SuffixType::NumericDecimal</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> <span class="op">=</span> <span class="ident">FilenameIterator::new</span>(<span class="string">&quot;chunk_&quot;</span>, <span class="string">&quot;.txt&quot;</span>, <span class="number">0</span>, <span class="ident">SuffixType::Decimal</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">it</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">&quot;chunk_00.txt&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">it</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">&quot;chunk_01.txt&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">it</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">&quot;chunk_02.txt&quot;</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> <span class="op">=</span> <span class="ident">FilenameIterator::new</span>(<span class="string">&quot;chunk_&quot;</span>, <span class="string">&quot;.txt&quot;</span>, <span class="number">0</span>, <span class="ident">SuffixType::NumericDecimal</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> <span class="op">=</span> <span class="ident">FilenameIterator::new</span>(<span class="string">&quot;chunk_&quot;</span>, <span class="string">&quot;.txt&quot;</span>, <span class="number">0</span>, <span class="ident">SuffixType::Decimal</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">it</span>.<span class="ident">nth</span>(<span class="number">10</span> <span class="op">*</span> <span class="number">9</span> <span class="op">-</span> <span class="number">1</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;chunk_89.txt&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">it</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">&quot;chunk_9000.txt&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">it</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">&quot;chunk_9001.txt&quot;</span>);

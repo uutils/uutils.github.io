@@ -1586,6 +1586,23 @@
 <span id="1585">1585</span>
 <span id="1586">1586</span>
 <span id="1587">1587</span>
+<span id="1588">1588</span>
+<span id="1589">1589</span>
+<span id="1590">1590</span>
+<span id="1591">1591</span>
+<span id="1592">1592</span>
+<span id="1593">1593</span>
+<span id="1594">1594</span>
+<span id="1595">1595</span>
+<span id="1596">1596</span>
+<span id="1597">1597</span>
+<span id="1598">1598</span>
+<span id="1599">1599</span>
+<span id="1600">1600</span>
+<span id="1601">1601</span>
+<span id="1602">1602</span>
+<span id="1603">1603</span>
+<span id="1604">1604</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::missing_safety_doc</span>)]</span>
 
 <span class="comment">// This file is part of the uutils coreutils package.</span>
@@ -2557,6 +2574,16 @@
         <span class="kw">return</span> <span class="ident">copy_file</span>(<span class="ident">root</span>, <span class="ident">target</span>, <span class="ident">options</span>, <span class="ident">symlinked_files</span>);
     }
 
+    <span class="comment">// check if root is a prefix of target</span>
+    <span class="kw">if</span> <span class="ident">path_has_prefix</span>(<span class="ident">target</span>, <span class="ident">root</span>)<span class="question-mark">?</span> {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(
+            <span class="string">&quot;cannot copy a directory, {}, into itself, {}&quot;</span>,
+            <span class="ident">root</span>.<span class="ident">quote</span>(),
+            <span class="ident">target</span>.<span class="ident">quote</span>()
+        )
+        .<span class="ident">into</span>());
+    }
+
     <span class="kw">let</span> <span class="ident">current_dir</span> <span class="op">=</span>
         <span class="ident">env::current_dir</span>().<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;failed to get current directory {}&quot;</span>, <span class="ident">e</span>));
 
@@ -3159,6 +3186,13 @@
     <span class="kw">let</span> <span class="ident">pathbuf2</span> <span class="op">=</span> <span class="ident">canonicalize</span>(<span class="ident">p2</span>, <span class="ident">MissingHandling::Normal</span>, <span class="ident">ResolveMode::Logical</span>)<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(<span class="ident">pathbuf1</span> <span class="op">==</span> <span class="ident">pathbuf2</span>)
+}
+
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">path_has_prefix</span>(<span class="ident">p1</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">p2</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">pathbuf1</span> <span class="op">=</span> <span class="ident">canonicalize</span>(<span class="ident">p1</span>, <span class="ident">MissingHandling::Normal</span>, <span class="ident">ResolveMode::Logical</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">pathbuf2</span> <span class="op">=</span> <span class="ident">canonicalize</span>(<span class="ident">p2</span>, <span class="ident">MissingHandling::Normal</span>, <span class="ident">ResolveMode::Logical</span>)<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(<span class="ident">pathbuf1</span>.<span class="ident">starts_with</span>(<span class="ident">pathbuf2</span>))
 }
 
 <span class="attribute">#[<span class="ident">test</span>]</span>
