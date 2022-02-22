@@ -481,11 +481,6 @@
 <span id="480">480</span>
 <span id="481">481</span>
 <span id="482">482</span>
-<span id="483">483</span>
-<span id="484">484</span>
-<span id="485">485</span>
-<span id="486">486</span>
-<span id="487">487</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Joseph Crail &lt;jbcrail@gmail.com&gt;</span>
@@ -501,6 +496,7 @@
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>};
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UError</span>, <span class="ident">UResult</span>};
+<span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 
 <span class="kw">use</span> <span class="ident">std::borrow::Cow</span>;
 <span class="kw">use</span> <span class="ident">std::error::Error</span>;
@@ -578,16 +574,6 @@
     }
 }
 
-<span class="kw">fn</span> <span class="ident">usage</span>() -&gt; <span class="ident">String</span> {
-    <span class="macro">format!</span>(
-        <span class="string">&quot;{0} [OPTION]... [-T] TARGET LINK_NAME   (1st form)
-       {0} [OPTION]... TARGET                  (2nd form)
-       {0} [OPTION]... TARGET... DIRECTORY     (3rd form)
-       {0} [OPTION]... -t DIRECTORY TARGET...  (4th form)&quot;</span>,
-        <span class="ident">uucore::execution_phrase</span>()
-    )
-}
-
 <span class="kw">fn</span> <span class="ident">long_usage</span>() -&gt; <span class="ident">String</span> {
     <span class="ident">String::from</span>(
         <span class="string">&quot; In the 1st form, create a link to TARGET with the name LINK_NAME.
@@ -603,6 +589,11 @@
 }
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;change file owner and group&quot;</span>;
+<span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;\
+    {} [OPTION]... [-T] TARGET LINK_NAME
+    {} [OPTION]... TARGET
+    {} [OPTION]... TARGET... DIRECTORY
+    {} [OPTION]... -t DIRECTORY TARGET...&quot;</span>;
 
 <span class="kw">mod</span> <span class="ident">options</span> {
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FORCE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;force&quot;</span>;
@@ -619,11 +610,9 @@
 
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">usage</span>();
     <span class="kw">let</span> <span class="ident">long_usage</span> <span class="op">=</span> <span class="ident">long_usage</span>();
 
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>()
-        .<span class="ident">override_usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..])
         .<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="macro">format!</span>(
             <span class="string">&quot;{}\n{}&quot;</span>,
             <span class="ident">long_usage</span>,
@@ -671,6 +660,7 @@
     <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
+        .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
         .<span class="ident">arg</span>(<span class="ident">backup_control::arguments::backup</span>())
         .<span class="ident">arg</span>(<span class="ident">backup_control::arguments::backup_no_args</span>())

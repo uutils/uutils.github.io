@@ -249,9 +249,6 @@
 <span id="248">248</span>
 <span id="249">249</span>
 <span id="250">250</span>
-<span id="251">251</span>
-<span id="252">252</span>
-<span id="253">253</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">unused_must_use</span>)]</span> <span class="comment">// because we of writeln!</span>
 
 <span class="comment">//  * This file is part of the uutils coreutils package.</span>
@@ -267,7 +264,7 @@
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">ErrorKind</span>, <span class="ident">Write</span>};
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">set_exit_code</span>, <span class="ident">UResult</span>, <span class="ident">UUsageError</span>};
-<span class="kw">use</span> <span class="ident">uucore::InvalidEncodingHandling</span>;
+<span class="kw">use</span> <span class="ident">uucore</span>::{<span class="ident">format_usage</span>, <span class="ident">InvalidEncodingHandling</span>};
 
 <span class="comment">// operating mode</span>
 <span class="kw">enum</span> <span class="ident">Mode</span> {
@@ -278,6 +275,7 @@
 }
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Check whether file names are valid or portable&quot;</span>;
+<span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;{} [OPTION]... NAME...&quot;</span>;
 
 <span class="kw">mod</span> <span class="ident">options</span> {
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">POSIX</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;posix&quot;</span>;
@@ -290,18 +288,13 @@
 <span class="kw">const</span> <span class="ident">POSIX_PATH_MAX</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">256</span>;
 <span class="kw">const</span> <span class="ident">POSIX_NAME_MAX</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">14</span>;
 
-<span class="kw">fn</span> <span class="ident">usage</span>() -&gt; <span class="ident">String</span> {
-    <span class="macro">format!</span>(<span class="string">&quot;{0} [OPTION]... NAME...&quot;</span>, <span class="ident">uucore::execution_phrase</span>())
-}
-
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">usage</span>();
     <span class="kw">let</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">args</span>
         .<span class="ident">collect_str</span>(<span class="ident">InvalidEncodingHandling::ConvertLossy</span>)
         .<span class="ident">accept_any</span>();
 
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">override_usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..]).<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
     <span class="comment">// set working mode</span>
     <span class="kw">let</span> <span class="ident">is_posix</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="ident">options::POSIX</span>).<span class="ident">is_some</span>();
@@ -346,6 +339,7 @@
     <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
+        .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::POSIX</span>)

@@ -182,12 +182,6 @@
 <span id="181">181</span>
 <span id="182">182</span>
 <span id="183">183</span>
-<span id="184">184</span>
-<span id="185">185</span>
-<span id="186">186</span>
-<span id="187">187</span>
-<span id="188">188</span>
-<span id="189">189</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -205,13 +199,14 @@
 <span class="kw">use</span> <span class="ident">nom::AsBytes</span>;
 <span class="kw">use</span> <span class="ident">operation</span>::{<span class="ident">translate_input</span>, <span class="ident">Sequence</span>, <span class="ident">SqueezeOperation</span>, <span class="ident">TranslateOperation</span>};
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">stdout</span>, <span class="ident">BufReader</span>, <span class="ident">BufWriter</span>};
-<span class="kw">use</span> <span class="ident">uucore::show</span>;
+<span class="kw">use</span> <span class="ident">uucore</span>::{<span class="ident">format_usage</span>, <span class="ident">show</span>};
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::operation::DeleteOperation</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UResult</span>, <span class="ident">USimpleError</span>, <span class="ident">UUsageError</span>};
 <span class="kw">use</span> <span class="ident">uucore</span>::{<span class="ident">display::Quotable</span>, <span class="ident">InvalidEncodingHandling</span>};
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;translate or delete characters&quot;</span>;
+<span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;{} [OPTION]... SET1 [SET2]&quot;</span>;
 
 <span class="kw">mod</span> <span class="ident">options</span> {
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">COMPLEMENT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;complement&quot;</span>;
@@ -219,10 +214,6 @@
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SQUEEZE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;squeeze-repeats&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TRUNCATE_SET1</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;truncate-set1&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SETS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;sets&quot;</span>;
-}
-
-<span class="kw">fn</span> <span class="ident">get_usage</span>() -&gt; <span class="ident">String</span> {
-    <span class="macro">format!</span>(<span class="string">&quot;{} [OPTION]... SET1 [SET2]&quot;</span>, <span class="ident">uucore::execution_phrase</span>())
 }
 
 <span class="kw">fn</span> <span class="ident">get_long_usage</span>() -&gt; <span class="ident">String</span> {
@@ -237,13 +228,9 @@
         .<span class="ident">collect_str</span>(<span class="ident">InvalidEncodingHandling::ConvertLossy</span>)
         .<span class="ident">accept_any</span>();
 
-    <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">get_usage</span>();
     <span class="kw">let</span> <span class="ident">after_help</span> <span class="op">=</span> <span class="ident">get_long_usage</span>();
 
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>()
-        .<span class="ident">override_usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..])
-        .<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="ident">after_help</span>[..])
-        .<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="ident">after_help</span>[..]).<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
     <span class="kw">let</span> <span class="ident">delete_flag</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::DELETE</span>);
     <span class="kw">let</span> <span class="ident">complement_flag</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::COMPLEMENT</span>);
@@ -338,6 +325,7 @@
     <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
+        .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
         .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
         .<span class="ident">arg</span>(

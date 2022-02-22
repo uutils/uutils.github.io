@@ -666,11 +666,6 @@
 <span id="665">665</span>
 <span id="666">666</span>
 <span id="667">667</span>
-<span id="668">668</span>
-<span id="669">669</span>
-<span id="670">670</span>
-<span id="671">671</span>
-<span id="672">672</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Alan Andrade &lt;alan.andradec@gmail.com&gt;</span>
@@ -718,6 +713,7 @@
 <span class="kw">use</span> <span class="ident">uucore::entries</span>::{<span class="self">self</span>, <span class="ident">Group</span>, <span class="ident">Locate</span>, <span class="ident">Passwd</span>};
 <span class="kw">use</span> <span class="ident">uucore::error::UResult</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">set_exit_code</span>, <span class="ident">USimpleError</span>};
+<span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">uucore::libc</span>;
 <span class="kw">use</span> <span class="ident">uucore::libc</span>::{<span class="ident">getlogin</span>, <span class="ident">uid_t</span>};
 <span class="kw">use</span> <span class="ident">uucore::process</span>::{<span class="ident">getegid</span>, <span class="ident">geteuid</span>, <span class="ident">getgid</span>, <span class="ident">getuid</span>};
@@ -730,6 +726,7 @@
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Print user and group information for each specified USER,
 or (when USER omitted) for the current user.&quot;</span>;
+<span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;{} [OPTION]... [USER]...&quot;</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;selinux&quot;</span>))]</span>
 <span class="kw">static</span> <span class="ident">CONTEXT_HELP_TEXT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;print only the security context of the process (not enabled)&quot;</span>;
@@ -748,10 +745,6 @@ or (when USER omitted) for the current user.&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">OPT_REAL_ID</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;real&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">OPT_ZERO</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;zero&quot;</span>; <span class="comment">// BSD&#39;s id does not have this</span>
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ARG_USERS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;USER&quot;</span>;
-}
-
-<span class="kw">fn</span> <span class="ident">usage</span>() -&gt; <span class="ident">String</span> {
-    <span class="macro">format!</span>(<span class="string">&quot;{0} [OPTION]... [USER]...&quot;</span>, <span class="ident">uucore::execution_phrase</span>())
 }
 
 <span class="kw">fn</span> <span class="ident">get_description</span>() -&gt; <span class="ident">String</span> {
@@ -801,13 +794,9 @@ or (when USER omitted) for the current user.&quot;</span>;
 
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">usage</span>();
     <span class="kw">let</span> <span class="ident">after_help</span> <span class="op">=</span> <span class="ident">get_description</span>();
 
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>()
-        .<span class="ident">override_usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..])
-        .<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="ident">after_help</span>[..])
-        .<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="ident">after_help</span>[..]).<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
     <span class="kw">let</span> <span class="ident">users</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">matches</span>
         .<span class="ident">values_of</span>(<span class="ident">options::ARG_USERS</span>)
@@ -1024,6 +1013,7 @@ or (when USER omitted) for the current user.&quot;</span>;
     <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
+        .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OPT_AUDIT</span>)

@@ -425,14 +425,6 @@
 <span id="424">424</span>
 <span id="425">425</span>
 <span id="426">426</span>
-<span id="427">427</span>
-<span id="428">428</span>
-<span id="429">429</span>
-<span id="430">430</span>
-<span id="431">431</span>
-<span id="432">432</span>
-<span id="433">433</span>
-<span id="434">434</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Chirag B Jadwani &lt;chirag.jadwani@gmail.com&gt;</span>
@@ -448,8 +440,10 @@
 <span class="kw">use</span> <span class="ident">strum_macros</span>::{<span class="ident">AsRefStr</span>, <span class="ident">EnumString</span>};
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
+<span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Report or omit repeated lines.&quot;</span>;
+<span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;{} [OPTION]... [INPUT [OUTPUT]]...&quot;</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">options</span> {
     <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">ALL_REPEATED</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;all-repeated&quot;</span>;
     <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">CHECK_CHARS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;check-chars&quot;</span>;
@@ -674,13 +668,6 @@
     })
 }
 
-<span class="kw">fn</span> <span class="ident">usage</span>() -&gt; <span class="ident">String</span> {
-    <span class="macro">format!</span>(
-        <span class="string">&quot;{0} [OPTION]... [INPUT [OUTPUT]]...&quot;</span>,
-        <span class="ident">uucore::execution_phrase</span>()
-    )
-}
-
 <span class="kw">fn</span> <span class="ident">get_long_usage</span>() -&gt; <span class="ident">String</span> {
     <span class="ident">String::from</span>(
         <span class="string">&quot;Filter adjacent matching lines from INPUT (or standard input),\n\
@@ -692,13 +679,9 @@
 
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">usage</span>();
     <span class="kw">let</span> <span class="ident">long_usage</span> <span class="op">=</span> <span class="ident">get_long_usage</span>();
 
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>()
-        .<span class="ident">override_usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..])
-        .<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="ident">long_usage</span>[..])
-        .<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="ident">long_usage</span>[..]).<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
     <span class="kw">let</span> <span class="ident">files</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">matches</span>
         .<span class="ident">values_of</span>(<span class="ident">ARG_FILES</span>)
@@ -738,6 +721,7 @@
     <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
+        .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ALL_REPEATED</span>)

@@ -1599,10 +1599,6 @@
 <span id="1598">1598</span>
 <span id="1599">1599</span>
 <span id="1600">1600</span>
-<span id="1601">1601</span>
-<span id="1602">1602</span>
-<span id="1603">1603</span>
-<span id="1604">1604</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::missing_safety_doc</span>)]</span>
 
 <span class="comment">// This file is part of the uutils coreutils package.</span>
@@ -1624,6 +1620,7 @@
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
+<span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 <span class="kw">use</span> <span class="ident">uucore::fs::FileInformation</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
 <span class="kw">use</span> <span class="ident">winapi::um::fileapi::CreateFileW</span>;
@@ -1835,14 +1832,10 @@
 <span class="kw">static</span> <span class="ident">LONG_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>;
 <span class="kw">static</span> <span class="ident">EXIT_ERR</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">1</span>;
 
-<span class="kw">fn</span> <span class="ident">usage</span>() -&gt; <span class="ident">String</span> {
-    <span class="macro">format!</span>(
-        <span class="string">&quot;{0} [OPTION]... [-T] SOURCE DEST
-    {0} [OPTION]... SOURCE... DIRECTORY
-    {0} [OPTION]... -t DIRECTORY SOURCE...&quot;</span>,
-        <span class="ident">uucore::execution_phrase</span>()
-    )
-}
+<span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;\
+    {} [OPTION]... [-T] SOURCE DEST
+    {} [OPTION]... SOURCE... DIRECTORY
+    {} [OPTION]... -t DIRECTORY SOURCE...&quot;</span>;
 
 <span class="comment">// Argument constants</span>
 <span class="kw">mod</span> <span class="ident">options</span> {
@@ -1905,6 +1898,7 @@
     <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
+        .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
         .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::TARGET_DIRECTORY</span>)
              .<span class="ident">short</span>(<span class="string">&#39;t&#39;</span>)
@@ -2061,14 +2055,12 @@
 
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">usage</span>();
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>()
         .<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="macro">format!</span>(
             <span class="string">&quot;{}\n{}&quot;</span>,
             <span class="ident">LONG_HELP</span>,
             <span class="ident">backup_control::BACKUP_CONTROL_LONG_HELP</span>
         ))
-        .<span class="ident">override_usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..])
         .<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
     <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">Options::from_matches</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>)<span class="question-mark">?</span>;

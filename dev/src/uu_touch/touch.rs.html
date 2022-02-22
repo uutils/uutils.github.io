@@ -300,9 +300,6 @@
 <span id="299">299</span>
 <span id="300">300</span>
 <span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Nick Platt &lt;platt.nicholas@gmail.com&gt;</span>
@@ -324,8 +321,10 @@
 <span class="kw">use</span> <span class="ident">std::path::Path</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UError</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
+<span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Update the access and modification times of each FILE to the current time.&quot;</span>;
+<span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;{} [OPTION]... [USER]&quot;</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">options</span> {
     <span class="comment">// Both SOURCES and sources are needed as we need to be able to refer to the ArgGroup.</span>
     <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">SOURCES</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;sources&quot;</span>;
@@ -353,15 +352,9 @@
     <span class="ident">FileTime::from_unix_time</span>(<span class="ident">ts</span>.<span class="ident">sec</span> <span class="kw">as</span> <span class="ident">i64</span>, <span class="ident">ts</span>.<span class="ident">nsec</span> <span class="kw">as</span> <span class="ident">u32</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">usage</span>() -&gt; <span class="ident">String</span> {
-    <span class="macro">format!</span>(<span class="string">&quot;{0} [OPTION]... [USER]&quot;</span>, <span class="ident">uucore::execution_phrase</span>())
-}
-
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">usage</span>();
-
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">override_usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..]).<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
     <span class="kw">let</span> <span class="ident">files</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">values_of_os</span>(<span class="ident">ARG_FILES</span>).<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="ident">USimpleError::new</span>(
@@ -454,6 +447,7 @@ Try &#39;touch --help&#39; for more information.&quot;##</span>,
     <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
+        .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ACCESS</span>)

@@ -185,11 +185,6 @@
 <span id="184">184</span>
 <span id="185">185</span>
 <span id="186">186</span>
-<span id="187">187</span>
-<span id="188">188</span>
-<span id="189">189</span>
-<span id="190">190</span>
-<span id="191">191</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Nicholas Juszczak &lt;juszczakn@gmail.com&gt;</span>
@@ -209,11 +204,13 @@
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
 <span class="kw">use</span> <span class="ident">uucore::mode</span>;
-<span class="kw">use</span> <span class="ident">uucore::InvalidEncodingHandling</span>;
+<span class="kw">use</span> <span class="ident">uucore</span>::{<span class="ident">format_usage</span>, <span class="ident">InvalidEncodingHandling</span>};
 
 <span class="kw">static</span> <span class="ident">DEFAULT_PERM</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0o755</span>;
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Create the given DIRECTORY(ies) if they do not exist&quot;</span>;
+<span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;{} [OPTION]... [USER]&quot;</span>;
+
 <span class="kw">mod</span> <span class="ident">options</span> {
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">MODE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;mode&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PARENTS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;parents&quot;</span>;
@@ -221,9 +218,6 @@
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">DIRS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;dirs&quot;</span>;
 }
 
-<span class="kw">fn</span> <span class="ident">usage</span>() -&gt; <span class="ident">String</span> {
-    <span class="macro">format!</span>(<span class="string">&quot;{0} [OPTION]... [USER]&quot;</span>, <span class="ident">uucore::execution_phrase</span>())
-}
 <span class="kw">fn</span> <span class="ident">get_long_usage</span>() -&gt; <span class="ident">String</span> {
     <span class="ident">String::from</span>(<span class="string">&quot;Each MODE is of the form &#39;[ugoa]*([-+=]([rwxXst]*|[ugo]))+|[-+=]?[0-7]+&#39;.&quot;</span>)
 }
@@ -279,17 +273,12 @@
     <span class="comment">// Before we can parse &#39;args&#39; with clap (and previously getopts),</span>
     <span class="comment">// a possible MODE prefix &#39;-&#39; needs to be removed (e.g. &quot;chmod -x FILE&quot;).</span>
     <span class="kw">let</span> <span class="ident">mode_had_minus_prefix</span> <span class="op">=</span> <span class="ident">strip_minus_from_mode</span>(<span class="kw-2">&amp;mut</span> <span class="ident">args</span>);
-
-    <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">usage</span>();
     <span class="kw">let</span> <span class="ident">after_help</span> <span class="op">=</span> <span class="ident">get_long_usage</span>();
 
     <span class="comment">// Linux-specific options, not implemented</span>
     <span class="comment">// opts.optflag(&quot;Z&quot;, &quot;context&quot;, &quot;set SELinux security context&quot; +</span>
     <span class="comment">// &quot; of each created directory to CTX&quot;),</span>
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>()
-        .<span class="ident">override_usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..])
-        .<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="ident">after_help</span>[..])
-        .<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="ident">after_help</span>[..]).<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
     <span class="kw">let</span> <span class="ident">dirs</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">values_of_os</span>(<span class="ident">options::DIRS</span>).<span class="ident">unwrap_or_default</span>();
     <span class="kw">let</span> <span class="ident">verbose</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::VERBOSE</span>);
@@ -305,6 +294,7 @@
     <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
+        .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::MODE</span>)

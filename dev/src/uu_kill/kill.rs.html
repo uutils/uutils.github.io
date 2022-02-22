@@ -208,6 +208,7 @@
 <span id="207">207</span>
 <span id="208">208</span>
 <span id="209">209</span>
+<span id="210">210</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Maciej Dziardziel &lt;fiedzia@gmail.com&gt;</span>
@@ -226,9 +227,10 @@
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
 <span class="kw">use</span> <span class="ident">uucore::signals</span>::{<span class="ident">signal_by_name_or_value</span>, <span class="ident">ALL_SIGNALS</span>};
-<span class="kw">use</span> <span class="ident">uucore::InvalidEncodingHandling</span>;
+<span class="kw">use</span> <span class="ident">uucore</span>::{<span class="ident">format_usage</span>, <span class="ident">InvalidEncodingHandling</span>};
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Send signal to processes or list information about signals.&quot;</span>;
+<span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;{} [OPTIONS]... PID...&quot;</span>;
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">options</span> {
     <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">PIDS_OR_SIGNALS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;pids_of_signals&quot;</span>;
@@ -252,8 +254,7 @@
         .<span class="ident">accept_any</span>();
     <span class="kw">let</span> <span class="ident">obs_signal</span> <span class="op">=</span> <span class="ident">handle_obsolete</span>(<span class="kw-2">&amp;mut</span> <span class="ident">args</span>);
 
-    <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{} [OPTIONS]... PID...&quot;</span>, <span class="ident">uucore::execution_phrase</span>());
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">override_usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..]).<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
     <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::TABLE</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::TABLE_OLD</span>) {
         <span class="ident">Mode::Table</span>
@@ -292,6 +293,7 @@
     <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
+        .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::LIST</span>)

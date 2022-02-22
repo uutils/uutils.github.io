@@ -446,12 +446,6 @@
 <span id="445">445</span>
 <span id="446">446</span>
 <span id="447">447</span>
-<span id="448">448</span>
-<span id="449">449</span>
-<span id="450">450</span>
-<span id="451">451</span>
-<span id="452">452</span>
-<span id="453">453</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Orvar Segerström &lt;orvarsegerstrom@gmail.com&gt;</span>
@@ -480,6 +474,7 @@
 <span class="kw">use</span> <span class="ident">uucore::backup_control</span>::{<span class="self">self</span>, <span class="ident">BackupMode</span>};
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UError</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>, <span class="ident">UUsageError</span>};
+<span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 
 <span class="kw">use</span> <span class="ident">fs_extra::dir</span>::{<span class="ident">move_dir</span>, <span class="ident">CopyOptions</span> <span class="kw">as</span> <span class="ident">DirCopyOptions</span>};
 
@@ -505,6 +500,10 @@
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Move SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.&quot;</span>;
 <span class="kw">static</span> <span class="ident">LONG_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>;
+<span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;\
+    {} [OPTION]... [-T] SOURCE DEST
+    {} [OPTION]... SOURCE... DIRECTORY
+    {} [OPTION]... -t DIRECTORY SOURCE...&quot;</span>;
 
 <span class="kw">static</span> <span class="ident">OPT_FORCE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;force&quot;</span>;
 <span class="kw">static</span> <span class="ident">OPT_INTERACTIVE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;interactive&quot;</span>;
@@ -517,26 +516,14 @@
 
 <span class="kw">static</span> <span class="ident">ARG_FILES</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;files&quot;</span>;
 
-<span class="kw">fn</span> <span class="ident">usage</span>() -&gt; <span class="ident">String</span> {
-    <span class="macro">format!</span>(
-        <span class="string">&quot;{0} [OPTION]... [-T] SOURCE DEST
-{0} [OPTION]... SOURCE... DIRECTORY
-{0} [OPTION]... -t DIRECTORY SOURCE...&quot;</span>,
-        <span class="ident">uucore::execution_phrase</span>()
-    )
-}
-
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">usage</span>();
-
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>()
         .<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="macro">format!</span>(
             <span class="string">&quot;{}\n{}&quot;</span>,
             <span class="ident">LONG_HELP</span>,
             <span class="ident">backup_control::BACKUP_CONTROL_LONG_HELP</span>
         ))
-        .<span class="ident">override_usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..])
         .<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
     <span class="kw">let</span> <span class="ident">files</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OsString</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">matches</span>
@@ -577,6 +564,7 @@
     <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
+        .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
     .<span class="ident">arg</span>(
         <span class="ident">backup_control::arguments::backup</span>()

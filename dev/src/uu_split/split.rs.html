@@ -769,20 +769,6 @@
 <span id="768">768</span>
 <span id="769">769</span>
 <span id="770">770</span>
-<span id="771">771</span>
-<span id="772">772</span>
-<span id="773">773</span>
-<span id="774">774</span>
-<span id="775">775</span>
-<span id="776">776</span>
-<span id="777">777</span>
-<span id="778">778</span>
-<span id="779">779</span>
-<span id="780">780</span>
-<span id="781">781</span>
-<span id="782">782</span>
-<span id="783">783</span>
-<span id="784">784</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Akira Hayakawa &lt;ruby.wktk@gmail.com&gt;</span>
@@ -807,6 +793,7 @@
 <span class="kw">use</span> <span class="ident">std::path::Path</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UIoError</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>, <span class="ident">UUsageError</span>};
+<span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 <span class="kw">use</span> <span class="ident">uucore::parse_size</span>::{<span class="ident">parse_size</span>, <span class="ident">ParseSizeError</span>};
 <span class="kw">use</span> <span class="ident">uucore::uio_error</span>;
 
@@ -829,32 +816,15 @@
 <span class="kw">static</span> <span class="ident">ARG_INPUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;input&quot;</span>;
 <span class="kw">static</span> <span class="ident">ARG_PREFIX</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;prefix&quot;</span>;
 
-<span class="kw">fn</span> <span class="ident">usage</span>() -&gt; <span class="ident">String</span> {
-    <span class="macro">format!</span>(
-        <span class="string">&quot;{0} [OPTION]... [INPUT [PREFIX]]&quot;</span>,
-        <span class="ident">uucore::execution_phrase</span>()
-    )
-}
-<span class="kw">fn</span> <span class="ident">get_long_usage</span>() -&gt; <span class="ident">String</span> {
-    <span class="macro">format!</span>(
-        <span class="string">&quot;Usage:
-  {0}
-
-Output fixed-size pieces of INPUT to PREFIXaa, PREFIX ab, ...; default
-size is 1000, and default PREFIX is &#39;x&#39;. With no INPUT, or when INPUT is
--, read standard input.&quot;</span>,
-        <span class="ident">usage</span>()
-    )
-}
+<span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;{} [OPTION]... [INPUT [PREFIX]]&quot;</span>;
+<span class="kw">const</span> <span class="ident">AFTER_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;\
+    Output fixed-size pieces of INPUT to PREFIXaa, PREFIX ab, ...; default \
+    size is 1000, and default PREFIX is &#39;x&#39;. With no INPUT, or when INPUT is \
+    -, read standard input.&quot;</span>;
 
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">usage</span>();
-    <span class="kw">let</span> <span class="ident">long_usage</span> <span class="op">=</span> <span class="ident">get_long_usage</span>();
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>()
-        .<span class="ident">override_usage</span>(<span class="kw-2">&amp;</span><span class="ident">usage</span>[..])
-        .<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="ident">long_usage</span>[..])
-        .<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
     <span class="kw">match</span> <span class="ident">Settings::from</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>) {
         <span class="prelude-val">Ok</span>(<span class="ident">settings</span>) =&gt; <span class="ident">split</span>(<span class="kw-2">&amp;</span><span class="ident">settings</span>),
         <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">requires_usage</span>() =&gt; <span class="prelude-val">Err</span>(<span class="ident">UUsageError::new</span>(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>))),
@@ -866,6 +836,8 @@ size is 1000, and default PREFIX is &#39;x&#39;. With no INPUT, or when INPUT is
     <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="string">&quot;Create output files containing consecutive or interleaved sections of input&quot;</span>)
+        .<span class="ident">after_help</span>(<span class="ident">AFTER_HELP</span>)
+        .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
         <span class="comment">// strategy (mutually exclusive)</span>
         .<span class="ident">arg</span>(
