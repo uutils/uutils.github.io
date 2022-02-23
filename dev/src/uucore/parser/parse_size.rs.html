@@ -316,20 +316,6 @@
 <span id="315">315</span>
 <span id="316">316</span>
 <span id="317">317</span>
-<span id="318">318</span>
-<span id="319">319</span>
-<span id="320">320</span>
-<span id="321">321</span>
-<span id="322">322</span>
-<span id="323">323</span>
-<span id="324">324</span>
-<span id="325">325</span>
-<span id="326">326</span>
-<span id="327">327</span>
-<span id="328">328</span>
-<span id="329">329</span>
-<span id="330">330</span>
-<span id="331">331</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -365,14 +351,14 @@
 <span class="doccomment">/// assert_eq!(Ok(9 * 1000), parse_size(&quot;9kB&quot;)); // kB is 1000</span>
 <span class="doccomment">/// assert_eq!(Ok(2 * 1024), parse_size(&quot;2K&quot;)); // K is 1024</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_size</span>(<span class="ident">size</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">ParseSizeError</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_size</span>(<span class="ident">size</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">ParseSizeError</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="ident">size</span>.<span class="ident">is_empty</span>() {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseSizeError::parse_failure</span>(<span class="ident">size</span>));
     }
     <span class="comment">// Get the numeric part of the size argument. For example, if the</span>
     <span class="comment">// argument is &quot;123K&quot;, then the numeric part is &quot;123&quot;.</span>
     <span class="kw">let</span> <span class="ident">numeric_string</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">size</span>.<span class="ident">chars</span>().<span class="ident">take_while</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">is_digit</span>(<span class="number">10</span>)).<span class="ident">collect</span>();
-    <span class="kw">let</span> <span class="ident">number</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">numeric_string</span>.<span class="ident">is_empty</span>() {
+    <span class="kw">let</span> <span class="ident">number</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">numeric_string</span>.<span class="ident">is_empty</span>() {
         <span class="kw">match</span> <span class="ident">numeric_string</span>.<span class="ident">parse</span>() {
             <span class="prelude-val">Ok</span>(<span class="ident">n</span>) =&gt; <span class="ident">n</span>,
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseSizeError::parse_failure</span>(<span class="ident">size</span>)),
@@ -407,7 +393,7 @@
         <span class="string">&quot;YB&quot;</span> <span class="op">|</span> <span class="string">&quot;yB&quot;</span> =&gt; (<span class="number">1000</span>, <span class="number">8</span>),
         <span class="kw">_</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseSizeError::parse_failure</span>(<span class="ident">size</span>)),
     };
-    <span class="kw">let</span> <span class="ident">factor</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">usize::try_from</span>(<span class="ident">base</span>.<span class="ident">pow</span>(<span class="ident">exponent</span>)) {
+    <span class="kw">let</span> <span class="ident">factor</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">u64::try_from</span>(<span class="ident">base</span>.<span class="ident">pow</span>(<span class="ident">exponent</span>)) {
         <span class="prelude-val">Ok</span>(<span class="ident">n</span>) =&gt; <span class="ident">n</span>,
         <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseSizeError::size_too_big</span>(<span class="ident">size</span>)),
     };
@@ -513,7 +499,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">all_suffixes</span>() {
-        <span class="comment">// Units  are  K,M,G,T,P,E,Z,Y  (powers  of 1024) or KB,MB,... (powers of 1000).</span>
+        <span class="comment">// Units  are  K,M,G,T,P,E,Z,Y (powers of 1024) or KB,MB,... (powers of 1000).</span>
         <span class="comment">// Binary prefixes can be used, too: KiB=K, MiB=M, and so on.</span>
         <span class="kw">let</span> <span class="ident">suffixes</span> <span class="op">=</span> [
             (<span class="string">&#39;K&#39;</span>, <span class="number">1u32</span>),
@@ -522,31 +508,30 @@
             (<span class="string">&#39;T&#39;</span>, <span class="number">4u32</span>),
             (<span class="string">&#39;P&#39;</span>, <span class="number">5u32</span>),
             (<span class="string">&#39;E&#39;</span>, <span class="number">6u32</span>),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;128&quot;</span>)]</span>
-            (<span class="string">&#39;Z&#39;</span>, <span class="number">7u32</span>), <span class="comment">// ParseSizeError::SizeTooBig on x64</span>
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;128&quot;</span>)]</span>
-            (<span class="string">&#39;Y&#39;</span>, <span class="number">8u32</span>), <span class="comment">// ParseSizeError::SizeTooBig on x64</span>
+            <span class="comment">// The following will always result ParseSizeError::SizeTooBig as they cannot fit in u64</span>
+            <span class="comment">// (&#39;Z&#39;, 7u32),</span>
+            <span class="comment">// (&#39;Y&#39;, 8u32),</span>
         ];
 
         <span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="ident">c</span>, <span class="ident">exp</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">suffixes</span> {
             <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;2{}B&quot;</span>, <span class="ident">c</span>); <span class="comment">// KB</span>
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2</span> <span class="op">*</span> (<span class="number">1000_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">usize</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2</span> <span class="op">*</span> (<span class="number">1000_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">u64</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
             <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;2{}&quot;</span>, <span class="ident">c</span>); <span class="comment">// K</span>
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2</span> <span class="op">*</span> (<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">usize</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2</span> <span class="op">*</span> (<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">u64</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
             <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;2{}iB&quot;</span>, <span class="ident">c</span>); <span class="comment">// KiB</span>
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2</span> <span class="op">*</span> (<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">usize</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2</span> <span class="op">*</span> (<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">u64</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
             <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;2{}iB&quot;</span>, <span class="ident">c</span>.<span class="ident">to_lowercase</span>()); <span class="comment">// kiB</span>
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2</span> <span class="op">*</span> (<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">usize</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2</span> <span class="op">*</span> (<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">u64</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
 
             <span class="comment">// suffix only</span>
             <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}B&quot;</span>, <span class="ident">c</span>); <span class="comment">// KB</span>
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1000_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">usize</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1000_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">u64</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
             <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">c</span>); <span class="comment">// K</span>
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">usize</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">u64</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
             <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}iB&quot;</span>, <span class="ident">c</span>); <span class="comment">// KiB</span>
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">usize</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">u64</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
             <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}iB&quot;</span>, <span class="ident">c</span>.<span class="ident">to_lowercase</span>()); <span class="comment">// kiB</span>
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">usize</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">u64</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
         }
     }
 
@@ -569,19 +554,6 @@
             <span class="ident">ParseSizeError::SizeTooBig</span>(<span class="string">&quot;&#39;1Y&#39;: Value too large for defined data type&quot;</span>.<span class="ident">to_string</span>()),
             <span class="ident">parse_size</span>(<span class="string">&quot;1Y&quot;</span>).<span class="ident">unwrap_err</span>()
         );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">overflow_x32</span>() {
-        <span class="macro">assert!</span>(<span class="ident">variant_eq</span>(
-            <span class="kw-2">&amp;</span><span class="ident">parse_size</span>(<span class="string">&quot;1T&quot;</span>).<span class="ident">unwrap_err</span>(),
-            <span class="kw-2">&amp;</span><span class="ident">ParseSizeError::SizeTooBig</span>(<span class="ident">String::new</span>())
-        ));
-        <span class="macro">assert!</span>(<span class="ident">variant_eq</span>(
-            <span class="kw-2">&amp;</span><span class="ident">parse_size</span>(<span class="string">&quot;1000G&quot;</span>).<span class="ident">unwrap_err</span>(),
-            <span class="kw-2">&amp;</span><span class="ident">ParseSizeError::SizeTooBig</span>(<span class="ident">String::new</span>())
-        ));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>

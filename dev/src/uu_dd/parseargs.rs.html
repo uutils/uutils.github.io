@@ -791,6 +791,36 @@
 <span id="790">790</span>
 <span id="791">791</span>
 <span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Tyler Steele &lt;tyler.steele@protonmail.com&gt;</span>
@@ -824,6 +854,10 @@
     <span class="ident">BlockUnblockWithoutCBS</span>,
     <span class="ident">StatusLevelNotRecognized</span>(<span class="ident">String</span>),
     <span class="ident">Unimplemented</span>(<span class="ident">String</span>),
+    <span class="ident">BsOutOfRange</span>,
+    <span class="ident">IbsOutOfRange</span>,
+    <span class="ident">ObsOutOfRange</span>,
+    <span class="ident">CbsOutOfRange</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">ParseError</span> {
@@ -841,6 +875,10 @@
             <span class="ident"><span class="self">Self</span>::BlockUnblockWithoutCBS</span> =&gt; <span class="ident"><span class="self">Self</span>::BlockUnblockWithoutCBS</span>,
             <span class="ident"><span class="self">Self</span>::StatusLevelNotRecognized</span>(<span class="kw">_</span>) =&gt; <span class="ident"><span class="self">Self</span>::StatusLevelNotRecognized</span>(<span class="ident">s</span>),
             <span class="ident"><span class="self">Self</span>::Unimplemented</span>(<span class="kw">_</span>) =&gt; <span class="ident"><span class="self">Self</span>::Unimplemented</span>(<span class="ident">s</span>),
+            <span class="ident"><span class="self">Self</span>::BsOutOfRange</span> =&gt; <span class="ident"><span class="self">Self</span>::BsOutOfRange</span>,
+            <span class="ident"><span class="self">Self</span>::IbsOutOfRange</span> =&gt; <span class="ident"><span class="self">Self</span>::IbsOutOfRange</span>,
+            <span class="ident"><span class="self">Self</span>::ObsOutOfRange</span> =&gt; <span class="ident"><span class="self">Self</span>::ObsOutOfRange</span>,
+            <span class="ident"><span class="self">Self</span>::CbsOutOfRange</span> =&gt; <span class="ident"><span class="self">Self</span>::CbsOutOfRange</span>,
         }
     }
 }
@@ -884,6 +922,18 @@
             }
             <span class="ident"><span class="self">Self</span>::StatusLevelNotRecognized</span>(<span class="ident">arg</span>) =&gt; {
                 <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;status=LEVEL not recognized -&gt; {}&quot;</span>, <span class="ident">arg</span>)
+            }
+            <span class="ident">ParseError::BsOutOfRange</span> =&gt; {
+                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;bs=N cannot fit into memory&quot;</span>)
+            }
+            <span class="ident">ParseError::IbsOutOfRange</span> =&gt; {
+                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;ibs=N cannot fit into memory&quot;</span>)
+            }
+            <span class="ident">ParseError::ObsOutOfRange</span> =&gt; {
+                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;ibs=N cannot fit into memory&quot;</span>)
+            }
+            <span class="ident">ParseError::CbsOutOfRange</span> =&gt; {
+                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;cbs=N cannot fit into memory&quot;</span>)
             }
             <span class="ident"><span class="self">Self</span>::Unimplemented</span>(<span class="ident">arg</span>) =&gt; {
                 <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;feature not implemented on this system -&gt; {}&quot;</span>, <span class="ident">arg</span>)
@@ -1127,7 +1177,7 @@
 }
 
 <span class="doccomment">/// Parse bytes using str::parse, then map error if needed.</span>
-<span class="kw">fn</span> <span class="ident">parse_bytes_only</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">parse_bytes_only</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
     <span class="ident">s</span>.<span class="ident">parse</span>()
         .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">ParseError::MultiplierStringParseFailure</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()))
 }
@@ -1157,7 +1207,7 @@
 <span class="doccomment">/// assert_eq!(parse_bytes_no_x(&quot;2b&quot;).unwrap(), 2 * 512);</span>
 <span class="doccomment">/// assert_eq!(parse_bytes_no_x(&quot;2k&quot;).unwrap(), 2 * 1024);</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">fn</span> <span class="ident">parse_bytes_no_x</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">parse_bytes_no_x</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
     <span class="kw">let</span> (<span class="ident">num</span>, <span class="ident">multiplier</span>) <span class="op">=</span> <span class="kw">match</span> (<span class="ident">s</span>.<span class="ident">find</span>(<span class="string">&#39;c&#39;</span>), <span class="ident">s</span>.<span class="ident">rfind</span>(<span class="string">&#39;w&#39;</span>), <span class="ident">s</span>.<span class="ident">rfind</span>(<span class="string">&#39;b&#39;</span>)) {
         (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="kw">match</span> <span class="ident">uucore::parse_size::parse_size</span>(<span class="ident">s</span>) {
             <span class="prelude-val">Ok</span>(<span class="ident">n</span>) =&gt; (<span class="ident">n</span>, <span class="number">1</span>),
@@ -1180,7 +1230,7 @@
 <span class="doccomment">/// Parse byte and multiplier like 512, 5KiB, or 1G.</span>
 <span class="doccomment">/// Uses uucore::parse_size, and adds the &#39;w&#39; and &#39;c&#39; suffixes which are mentioned</span>
 <span class="doccomment">/// in dd&#39;s info page.</span>
-<span class="kw">fn</span> <span class="ident">parse_bytes_with_opt_multiplier</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">parse_bytes_with_opt_multiplier</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
     <span class="comment">// TODO On my Linux system, there seems to be a maximum block size of 4096 bytes:</span>
     <span class="comment">//</span>
     <span class="comment">//     $ printf &quot;%0.sa&quot; {1..10000} | dd bs=4095 count=1 status=none | wc -c</span>
@@ -1213,9 +1263,27 @@
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_ibs</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">Matches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">mixed_str</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::BS</span>) {
-        <span class="ident">parse_bytes_with_opt_multiplier</span>(<span class="ident">mixed_str</span>)
+        <span class="ident">parse_bytes_with_opt_multiplier</span>(<span class="ident">mixed_str</span>)<span class="question-mark">?</span>
+            .<span class="ident">try_into</span>()
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">ParseError::BsOutOfRange</span>)
     } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">mixed_str</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::IBS</span>) {
-        <span class="ident">parse_bytes_with_opt_multiplier</span>(<span class="ident">mixed_str</span>)
+        <span class="ident">parse_bytes_with_opt_multiplier</span>(<span class="ident">mixed_str</span>)<span class="question-mark">?</span>
+            .<span class="ident">try_into</span>()
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">ParseError::IbsOutOfRange</span>)
+    } <span class="kw">else</span> {
+        <span class="prelude-val">Ok</span>(<span class="number">512</span>)
+    }
+}
+
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_obs</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">Matches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">mixed_str</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;bs&quot;</span>) {
+        <span class="ident">parse_bytes_with_opt_multiplier</span>(<span class="ident">mixed_str</span>)<span class="question-mark">?</span>
+            .<span class="ident">try_into</span>()
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">ParseError::BsOutOfRange</span>)
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">mixed_str</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;obs&quot;</span>) {
+        <span class="ident">parse_bytes_with_opt_multiplier</span>(<span class="ident">mixed_str</span>)<span class="question-mark">?</span>
+            .<span class="ident">try_into</span>()
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">ParseError::ObsOutOfRange</span>)
     } <span class="kw">else</span> {
         <span class="prelude-val">Ok</span>(<span class="number">512</span>)
     }
@@ -1223,7 +1291,9 @@
 
 <span class="kw">fn</span> <span class="ident">parse_cbs</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">Matches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::CBS</span>) {
-        <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="ident">parse_bytes_with_opt_multiplier</span>(<span class="ident">s</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="ident">parse_bytes_with_opt_multiplier</span>(<span class="ident">s</span>)<span class="question-mark">?</span>
+            .<span class="ident">try_into</span>()
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">ParseError::CbsOutOfRange</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">bytes</span>))
     } <span class="kw">else</span> {
         <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
@@ -1237,16 +1307,6 @@
             <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">st</span>))
         }
         <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
-    }
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_obs</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">Matches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">mixed_str</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;bs&quot;</span>) {
-        <span class="ident">parse_bytes_with_opt_multiplier</span>(<span class="ident">mixed_str</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">mixed_str</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;obs&quot;</span>) {
-        <span class="ident">parse_bytes_with_opt_multiplier</span>(<span class="ident">mixed_str</span>)
-    } <span class="kw">else</span> {
-        <span class="prelude-val">Ok</span>(<span class="number">512</span>)
     }
 }
 
@@ -1508,13 +1568,13 @@
     <span class="ident">ibs</span>: <span class="kw-2">&amp;</span><span class="ident">usize</span>,
     <span class="ident">iflags</span>: <span class="kw-2">&amp;</span><span class="ident">IFlags</span>,
     <span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">Matches</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
+) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">amt</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::SKIP</span>) {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">parse_bytes_with_opt_multiplier</span>(<span class="ident">amt</span>)<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="ident">iflags</span>.<span class="ident">skip_bytes</span> {
             <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">n</span>))
         } <span class="kw">else</span> {
-            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">ibs</span> <span class="op">*</span> <span class="ident">n</span>))
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="kw-2">*</span><span class="ident">ibs</span> <span class="kw">as</span> <span class="ident">u64</span> <span class="op">*</span> <span class="ident">n</span>))
         }
     } <span class="kw">else</span> {
         <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
@@ -1526,13 +1586,13 @@
     <span class="ident">obs</span>: <span class="kw-2">&amp;</span><span class="ident">usize</span>,
     <span class="ident">oflags</span>: <span class="kw-2">&amp;</span><span class="ident">OFlags</span>,
     <span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">Matches</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
+) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">amt</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::SEEK</span>) {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">parse_bytes_with_opt_multiplier</span>(<span class="ident">amt</span>)<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="ident">oflags</span>.<span class="ident">seek_bytes</span> {
             <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">n</span>))
         } <span class="kw">else</span> {
-            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">obs</span> <span class="op">*</span> <span class="ident">n</span>))
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="kw-2">*</span><span class="ident">obs</span> <span class="kw">as</span> <span class="ident">u64</span> <span class="op">*</span> <span class="ident">n</span>))
         }
     } <span class="kw">else</span> {
         <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)

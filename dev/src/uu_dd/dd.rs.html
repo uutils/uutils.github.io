@@ -1145,11 +1145,6 @@
 <span id="1144">1144</span>
 <span id="1145">1145</span>
 <span id="1146">1146</span>
-<span id="1147">1147</span>
-<span id="1148">1148</span>
-<span id="1149">1149</span>
-<span id="1150">1150</span>
-<span id="1151">1151</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Tyler Steele &lt;tyler.steele@protonmail.com&gt;</span>
@@ -1189,9 +1184,8 @@
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>};
 <span class="kw">use</span> <span class="ident">gcd::Gcd</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
-<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
-<span class="kw">use</span> <span class="ident">uucore::show_error</span>;
-<span class="kw">use</span> <span class="ident">uucore::InvalidEncodingHandling</span>;
+<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UResult</span>};
+<span class="kw">use</span> <span class="ident">uucore</span>::{<span class="ident">show_error</span>, <span class="ident">InvalidEncodingHandling</span>};
 
 <span class="kw">const</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;copy, and optionally convert, a file system resource&quot;</span>;
 <span class="kw">const</span> <span class="ident">BUF_INIT_BYTE</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0xDD</span>;
@@ -1227,11 +1221,13 @@
         };
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">amt</span>) <span class="op">=</span> <span class="ident">skip</span> {
-            <span class="kw">let</span> <span class="ident">num_bytes_read</span> <span class="op">=</span> <span class="ident">i</span>
-                .<span class="ident">force_fill</span>(<span class="ident">amt</span>.<span class="ident">try_into</span>().<span class="ident">unwrap</span>())
-                .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to read input&quot;</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
-            <span class="kw">if</span> <span class="ident">num_bytes_read</span> <span class="op">&lt;</span> <span class="ident">amt</span> {
-                <span class="macro">show_error!</span>(<span class="string">&quot;&#39;standard input&#39;: cannot skip to specified offset&quot;</span>);
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">i</span>.<span class="ident">read_skip</span>(<span class="ident">amt</span>) {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="ident">io::ErrorKind::UnexpectedEof</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">kind</span>() {
+                    <span class="macro">show_error!</span>(<span class="string">&quot;&#39;standard input&#39;: cannot skip to specified offset&quot;</span>);
+                } <span class="kw">else</span> {
+                    <span class="kw">return</span> <span class="ident">io::Result::Err</span>(<span class="ident">e</span>)
+                        .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;I/O error while skipping&quot;</span>.<span class="ident">to_string</span>());
+                }
             }
         }
 
@@ -1300,9 +1296,6 @@
             };
 
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">amt</span>) <span class="op">=</span> <span class="ident">skip</span> {
-                <span class="kw">let</span> <span class="ident">amt</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="ident">amt</span>
-                    .<span class="ident">try_into</span>()
-                    .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;failed to parse seek amount&quot;</span>))<span class="question-mark">?</span>;
                 <span class="ident">src</span>.<span class="ident">seek</span>(<span class="ident">io::SeekFrom::Start</span>(<span class="ident">amt</span>))
                     .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to seek in input file&quot;</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
             }
@@ -1414,19 +1407,18 @@
         })
     }
 
-    <span class="doccomment">/// Read the specified number of bytes from this reader.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// On success, this method returns the number of bytes read. If</span>
-    <span class="doccomment">/// this reader has fewer than `n` bytes available, then it reads</span>
-    <span class="doccomment">/// as many as possible. In that case, this method returns a</span>
-    <span class="doccomment">/// number less than `n`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Errors</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If there is a problem reading.</span>
-    <span class="kw">fn</span> <span class="ident">force_fill</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">n</span>: <span class="ident">u64</span>) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-        <span class="self">self</span>.<span class="ident">take</span>(<span class="ident">n</span>).<span class="ident">read_to_end</span>(<span class="kw-2">&amp;mut</span> <span class="ident">buf</span>)
+    <span class="doccomment">/// Skips amount_to_read bytes from the Input by copying into a sink</span>
+    <span class="kw">fn</span> <span class="ident">read_skip</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">amount_to_read</span>: <span class="ident">u64</span>) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">copy_result</span> <span class="op">=</span> <span class="ident">io::copy</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">src</span>.<span class="ident">by_ref</span>().<span class="ident">take</span>(<span class="ident">amount_to_read</span>), <span class="kw-2">&amp;mut</span> <span class="ident">io::sink</span>());
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">n</span>) <span class="op">=</span> <span class="ident">copy_result</span> {
+            <span class="kw">if</span> <span class="ident">n</span> <span class="op">!</span><span class="op">=</span> <span class="ident">amount_to_read</span> {
+                <span class="ident">io::Result::Err</span>(<span class="ident">io::Error::new</span>(<span class="ident">io::ErrorKind::UnexpectedEof</span>, <span class="string">&quot;&quot;</span>))
+            } <span class="kw">else</span> {
+                <span class="prelude-val">Ok</span>(())
+            }
+        } <span class="kw">else</span> {
+            <span class="ident">io::Result::Err</span>(<span class="ident">copy_result</span>.<span class="ident">unwrap_err</span>())
+        }
     }
 }
 
@@ -1453,8 +1445,7 @@
 
         <span class="comment">// stdout is not seekable, so we just write null bytes.</span>
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">amt</span>) <span class="op">=</span> <span class="ident">seek</span> {
-            <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="string">b&#39;\0&#39;</span>; <span class="ident">amt</span>];
-            <span class="ident">dst</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">bytes</span>)
+            <span class="ident">io::copy</span>(<span class="kw-2">&amp;mut</span> <span class="ident">io::repeat</span>(<span class="number">0u8</span>).<span class="ident">take</span>(<span class="ident">amt</span> <span class="kw">as</span> <span class="ident">u64</span>), <span class="kw-2">&amp;mut</span> <span class="ident">dst</span>)
                 .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">String::from</span>(<span class="string">&quot;write error&quot;</span>))<span class="question-mark">?</span>;
         }
 
@@ -1678,7 +1669,7 @@
             <span class="comment">// Instead, we suppress the error by calling</span>
             <span class="comment">// `Result::ok()`. This matches the behavior of GNU `dd`</span>
             <span class="comment">// when given the command-line argument `of=/dev/null`.</span>
-            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">seek</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>).<span class="ident">try_into</span>().<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">seek</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>);
             <span class="kw">if</span> <span class="op">!</span><span class="ident">cflags</span>.<span class="ident">notrunc</span> {
                 <span class="ident">dst</span>.<span class="ident">set_len</span>(<span class="ident">i</span>).<span class="ident">ok</span>();
             }
@@ -1810,15 +1801,14 @@
 ) -&gt; <span class="ident">usize</span> {
     <span class="kw">match</span> <span class="ident">count</span> {
         <span class="prelude-val">Some</span>(<span class="ident">CountType::Reads</span>(<span class="ident">rmax</span>)) =&gt; {
-            <span class="kw">let</span> <span class="ident">rmax</span>: <span class="ident">u64</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rmax</span>).<span class="ident">try_into</span>().<span class="ident">unwrap</span>();
             <span class="kw">let</span> <span class="ident">rsofar</span> <span class="op">=</span> <span class="ident">rstat</span>.<span class="ident">reads_complete</span> <span class="op">+</span> <span class="ident">rstat</span>.<span class="ident">reads_partial</span>;
-            <span class="kw">let</span> <span class="ident">rremain</span>: <span class="ident">usize</span> <span class="op">=</span> (<span class="ident">rmax</span> <span class="op">-</span> <span class="ident">rsofar</span>).<span class="ident">try_into</span>().<span class="ident">unwrap</span>();
-            <span class="ident">cmp::min</span>(<span class="ident">ideal_bsize</span>, <span class="ident">rremain</span> <span class="op">*</span> <span class="ident">ibs</span>)
+            <span class="kw">let</span> <span class="ident">rremain</span> <span class="op">=</span> <span class="ident">rmax</span> <span class="op">-</span> <span class="ident">rsofar</span>;
+            <span class="ident">cmp::min</span>(<span class="ident">ideal_bsize</span> <span class="kw">as</span> <span class="ident">u64</span>, <span class="ident">rremain</span> <span class="op">*</span> <span class="ident">ibs</span> <span class="kw">as</span> <span class="ident">u64</span>) <span class="kw">as</span> <span class="ident">usize</span>
         }
         <span class="prelude-val">Some</span>(<span class="ident">CountType::Bytes</span>(<span class="ident">bmax</span>)) =&gt; {
             <span class="kw">let</span> <span class="ident">bmax</span>: <span class="ident">u128</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">bmax</span>).<span class="ident">try_into</span>().<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">bremain</span>: <span class="ident">usize</span> <span class="op">=</span> (<span class="ident">bmax</span> <span class="op">-</span> <span class="ident">wstat</span>.<span class="ident">bytes_total</span>).<span class="ident">try_into</span>().<span class="ident">unwrap</span>();
-            <span class="ident">cmp::min</span>(<span class="ident">ideal_bsize</span>, <span class="ident">bremain</span>)
+            <span class="kw">let</span> <span class="ident">bremain</span>: <span class="ident">u128</span> <span class="op">=</span> <span class="ident">bmax</span> <span class="op">-</span> <span class="ident">wstat</span>.<span class="ident">bytes_total</span>;
+            <span class="ident">cmp::min</span>(<span class="ident">ideal_bsize</span> <span class="kw">as</span> <span class="ident">u128</span>, <span class="ident">bremain</span> <span class="kw">as</span> <span class="ident">u128</span>) <span class="kw">as</span> <span class="ident">usize</span>
         }
         <span class="prelude-val">None</span> =&gt; <span class="ident">ideal_bsize</span>,
     }
@@ -1829,7 +1819,7 @@
 <span class="kw">fn</span> <span class="ident">below_count_limit</span>(<span class="ident">count</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CountType</span><span class="op">&gt;</span>, <span class="ident">rstat</span>: <span class="kw-2">&amp;</span><span class="ident">ReadStat</span>, <span class="ident">wstat</span>: <span class="kw-2">&amp;</span><span class="ident">WriteStat</span>) -&gt; <span class="ident">bool</span> {
     <span class="kw">match</span> <span class="ident">count</span> {
         <span class="prelude-val">Some</span>(<span class="ident">CountType::Reads</span>(<span class="ident">n</span>)) =&gt; {
-            <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">n</span>).<span class="ident">try_into</span>().<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">n</span>;
             <span class="ident">rstat</span>.<span class="ident">reads_complete</span> <span class="op">+</span> <span class="ident">rstat</span>.<span class="ident">reads_partial</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">n</span>
         }
         <span class="prelude-val">Some</span>(<span class="ident">CountType::Bytes</span>(<span class="ident">n</span>)) =&gt; {
