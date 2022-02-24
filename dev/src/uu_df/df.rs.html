@@ -407,6 +407,45 @@
 <span id="406">406</span>
 <span id="407">407</span>
 <span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Fangxu Hu &lt;framlog@gmail.com&gt;</span>
@@ -470,6 +509,52 @@
     <span class="ident">exclude</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 }
 
+<span class="doccomment">/// A block size to use in condensing the display of a large number of bytes.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The [`Bytes`] variant represents a static block size. The</span>
+<span class="doccomment">/// [`HumanReadableDecimal`] and [`HumanReadableBinary`] variants</span>
+<span class="doccomment">/// represent dynamic block sizes: as the number of bytes increases,</span>
+<span class="doccomment">/// the divisor increases as well (for example, from 1 to 1,000 to</span>
+<span class="doccomment">/// 1,000,000 and so on in the case of [`HumanReadableDecimal`]).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The default variant is `Bytes(1024)`.</span>
+<span class="kw">enum</span> <span class="ident">BlockSize</span> {
+    <span class="doccomment">/// A fixed number of bytes.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The number must be positive.</span>
+    <span class="ident">Bytes</span>(<span class="ident">u64</span>),
+
+    <span class="doccomment">/// Use the largest divisor corresponding to a unit, like B, K, M, G, etc.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This variant represents powers of 1,000. Contrast with</span>
+    <span class="doccomment">/// [`HumanReadableBinary`], which represents powers of 1,024.</span>
+    <span class="ident">HumanReadableDecimal</span>,
+
+    <span class="doccomment">/// Use the largest divisor corresponding to a unit, like B, K, M, G, etc.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This variant represents powers of 1,000. Contrast with</span>
+    <span class="doccomment">/// [`HumanReadableBinary`], which represents powers of 1,024.</span>
+    <span class="ident">HumanReadableBinary</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">BlockSize</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
+        <span class="ident"><span class="self">Self</span>::Bytes</span>(<span class="number">1024</span>)
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ArgMatches</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BlockSize</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE</span>) {
+            <span class="ident"><span class="self">Self</span>::HumanReadableBinary</span>
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_2</span>) {
+            <span class="ident"><span class="self">Self</span>::HumanReadableDecimal</span>
+        } <span class="kw">else</span> {
+            <span class="ident"><span class="self">Self</span>::default</span>()
+        }
+    }
+}
+
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
 <span class="kw">struct</span> <span class="ident">Options</span> {
     <span class="ident">show_local_fs</span>: <span class="ident">bool</span>,
@@ -477,8 +562,7 @@
     <span class="ident">show_listed_fs</span>: <span class="ident">bool</span>,
     <span class="ident">show_fs_type</span>: <span class="ident">bool</span>,
     <span class="ident">show_inode_instead</span>: <span class="ident">bool</span>,
-    <span class="comment">// block_size: usize,</span>
-    <span class="ident">human_readable_base</span>: <span class="ident">i64</span>,
+    <span class="ident">block_size</span>: <span class="ident">BlockSize</span>,
     <span class="ident">fs_selector</span>: <span class="ident">FsSelector</span>,
 }
 
@@ -491,13 +575,7 @@
             <span class="ident">show_listed_fs</span>: <span class="bool-val">false</span>,
             <span class="ident">show_fs_type</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_PRINT_TYPE</span>),
             <span class="ident">show_inode_instead</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_INODES</span>),
-            <span class="ident">human_readable_base</span>: <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE</span>) {
-                <span class="number">1024</span>
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_2</span>) {
-                <span class="number">1000</span>
-            } <span class="kw">else</span> {
-                <span class="op">-</span><span class="number">1</span>
-            },
+            <span class="ident">block_size</span>: <span class="ident">BlockSize::from</span>(<span class="ident">matches</span>),
             <span class="ident">fs_selector</span>: <span class="ident">FsSelector::from</span>(<span class="ident">matches</span>),
         }
     }
