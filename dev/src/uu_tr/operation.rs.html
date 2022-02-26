@@ -547,6 +547,12 @@
 <span id="545">545</span>
 <span id="546">546</span>
 <span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -826,15 +832,21 @@
             <span class="ident">separated_pair</span>(<span class="ident"><span class="self">Self</span>::parse_backslash_or_char</span>, <span class="ident">tag</span>(<span class="string">&quot;*&quot;</span>), <span class="ident">digit1</span>),
             <span class="ident">tag</span>(<span class="string">&quot;]&quot;</span>),
         )(<span class="ident">input</span>)
-        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">l</span>, (<span class="ident">c</span>, <span class="ident">str</span>))<span class="op">|</span> {
-            (
-                <span class="ident">l</span>,
-                <span class="kw">match</span> <span class="ident">usize::from_str_radix</span>(<span class="ident">str</span>, <span class="number">8</span>) {
+        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">l</span>, (<span class="ident">c</span>, <span class="ident">cnt_str</span>))<span class="op">|</span> {
+            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">cnt_str</span>.<span class="ident">starts_with</span>(<span class="string">&#39;0&#39;</span>) {
+                <span class="kw">match</span> <span class="ident">usize::from_str_radix</span>(<span class="ident">cnt_str</span>, <span class="number">8</span>) {
                     <span class="prelude-val">Ok</span>(<span class="number">0</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::CharStar</span>(<span class="ident">c</span>)),
                     <span class="prelude-val">Ok</span>(<span class="ident">count</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::CharRepeat</span>(<span class="ident">c</span>, <span class="ident">count</span>)),
-                    <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">BadSequence::InvalidRepeatCount</span>(<span class="ident">str</span>.<span class="ident">to_string</span>())),
-                },
-            )
+                    <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">BadSequence::InvalidRepeatCount</span>(<span class="ident">cnt_str</span>.<span class="ident">to_string</span>())),
+                }
+            } <span class="kw">else</span> {
+                <span class="kw">match</span> <span class="ident">cnt_str</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
+                    <span class="prelude-val">Ok</span>(<span class="number">0</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::CharStar</span>(<span class="ident">c</span>)),
+                    <span class="prelude-val">Ok</span>(<span class="ident">count</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::CharRepeat</span>(<span class="ident">c</span>, <span class="ident">count</span>)),
+                    <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">BadSequence::InvalidRepeatCount</span>(<span class="ident">cnt_str</span>.<span class="ident">to_string</span>())),
+                }
+            };
+            (<span class="ident">l</span>, <span class="ident">result</span>)
         })
     }
 
