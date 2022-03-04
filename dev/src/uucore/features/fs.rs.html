@@ -566,6 +566,24 @@
 <span id="564">564</span>
 <span id="565">565</span>
 <span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Joseph Crail &lt;jbcrail@gmail.com&gt;</span>
@@ -791,15 +809,17 @@
     <span class="ident">ret</span>
 }
 
-<span class="kw">fn</span> <span class="ident">resolve</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">original</span>: <span class="ident">P</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PathBuf</span>, (<span class="ident">PathBuf</span>, <span class="ident">IOError</span>)<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">resolve</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">original</span>: <span class="ident">P</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PathBuf</span>, (<span class="ident">bool</span>, <span class="ident">PathBuf</span>, <span class="ident">IOError</span>)<span class="op">&gt;</span> {
     <span class="kw">const</span> <span class="ident">MAX_LINKS_FOLLOWED</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">255</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">followed</span> <span class="op">=</span> <span class="number">0</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">original</span>.<span class="ident">as_ref</span>().<span class="ident">to_path_buf</span>();
-
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">symlink_is_absolute</span> <span class="op">=</span> <span class="bool-val">false</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">first_resolution</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+
     <span class="kw">loop</span> {
         <span class="kw">if</span> <span class="ident">followed</span> <span class="op">==</span> <span class="ident">MAX_LINKS_FOLLOWED</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>((
+                <span class="ident">symlink_is_absolute</span>,
                 <span class="comment">// When we hit MAX_LINKS_FOLLOWED we should return the first resolution (that&#39;s what GNU does - for whatever reason)</span>
                 <span class="ident">first_resolution</span>.<span class="ident">unwrap</span>(),
                 <span class="ident">Error::new</span>(<span class="ident">ErrorKind::InvalidInput</span>, <span class="string">&quot;maximum links followed&quot;</span>),
@@ -812,16 +832,17 @@
                     <span class="kw">break</span>;
                 }
             }
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>((<span class="ident">result</span>, <span class="ident">e</span>)),
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>((<span class="ident">symlink_is_absolute</span>, <span class="ident">result</span>, <span class="ident">e</span>)),
         }
 
         <span class="ident">followed</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
         <span class="kw">match</span> <span class="ident">fs::read_link</span>(<span class="kw-2">&amp;</span><span class="ident">result</span>) {
             <span class="prelude-val">Ok</span>(<span class="ident">path</span>) =&gt; {
                 <span class="ident">result</span>.<span class="ident">pop</span>();
+                <span class="ident">symlink_is_absolute</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">is_absolute</span>();
                 <span class="ident">result</span>.<span class="ident">push</span>(<span class="ident">path</span>);
             }
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>((<span class="ident">result</span>, <span class="ident">e</span>)),
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>((<span class="ident">symlink_is_absolute</span>, <span class="ident">result</span>, <span class="ident">e</span>)),
         }
 
         <span class="kw">if</span> <span class="ident">first_resolution</span>.<span class="ident">is_none</span>() {
@@ -911,8 +932,13 @@
             }
 
             <span class="kw">match</span> <span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">result</span>) {
-                <span class="prelude-val">Err</span>((<span class="ident">path</span>, <span class="kw">_</span>)) <span class="kw">if</span> <span class="ident">miss_mode</span> <span class="op">==</span> <span class="ident">MissingHandling::Missing</span> =&gt; <span class="ident">result</span> <span class="op">=</span> <span class="ident">path</span>,
-                <span class="prelude-val">Err</span>((<span class="kw">_</span>, <span class="ident">e</span>)) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>),
+                <span class="prelude-val">Err</span>((<span class="kw">_</span>, <span class="ident">path</span>, <span class="ident">e</span>)) =&gt; {
+                    <span class="kw">if</span> <span class="ident">miss_mode</span> <span class="op">==</span> <span class="ident">MissingHandling::Missing</span> {
+                        <span class="ident">result</span> <span class="op">=</span> <span class="ident">path</span>;
+                    } <span class="kw">else</span> {
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+                    }
+                }
                 <span class="prelude-val">Ok</span>(<span class="ident">path</span>) =&gt; {
                     <span class="ident">result</span> <span class="op">=</span> <span class="ident">path</span>;
                 }
@@ -926,10 +952,20 @@
         }
 
         <span class="kw">match</span> <span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">result</span>) {
-            <span class="prelude-val">Err</span>((<span class="kw">_</span>, <span class="ident">e</span>)) <span class="kw">if</span> <span class="ident">miss_mode</span> <span class="op">==</span> <span class="ident">MissingHandling::Existing</span> =&gt; {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+            <span class="prelude-val">Err</span>((<span class="ident">is_absolute</span>, <span class="ident">path</span>, <span class="ident">err</span>)) =&gt; {
+                <span class="comment">// If the resolved symlink is an absolute path and non-existent,</span>
+                <span class="comment">// `realpath` throws no such file error.</span>
+                <span class="kw">if</span> <span class="ident">miss_mode</span> <span class="op">==</span> <span class="ident">MissingHandling::Existing</span>
+                    <span class="op">|</span><span class="op">|</span> (<span class="ident">err</span>.<span class="ident">kind</span>() <span class="op">==</span> <span class="ident">ErrorKind::NotFound</span>
+                        <span class="op">&amp;&amp;</span> <span class="ident">is_absolute</span>
+                        <span class="op">&amp;&amp;</span> <span class="ident">miss_mode</span> <span class="op">==</span> <span class="ident">MissingHandling::Normal</span>)
+                {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>);
+                } <span class="kw">else</span> {
+                    <span class="ident">result</span> <span class="op">=</span> <span class="ident">path</span>;
+                }
             }
-            <span class="prelude-val">Ok</span>(<span class="ident">path</span>) <span class="op">|</span> <span class="prelude-val">Err</span>((<span class="ident">path</span>, <span class="kw">_</span>)) =&gt; {
+            <span class="prelude-val">Ok</span>(<span class="ident">path</span>) =&gt; {
                 <span class="ident">result</span> <span class="op">=</span> <span class="ident">path</span>;
             }
         }
