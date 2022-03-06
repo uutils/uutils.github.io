@@ -1062,6 +1062,78 @@
 <span id="1060">1060</span>
 <span id="1061">1061</span>
 <span id="1062">1062</span>
+<span id="1063">1063</span>
+<span id="1064">1064</span>
+<span id="1065">1065</span>
+<span id="1066">1066</span>
+<span id="1067">1067</span>
+<span id="1068">1068</span>
+<span id="1069">1069</span>
+<span id="1070">1070</span>
+<span id="1071">1071</span>
+<span id="1072">1072</span>
+<span id="1073">1073</span>
+<span id="1074">1074</span>
+<span id="1075">1075</span>
+<span id="1076">1076</span>
+<span id="1077">1077</span>
+<span id="1078">1078</span>
+<span id="1079">1079</span>
+<span id="1080">1080</span>
+<span id="1081">1081</span>
+<span id="1082">1082</span>
+<span id="1083">1083</span>
+<span id="1084">1084</span>
+<span id="1085">1085</span>
+<span id="1086">1086</span>
+<span id="1087">1087</span>
+<span id="1088">1088</span>
+<span id="1089">1089</span>
+<span id="1090">1090</span>
+<span id="1091">1091</span>
+<span id="1092">1092</span>
+<span id="1093">1093</span>
+<span id="1094">1094</span>
+<span id="1095">1095</span>
+<span id="1096">1096</span>
+<span id="1097">1097</span>
+<span id="1098">1098</span>
+<span id="1099">1099</span>
+<span id="1100">1100</span>
+<span id="1101">1101</span>
+<span id="1102">1102</span>
+<span id="1103">1103</span>
+<span id="1104">1104</span>
+<span id="1105">1105</span>
+<span id="1106">1106</span>
+<span id="1107">1107</span>
+<span id="1108">1108</span>
+<span id="1109">1109</span>
+<span id="1110">1110</span>
+<span id="1111">1111</span>
+<span id="1112">1112</span>
+<span id="1113">1113</span>
+<span id="1114">1114</span>
+<span id="1115">1115</span>
+<span id="1116">1116</span>
+<span id="1117">1117</span>
+<span id="1118">1118</span>
+<span id="1119">1119</span>
+<span id="1120">1120</span>
+<span id="1121">1121</span>
+<span id="1122">1122</span>
+<span id="1123">1123</span>
+<span id="1124">1124</span>
+<span id="1125">1125</span>
+<span id="1126">1126</span>
+<span id="1127">1127</span>
+<span id="1128">1128</span>
+<span id="1129">1129</span>
+<span id="1130">1130</span>
+<span id="1131">1131</span>
+<span id="1132">1132</span>
+<span id="1133">1133</span>
+<span id="1134">1134</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Akira Hayakawa &lt;ruby.wktk@gmail.com&gt;</span>
@@ -1923,6 +1995,11 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// This function returns an error if there is a problem reading from</span>
 <span class="doccomment">/// `reader` or writing to one of the output files.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # See also</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * [`kth_chunk_by_line`], which splits its input in the same way,</span>
+<span class="doccomment">///   but writes only one specified chunk to stdout.</span>
 <span class="kw">fn</span> <span class="ident">split_into_n_chunks_by_line</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(
     <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>,
     <span class="ident">reader</span>: <span class="kw-2">&amp;mut</span> <span class="ident">R</span>,
@@ -1979,6 +2056,67 @@
     <span class="prelude-val">Ok</span>(())
 }
 
+<span class="doccomment">/// Print the k-th chunk of a file, splitting by line.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function is like [`split_into_n_chunks_by_line`], but instead</span>
+<span class="doccomment">/// of writing each chunk to its own file, it only writes to stdout</span>
+<span class="doccomment">/// the contents of the chunk identified by `chunk_number`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Errors</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function returns an error if there is a problem reading from</span>
+<span class="doccomment">/// `reader` or writing to one of the output files.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # See also</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * [`split_into_n_chunks_by_line`], which splits its input in the</span>
+<span class="doccomment">///   same way, but writes each chunk to its own file.</span>
+<span class="kw">fn</span> <span class="ident">kth_chunk_by_line</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(
+    <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>,
+    <span class="ident">reader</span>: <span class="kw-2">&amp;mut</span> <span class="ident">R</span>,
+    <span class="ident">chunk_number</span>: <span class="ident">u64</span>,
+    <span class="ident">num_chunks</span>: <span class="ident">u64</span>,
+) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>
+<span class="kw">where</span>
+    <span class="ident">R</span>: <span class="ident">BufRead</span>,
+{
+    <span class="comment">// Get the size of the input file in bytes and compute the number</span>
+    <span class="comment">// of bytes per chunk.</span>
+    <span class="kw">let</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">metadata</span>(<span class="kw-2">&amp;</span><span class="ident">settings</span>.<span class="ident">input</span>).<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">num_bytes</span> <span class="op">=</span> <span class="ident">metadata</span>.<span class="ident">len</span>();
+    <span class="kw">let</span> <span class="ident">chunk_size</span> <span class="op">=</span> (<span class="ident">num_bytes</span> <span class="op">/</span> (<span class="ident">num_chunks</span> <span class="kw">as</span> <span class="ident">u64</span>)) <span class="kw">as</span> <span class="ident">usize</span>;
+
+    <span class="comment">// Write to stdout instead of to a file.</span>
+    <span class="kw">let</span> <span class="ident">stdout</span> <span class="op">=</span> <span class="ident">std::io::stdout</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">writer</span> <span class="op">=</span> <span class="ident">stdout</span>.<span class="ident">lock</span>();
+
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">num_bytes_remaining_in_current_chunk</span> <span class="op">=</span> <span class="ident">chunk_size</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="number">0</span>;
+    <span class="kw">for</span> <span class="ident">line_result</span> <span class="kw">in</span> <span class="ident">reader</span>.<span class="ident">lines</span>() {
+        <span class="kw">let</span> <span class="ident">line</span> <span class="op">=</span> <span class="ident">line_result</span><span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="ident">line</span>.<span class="ident">as_bytes</span>();
+        <span class="kw">if</span> <span class="ident">i</span> <span class="op">==</span> <span class="ident">chunk_number</span> {
+            <span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="ident">bytes</span>)<span class="question-mark">?</span>;
+            <span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="string">b&quot;\n&quot;</span>)<span class="question-mark">?</span>;
+        }
+
+        <span class="comment">// Add one byte for the newline character.</span>
+        <span class="kw">let</span> <span class="ident">num_bytes</span> <span class="op">=</span> <span class="ident">bytes</span>.<span class="ident">len</span>() <span class="op">+</span> <span class="number">1</span>;
+        <span class="kw">if</span> <span class="ident">num_bytes</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">num_bytes_remaining_in_current_chunk</span> {
+            <span class="ident">num_bytes_remaining_in_current_chunk</span> <span class="op">=</span> <span class="ident">chunk_size</span>;
+            <span class="ident">i</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+        } <span class="kw">else</span> {
+            <span class="ident">num_bytes_remaining_in_current_chunk</span> <span class="op">-</span><span class="op">=</span> <span class="ident">num_bytes</span>;
+        }
+
+        <span class="kw">if</span> <span class="ident">i</span> <span class="op">&gt;</span> <span class="ident">chunk_number</span> {
+            <span class="kw">break</span>;
+        }
+    }
+
+    <span class="prelude-val">Ok</span>(())
+}
+
 <span class="kw">fn</span> <span class="ident">split</span>(<span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">reader</span> <span class="op">=</span> <span class="ident">BufReader::new</span>(<span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">input</span> <span class="op">==</span> <span class="string">&quot;-&quot;</span> {
         <span class="ident">Box::new</span>(<span class="ident">stdin</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Read</span><span class="op">&gt;</span>
@@ -1998,6 +2136,12 @@
         }
         <span class="ident">Strategy::Number</span>(<span class="ident">NumberType::Lines</span>(<span class="ident">num_chunks</span>)) =&gt; {
             <span class="ident">split_into_n_chunks_by_line</span>(<span class="ident">settings</span>, <span class="kw-2">&amp;mut</span> <span class="ident">reader</span>, <span class="ident">num_chunks</span>)
+        }
+        <span class="ident">Strategy::Number</span>(<span class="ident">NumberType::KthLines</span>(<span class="ident">chunk_number</span>, <span class="ident">num_chunks</span>)) =&gt; {
+            <span class="comment">// The chunk number is given as a 1-indexed number, but it</span>
+            <span class="comment">// is a little easier to deal with a 0-indexed number.</span>
+            <span class="kw">let</span> <span class="ident">chunk_number</span> <span class="op">=</span> <span class="ident">chunk_number</span> <span class="op">-</span> <span class="number">1</span>;
+            <span class="ident">kth_chunk_by_line</span>(<span class="ident">settings</span>, <span class="kw-2">&amp;mut</span> <span class="ident">reader</span>, <span class="ident">chunk_number</span>, <span class="ident">num_chunks</span>)
         }
         <span class="ident">Strategy::Number</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;-n mode not yet fully implemented&quot;</span>)),
         <span class="ident">Strategy::Lines</span>(<span class="ident">chunk_size</span>) =&gt; {
