@@ -271,6 +271,9 @@
 <span id="269">269</span>
 <span id="270">270</span>
 <span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Alex Lyon &lt;arcterus@mail.com&gt;</span>
@@ -324,7 +327,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Config</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">clap::ArgMatches</span>) -&gt; <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">clap::ArgMatches</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">signal</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">options</span>.<span class="ident">value_of</span>(<span class="ident">options::SIGNAL</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">signal_</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">signal_result</span> <span class="op">=</span> <span class="ident">signal_by_name_or_value</span>(<span class="ident">signal_</span>);
@@ -342,8 +345,11 @@
             .<span class="ident">value_of</span>(<span class="ident">options::KILL_AFTER</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">time</span><span class="op">|</span> <span class="ident">uucore::parse_time::from_str</span>(<span class="ident">time</span>).<span class="ident">unwrap</span>());
 
-        <span class="kw">let</span> <span class="ident">duration</span>: <span class="ident">Duration</span> <span class="op">=</span>
-            <span class="ident">uucore::parse_time::from_str</span>(<span class="ident">options</span>.<span class="ident">value_of</span>(<span class="ident">options::DURATION</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">duration</span> <span class="op">=</span>
+            <span class="kw">match</span> <span class="ident">uucore::parse_time::from_str</span>(<span class="ident">options</span>.<span class="ident">value_of</span>(<span class="ident">options::DURATION</span>).<span class="ident">unwrap</span>()) {
+                <span class="prelude-val">Ok</span>(<span class="ident">duration</span>) =&gt; <span class="ident">duration</span>,
+                <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="ident">err</span>)),
+            };
 
         <span class="kw">let</span> <span class="ident">preserve_status</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::PRESERVE_STATUS</span>);
         <span class="kw">let</span> <span class="ident">foreground</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::FOREGROUND</span>);
@@ -355,7 +361,7 @@
             .<span class="ident">map</span>(<span class="ident">String::from</span>)
             .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
-        <span class="self">Self</span> {
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
             <span class="ident">foreground</span>,
             <span class="ident">kill_after</span>,
             <span class="ident">signal</span>,
@@ -363,7 +369,7 @@
             <span class="ident">preserve_status</span>,
             <span class="ident">verbose</span>,
             <span class="ident">command</span>,
-        }
+        })
     }
 }
 
@@ -377,7 +383,7 @@
 
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">app</span>.<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
-    <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">Config::from</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>);
+    <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">Config::from</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>)<span class="question-mark">?</span>;
     <span class="ident">timeout</span>(
         <span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">command</span>,
         <span class="ident">config</span>.<span class="ident">duration</span>,
