@@ -739,34 +739,6 @@
 <span id="737">737</span>
 <span id="738">738</span>
 <span id="739">739</span>
-<span id="740">740</span>
-<span id="741">741</span>
-<span id="742">742</span>
-<span id="743">743</span>
-<span id="744">744</span>
-<span id="745">745</span>
-<span id="746">746</span>
-<span id="747">747</span>
-<span id="748">748</span>
-<span id="749">749</span>
-<span id="750">750</span>
-<span id="751">751</span>
-<span id="752">752</span>
-<span id="753">753</span>
-<span id="754">754</span>
-<span id="755">755</span>
-<span id="756">756</span>
-<span id="757">757</span>
-<span id="758">758</span>
-<span id="759">759</span>
-<span id="760">760</span>
-<span id="761">761</span>
-<span id="762">762</span>
-<span id="763">763</span>
-<span id="764">764</span>
-<span id="765">765</span>
-<span id="766">766</span>
-<span id="767">767</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Fangxu Hu &lt;framlog@gmail.com&gt;</span>
@@ -775,21 +747,25 @@
 <span class="comment">// For the full copyright and license information, please view the LICENSE file</span>
 <span class="comment">// that was distributed with this source code.</span>
 <span class="comment">// spell-checker:ignore itotal iused iavail ipcent pcent tmpfs squashfs</span>
+<span class="kw">mod</span> <span class="ident">blocks</span>;
 <span class="kw">mod</span> <span class="ident">table</span>;
 
+<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
+<span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">uucore::fsext::statfs</span>;
 <span class="kw">use</span> <span class="ident">uucore::fsext</span>::{<span class="ident">read_fs_list</span>, <span class="ident">FsUsage</span>, <span class="ident">MountInfo</span>};
-<span class="kw">use</span> <span class="ident">uucore</span>::{<span class="ident">error::UResult</span>, <span class="ident">format_usage</span>};
 
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>};
 
 <span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
+<span class="kw">use</span> <span class="ident">std::fmt</span>;
 <span class="kw">use</span> <span class="ident">std::iter::FromIterator</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::path::Path</span>;
 
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::blocks</span>::{<span class="ident">block_size_from_matches</span>, <span class="ident">BlockSize</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::table</span>::{<span class="ident">DisplayRow</span>, <span class="ident">Header</span>, <span class="ident">Row</span>};
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Show information about the file system on which each FILE resides,\n\
@@ -826,55 +802,6 @@
     <span class="ident">exclude</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 }
 
-<span class="doccomment">/// A block size to use in condensing the display of a large number of bytes.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The [`BlockSize::Bytes`] variant represents a static block</span>
-<span class="doccomment">/// size. The [`BlockSize::HumanReadableDecimal`] and</span>
-<span class="doccomment">/// [`BlockSize::HumanReadableBinary`] variants represent dynamic</span>
-<span class="doccomment">/// block sizes: as the number of bytes increases, the divisor</span>
-<span class="doccomment">/// increases as well (for example, from 1 to 1,000 to 1,000,000 and</span>
-<span class="doccomment">/// so on in the case of [`BlockSize::HumanReadableDecimal`]).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The default variant is `Bytes(1024)`.</span>
-<span class="kw">enum</span> <span class="ident">BlockSize</span> {
-    <span class="doccomment">/// A fixed number of bytes.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The number must be positive.</span>
-    <span class="ident">Bytes</span>(<span class="ident">u64</span>),
-
-    <span class="doccomment">/// Use the largest divisor corresponding to a unit, like B, K, M, G, etc.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This variant represents powers of 1,000. Contrast with</span>
-    <span class="doccomment">/// [`BlockSize::HumanReadableBinary`], which represents powers of</span>
-    <span class="doccomment">/// 1,024.</span>
-    <span class="ident">HumanReadableDecimal</span>,
-
-    <span class="doccomment">/// Use the largest divisor corresponding to a unit, like B, K, M, G, etc.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This variant represents powers of 1,024. Contrast with</span>
-    <span class="doccomment">/// [`BlockSize::HumanReadableDecimal`], which represents powers</span>
-    <span class="doccomment">/// of 1,000.</span>
-    <span class="ident">HumanReadableBinary</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">BlockSize</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::Bytes</span>(<span class="number">1024</span>)
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ArgMatches</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BlockSize</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE</span>) {
-            <span class="ident"><span class="self">Self</span>::HumanReadableBinary</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_2</span>) {
-            <span class="ident"><span class="self">Self</span>::HumanReadableDecimal</span>
-        } <span class="kw">else</span> {
-            <span class="ident"><span class="self">Self</span>::default</span>()
-        }
-    }
-}
-
 <span class="doccomment">/// Parameters that control the behavior of `df`.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Most of these parameters control which rows and which columns are</span>
@@ -894,19 +821,36 @@
     <span class="ident">show_total</span>: <span class="ident">bool</span>,
 }
 
+<span class="kw">enum</span> <span class="ident">OptionsError</span> {
+    <span class="ident">InvalidBlockSize</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">OptionsError</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="comment">// TODO This should include the raw string provided as the argument.</span>
+            <span class="comment">//</span>
+            <span class="comment">// TODO This needs to vary based on whether `--block-size`</span>
+            <span class="comment">// or `-B` were provided.</span>
+            <span class="ident"><span class="self">Self</span>::InvalidBlockSize</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;invalid --block-size argument&quot;</span>),
+        }
+    }
+}
+
 <span class="kw">impl</span> <span class="ident">Options</span> {
     <span class="doccomment">/// Convert command-line arguments into [`Options`].</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">OptionsError</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
             <span class="ident">show_local_fs</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_LOCAL</span>),
             <span class="ident">show_all_fs</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_ALL</span>),
             <span class="ident">show_listed_fs</span>: <span class="bool-val">false</span>,
             <span class="ident">show_fs_type</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_PRINT_TYPE</span>),
             <span class="ident">show_inode_instead</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_INODES</span>),
-            <span class="ident">block_size</span>: <span class="ident">BlockSize::from</span>(<span class="ident">matches</span>),
+            <span class="ident">block_size</span>: <span class="ident">block_size_from_matches</span>(<span class="ident">matches</span>)
+                .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">OptionsError::InvalidBlockSize</span>)<span class="question-mark">?</span>,
             <span class="ident">fs_selector</span>: <span class="ident">FsSelector::from</span>(<span class="ident">matches</span>),
             <span class="ident">show_total</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_TOTAL</span>),
-        }
+        })
     }
 }
 
@@ -1076,7 +1020,7 @@
         }
     }
 
-    <span class="kw">let</span> <span class="ident">opt</span> <span class="op">=</span> <span class="ident">Options::from</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>);
+    <span class="kw">let</span> <span class="ident">opt</span> <span class="op">=</span> <span class="ident">Options::from</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>)))<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">mounts</span> <span class="op">=</span> <span class="ident">read_fs_list</span>();
     <span class="kw">let</span> <span class="ident">data</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Row</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">filter_mount_list</span>(<span class="ident">mounts</span>, <span class="kw-2">&amp;</span><span class="ident">paths</span>, <span class="kw-2">&amp;</span><span class="ident">opt</span>)

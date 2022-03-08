@@ -543,6 +543,17 @@
 <span id="541">541</span>
 <span id="542">542</span>
 <span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -851,13 +862,12 @@
             <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="string">&quot;IFree&quot;</span>)<span class="question-mark">?</span>;
             <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;5} &quot;</span>, <span class="string">&quot;IUse%&quot;</span>)<span class="question-mark">?</span>;
         } <span class="kw">else</span> {
-            <span class="comment">// TODO Support arbitrary positive scaling factors (from</span>
-            <span class="comment">// the `--block-size` command-line argument).</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">BlockSize::Bytes</span>(<span class="kw">_</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">options</span>.<span class="ident">block_size</span> {
-                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="string">&quot;1k-blocks&quot;</span>)<span class="question-mark">?</span>;
-            } <span class="kw">else</span> {
-                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="string">&quot;Size&quot;</span>)<span class="question-mark">?</span>;
-            };
+            <span class="comment">// `Display` is implemented for `BlockSize`, but `Display`</span>
+            <span class="comment">// only works when formatting an object into an empty</span>
+            <span class="comment">// format, `{}`. So we use `format!()` first to create the</span>
+            <span class="comment">// string, then use `write!()` to align the string and pad</span>
+            <span class="comment">// with spaces.</span>
+            <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.<span class="ident">options</span>.<span class="ident">block_size</span>))<span class="question-mark">?</span>;
             <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="string">&quot;Used&quot;</span>)<span class="question-mark">?</span>;
             <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="string">&quot;Available&quot;</span>)<span class="question-mark">?</span>;
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
@@ -880,7 +890,7 @@
         <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">Default::default</span>();
         <span class="macro">assert_eq!</span>(
             <span class="ident">Header::new</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>).<span class="ident">to_string</span>(),
-            <span class="string">&quot;Filesystem          1k-blocks         Used    Available  Use% Mounted on       &quot;</span>
+            <span class="string">&quot;Filesystem          1K-blocks         Used    Available  Use% Mounted on       &quot;</span>
         );
     }
 
@@ -892,7 +902,7 @@
         };
         <span class="macro">assert_eq!</span>(
             <span class="ident">Header::new</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>).<span class="ident">to_string</span>(),
-            <span class="string">&quot;Filesystem       Type     1k-blocks         Used    Available  Use% Mounted on       &quot;</span>
+            <span class="string">&quot;Filesystem       Type     1K-blocks         Used    Available  Use% Mounted on       &quot;</span>
         );
     }
 
@@ -905,6 +915,18 @@
         <span class="macro">assert_eq!</span>(
             <span class="ident">Header::new</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>).<span class="ident">to_string</span>(),
             <span class="string">&quot;Filesystem             Inodes        IUsed        IFree IUse% Mounted on       &quot;</span>
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_header_display_block_size_1024</span>() {
+        <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">Options</span> {
+            <span class="ident">block_size</span>: <span class="ident">BlockSize::Bytes</span>(<span class="number">3</span> <span class="op">*</span> <span class="number">1024</span>),
+            ..<span class="ident">Default::default</span>()
+        };
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">Header::new</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>).<span class="ident">to_string</span>(),
+            <span class="string">&quot;Filesystem          3K-blocks         Used    Available  Use% Mounted on       &quot;</span>
         );
     }
 
