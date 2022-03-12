@@ -584,11 +584,12 @@
 <span id="582">582</span>
 <span id="583">583</span>
 <span id="584">584</span>
+<span id="585">585</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
 <span class="comment">//  * file that was distributed with this source code.</span>
-<span class="comment">// spell-checker:ignore tmpfs</span>
+<span class="comment">// spell-checker:ignore tmpfs Pcent Itotal Iused Iavail Ipcent</span>
 <span class="doccomment">//! The filesystem usage data table.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! A table comprises a header row ([`Header`]) and a collection of</span>
@@ -597,6 +598,7 @@
 <span class="doccomment">//! [`DisplayRow`] implements [`std::fmt::Display`].</span>
 <span class="kw">use</span> <span class="ident">number_prefix::NumberPrefix</span>;
 
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::columns::Column</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">BlockSize</span>, <span class="ident">Filesystem</span>, <span class="ident">Options</span>};
 <span class="kw">use</span> <span class="ident">uucore::fsext</span>::{<span class="ident">FsUsage</span>, <span class="ident">MountInfo</span>};
 
@@ -811,56 +813,37 @@
             <span class="prelude-val">Some</span>(<span class="ident">x</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{:.0}%&quot;</span>, (<span class="number">100.0</span> <span class="op">*</span> <span class="ident">x</span>).<span class="ident">ceil</span>()),
         }
     }
-
-    <span class="doccomment">/// Write the bytes data for this row.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Errors</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If there is a problem writing to `f`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the scaling factor is not 1000, 1024, or a negative number.</span>
-    <span class="kw">fn</span> <span class="ident">fmt_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="self">self</span>.<span class="ident">scaled</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">bytes</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="self">self</span>.<span class="ident">scaled</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">bytes_used</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="self">self</span>.<span class="ident">scaled</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">bytes_free</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-        <span class="macro">write!</span>(
-            <span class="ident">f</span>,
-            <span class="string">&quot;{0: &gt;12} &quot;</span>,
-            <span class="ident">DisplayRow::percentage</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">bytes_capacity</span>)
-        )<span class="question-mark">?</span>;
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;5} &quot;</span>, <span class="ident">DisplayRow::percentage</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">bytes_usage</span>))<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="doccomment">/// Write the inodes data for this row.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Errors</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If there is a problem writing to `f`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the scaling factor is not 1000, 1024, or a negative number.</span>
-    <span class="kw">fn</span> <span class="ident">fmt_inodes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="self">self</span>.<span class="ident">scaled</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">inodes</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="self">self</span>.<span class="ident">scaled</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">inodes_used</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="self">self</span>.<span class="ident">scaled</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">inodes_free</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;5} &quot;</span>, <span class="ident">DisplayRow::percentage</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">inodes_usage</span>))<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(())
-    }
 }
 
 <span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">DisplayRow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &lt;16} &quot;</span>, <span class="self">self</span>.<span class="ident">row</span>.<span class="ident">fs_device</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">options</span>.<span class="ident">show_fs_type</span> {
-            <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &lt;5} &quot;</span>, <span class="self">self</span>.<span class="ident">row</span>.<span class="ident">fs_type</span>)<span class="question-mark">?</span>;
+        <span class="kw">for</span> <span class="ident">column</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">options</span>.<span class="ident">columns</span> {
+            <span class="kw">match</span> <span class="ident">column</span> {
+                <span class="ident">Column::Source</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &lt;16} &quot;</span>, <span class="self">self</span>.<span class="ident">row</span>.<span class="ident">fs_device</span>)<span class="question-mark">?</span>,
+                <span class="ident">Column::Size</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="self">self</span>.<span class="ident">scaled</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">bytes</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>,
+                <span class="ident">Column::Used</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="self">self</span>.<span class="ident">scaled</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">bytes_used</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>,
+                <span class="ident">Column::Avail</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="self">self</span>.<span class="ident">scaled</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">bytes_free</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>,
+                <span class="ident">Column::Pcent</span> =&gt; {
+                    <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;5} &quot;</span>, <span class="ident">DisplayRow::percentage</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">bytes_usage</span>))<span class="question-mark">?</span>;
+                }
+                <span class="ident">Column::Target</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &lt;16}&quot;</span>, <span class="self">self</span>.<span class="ident">row</span>.<span class="ident">fs_mount</span>)<span class="question-mark">?</span>,
+                <span class="ident">Column::Itotal</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="self">self</span>.<span class="ident">scaled</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">inodes</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>,
+                <span class="ident">Column::Iused</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="self">self</span>.<span class="ident">scaled</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">inodes_used</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>,
+                <span class="ident">Column::Iavail</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="self">self</span>.<span class="ident">scaled</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">inodes_free</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>,
+                <span class="ident">Column::Ipcent</span> =&gt; {
+                    <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;5} &quot;</span>, <span class="ident">DisplayRow::percentage</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">inodes_usage</span>))<span class="question-mark">?</span>;
+                }
+                <span class="comment">// TODO Implement this.</span>
+                <span class="ident">Column::File</span> =&gt; {}
+                <span class="ident">Column::Fstype</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &lt;5} &quot;</span>, <span class="self">self</span>.<span class="ident">row</span>.<span class="ident">fs_type</span>)<span class="question-mark">?</span>,
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+                <span class="ident">Column::Capacity</span> =&gt; <span class="macro">write!</span>(
+                    <span class="ident">f</span>,
+                    <span class="string">&quot;{0: &gt;12} &quot;</span>,
+                    <span class="ident">DisplayRow::percentage</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">bytes_capacity</span>)
+                )<span class="question-mark">?</span>,
+            }
         }
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">options</span>.<span class="ident">show_inode_instead</span> {
-            <span class="self">self</span>.<span class="ident">fmt_inodes</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">fmt_bytes</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
-        }
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &lt;16}&quot;</span>, <span class="self">self</span>.<span class="ident">row</span>.<span class="ident">fs_mount</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
 }
@@ -882,29 +865,29 @@
 
 <span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Header</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &lt;16} &quot;</span>, <span class="string">&quot;Filesystem&quot;</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">options</span>.<span class="ident">show_fs_type</span> {
-            <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &lt;5} &quot;</span>, <span class="string">&quot;Type&quot;</span>)<span class="question-mark">?</span>;
+        <span class="kw">for</span> <span class="ident">column</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">options</span>.<span class="ident">columns</span> {
+            <span class="kw">match</span> <span class="ident">column</span> {
+                <span class="ident">Column::Source</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &lt;16} &quot;</span>, <span class="string">&quot;Filesystem&quot;</span>)<span class="question-mark">?</span>,
+                <span class="comment">// `Display` is implemented for `BlockSize`, but</span>
+                <span class="comment">// `Display` only works when formatting an object into</span>
+                <span class="comment">// an empty format, `{}`. So we use `format!()` first</span>
+                <span class="comment">// to create the string, then use `write!()` to align</span>
+                <span class="comment">// the string and pad with spaces.</span>
+                <span class="ident">Column::Size</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.<span class="ident">options</span>.<span class="ident">block_size</span>))<span class="question-mark">?</span>,
+                <span class="ident">Column::Used</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="string">&quot;Used&quot;</span>)<span class="question-mark">?</span>,
+                <span class="ident">Column::Avail</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="string">&quot;Available&quot;</span>)<span class="question-mark">?</span>,
+                <span class="ident">Column::Pcent</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;5} &quot;</span>, <span class="string">&quot;Use%&quot;</span>)<span class="question-mark">?</span>,
+                <span class="ident">Column::Target</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &lt;16} &quot;</span>, <span class="string">&quot;Mounted on&quot;</span>)<span class="question-mark">?</span>,
+                <span class="ident">Column::Itotal</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="string">&quot;Inodes&quot;</span>)<span class="question-mark">?</span>,
+                <span class="ident">Column::Iused</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="string">&quot;IUsed&quot;</span>)<span class="question-mark">?</span>,
+                <span class="ident">Column::Iavail</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="string">&quot;IFree&quot;</span>)<span class="question-mark">?</span>,
+                <span class="ident">Column::Ipcent</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;5} &quot;</span>, <span class="string">&quot;IUse%&quot;</span>)<span class="question-mark">?</span>,
+                <span class="ident">Column::File</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &lt;16}&quot;</span>, <span class="string">&quot;File&quot;</span>)<span class="question-mark">?</span>,
+                <span class="ident">Column::Fstype</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &lt;5} &quot;</span>, <span class="string">&quot;Type&quot;</span>)<span class="question-mark">?</span>,
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+                <span class="ident">Column::Capacity</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="string">&quot;Capacity&quot;</span>)<span class="question-mark">?</span>,
+            }
         }
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">options</span>.<span class="ident">show_inode_instead</span> {
-            <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="string">&quot;Inodes&quot;</span>)<span class="question-mark">?</span>;
-            <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="string">&quot;IUsed&quot;</span>)<span class="question-mark">?</span>;
-            <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="string">&quot;IFree&quot;</span>)<span class="question-mark">?</span>;
-            <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;5} &quot;</span>, <span class="string">&quot;IUse%&quot;</span>)<span class="question-mark">?</span>;
-        } <span class="kw">else</span> {
-            <span class="comment">// `Display` is implemented for `BlockSize`, but `Display`</span>
-            <span class="comment">// only works when formatting an object into an empty</span>
-            <span class="comment">// format, `{}`. So we use `format!()` first to create the</span>
-            <span class="comment">// string, then use `write!()` to align the string and pad</span>
-            <span class="comment">// with spaces.</span>
-            <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.<span class="ident">options</span>.<span class="ident">block_size</span>))<span class="question-mark">?</span>;
-            <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="string">&quot;Used&quot;</span>)<span class="question-mark">?</span>;
-            <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="string">&quot;Available&quot;</span>)<span class="question-mark">?</span>;
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-            <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;12} &quot;</span>, <span class="string">&quot;Capacity&quot;</span>)<span class="question-mark">?</span>;
-            <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;5} &quot;</span>, <span class="string">&quot;Use%&quot;</span>)<span class="question-mark">?</span>;
-        }
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &lt;16} &quot;</span>, <span class="string">&quot;Mounted on&quot;</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
 }
@@ -912,8 +895,27 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
 
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::columns::Column</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::table</span>::{<span class="ident">DisplayRow</span>, <span class="ident">Header</span>, <span class="ident">Row</span>};
     <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">BlockSize</span>, <span class="ident">Options</span>};
+
+    <span class="kw">const</span> <span class="ident">COLUMNS_WITH_FS_TYPE</span>: [<span class="ident">Column</span>; <span class="number">7</span>] <span class="op">=</span> [
+        <span class="ident">Column::Source</span>,
+        <span class="ident">Column::Fstype</span>,
+        <span class="ident">Column::Size</span>,
+        <span class="ident">Column::Used</span>,
+        <span class="ident">Column::Avail</span>,
+        <span class="ident">Column::Pcent</span>,
+        <span class="ident">Column::Target</span>,
+    ];
+    <span class="kw">const</span> <span class="ident">COLUMNS_WITH_INODES</span>: [<span class="ident">Column</span>; <span class="number">6</span>] <span class="op">=</span> [
+        <span class="ident">Column::Source</span>,
+        <span class="ident">Column::Itotal</span>,
+        <span class="ident">Column::Iused</span>,
+        <span class="ident">Column::Iavail</span>,
+        <span class="ident">Column::Ipcent</span>,
+        <span class="ident">Column::Target</span>,
+    ];
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_header_display</span>() {
@@ -927,7 +929,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_header_display_fs_type</span>() {
         <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">Options</span> {
-            <span class="ident">show_fs_type</span>: <span class="bool-val">true</span>,
+            <span class="ident">columns</span>: <span class="ident">COLUMNS_WITH_FS_TYPE</span>.<span class="ident">to_vec</span>(),
             ..<span class="ident">Default::default</span>()
         };
         <span class="macro">assert_eq!</span>(
@@ -939,7 +941,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_header_display_inode</span>() {
         <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">Options</span> {
-            <span class="ident">show_inode_instead</span>: <span class="bool-val">true</span>,
+            <span class="ident">columns</span>: <span class="ident">COLUMNS_WITH_INODES</span>.<span class="ident">to_vec</span>(),
             ..<span class="ident">Default::default</span>()
         };
         <span class="macro">assert_eq!</span>(
@@ -1017,8 +1019,8 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_row_display_fs_type</span>() {
         <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">Options</span> {
+            <span class="ident">columns</span>: <span class="ident">COLUMNS_WITH_FS_TYPE</span>.<span class="ident">to_vec</span>(),
             <span class="ident">block_size</span>: <span class="ident">BlockSize::Bytes</span>(<span class="number">1</span>),
-            <span class="ident">show_fs_type</span>: <span class="bool-val">true</span>,
             ..<span class="ident">Default::default</span>()
         };
         <span class="kw">let</span> <span class="ident">row</span> <span class="op">=</span> <span class="ident">Row</span> {
@@ -1048,8 +1050,8 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_row_display_inodes</span>() {
         <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">Options</span> {
+            <span class="ident">columns</span>: <span class="ident">COLUMNS_WITH_INODES</span>.<span class="ident">to_vec</span>(),
             <span class="ident">block_size</span>: <span class="ident">BlockSize::Bytes</span>(<span class="number">1</span>),
-            <span class="ident">show_inode_instead</span>: <span class="bool-val">true</span>,
             ..<span class="ident">Default::default</span>()
         };
         <span class="kw">let</span> <span class="ident">row</span> <span class="op">=</span> <span class="ident">Row</span> {
@@ -1080,7 +1082,7 @@
     <span class="kw">fn</span> <span class="ident">test_row_display_human_readable_si</span>() {
         <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">Options</span> {
             <span class="ident">block_size</span>: <span class="ident">BlockSize::HumanReadableDecimal</span>,
-            <span class="ident">show_fs_type</span>: <span class="bool-val">true</span>,
+            <span class="ident">columns</span>: <span class="ident">COLUMNS_WITH_FS_TYPE</span>.<span class="ident">to_vec</span>(),
             ..<span class="ident">Default::default</span>()
         };
         <span class="kw">let</span> <span class="ident">row</span> <span class="op">=</span> <span class="ident">Row</span> {
@@ -1111,7 +1113,7 @@
     <span class="kw">fn</span> <span class="ident">test_row_display_human_readable_binary</span>() {
         <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">Options</span> {
             <span class="ident">block_size</span>: <span class="ident">BlockSize::HumanReadableBinary</span>,
-            <span class="ident">show_fs_type</span>: <span class="bool-val">true</span>,
+            <span class="ident">columns</span>: <span class="ident">COLUMNS_WITH_FS_TYPE</span>.<span class="ident">to_vec</span>(),
             ..<span class="ident">Default::default</span>()
         };
         <span class="kw">let</span> <span class="ident">row</span> <span class="op">=</span> <span class="ident">Row</span> {
@@ -1163,7 +1165,7 @@
             <span class="ident">inodes_usage</span>: <span class="prelude-val">Some</span>(<span class="number">0.2</span>),
         };
         <span class="macro">assert_eq!</span>(
-            <span class="ident">DisplayRow::new</span>(<span class="ident">row</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>).<span class="ident">to_string</span>(),
+            <span class="ident">DisplayRow::new</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>).<span class="ident">to_string</span>(),
             <span class="string">&quot;my_device                 100           25           75   26% my_mount        &quot;</span>
         );
     }
