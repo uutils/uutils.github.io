@@ -152,8 +152,8 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ignore</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_IGNORE</span>) {
-        <span class="prelude-val">Some</span>(<span class="ident">numstr</span>) =&gt; <span class="kw">match</span> <span class="ident">numstr</span>.<span class="ident">parse</span>() {
+    <span class="kw">let</span> <span class="ident">ignore</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_IGNORE</span>) {
+        <span class="prelude-val">Some</span>(<span class="ident">numstr</span>) =&gt; <span class="kw">match</span> <span class="ident">numstr</span>.<span class="ident">trim</span>().<span class="ident">parse</span>() {
             <span class="prelude-val">Ok</span>(<span class="ident">num</span>) =&gt; <span class="ident">num</span>,
             <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(
@@ -165,18 +165,18 @@
         <span class="prelude-val">None</span> =&gt; <span class="number">0</span>,
     };
 
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_ALL</span>) {
-        <span class="comment">// OMP_NUM_THREADS doesn&#39;t have an impact on --all</span>
-        <span class="ident">ignore</span> <span class="op">+</span><span class="op">=</span> <span class="kw">match</span> <span class="ident">env::var</span>(<span class="string">&quot;OMP_NUM_THREADS&quot;</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">threadstr</span>) =&gt; <span class="ident">threadstr</span>.<span class="ident">parse</span>().<span class="ident">unwrap_or</span>(<span class="number">0</span>),
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="number">0</span>,
-        };
-    }
-
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cores</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_ALL</span>) {
         <span class="ident">num_cpus_all</span>()
     } <span class="kw">else</span> {
-        <span class="ident">num_cpus::get</span>()
+        <span class="comment">// OMP_NUM_THREADS doesn&#39;t have an impact on --all</span>
+        <span class="kw">match</span> <span class="ident">env::var</span>(<span class="string">&quot;OMP_NUM_THREADS&quot;</span>) {
+            <span class="comment">// Uses the OpenMP variable to force the number of threads</span>
+            <span class="comment">// If the parsing fails, returns the number of CPU</span>
+            <span class="prelude-val">Ok</span>(<span class="ident">threadstr</span>) =&gt; <span class="ident">threadstr</span>.<span class="ident">parse</span>().<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">num_cpus::get</span>()),
+            <span class="comment">// the variable &#39;OMP_NUM_THREADS&#39; doesn&#39;t exit</span>
+            <span class="comment">// fallback to the regular CPU detection</span>
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="ident">num_cpus::get</span>(),
+        }
     };
 
     <span class="kw">if</span> <span class="ident">cores</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">ignore</span> {
