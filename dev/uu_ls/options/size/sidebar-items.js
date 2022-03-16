@@ -1,1 +1,1 @@
-initSidebarItems({"static":[["HUMAN_READABLE",""],["SI",""]]});
+initSidebarItems({"static":[["ALLOCATION_SIZE",""],["BLOCK_SIZE",""],["HUMAN_READABLE",""],["KIBIBYTES",""],["SI",""]]});
