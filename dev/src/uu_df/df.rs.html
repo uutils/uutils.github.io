@@ -687,6 +687,20 @@
 <span id="685">685</span>
 <span id="686">686</span>
 <span id="687">687</span>
+<span id="688">688</span>
+<span id="689">689</span>
+<span id="690">690</span>
+<span id="691">691</span>
+<span id="692">692</span>
+<span id="693">693</span>
+<span id="694">694</span>
+<span id="695">695</span>
+<span id="696">696</span>
+<span id="697">697</span>
+<span id="698">698</span>
+<span id="699">699</span>
+<span id="700">700</span>
+<span id="701">701</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Fangxu Hu &lt;framlog@gmail.com&gt;</span>
@@ -919,39 +933,49 @@
     <span class="ident">result</span>
 }
 
-<span class="doccomment">/// Assign 1 `MountInfo` entry to each path</span>
-<span class="doccomment">/// `lofs` entries are skipped and dummy mount points are skipped</span>
-<span class="doccomment">/// Only the longest matching prefix for that path is considered</span>
-<span class="doccomment">/// `lofs` is for Solaris style loopback filesystem and is present in Solaris and FreeBSD.</span>
-<span class="doccomment">/// It works similar to symlinks</span>
-<span class="kw">fn</span> <span class="ident">get_point_list</span>(<span class="ident">vmi</span>: <span class="kw-2">&amp;</span>[<span class="ident">MountInfo</span>], <span class="ident">paths</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>]) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MountInfo</span><span class="op">&gt;</span> {
+<span class="doccomment">/// Get all currently mounted filesystems.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `opt` excludes certain filesystems from consideration; see</span>
+<span class="doccomment">/// [`Options`] for more information.</span>
+<span class="kw">fn</span> <span class="ident">get_all_filesystems</span>(<span class="ident">opt</span>: <span class="kw-2">&amp;</span><span class="ident">Options</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Filesystem</span><span class="op">&gt;</span> {
+    <span class="comment">// The list of all mounted filesystems.</span>
+    <span class="comment">//</span>
+    <span class="comment">// Filesystems excluded by the command-line options are</span>
+    <span class="comment">// not considered.</span>
+    <span class="kw">let</span> <span class="ident">mounts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MountInfo</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">filter_mount_list</span>(<span class="ident">read_fs_list</span>(), <span class="ident">opt</span>);
+
+    <span class="comment">// Convert each `MountInfo` into a `Filesystem`, which contains</span>
+    <span class="comment">// both the mount information and usage information.</span>
+    <span class="ident">mounts</span>.<span class="ident">into_iter</span>().<span class="ident">filter_map</span>(<span class="ident">Filesystem::new</span>).<span class="ident">collect</span>()
+}
+
+<span class="doccomment">/// For each path, get the filesystem that contains that path.</span>
+<span class="kw">fn</span> <span class="ident">get_named_filesystems</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(<span class="ident">paths</span>: <span class="kw-2">&amp;</span>[<span class="ident">P</span>]) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Filesystem</span><span class="op">&gt;</span>
+<span class="kw">where</span>
+    <span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>,
+{
+    <span class="comment">// The list of all mounted filesystems.</span>
+    <span class="comment">//</span>
+    <span class="comment">// Filesystems marked as `dummy` or of type &quot;lofs&quot; are not</span>
+    <span class="comment">// considered. The &quot;lofs&quot; filesystem is a loopback</span>
+    <span class="comment">// filesystem present on Solaris and FreeBSD systems. It</span>
+    <span class="comment">// is similar to a symbolic link.</span>
+    <span class="kw">let</span> <span class="ident">mounts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MountInfo</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">read_fs_list</span>()
+        .<span class="ident">into_iter</span>()
+        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">mi</span><span class="op">|</span> <span class="ident">mi</span>.<span class="ident">fs_type</span> <span class="op">!</span><span class="op">=</span> <span class="string">&quot;lofs&quot;</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">mi</span>.<span class="ident">dummy</span>)
+        .<span class="ident">collect</span>();
+
+    <span class="comment">// Convert each path into a `Filesystem`, which contains</span>
+    <span class="comment">// both the mount information and usage information.</span>
     <span class="ident">paths</span>
         .<span class="ident">iter</span>()
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> {
-            <span class="ident">vmi</span>.<span class="ident">iter</span>()
-                .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">mi</span><span class="op">|</span> <span class="ident">mi</span>.<span class="ident">fs_type</span>.<span class="ident">ne</span>(<span class="string">&quot;lofs&quot;</span>))
-                .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">mi</span><span class="op">|</span> <span class="op">!</span><span class="ident">mi</span>.<span class="ident">dummy</span>)
-                .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">mi</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">starts_with</span>(<span class="kw-2">&amp;</span><span class="ident">mi</span>.<span class="ident">mount_dir</span>))
-                .<span class="ident">max_by_key</span>(<span class="op">|</span><span class="ident">mi</span><span class="op">|</span> <span class="ident">mi</span>.<span class="ident">mount_dir</span>.<span class="ident">len</span>())
-                .<span class="ident">unwrap</span>()
-                .<span class="ident">clone</span>()
-        })
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MountInfo</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+        .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">Filesystem::from_path</span>(<span class="kw-2">&amp;</span><span class="ident">mounts</span>, <span class="ident">p</span>))
+        .<span class="ident">collect</span>()
 }
 
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
-
-    <span class="comment">// Canonicalize the input_paths and then convert to string</span>
-    <span class="kw">let</span> <span class="ident">paths</span> <span class="op">=</span> <span class="ident">matches</span>
-        .<span class="ident">values_of</span>(<span class="ident">OPT_PATHS</span>)
-        .<span class="ident">unwrap_or_default</span>()
-        .<span class="ident">map</span>(<span class="ident">Path::new</span>)
-        .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">canonicalize</span>().<span class="ident">ok</span>())
-        .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">into_os_string</span>().<span class="ident">into_string</span>().<span class="ident">ok</span>())
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
     {
         <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_INODES</span>) {
@@ -962,27 +986,31 @@
 
     <span class="kw">let</span> <span class="ident">opt</span> <span class="op">=</span> <span class="ident">Options::from</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>)))<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">mounts</span> <span class="op">=</span> <span class="ident">read_fs_list</span>();
-
-    <span class="kw">let</span> <span class="ident">op_mount_points</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MountInfo</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">paths</span>.<span class="ident">is_empty</span>() {
-        <span class="comment">// Get all entries</span>
-        <span class="ident">filter_mount_list</span>(<span class="ident">mounts</span>, <span class="kw-2">&amp;</span><span class="ident">opt</span>)
-    } <span class="kw">else</span> {
-        <span class="comment">// Get Point for each input_path</span>
-        <span class="ident">get_point_list</span>(<span class="kw-2">&amp;</span><span class="ident">mounts</span>, <span class="kw-2">&amp;</span><span class="ident">paths</span>)
+    <span class="comment">// Get the list of filesystems to display in the output table.</span>
+    <span class="kw">let</span> <span class="ident">filesystems</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Filesystem</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="ident">OPT_PATHS</span>) {
+        <span class="prelude-val">None</span> =&gt; <span class="ident">get_all_filesystems</span>(<span class="kw-2">&amp;</span><span class="ident">opt</span>),
+        <span class="prelude-val">Some</span>(<span class="ident">paths</span>) =&gt; {
+            <span class="kw">let</span> <span class="ident">paths</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">paths</span>.<span class="ident">collect</span>();
+            <span class="ident">get_named_filesystems</span>(<span class="kw-2">&amp;</span><span class="ident">paths</span>)
+        }
     };
-    <span class="kw">let</span> <span class="ident">data</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Row</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">op_mount_points</span>
-        .<span class="ident">into_iter</span>()
-        .<span class="ident">filter_map</span>(<span class="ident">Filesystem::new</span>)
-        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">fs</span><span class="op">|</span> <span class="ident">fs</span>.<span class="ident">usage</span>.<span class="ident">blocks</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">opt</span>.<span class="ident">show_all_fs</span> <span class="op">|</span><span class="op">|</span> <span class="ident">opt</span>.<span class="ident">show_listed_fs</span>)
-        .<span class="ident">map</span>(<span class="ident">Into::into</span>)
-        .<span class="ident">collect</span>();
+
+    <span class="comment">// The running total of filesystem sizes and usage.</span>
+    <span class="comment">//</span>
+    <span class="comment">// This accumulator is computed in case we need to display the</span>
+    <span class="comment">// total counts in the last row of the table.</span>
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">total</span> <span class="op">=</span> <span class="ident">Row::new</span>(<span class="string">&quot;total&quot;</span>);
 
     <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">Header::new</span>(<span class="kw-2">&amp;</span><span class="ident">opt</span>));
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">total</span> <span class="op">=</span> <span class="ident">Row::new</span>(<span class="string">&quot;total&quot;</span>);
-    <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="ident">data</span> {
-        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">DisplayRow::new</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>, <span class="kw-2">&amp;</span><span class="ident">opt</span>));
-        <span class="ident">total</span> <span class="op">+</span><span class="op">=</span> <span class="ident">row</span>;
+    <span class="kw">for</span> <span class="ident">filesystem</span> <span class="kw">in</span> <span class="ident">filesystems</span> {
+        <span class="comment">// If the filesystem is not empty, or if the options require</span>
+        <span class="comment">// showing all filesystems, then print the data as a row in</span>
+        <span class="comment">// the output table.</span>
+        <span class="kw">if</span> <span class="ident">opt</span>.<span class="ident">show_all_fs</span> <span class="op">|</span><span class="op">|</span> <span class="ident">opt</span>.<span class="ident">show_listed_fs</span> <span class="op">|</span><span class="op">|</span> <span class="ident">filesystem</span>.<span class="ident">usage</span>.<span class="ident">blocks</span> <span class="op">&gt;</span> <span class="number">0</span> {
+            <span class="kw">let</span> <span class="ident">row</span> <span class="op">=</span> <span class="ident">Row::from</span>(<span class="ident">filesystem</span>);
+            <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">DisplayRow::new</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>, <span class="kw-2">&amp;</span><span class="ident">opt</span>));
+            <span class="ident">total</span> <span class="op">+</span><span class="op">=</span> <span class="ident">row</span>;
+        }
     }
     <span class="kw">if</span> <span class="ident">opt</span>.<span class="ident">show_total</span> {
         <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">DisplayRow::new</span>(<span class="kw-2">&amp;</span><span class="ident">total</span>, <span class="kw-2">&amp;</span><span class="ident">opt</span>));
