@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["from_str",""]]});
+initSidebarItems({"fn":[["from_str","Parse a duration from a string."]]});

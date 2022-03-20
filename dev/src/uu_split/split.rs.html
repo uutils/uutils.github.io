@@ -1334,6 +1334,21 @@
 <span id="1332">1332</span>
 <span id="1333">1333</span>
 <span id="1334">1334</span>
+<span id="1335">1335</span>
+<span id="1336">1336</span>
+<span id="1337">1337</span>
+<span id="1338">1338</span>
+<span id="1339">1339</span>
+<span id="1340">1340</span>
+<span id="1341">1341</span>
+<span id="1342">1342</span>
+<span id="1343">1343</span>
+<span id="1344">1344</span>
+<span id="1345">1345</span>
+<span id="1346">1346</span>
+<span id="1347">1347</span>
+<span id="1348">1348</span>
+<span id="1349">1349</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Akira Hayakawa &lt;ruby.wktk@gmail.com&gt;</span>
@@ -2320,6 +2335,13 @@
         (<span class="ident">num_chunks</span>, <span class="ident">chunk_size</span>)
     };
 
+    <span class="comment">// If we would have written zero chunks of output, then terminate</span>
+    <span class="comment">// immediately. This happens on `split -e -n 3 /dev/null`, for</span>
+    <span class="comment">// example.</span>
+    <span class="kw">if</span> <span class="ident">num_chunks</span> <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+    }
+
     <span class="kw">let</span> <span class="ident">num_chunks</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident">num_chunks</span>
         .<span class="ident">try_into</span>()
         .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;Number of chunks too big&quot;</span>))<span class="question-mark">?</span>;
@@ -2343,8 +2365,9 @@
         <span class="ident">writers</span>.<span class="ident">push</span>(<span class="ident">writer</span>);
     }
 
-    <span class="comment">// This block evaluates to an object of type `std::io::Result&lt;()&gt;`.</span>
-    {
+    <span class="comment">// Capture the result of the `std::io::copy()` calls to check for</span>
+    <span class="comment">// `BrokenPipe`.</span>
+    <span class="kw">let</span> <span class="ident">result</span>: <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> <span class="op">=</span> {
         <span class="comment">// Write `chunk_size` bytes from the reader into each writer</span>
         <span class="comment">// except the last.</span>
         <span class="comment">//</span>
@@ -2361,8 +2384,12 @@
         <span class="ident">io::copy</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>.<span class="ident">by_ref</span>().<span class="ident">take</span>(<span class="ident">last_chunk_size</span>), <span class="kw-2">&amp;mut</span> <span class="ident">writers</span>[<span class="ident">i</span>])<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
+    };
+    <span class="kw">match</span> <span class="ident">result</span> {
+        <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
+        <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">kind</span>() <span class="op">==</span> <span class="ident">ErrorKind::BrokenPipe</span> =&gt; <span class="prelude-val">Ok</span>(()),
+        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="prelude-val">Err</span>(<span class="macro">uio_error!</span>(<span class="ident">e</span>, <span class="string">&quot;input/output error&quot;</span>)),
     }
-    .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;I/O error&quot;</span>.<span class="ident">to_string</span>())
 }
 
 <span class="doccomment">/// Split a file into a specific number of chunks by line.</span>
@@ -2540,6 +2567,7 @@
                     <span class="comment">// indicate that. A special error message needs to be</span>
                     <span class="comment">// printed in that case.</span>
                     <span class="ident">ErrorKind::Other</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;output file suffixes exhausted&quot;</span>)),
+                    <span class="ident">ErrorKind::BrokenPipe</span> =&gt; <span class="prelude-val">Ok</span>(()),
                     <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="macro">uio_error!</span>(<span class="ident">e</span>, <span class="string">&quot;input/output error&quot;</span>)),
                 },
             }
@@ -2559,6 +2587,7 @@
                     <span class="comment">// indicate that. A special error message needs to be</span>
                     <span class="comment">// printed in that case.</span>
                     <span class="ident">ErrorKind::Other</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;output file suffixes exhausted&quot;</span>)),
+                    <span class="ident">ErrorKind::BrokenPipe</span> =&gt; <span class="prelude-val">Ok</span>(()),
                     <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="macro">uio_error!</span>(<span class="ident">e</span>, <span class="string">&quot;input/output error&quot;</span>)),
                 },
             }
@@ -2578,6 +2607,7 @@
                     <span class="comment">// indicate that. A special error message needs to be</span>
                     <span class="comment">// printed in that case.</span>
                     <span class="ident">ErrorKind::Other</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;output file suffixes exhausted&quot;</span>)),
+                    <span class="ident">ErrorKind::BrokenPipe</span> =&gt; <span class="prelude-val">Ok</span>(()),
                     <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="macro">uio_error!</span>(<span class="ident">e</span>, <span class="string">&quot;input/output error&quot;</span>)),
                 },
             }
