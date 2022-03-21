@@ -2746,6 +2746,12 @@
 <span id="2744">2744</span>
 <span id="2745">2745</span>
 <span id="2746">2746</span>
+<span id="2747">2747</span>
+<span id="2748">2748</span>
+<span id="2749">2749</span>
+<span id="2750">2750</span>
+<span id="2751">2751</span>
+<span id="2752">2752</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jeremiah Peschka &lt;jeremiah.peschka@gmail.com&gt;</span>
@@ -2763,7 +2769,7 @@
 
 <span class="kw">mod</span> <span class="ident">quoting_style</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">glob::Pattern</span>;
 <span class="kw">use</span> <span class="ident">lscolors::LsColors</span>;
 <span class="kw">use</span> <span class="ident">number_prefix::NumberPrefix</span>;
@@ -2864,6 +2870,7 @@
         <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">DIR_ARGS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;dereference-command-line-symlink-to-dir&quot;</span>;
     }
 
+    <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;help&quot;</span>;
     <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">QUOTING_STYLE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;quoting-style&quot;</span>;
     <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">HIDE_CONTROL_CHARS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;hide-control-chars&quot;</span>;
     <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">SHOW_CONTROL_CHARS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;show-control-chars&quot;</span>;
@@ -3530,9 +3537,9 @@
 
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">app</span> <span class="op">=</span> <span class="ident">uu_app</span>();
+    <span class="kw">let</span> <span class="ident">command</span> <span class="op">=</span> <span class="ident">uu_app</span>();
 
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">app</span>.<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">command</span>.<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
     <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">Config::from</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>)<span class="question-mark">?</span>;
 
@@ -3544,8 +3551,8 @@
     <span class="ident">list</span>(<span class="ident">locs</span>, <span class="kw-2">&amp;</span><span class="ident">config</span>)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">about</span>(
@@ -3553,7 +3560,12 @@
             the command line, expect that it will ignore files and directories \
             whose names start with &#39;.&#39;.&quot;</span>,
         )
-        .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
+        .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
+        .<span class="ident">arg</span>(
+            <span class="ident">Arg::new</span>(<span class="ident">options::HELP</span>)
+                .<span class="ident">long</span>(<span class="ident">options::HELP</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;Print help information.&quot;</span>)
+        )
         <span class="comment">// Format arguments</span>
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FORMAT</span>)

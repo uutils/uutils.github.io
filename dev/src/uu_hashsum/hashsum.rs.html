@@ -679,7 +679,7 @@
 <span class="kw">use</span> <span class="ident"><span class="self">self</span>::digest::Digest</span>;
 <span class="kw">use</span> <span class="ident"><span class="self">self</span>::digest::DigestWriter</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">hex::encode</span>;
 <span class="kw">use</span> <span class="ident">md5::Md5</span>;
 <span class="kw">use</span> <span class="ident">regex::Regex</span>;
@@ -956,13 +956,13 @@
     <span class="comment">// Default binary in Windows, text mode otherwise</span>
     <span class="kw">let</span> <span class="ident">binary_flag_default</span> <span class="op">=</span> <span class="macro">cfg!</span>(<span class="ident">windows</span>);
 
-    <span class="kw">let</span> <span class="ident">app</span> <span class="op">=</span> <span class="ident">uu_app</span>(<span class="kw-2">&amp;</span><span class="ident">binary_name</span>);
+    <span class="kw">let</span> <span class="ident">command</span> <span class="op">=</span> <span class="ident">uu_app</span>(<span class="kw-2">&amp;</span><span class="ident">binary_name</span>);
 
     <span class="comment">// FIXME: this should use try_get_matches_from() and crash!(), but at the moment that just</span>
     <span class="comment">//        causes &quot;error: &quot; to be printed twice (once from crash!() and once from clap).  With</span>
     <span class="comment">//        the current setup, the name of the utility is not printed, but I think this is at</span>
     <span class="comment">//        least somewhat better from a user&#39;s perspective.</span>
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">app</span>.<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">command</span>.<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
     <span class="kw">let</span> (<span class="ident">name</span>, <span class="ident">algo</span>, <span class="ident">bits</span>) <span class="op">=</span> <span class="ident">detect_algo</span>(<span class="kw-2">&amp;</span><span class="ident">binary_name</span>, <span class="kw-2">&amp;</span><span class="ident">matches</span>);
 
@@ -999,7 +999,7 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app_common</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app_common</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
     <span class="kw">const</span> <span class="ident">BINARY_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;read in binary mode (default)&quot;</span>;
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
@@ -1008,10 +1008,10 @@
     <span class="kw">const</span> <span class="ident">TEXT_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;read in text mode&quot;</span>;
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
     <span class="kw">const</span> <span class="ident">TEXT_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;read in text mode (default)&quot;</span>;
-    <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
+    <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="string">&quot;Compute and check message digests.&quot;</span>)
-        .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
+        .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="string">&quot;binary&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;b&#39;</span>)
@@ -1078,8 +1078,8 @@
         )
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app_custom</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">app</span> <span class="op">=</span> <span class="ident">uu_app_common</span>();
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app_custom</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">command</span> <span class="op">=</span> <span class="ident">uu_app_common</span>();
     <span class="kw">let</span> <span class="ident">algorithms</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[
         (<span class="string">&quot;md5&quot;</span>, <span class="string">&quot;work with MD5&quot;</span>),
         (<span class="string">&quot;sha1&quot;</span>, <span class="string">&quot;work with SHA1&quot;</span>),
@@ -1105,14 +1105,14 @@
     ];
 
     <span class="kw">for</span> (<span class="ident">name</span>, <span class="ident">desc</span>) <span class="kw">in</span> <span class="ident">algorithms</span> {
-        <span class="ident">app</span> <span class="op">=</span> <span class="ident">app</span>.<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="kw-2">*</span><span class="ident">name</span>).<span class="ident">long</span>(<span class="ident">name</span>).<span class="ident">help</span>(<span class="kw-2">*</span><span class="ident">desc</span>));
+        <span class="ident">command</span> <span class="op">=</span> <span class="ident">command</span>.<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="kw-2">*</span><span class="ident">name</span>).<span class="ident">long</span>(<span class="ident">name</span>).<span class="ident">help</span>(<span class="kw-2">*</span><span class="ident">desc</span>));
     }
-    <span class="ident">app</span>
+    <span class="ident">command</span>
 }
 
 <span class="comment">// hashsum is handled differently in build.rs, therefore this is not the same</span>
 <span class="comment">// as in other utilities.</span>
-<span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">binary_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">binary_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="op">!</span><span class="ident">is_custom_binary</span>(<span class="ident">binary_name</span>) {
         <span class="ident">uu_app_custom</span>()
     } <span class="kw">else</span> {

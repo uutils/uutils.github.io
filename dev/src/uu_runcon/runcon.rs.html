@@ -425,7 +425,7 @@
 
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UResult</span>, <span class="ident">UUsageError</span>};
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">Arg</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">selinux</span>::{<span class="ident">OpaqueSecurityContext</span>, <span class="ident">SecurityClass</span>, <span class="ident">SecurityContext</span>};
 <span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 
@@ -471,7 +471,7 @@
         <span class="prelude-val">Ok</span>(<span class="ident">r</span>) =&gt; <span class="ident">r</span>,
         <span class="prelude-val">Err</span>(<span class="ident">r</span>) =&gt; {
             <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Error::CommandLine</span>(<span class="kw-2">ref</span> <span class="ident">r</span>) <span class="op">=</span> <span class="ident">r</span> {
-                <span class="kw">match</span> <span class="ident">r</span>.<span class="ident">kind</span> {
+                <span class="kw">match</span> <span class="ident">r</span>.<span class="ident">kind</span>() {
                     <span class="ident">clap::ErrorKind::DisplayHelp</span> <span class="op">|</span> <span class="ident">clap::ErrorKind::DisplayVersion</span> =&gt; {
                         <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">r</span>);
                         <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
@@ -526,13 +526,13 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="ident">VERSION</span>)
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
         .<span class="ident">after_help</span>(<span class="ident">DESCRIPTION</span>)
         .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
-        .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
+        .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::COMPUTE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;c&#39;</span>)
@@ -585,7 +585,7 @@
         <span class="comment">//</span>
         <span class="comment">// This is not how POSIX does things, but this is how the GNU implementation</span>
         <span class="comment">// parses its command line.</span>
-        .<span class="ident">setting</span>(<span class="ident">clap::AppSettings::TrailingVarArg</span>)
+        .<span class="ident">trailing_var_arg</span>(<span class="bool-val">true</span>)
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
@@ -628,7 +628,7 @@
     <span class="ident">arguments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OsString</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">fn</span> <span class="ident">parse_command_line</span>(<span class="ident">config</span>: <span class="ident">App</span>, <span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Options</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">parse_command_line</span>(<span class="ident">config</span>: <span class="ident">Command</span>, <span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Options</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">config</span>.<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">compute_transition_context</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::COMPUTE</span>);

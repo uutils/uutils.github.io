@@ -1285,7 +1285,7 @@
 
 <span class="kw">use</span> <span class="ident">chrono::offset::Local</span>;
 <span class="kw">use</span> <span class="ident">chrono::DateTime</span>;
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">AppSettings</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">itertools::Itertools</span>;
 <span class="kw">use</span> <span class="ident">quick_error::ResultExt</span>;
 <span class="kw">use</span> <span class="ident">regex::Regex</span>;
@@ -1466,13 +1466,13 @@ Lines are not truncated under single column output.&quot;</span>;
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="ident">VERSION</span>)
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
         .<span class="ident">after_help</span>(<span class="ident">AFTER_HELP</span>)
-        .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
-        .<span class="ident">setting</span>(<span class="ident">AppSettings::AllArgsOverrideSelf</span>)
+        .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
+        .<span class="ident">args_override_self</span>(<span class="bool-val">true</span>)
         .<span class="ident">setting</span>(<span class="ident">AppSettings::NoAutoHelp</span>)
         .<span class="ident">setting</span>(<span class="ident">AppSettings::NoAutoVersion</span>)
         .<span class="ident">arg</span>(
@@ -1657,8 +1657,8 @@ Lines are not truncated under single column output.&quot;</span>;
 
     <span class="kw">let</span> <span class="ident">opt_args</span> <span class="op">=</span> <span class="ident">recreate_arguments</span>(<span class="kw-2">&amp;</span><span class="ident">args</span>);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">app</span> <span class="op">=</span> <span class="ident">uu_app</span>();
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">app</span>.<span class="ident">try_get_matches_from_mut</span>(<span class="ident">opt_args</span>) {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">command</span> <span class="op">=</span> <span class="ident">uu_app</span>();
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">command</span>.<span class="ident">try_get_matches_from_mut</span>(<span class="ident">opt_args</span>) {
         <span class="prelude-val">Ok</span>(<span class="ident">m</span>) =&gt; <span class="ident">m</span>,
         <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
             <span class="ident">e</span>.<span class="ident">print</span>()<span class="question-mark">?</span>;
@@ -1668,12 +1668,12 @@ Lines are not truncated under single column output.&quot;</span>;
     };
 
     <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::VERSION</span>) {
-        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">app</span>.<span class="ident">render_long_version</span>());
+        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">command</span>.<span class="ident">render_long_version</span>());
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
     }
 
     <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::HELP</span>) {
-        <span class="ident">app</span>.<span class="ident">print_long_help</span>()<span class="question-mark">?</span>;
+        <span class="ident">command</span>.<span class="ident">print_long_help</span>()<span class="question-mark">?</span>;
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
     }
 

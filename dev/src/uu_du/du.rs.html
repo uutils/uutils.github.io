@@ -854,6 +854,12 @@
 <span id="852">852</span>
 <span id="853">853</span>
 <span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Derek Chiang &lt;derekchiang93@gmail.com&gt;</span>
@@ -866,7 +872,7 @@
 
 <span class="kw">use</span> <span class="ident">chrono::prelude::DateTime</span>;
 <span class="kw">use</span> <span class="ident">chrono::Local</span>;
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
 <span class="kw">use</span> <span class="ident">std::env</span>;
 <span class="kw">use</span> <span class="ident">std::fs</span>;
@@ -903,6 +909,7 @@
 <span class="kw">use</span> <span class="ident">winapi::um::winnt</span>::{<span class="ident">FILE_ID_128</span>, <span class="ident">ULONGLONG</span>};
 
 <span class="kw">mod</span> <span class="ident">options</span> {
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;help&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NULL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;0&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ALL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;all&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">APPARENT_SIZE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;apparent-size&quot;</span>;
@@ -1473,13 +1480,18 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">SUMMARY</span>)
         .<span class="ident">after_help</span>(<span class="ident">LONG_HELP</span>)
         .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
-        .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
+        .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
+        .<span class="ident">arg</span>(
+            <span class="ident">Arg::new</span>(<span class="ident">options::HELP</span>)
+                .<span class="ident">long</span>(<span class="ident">options::HELP</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;Print help information.&quot;</span>)
+        )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ALL</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;a&#39;</span>)

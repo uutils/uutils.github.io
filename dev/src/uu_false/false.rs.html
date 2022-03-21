@@ -65,13 +65,14 @@
 <span id="63">63</span>
 <span id="64">64</span>
 <span id="65">65</span>
+<span id="66">66</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Jordi Boggiano &lt;j.boggiano@seld.be&gt;</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
 <span class="comment">//  * file that was distributed with this source code.</span>
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">Arg</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::io::Write</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">set_exit_code</span>, <span class="ident">UResult</span>};
 
@@ -85,7 +86,7 @@ the program will also return `1`.
 
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">app</span> <span class="op">=</span> <span class="ident">uu_app</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">command</span> <span class="op">=</span> <span class="ident">uu_app</span>();
 
     <span class="comment">// Mirror GNU options, always return `1`. In particular even the &#39;successful&#39; cases of no-op,</span>
     <span class="comment">// and the interrupted display of help and version should return `1`. Also, we return Ok in all</span>
@@ -93,11 +94,11 @@ the program will also return `1`.
     <span class="comment">// and unwind through the standard library allocation handling machinery.</span>
     <span class="ident">set_exit_code</span>(<span class="number">1</span>);
 
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">matches</span>) <span class="op">=</span> <span class="ident">app</span>.<span class="ident">try_get_matches_from_mut</span>(<span class="ident">args</span>) {
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">matches</span>) <span class="op">=</span> <span class="ident">command</span>.<span class="ident">try_get_matches_from_mut</span>(<span class="ident">args</span>) {
         <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">index_of</span>(<span class="string">&quot;help&quot;</span>).<span class="ident">is_some</span>() {
-            <span class="ident">app</span>.<span class="ident">print_long_help</span>()
+            <span class="ident">command</span>.<span class="ident">print_long_help</span>()
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">index_of</span>(<span class="string">&quot;version&quot;</span>).<span class="ident">is_some</span>() {
-            <span class="macro">writeln!</span>(<span class="ident">std::io::stdout</span>(), <span class="string">&quot;{}&quot;</span>, <span class="ident">app</span>.<span class="ident">render_version</span>())
+            <span class="macro">writeln!</span>(<span class="ident">std::io::stdout</span>(), <span class="string">&quot;{}&quot;</span>, <span class="ident">command</span>.<span class="ident">render_version</span>())
         } <span class="kw">else</span> {
             <span class="prelude-val">Ok</span>(())
         };
@@ -112,12 +113,13 @@ the program will also return `1`.
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">clap::crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
         <span class="comment">// We provide our own help and version options, to ensure maximum compatibility with GNU.</span>
-        .<span class="ident">setting</span>(<span class="ident">AppSettings::DisableHelpFlag</span> <span class="op">|</span> <span class="ident">AppSettings::DisableVersionFlag</span>)
+        .<span class="ident">disable_help_flag</span>(<span class="bool-val">true</span>)
+        .<span class="ident">disable_version_flag</span>(<span class="bool-val">true</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="string">&quot;help&quot;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;help&quot;</span>)

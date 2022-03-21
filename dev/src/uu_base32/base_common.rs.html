@@ -199,7 +199,7 @@
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">BufReader</span>, <span class="ident">Stdin</span>};
 <span class="kw">use</span> <span class="ident">std::path::Path</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
 
 <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">BASE_CMD_PARSE_ERROR</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">1</span>;
 
@@ -267,19 +267,19 @@
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_base_cmd_args</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>, <span class="ident">about</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">usage</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">Config</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">app</span> <span class="op">=</span> <span class="ident">base_app</span>(<span class="ident">about</span>, <span class="ident">usage</span>);
+    <span class="kw">let</span> <span class="ident">command</span> <span class="op">=</span> <span class="ident">base_app</span>(<span class="ident">about</span>, <span class="ident">usage</span>);
     <span class="kw">let</span> <span class="ident">arg_list</span> <span class="op">=</span> <span class="ident">args</span>
         .<span class="ident">collect_str</span>(<span class="ident">InvalidEncodingHandling::ConvertLossy</span>)
         .<span class="ident">accept_any</span>();
-    <span class="ident">Config::from</span>(<span class="kw-2">&amp;</span><span class="ident">app</span>.<span class="ident">get_matches_from</span>(<span class="ident">arg_list</span>))
+    <span class="ident">Config::from</span>(<span class="kw-2">&amp;</span><span class="ident">command</span>.<span class="ident">get_matches_from</span>(<span class="ident">arg_list</span>))
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">base_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">about</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">usage</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>) -&gt; <span class="ident">App</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">App::new</span>(<span class="ident">uucore::util_name</span>())
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">base_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">about</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">usage</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>) -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">about</span>)
         .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">usage</span>))
-        .<span class="ident">setting</span>(<span class="ident">AppSettings::InferLongArgs</span>)
+        .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
         <span class="comment">// Format arguments.</span>
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::DECODE</span>)
