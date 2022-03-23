@@ -1146,6 +1146,40 @@
 <span id="1144">1144</span>
 <span id="1145">1145</span>
 <span id="1146">1146</span>
+<span id="1147">1147</span>
+<span id="1148">1148</span>
+<span id="1149">1149</span>
+<span id="1150">1150</span>
+<span id="1151">1151</span>
+<span id="1152">1152</span>
+<span id="1153">1153</span>
+<span id="1154">1154</span>
+<span id="1155">1155</span>
+<span id="1156">1156</span>
+<span id="1157">1157</span>
+<span id="1158">1158</span>
+<span id="1159">1159</span>
+<span id="1160">1160</span>
+<span id="1161">1161</span>
+<span id="1162">1162</span>
+<span id="1163">1163</span>
+<span id="1164">1164</span>
+<span id="1165">1165</span>
+<span id="1166">1166</span>
+<span id="1167">1167</span>
+<span id="1168">1168</span>
+<span id="1169">1169</span>
+<span id="1170">1170</span>
+<span id="1171">1171</span>
+<span id="1172">1172</span>
+<span id="1173">1173</span>
+<span id="1174">1174</span>
+<span id="1175">1175</span>
+<span id="1176">1176</span>
+<span id="1177">1177</span>
+<span id="1178">1178</span>
+<span id="1179">1179</span>
+<span id="1180">1180</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Tyler Steele &lt;tyler.steele@protonmail.com&gt;</span>
@@ -1153,7 +1187,7 @@
 <span class="comment">// For the full copyright and license information, please view the LICENSE</span>
 <span class="comment">// file that was distributed with this source code.</span>
 
-<span class="comment">// spell-checker:ignore fname, tname, fpath, specfile, testfile, unspec, ifile, ofile, outfile, fullblock, urand, fileio, atoe, atoibm, behaviour, bmax, bremain, cflags, creat, ctable, ctty, datastructures, doesnt, etoa, fileout, fname, gnudd, iconvflags, nocache, noctty, noerror, nofollow, nolinks, nonblock, oconvflags, outfile, parseargs, rlen, rmax, rremain, rsofar, rstat, sigusr, wlen, wstat seekable</span>
+<span class="comment">// spell-checker:ignore fname, tname, fpath, specfile, testfile, unspec, ifile, ofile, outfile, fullblock, urand, fileio, atoe, atoibm, behaviour, bmax, bremain, cflags, creat, ctable, ctty, datastructures, doesnt, etoa, fileout, fname, gnudd, iconvflags, iseek, nocache, noctty, noerror, nofollow, nolinks, nonblock, oconvflags, oseek, outfile, parseargs, rlen, rmax, rremain, rsofar, rstat, sigusr, wlen, wstat seekable</span>
 
 <span class="kw">mod</span> <span class="ident">datastructures</span>;
 <span class="kw">use</span> <span class="ident">datastructures</span>::<span class="kw-2">*</span>;
@@ -1208,7 +1242,9 @@
         <span class="kw">let</span> <span class="ident">print_level</span> <span class="op">=</span> <span class="ident">parseargs::parse_status_level</span>(<span class="ident">matches</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">cflags</span> <span class="op">=</span> <span class="ident">parseargs::parse_conv_flag_input</span>(<span class="ident">matches</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">iflags</span> <span class="op">=</span> <span class="ident">parseargs::parse_iflags</span>(<span class="ident">matches</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">skip</span> <span class="op">=</span> <span class="ident">parseargs::parse_skip_amt</span>(<span class="kw-2">&amp;</span><span class="ident">ibs</span>, <span class="kw-2">&amp;</span><span class="ident">iflags</span>, <span class="ident">matches</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">skip</span> <span class="op">=</span> <span class="ident">parseargs::parse_seek_skip_amt</span>(<span class="kw-2">&amp;</span><span class="ident">ibs</span>, <span class="ident">iflags</span>.<span class="ident">skip_bytes</span>, <span class="ident">matches</span>, <span class="ident">options::SKIP</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">iseek</span> <span class="op">=</span>
+            <span class="ident">parseargs::parse_seek_skip_amt</span>(<span class="kw-2">&amp;</span><span class="ident">ibs</span>, <span class="ident">iflags</span>.<span class="ident">skip_bytes</span>, <span class="ident">matches</span>, <span class="ident">options::ISEEK</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">count</span> <span class="op">=</span> <span class="ident">parseargs::parse_count</span>(<span class="kw-2">&amp;</span><span class="ident">iflags</span>, <span class="ident">matches</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="self">Self</span> {
@@ -1221,7 +1257,9 @@
             <span class="ident">iflags</span>,
         };
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">amt</span>) <span class="op">=</span> <span class="ident">skip</span> {
+        <span class="comment">// The --skip and --iseek flags are additive. On a stream, they discard bytes.</span>
+        <span class="kw">let</span> <span class="ident">amt</span> <span class="op">=</span> <span class="ident">skip</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>) <span class="op">+</span> <span class="ident">iseek</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>);
+        <span class="kw">if</span> <span class="ident">amt</span> <span class="op">&gt;</span> <span class="number">0</span> {
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">i</span>.<span class="ident">read_skip</span>(<span class="ident">amt</span>) {
                 <span class="kw">if</span> <span class="kw">let</span> <span class="ident">io::ErrorKind::UnexpectedEof</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">kind</span>() {
                     <span class="macro">show_error!</span>(<span class="string">&quot;&#39;standard input&#39;: cannot skip to specified offset&quot;</span>);
@@ -1279,7 +1317,9 @@
         <span class="kw">let</span> <span class="ident">print_level</span> <span class="op">=</span> <span class="ident">parseargs::parse_status_level</span>(<span class="ident">matches</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">cflags</span> <span class="op">=</span> <span class="ident">parseargs::parse_conv_flag_input</span>(<span class="ident">matches</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">iflags</span> <span class="op">=</span> <span class="ident">parseargs::parse_iflags</span>(<span class="ident">matches</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">skip</span> <span class="op">=</span> <span class="ident">parseargs::parse_skip_amt</span>(<span class="kw-2">&amp;</span><span class="ident">ibs</span>, <span class="kw-2">&amp;</span><span class="ident">iflags</span>, <span class="ident">matches</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">skip</span> <span class="op">=</span> <span class="ident">parseargs::parse_seek_skip_amt</span>(<span class="kw-2">&amp;</span><span class="ident">ibs</span>, <span class="ident">iflags</span>.<span class="ident">skip_bytes</span>, <span class="ident">matches</span>, <span class="ident">options::SKIP</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">iseek</span> <span class="op">=</span>
+            <span class="ident">parseargs::parse_seek_skip_amt</span>(<span class="kw-2">&amp;</span><span class="ident">ibs</span>, <span class="ident">iflags</span>.<span class="ident">skip_bytes</span>, <span class="ident">matches</span>, <span class="ident">options::ISEEK</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">count</span> <span class="op">=</span> <span class="ident">parseargs::parse_count</span>(<span class="kw-2">&amp;</span><span class="ident">iflags</span>, <span class="ident">matches</span>)<span class="question-mark">?</span>;
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">fname</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::INFILE</span>) {
@@ -1296,7 +1336,9 @@
                     .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to open input file&quot;</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>
             };
 
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">amt</span>) <span class="op">=</span> <span class="ident">skip</span> {
+            <span class="comment">// The --skip and --iseek flags are additive. On a file, they seek.</span>
+            <span class="kw">let</span> <span class="ident">amt</span> <span class="op">=</span> <span class="ident">skip</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>) <span class="op">+</span> <span class="ident">iseek</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>);
+            <span class="kw">if</span> <span class="ident">amt</span> <span class="op">&gt;</span> <span class="number">0</span> {
                 <span class="ident">src</span>.<span class="ident">seek</span>(<span class="ident">io::SeekFrom::Start</span>(<span class="ident">amt</span>))
                     .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to seek in input file&quot;</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
             }
@@ -1440,12 +1482,16 @@
         <span class="kw">let</span> <span class="ident">obs</span> <span class="op">=</span> <span class="ident">parseargs::parse_obs</span>(<span class="ident">matches</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">cflags</span> <span class="op">=</span> <span class="ident">parseargs::parse_conv_flag_output</span>(<span class="ident">matches</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">oflags</span> <span class="op">=</span> <span class="ident">parseargs::parse_oflags</span>(<span class="ident">matches</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">seek</span> <span class="op">=</span> <span class="ident">parseargs::parse_seek_amt</span>(<span class="kw-2">&amp;</span><span class="ident">obs</span>, <span class="kw-2">&amp;</span><span class="ident">oflags</span>, <span class="ident">matches</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">seek</span> <span class="op">=</span> <span class="ident">parseargs::parse_seek_skip_amt</span>(<span class="kw-2">&amp;</span><span class="ident">obs</span>, <span class="ident">oflags</span>.<span class="ident">seek_bytes</span>, <span class="ident">matches</span>, <span class="ident">options::SEEK</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">oseek</span> <span class="op">=</span>
+            <span class="ident">parseargs::parse_seek_skip_amt</span>(<span class="kw-2">&amp;</span><span class="ident">obs</span>, <span class="ident">oflags</span>.<span class="ident">seek_bytes</span>, <span class="ident">matches</span>, <span class="ident">options::OSEEK</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dst</span> <span class="op">=</span> <span class="ident">io::stdout</span>();
 
+        <span class="comment">// The --seek and --oseek flags are additive.</span>
+        <span class="kw">let</span> <span class="ident">amt</span> <span class="op">=</span> <span class="ident">seek</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>) <span class="op">+</span> <span class="ident">oseek</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>);
         <span class="comment">// stdout is not seekable, so we just write null bytes.</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">amt</span>) <span class="op">=</span> <span class="ident">seek</span> {
+        <span class="kw">if</span> <span class="ident">amt</span> <span class="op">&gt;</span> <span class="number">0</span> {
             <span class="ident">io::copy</span>(<span class="kw-2">&amp;mut</span> <span class="ident">io::repeat</span>(<span class="number">0u8</span>).<span class="ident">take</span>(<span class="ident">amt</span> <span class="kw">as</span> <span class="ident">u64</span>), <span class="kw-2">&amp;mut</span> <span class="ident">dst</span>)
                 .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">String::from</span>(<span class="string">&quot;write error&quot;</span>))<span class="question-mark">?</span>;
         }
@@ -1656,7 +1702,9 @@
         <span class="kw">let</span> <span class="ident">obs</span> <span class="op">=</span> <span class="ident">parseargs::parse_obs</span>(<span class="ident">matches</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">cflags</span> <span class="op">=</span> <span class="ident">parseargs::parse_conv_flag_output</span>(<span class="ident">matches</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">oflags</span> <span class="op">=</span> <span class="ident">parseargs::parse_oflags</span>(<span class="ident">matches</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">seek</span> <span class="op">=</span> <span class="ident">parseargs::parse_seek_amt</span>(<span class="kw-2">&amp;</span><span class="ident">obs</span>, <span class="kw-2">&amp;</span><span class="ident">oflags</span>, <span class="ident">matches</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">seek</span> <span class="op">=</span> <span class="ident">parseargs::parse_seek_skip_amt</span>(<span class="kw-2">&amp;</span><span class="ident">obs</span>, <span class="ident">oflags</span>.<span class="ident">seek_bytes</span>, <span class="ident">matches</span>, <span class="ident">options::SEEK</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">oseek</span> <span class="op">=</span>
+            <span class="ident">parseargs::parse_seek_skip_amt</span>(<span class="kw-2">&amp;</span><span class="ident">obs</span>, <span class="ident">oflags</span>.<span class="ident">seek_bytes</span>, <span class="ident">matches</span>, <span class="ident">options::OSEEK</span>)<span class="question-mark">?</span>;
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">fname</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::OUTFILE</span>) {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dst</span> <span class="op">=</span> <span class="ident">open_dst</span>(<span class="ident">Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">fname</span>), <span class="kw-2">&amp;</span><span class="ident">cflags</span>, <span class="kw-2">&amp;</span><span class="ident">oflags</span>)
@@ -1670,7 +1718,9 @@
             <span class="comment">// Instead, we suppress the error by calling</span>
             <span class="comment">// `Result::ok()`. This matches the behavior of GNU `dd`</span>
             <span class="comment">// when given the command-line argument `of=/dev/null`.</span>
-            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">seek</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>);
+
+            <span class="comment">// The --seek and --oseek flags are additive.</span>
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">seek</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>) <span class="op">+</span> <span class="ident">oseek</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>);
             <span class="kw">if</span> <span class="op">!</span><span class="ident">cflags</span>.<span class="ident">notrunc</span> {
                 <span class="ident">dst</span>.<span class="ident">set_len</span>(<span class="ident">i</span>).<span class="ident">ok</span>();
             }
@@ -1954,6 +2004,24 @@
                 .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;N&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;(alternatively seek=N) seeks N obs-sized records into output before beginning copy/convert operations. See oflag=seek_bytes if seeking N bytes is preferred. Multiplier strings permitted.&quot;</span>)
+        )
+        .<span class="ident">arg</span>(
+            <span class="ident">Arg::new</span>(<span class="ident">options::ISEEK</span>)
+                .<span class="ident">long</span>(<span class="ident">options::ISEEK</span>)
+                .<span class="ident">overrides_with</span>(<span class="ident">options::ISEEK</span>)
+                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
+                .<span class="ident">value_name</span>(<span class="string">&quot;N&quot;</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;(alternatively iseek=N) seeks N obs-sized records into input before beginning copy/convert operations. See iflag=seek_bytes if seeking N bytes is preferred. Multiplier strings permitted.&quot;</span>)
+        )
+        .<span class="ident">arg</span>(
+            <span class="ident">Arg::new</span>(<span class="ident">options::OSEEK</span>)
+                .<span class="ident">long</span>(<span class="ident">options::OSEEK</span>)
+                .<span class="ident">overrides_with</span>(<span class="ident">options::OSEEK</span>)
+                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
+                .<span class="ident">value_name</span>(<span class="string">&quot;N&quot;</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;(alternatively oseek=N) seeks N obs-sized records into output before beginning copy/convert operations. See oflag=seek_bytes if seeking N bytes is preferred. Multiplier strings permitted.&quot;</span>)
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::COUNT</span>)

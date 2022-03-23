@@ -108,6 +108,15 @@
 <span id="106">106</span>
 <span id="107">107</span>
 <span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Alex Lyon &lt;arcterus@mail.com&gt;</span>
@@ -173,6 +182,10 @@
         .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>()
         .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;invalid time interval {}: {}&quot;</span>, <span class="ident">string</span>.<span class="ident">quote</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
 
+    <span class="kw">if</span> <span class="ident">num</span> <span class="op">&lt;</span> <span class="number">0.</span> {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;invalid time interval {}&quot;</span>, <span class="ident">string</span>.<span class="ident">quote</span>()));
+    }
+
     <span class="kw">const</span> <span class="ident">NANOS_PER_SEC</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1_000_000_000</span>;
     <span class="kw">let</span> <span class="ident">whole_secs</span> <span class="op">=</span> <span class="ident">num</span>.<span class="ident">trunc</span>();
     <span class="kw">let</span> <span class="ident">nanos</span> <span class="op">=</span> (<span class="ident">num</span>.<span class="ident">fract</span>() <span class="op">*</span> (<span class="ident">NANOS_PER_SEC</span> <span class="kw">as</span> <span class="ident">f64</span>)).<span class="ident">trunc</span>();
@@ -214,6 +227,11 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_error_invalid_magnitude</span>() {
         <span class="macro">assert!</span>(<span class="ident">from_str</span>(<span class="string">&quot;12abc3s&quot;</span>).<span class="ident">is_err</span>());
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_negative</span>() {
+        <span class="macro">assert!</span>(<span class="ident">from_str</span>(<span class="string">&quot;-1&quot;</span>).<span class="ident">is_err</span>());
     }
 }
 </code></pre></div>

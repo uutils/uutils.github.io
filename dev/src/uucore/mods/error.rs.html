@@ -617,6 +617,17 @@
 <span id="615">615</span>
 <span id="616">616</span>
 <span id="617">617</span>
+<span id="618">618</span>
+<span id="619">619</span>
+<span id="620">620</span>
+<span id="621">621</span>
+<span id="622">622</span>
+<span id="623">623</span>
+<span id="624">624</span>
+<span id="625">625</span>
+<span id="626">626</span>
+<span id="627">627</span>
+<span id="628">628</span>
 </pre><pre class="rust"><code><span class="doccomment">//! All utils return exit with an exit code. Usually, the following scheme is used:</span>
 <span class="doccomment">//! * `0`: succeeded</span>
 <span class="doccomment">//! * `1`: minor problems</span>
@@ -669,6 +680,7 @@
 
 <span class="comment">// spell-checker:ignore uioerror</span>
 
+<span class="kw">use</span> <span class="ident">clap</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{
     <span class="ident">error::Error</span>,
     <span class="ident">fmt</span>::{<span class="ident">Display</span>, <span class="ident">Formatter</span>},
@@ -1232,6 +1244,16 @@
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">UError</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">i</span>: <span class="ident">i32</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">ExitCode::new</span>(<span class="ident">i</span>)
+    }
+}
+
+<span class="doccomment">/// Implementations for clap::Error</span>
+<span class="kw">impl</span> <span class="ident">UError</span> <span class="kw">for</span> <span class="ident">clap::Error</span> {
+    <span class="kw">fn</span> <span class="ident">code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">i32</span> {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">kind</span> {
+            <span class="ident">clap::ErrorKind::DisplayHelp</span> <span class="op">|</span> <span class="ident">clap::ErrorKind::DisplayVersion</span> =&gt; <span class="number">0</span>,
+            <span class="kw">_</span> =&gt; <span class="number">1</span>,
+        }
     }
 }
 </code></pre></div>
