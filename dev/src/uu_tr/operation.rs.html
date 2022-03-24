@@ -592,20 +592,20 @@
 <span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">BadSequence</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">std::fmt::Result</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">BadSequence::MissingCharClassName</span> =&gt; <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;missing character class name &#39;[::]&#39;&quot;</span>),
-            <span class="ident">BadSequence::MissingEquivalentClassChar</span> =&gt; {
+            <span class="ident"><span class="self">Self</span>::MissingCharClassName</span> =&gt; <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;missing character class name &#39;[::]&#39;&quot;</span>),
+            <span class="ident"><span class="self">Self</span>::MissingEquivalentClassChar</span> =&gt; {
                 <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;missing equivalence class character &#39;[==]&#39;&quot;</span>)
             }
-            <span class="ident">BadSequence::MultipleCharRepeatInSet2</span> =&gt; {
+            <span class="ident"><span class="self">Self</span>::MultipleCharRepeatInSet2</span> =&gt; {
                 <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;only one [c*] repeat construct may appear in string2&quot;</span>)
             }
-            <span class="ident">BadSequence::CharRepeatInSet1</span> =&gt; {
+            <span class="ident"><span class="self">Self</span>::CharRepeatInSet1</span> =&gt; {
                 <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;the [c*] repeat construct may not appear in string1&quot;</span>)
             }
-            <span class="ident">BadSequence::InvalidRepeatCount</span>(<span class="ident">count</span>) =&gt; {
+            <span class="ident"><span class="self">Self</span>::InvalidRepeatCount</span>(<span class="ident">count</span>) =&gt; {
                 <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;invalid repeat count &#39;{}&#39; in [c*n] construct&quot;</span>, <span class="ident">count</span>)
             }
-            <span class="ident">BadSequence::EmptySet2WhenNotTruncatingSet1</span> =&gt; {
+            <span class="ident"><span class="self">Self</span>::EmptySet2WhenNotTruncatingSet1</span> =&gt; {
                 <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;when not truncating set1, string2 must be non-empty&quot;</span>)
             }
         }
@@ -638,20 +638,20 @@
 <span class="kw">impl</span> <span class="ident">Sequence</span> {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">flatten</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">char</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Sequence::Char</span>(<span class="ident">c</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">std::iter::once</span>(<span class="kw-2">*</span><span class="ident">c</span>)),
-            <span class="ident">Sequence::CharRange</span>(<span class="ident">l</span>, <span class="ident">r</span>) =&gt; <span class="ident">Box::new</span>((<span class="kw-2">*</span><span class="ident">l</span>..<span class="op">=</span><span class="kw-2">*</span><span class="ident">r</span>).<span class="ident">flat_map</span>(<span class="ident">std::char::from_u32</span>)),
-            <span class="ident">Sequence::CharStar</span>(<span class="ident">c</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">std::iter::repeat</span>(<span class="kw-2">*</span><span class="ident">c</span>)),
-            <span class="ident">Sequence::CharRepeat</span>(<span class="ident">c</span>, <span class="ident">n</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">std::iter::repeat</span>(<span class="kw-2">*</span><span class="ident">c</span>).<span class="ident">take</span>(<span class="kw-2">*</span><span class="ident">n</span>)),
-            <span class="ident">Sequence::Alnum</span> =&gt; <span class="ident">Box::new</span>((<span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;9&#39;</span>).<span class="ident">chain</span>(<span class="string">&#39;A&#39;</span>..<span class="op">=</span><span class="string">&#39;Z&#39;</span>).<span class="ident">chain</span>(<span class="string">&#39;a&#39;</span>..<span class="op">=</span><span class="string">&#39;z&#39;</span>)),
-            <span class="ident">Sequence::Alpha</span> =&gt; <span class="ident">Box::new</span>((<span class="string">&#39;A&#39;</span>..<span class="op">=</span><span class="string">&#39;Z&#39;</span>).<span class="ident">chain</span>(<span class="string">&#39;a&#39;</span>..<span class="op">=</span><span class="string">&#39;z&#39;</span>)),
-            <span class="ident">Sequence::Blank</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">unicode_table::BLANK</span>.<span class="ident">iter</span>().<span class="ident">cloned</span>()),
-            <span class="ident">Sequence::Control</span> =&gt; <span class="ident">Box::new</span>(
+            <span class="ident"><span class="self">Self</span>::Char</span>(<span class="ident">c</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">std::iter::once</span>(<span class="kw-2">*</span><span class="ident">c</span>)),
+            <span class="ident"><span class="self">Self</span>::CharRange</span>(<span class="ident">l</span>, <span class="ident">r</span>) =&gt; <span class="ident">Box::new</span>((<span class="kw-2">*</span><span class="ident">l</span>..<span class="op">=</span><span class="kw-2">*</span><span class="ident">r</span>).<span class="ident">flat_map</span>(<span class="ident">std::char::from_u32</span>)),
+            <span class="ident"><span class="self">Self</span>::CharStar</span>(<span class="ident">c</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">std::iter::repeat</span>(<span class="kw-2">*</span><span class="ident">c</span>)),
+            <span class="ident"><span class="self">Self</span>::CharRepeat</span>(<span class="ident">c</span>, <span class="ident">n</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">std::iter::repeat</span>(<span class="kw-2">*</span><span class="ident">c</span>).<span class="ident">take</span>(<span class="kw-2">*</span><span class="ident">n</span>)),
+            <span class="ident"><span class="self">Self</span>::Alnum</span> =&gt; <span class="ident">Box::new</span>((<span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;9&#39;</span>).<span class="ident">chain</span>(<span class="string">&#39;A&#39;</span>..<span class="op">=</span><span class="string">&#39;Z&#39;</span>).<span class="ident">chain</span>(<span class="string">&#39;a&#39;</span>..<span class="op">=</span><span class="string">&#39;z&#39;</span>)),
+            <span class="ident"><span class="self">Self</span>::Alpha</span> =&gt; <span class="ident">Box::new</span>((<span class="string">&#39;A&#39;</span>..<span class="op">=</span><span class="string">&#39;Z&#39;</span>).<span class="ident">chain</span>(<span class="string">&#39;a&#39;</span>..<span class="op">=</span><span class="string">&#39;z&#39;</span>)),
+            <span class="ident"><span class="self">Self</span>::Blank</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">unicode_table::BLANK</span>.<span class="ident">iter</span>().<span class="ident">cloned</span>()),
+            <span class="ident"><span class="self">Self</span>::Control</span> =&gt; <span class="ident">Box::new</span>(
                 (<span class="number">0</span>..<span class="op">=</span><span class="number">31</span>)
                     .<span class="ident">chain</span>(<span class="ident">std::iter::once</span>(<span class="number">127</span>))
                     .<span class="ident">flat_map</span>(<span class="ident">std::char::from_u32</span>),
             ),
-            <span class="ident">Sequence::Digit</span> =&gt; <span class="ident">Box::new</span>(<span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;9&#39;</span>),
-            <span class="ident">Sequence::Graph</span> =&gt; <span class="ident">Box::new</span>(
+            <span class="ident"><span class="self">Self</span>::Digit</span> =&gt; <span class="ident">Box::new</span>(<span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;9&#39;</span>),
+            <span class="ident"><span class="self">Self</span>::Graph</span> =&gt; <span class="ident">Box::new</span>(
                 (<span class="number">48</span>..<span class="op">=</span><span class="number">57</span>) <span class="comment">// digit</span>
                     .<span class="ident">chain</span>(<span class="number">65</span>..<span class="op">=</span><span class="number">90</span>) <span class="comment">// uppercase</span>
                     .<span class="ident">chain</span>(<span class="number">97</span>..<span class="op">=</span><span class="number">122</span>) <span class="comment">// lowercase</span>
@@ -663,8 +663,8 @@
                     .<span class="ident">chain</span>(<span class="ident">std::iter::once</span>(<span class="number">32</span>)) <span class="comment">// space</span>
                     .<span class="ident">flat_map</span>(<span class="ident">std::char::from_u32</span>),
             ),
-            <span class="ident">Sequence::Lower</span> =&gt; <span class="ident">Box::new</span>(<span class="string">&#39;a&#39;</span>..<span class="op">=</span><span class="string">&#39;z&#39;</span>),
-            <span class="ident">Sequence::Print</span> =&gt; <span class="ident">Box::new</span>(
+            <span class="ident"><span class="self">Self</span>::Lower</span> =&gt; <span class="ident">Box::new</span>(<span class="string">&#39;a&#39;</span>..<span class="op">=</span><span class="string">&#39;z&#39;</span>),
+            <span class="ident"><span class="self">Self</span>::Print</span> =&gt; <span class="ident">Box::new</span>(
                 (<span class="number">48</span>..<span class="op">=</span><span class="number">57</span>) <span class="comment">// digit</span>
                     .<span class="ident">chain</span>(<span class="number">65</span>..<span class="op">=</span><span class="number">90</span>) <span class="comment">// uppercase</span>
                     .<span class="ident">chain</span>(<span class="number">97</span>..<span class="op">=</span><span class="number">122</span>) <span class="comment">// lowercase</span>
@@ -675,16 +675,16 @@
                     .<span class="ident">chain</span>(<span class="number">123</span>..<span class="op">=</span><span class="number">126</span>)
                     .<span class="ident">flat_map</span>(<span class="ident">std::char::from_u32</span>),
             ),
-            <span class="ident">Sequence::Punct</span> =&gt; <span class="ident">Box::new</span>(
+            <span class="ident"><span class="self">Self</span>::Punct</span> =&gt; <span class="ident">Box::new</span>(
                 (<span class="number">33</span>..<span class="op">=</span><span class="number">47</span>)
                     .<span class="ident">chain</span>(<span class="number">58</span>..<span class="op">=</span><span class="number">64</span>)
                     .<span class="ident">chain</span>(<span class="number">91</span>..<span class="op">=</span><span class="number">96</span>)
                     .<span class="ident">chain</span>(<span class="number">123</span>..<span class="op">=</span><span class="number">126</span>)
                     .<span class="ident">flat_map</span>(<span class="ident">std::char::from_u32</span>),
             ),
-            <span class="ident">Sequence::Space</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">unicode_table::SPACES</span>.<span class="ident">iter</span>().<span class="ident">cloned</span>()),
-            <span class="ident">Sequence::Upper</span> =&gt; <span class="ident">Box::new</span>(<span class="string">&#39;A&#39;</span>..<span class="op">=</span><span class="string">&#39;Z&#39;</span>),
-            <span class="ident">Sequence::Xdigit</span> =&gt; <span class="ident">Box::new</span>((<span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;9&#39;</span>).<span class="ident">chain</span>(<span class="string">&#39;A&#39;</span>..<span class="op">=</span><span class="string">&#39;F&#39;</span>).<span class="ident">chain</span>(<span class="string">&#39;a&#39;</span>..<span class="op">=</span><span class="string">&#39;f&#39;</span>)),
+            <span class="ident"><span class="self">Self</span>::Space</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">unicode_table::SPACES</span>.<span class="ident">iter</span>().<span class="ident">cloned</span>()),
+            <span class="ident"><span class="self">Self</span>::Upper</span> =&gt; <span class="ident">Box::new</span>(<span class="string">&#39;A&#39;</span>..<span class="op">=</span><span class="string">&#39;Z&#39;</span>),
+            <span class="ident"><span class="self">Self</span>::Xdigit</span> =&gt; <span class="ident">Box::new</span>((<span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;9&#39;</span>).<span class="ident">chain</span>(<span class="string">&#39;A&#39;</span>..<span class="op">=</span><span class="string">&#39;F&#39;</span>).<span class="ident">chain</span>(<span class="string">&#39;a&#39;</span>..<span class="op">=</span><span class="string">&#39;f&#39;</span>)),
         }
     }
 
