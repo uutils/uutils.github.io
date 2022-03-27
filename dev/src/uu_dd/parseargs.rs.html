@@ -805,6 +805,69 @@
 <span id="803">803</span>
 <span id="804">804</span>
 <span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
+<span id="866">866</span>
+<span id="867">867</span>
+<span id="868">868</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Tyler Steele &lt;tyler.steele@protonmail.com&gt;</span>
@@ -1342,9 +1405,50 @@
         .<span class="ident">collect</span>()
 }
 
+<span class="doccomment">/// Given the various command-line parameters, determine the conversion mode.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The `conv` command-line option can take many different values,</span>
+<span class="doccomment">/// each of which may combine with others. For example, `conv=ascii`,</span>
+<span class="doccomment">/// `conv=lcase`, `conv=sync`, and so on. The arguments to this</span>
+<span class="doccomment">/// function represent the settings of those various command-line</span>
+<span class="doccomment">/// parameters. This function translates those settings to a</span>
+<span class="doccomment">/// [`ConversionMode`].</span>
+<span class="kw">fn</span> <span class="ident">conversion_mode</span>(
+    <span class="ident">ctable</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ConversionTable</span><span class="op">&gt;</span>,
+    <span class="ident">block</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
+    <span class="ident">unblock</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
+    <span class="ident">non_ascii</span>: <span class="ident">bool</span>,
+    <span class="ident">is_sync</span>: <span class="ident">bool</span>,
+) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ConversionMode</span><span class="op">&gt;</span> {
+    <span class="kw">match</span> (<span class="ident">ctable</span>, <span class="ident">block</span>, <span class="ident">unblock</span>) {
+        (<span class="prelude-val">Some</span>(<span class="ident">ct</span>), <span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">ConversionMode::ConvertOnly</span>(<span class="ident">ct</span>)),
+        (<span class="prelude-val">Some</span>(<span class="ident">ct</span>), <span class="prelude-val">Some</span>(<span class="ident">cbs</span>), <span class="prelude-val">None</span>) =&gt; {
+            <span class="kw">if</span> <span class="ident">non_ascii</span> {
+                <span class="prelude-val">Some</span>(<span class="ident">ConversionMode::ConvertThenBlock</span>(<span class="ident">ct</span>, <span class="ident">cbs</span>, <span class="ident">is_sync</span>))
+            } <span class="kw">else</span> {
+                <span class="prelude-val">Some</span>(<span class="ident">ConversionMode::BlockThenConvert</span>(<span class="ident">ct</span>, <span class="ident">cbs</span>, <span class="ident">is_sync</span>))
+            }
+        }
+        (<span class="prelude-val">Some</span>(<span class="ident">ct</span>), <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">cbs</span>)) =&gt; {
+            <span class="kw">if</span> <span class="ident">non_ascii</span> {
+                <span class="prelude-val">Some</span>(<span class="ident">ConversionMode::ConvertThenUnblock</span>(<span class="ident">ct</span>, <span class="ident">cbs</span>))
+            } <span class="kw">else</span> {
+                <span class="prelude-val">Some</span>(<span class="ident">ConversionMode::UnblockThenConvert</span>(<span class="ident">ct</span>, <span class="ident">cbs</span>))
+            }
+        }
+        (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">cbs</span>), <span class="prelude-val">None</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">ConversionMode::BlockOnly</span>(<span class="ident">cbs</span>, <span class="ident">is_sync</span>)),
+        (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">cbs</span>)) =&gt; <span class="prelude-val">Some</span>(<span class="ident">ConversionMode::UnblockOnly</span>(<span class="ident">cbs</span>)),
+        (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="prelude-val">None</span>,
+        <span class="comment">// The remaining variants should never happen because the</span>
+        <span class="comment">// argument parsing above should result in an error before</span>
+        <span class="comment">// getting to this line of code.</span>
+        <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(),
+    }
+}
+
 <span class="doccomment">/// Parse Conversion Options (Input Variety)</span>
 <span class="doccomment">/// Construct and validate a IConvFlags</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_conv_flag_input</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">Matches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">IConvFlags</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">parse_conv_flag_input</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">Matches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">IConvFlags</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iconvflags</span> <span class="op">=</span> <span class="ident">IConvFlags::default</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fmt</span> <span class="op">=</span> <span class="prelude-val">None</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">case</span> <span class="op">=</span> <span class="prelude-val">None</span>;
@@ -1352,6 +1456,9 @@
 
     <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">parse_flag_list</span>(<span class="ident">options::CONV</span>, <span class="ident">matches</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">cbs</span> <span class="op">=</span> <span class="ident">parse_cbs</span>(<span class="ident">matches</span>)<span class="question-mark">?</span>;
+
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">block</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">unblock</span> <span class="op">=</span> <span class="prelude-val">None</span>;
 
     <span class="kw">for</span> <span class="ident">flag</span> <span class="kw">in</span> <span class="ident">flags</span> {
         <span class="kw">match</span> <span class="ident">flag</span> {
@@ -1372,7 +1479,7 @@
                     <span class="comment">//</span>
                     <span class="comment">// -- https://www.gnu.org/software/coreutils/manual/html_node/dd-invocation.html</span>
                     <span class="kw">if</span> <span class="ident">cbs</span>.<span class="ident">is_some</span>() {
-                        <span class="ident">iconvflags</span>.<span class="ident">unblock</span> <span class="op">=</span> <span class="ident">cbs</span>;
+                        <span class="ident">unblock</span> <span class="op">=</span> <span class="ident">cbs</span>;
                     }
                 }
             }
@@ -1392,7 +1499,7 @@
                     <span class="comment">//</span>
                     <span class="comment">// -- https://www.gnu.org/software/coreutils/manual/html_node/dd-invocation.html</span>
                     <span class="kw">if</span> <span class="ident">cbs</span>.<span class="ident">is_some</span>() {
-                        <span class="ident">iconvflags</span>.<span class="ident">block</span> <span class="op">=</span> <span class="ident">cbs</span>;
+                        <span class="ident">block</span> <span class="op">=</span> <span class="ident">cbs</span>;
                     }
                 }
             }
@@ -1410,13 +1517,13 @@
                     <span class="ident">case</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">flag</span>);
                 }
             }
-            <span class="ident">ConvFlag::Block</span> =&gt; <span class="kw">match</span> (<span class="ident">cbs</span>, <span class="ident">iconvflags</span>.<span class="ident">unblock</span>) {
-                (<span class="prelude-val">Some</span>(<span class="ident">cbs</span>), <span class="prelude-val">None</span>) =&gt; <span class="ident">iconvflags</span>.<span class="ident">block</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">cbs</span>),
+            <span class="ident">ConvFlag::Block</span> =&gt; <span class="kw">match</span> (<span class="ident">cbs</span>, <span class="ident">unblock</span>) {
+                (<span class="prelude-val">Some</span>(<span class="ident">cbs</span>), <span class="prelude-val">None</span>) =&gt; <span class="ident">block</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">cbs</span>),
                 (<span class="prelude-val">None</span>, <span class="kw">_</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::BlockUnblockWithoutCBS</span>),
                 (<span class="kw">_</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::MultipleBlockUnblock</span>),
             },
-            <span class="ident">ConvFlag::Unblock</span> =&gt; <span class="kw">match</span> (<span class="ident">cbs</span>, <span class="ident">iconvflags</span>.<span class="ident">block</span>) {
-                (<span class="prelude-val">Some</span>(<span class="ident">cbs</span>), <span class="prelude-val">None</span>) =&gt; <span class="ident">iconvflags</span>.<span class="ident">unblock</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">cbs</span>),
+            <span class="ident">ConvFlag::Unblock</span> =&gt; <span class="kw">match</span> (<span class="ident">cbs</span>, <span class="ident">block</span>) {
+                (<span class="prelude-val">Some</span>(<span class="ident">cbs</span>), <span class="prelude-val">None</span>) =&gt; <span class="ident">unblock</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">cbs</span>),
                 (<span class="prelude-val">None</span>, <span class="kw">_</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::BlockUnblockWithoutCBS</span>),
                 (<span class="kw">_</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::MultipleBlockUnblock</span>),
             },
@@ -1437,7 +1544,7 @@
     <span class="comment">// block implies sync with &#39; &#39;</span>
     <span class="comment">// unblock implies sync with 0</span>
     <span class="comment">// So the final value can&#39;t be set until all flags are parsed.</span>
-    <span class="kw">let</span> <span class="ident">sync</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">is_sync</span> <span class="op">&amp;&amp;</span> (<span class="ident">iconvflags</span>.<span class="ident">block</span>.<span class="ident">is_some</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">iconvflags</span>.<span class="ident">unblock</span>.<span class="ident">is_some</span>()) {
+    <span class="kw">let</span> <span class="ident">sync</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">is_sync</span> <span class="op">&amp;&amp;</span> (<span class="ident">block</span>.<span class="ident">is_some</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">unblock</span>.<span class="ident">is_some</span>()) {
         <span class="prelude-val">Some</span>(<span class="string">b&#39; &#39;</span>)
     } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">is_sync</span> {
         <span class="prelude-val">Some</span>(<span class="number">0u8</span>)
@@ -1445,8 +1552,27 @@
         <span class="prelude-val">None</span>
     };
 
+    <span class="comment">// Some user options, such as the presence of conversion tables,</span>
+    <span class="comment">// will determine whether the input is assumed to be ascii. This</span>
+    <span class="comment">// parser sets the non_ascii flag accordingly.</span>
+    <span class="comment">//</span>
+    <span class="comment">// Examples:</span>
+    <span class="comment">//</span>
+    <span class="comment">// - If conv=ebcdic or conv=ibm is specified then block,</span>
+    <span class="comment">//   unblock or swab must be performed before the conversion</span>
+    <span class="comment">//   happens since the source will start in ascii.</span>
+    <span class="comment">// - If conv=ascii is specified then block, unblock or swab</span>
+    <span class="comment">//   must be performed after the conversion since the source</span>
+    <span class="comment">//   starts in ebcdic.</span>
+    <span class="comment">// - If no conversion is specified then the source is assumed</span>
+    <span class="comment">//   to be in ascii.</span>
+    <span class="comment">//</span>
+    <span class="comment">// For more info see `info dd`.</span>
+    <span class="kw">let</span> <span class="ident">non_ascii</span> <span class="op">=</span> <span class="ident">parseargs::parse_input_non_ascii</span>(<span class="ident">matches</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="ident">conversion_mode</span>(<span class="ident">ctable</span>, <span class="ident">block</span>, <span class="ident">unblock</span>, <span class="ident">non_ascii</span>, <span class="ident">is_sync</span>);
+
     <span class="prelude-val">Ok</span>(<span class="ident">IConvFlags</span> {
-        <span class="ident">ctable</span>,
+        <span class="ident">mode</span>,
         <span class="ident">sync</span>,
         ..<span class="ident">iconvflags</span>
     })

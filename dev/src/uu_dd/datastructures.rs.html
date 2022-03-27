@@ -129,6 +129,13 @@
 <span id="127">127</span>
 <span id="128">128</span>
 <span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Tyler Steele &lt;tyler.steele@protonmail.com&gt;</span>
@@ -145,12 +152,27 @@
 
 <span class="kw">type</span> <span class="ident">Cbs</span> <span class="op">=</span> <span class="ident">usize</span>;
 
+<span class="doccomment">/// How to apply conversion, blocking, and/or unblocking.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Certain settings of the `conv` parameter to `dd` require a</span>
+<span class="doccomment">/// combination of conversion, blocking, or unblocking, applied in a</span>
+<span class="doccomment">/// certain order. The variants of this enumeration give the different</span>
+<span class="doccomment">/// ways of combining those three operations.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="ident">ConversionMode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">ConvertOnly</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ConversionTable</span>),
+    <span class="ident">BlockOnly</span>(<span class="ident">Cbs</span>, <span class="ident">bool</span>),
+    <span class="ident">UnblockOnly</span>(<span class="ident">Cbs</span>),
+    <span class="ident">BlockThenConvert</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ConversionTable</span>, <span class="ident">Cbs</span>, <span class="ident">bool</span>),
+    <span class="ident">ConvertThenBlock</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ConversionTable</span>, <span class="ident">Cbs</span>, <span class="ident">bool</span>),
+    <span class="ident">UnblockThenConvert</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ConversionTable</span>, <span class="ident">Cbs</span>),
+    <span class="ident">ConvertThenUnblock</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ConversionTable</span>, <span class="ident">Cbs</span>),
+}
+
 <span class="doccomment">/// Stores all Conv Flags that apply to the input</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">IConvFlags</span> {
-    <span class="kw">pub</span> <span class="ident">ctable</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">ConversionTable</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">block</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Cbs</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">unblock</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Cbs</span><span class="op">&gt;</span>,
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">IConvFlags</span> {
+    <span class="kw">pub</span> <span class="ident">mode</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ConversionMode</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">swab</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span> <span class="ident">sync</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">noerror</span>: <span class="ident">bool</span>,
@@ -222,19 +244,11 @@
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">InternalError</span> {
     <span class="ident">WrongInputType</span>,
     <span class="ident">WrongOutputType</span>,
-    <span class="ident">InvalidConvBlockUnblockCase</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">std::fmt::Display</span> <span class="kw">for</span> <span class="ident">InternalError</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">std::fmt::Result</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::WrongInputType</span> <span class="op">|</span> <span class="ident"><span class="self">Self</span>::WrongOutputType</span> =&gt; {
-                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Internal dd error: Wrong Input/Output data type&quot;</span>)
-            }
-            <span class="ident"><span class="self">Self</span>::InvalidConvBlockUnblockCase</span> =&gt; {
-                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Invalid Conversion, Block, or Unblock data&quot;</span>)
-            }
-        }
+        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Internal dd error: Wrong Input/Output data type&quot;</span>)
     }
 }
 
