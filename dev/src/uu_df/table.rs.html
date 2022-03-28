@@ -585,6 +585,19 @@
 <span id="583">583</span>
 <span id="584">584</span>
 <span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -611,6 +624,9 @@
 <span class="doccomment">/// A row comprises several pieces of information, including the</span>
 <span class="doccomment">/// filesystem device, the mountpoint, the number of bytes used, etc.</span>
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">Row</span> {
+    <span class="doccomment">/// The filename given on the command-line, if given.</span>
+    <span class="ident">file</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+
     <span class="doccomment">/// Name of the device on which the filesystem lives.</span>
     <span class="ident">fs_device</span>: <span class="ident">String</span>,
 
@@ -660,6 +676,7 @@
 <span class="kw">impl</span> <span class="ident">Row</span> {
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
+            <span class="ident">file</span>: <span class="prelude-val">None</span>,
             <span class="ident">fs_device</span>: <span class="ident">source</span>.<span class="ident">into</span>(),
             <span class="ident">fs_type</span>: <span class="string">&quot;-&quot;</span>.<span class="ident">into</span>(),
             <span class="ident">fs_mount</span>: <span class="string">&quot;-&quot;</span>.<span class="ident">into</span>(),
@@ -688,6 +705,7 @@
         <span class="kw">let</span> <span class="ident">inodes</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inodes</span> <span class="op">+</span> <span class="ident">rhs</span>.<span class="ident">inodes</span>;
         <span class="kw">let</span> <span class="ident">inodes_used</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inodes_used</span> <span class="op">+</span> <span class="ident">rhs</span>.<span class="ident">inodes_used</span>;
         <span class="kw-2">*</span><span class="self">self</span> <span class="op">=</span> <span class="self">Self</span> {
+            <span class="ident">file</span>: <span class="prelude-val">None</span>,
             <span class="ident">fs_device</span>: <span class="string">&quot;total&quot;</span>.<span class="ident">into</span>(),
             <span class="ident">fs_type</span>: <span class="string">&quot;-&quot;</span>.<span class="ident">into</span>(),
             <span class="ident">fs_mount</span>: <span class="string">&quot;-&quot;</span>.<span class="ident">into</span>(),
@@ -732,6 +750,7 @@
             ..
         } <span class="op">=</span> <span class="ident">fs</span>.<span class="ident">usage</span>;
         <span class="self">Self</span> {
+            <span class="ident">file</span>: <span class="ident">fs</span>.<span class="ident">file</span>,
             <span class="ident">fs_device</span>: <span class="ident">dev_name</span>,
             <span class="ident">fs_type</span>,
             <span class="ident">fs_mount</span>: <span class="ident">mount_dir</span>,
@@ -833,8 +852,9 @@
                 <span class="ident">Column::Ipcent</span> =&gt; {
                     <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &gt;5} &quot;</span>, <span class="ident">DisplayRow::percentage</span>(<span class="self">self</span>.<span class="ident">row</span>.<span class="ident">inodes_usage</span>))<span class="question-mark">?</span>;
                 }
-                <span class="comment">// TODO Implement this.</span>
-                <span class="ident">Column::File</span> =&gt; {}
+                <span class="ident">Column::File</span> =&gt; {
+                    <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &lt;16}&quot;</span>, <span class="self">self</span>.<span class="ident">row</span>.<span class="ident">file</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="string">&quot;-&quot;</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>;
+                }
                 <span class="ident">Column::Fstype</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{0: &lt;5} &quot;</span>, <span class="self">self</span>.<span class="ident">row</span>.<span class="ident">fs_type</span>)<span class="question-mark">?</span>,
                 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
                 <span class="ident">Column::Capacity</span> =&gt; <span class="macro">write!</span>(
@@ -993,6 +1013,7 @@
             ..<span class="ident">Default::default</span>()
         };
         <span class="kw">let</span> <span class="ident">row</span> <span class="op">=</span> <span class="ident">Row</span> {
+            <span class="ident">file</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;/path/to/file&quot;</span>.<span class="ident">to_string</span>()),
             <span class="ident">fs_device</span>: <span class="string">&quot;my_device&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">fs_type</span>: <span class="string">&quot;my_type&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">fs_mount</span>: <span class="string">&quot;my_mount&quot;</span>.<span class="ident">to_string</span>(),
@@ -1024,6 +1045,7 @@
             ..<span class="ident">Default::default</span>()
         };
         <span class="kw">let</span> <span class="ident">row</span> <span class="op">=</span> <span class="ident">Row</span> {
+            <span class="ident">file</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;/path/to/file&quot;</span>.<span class="ident">to_string</span>()),
             <span class="ident">fs_device</span>: <span class="string">&quot;my_device&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">fs_type</span>: <span class="string">&quot;my_type&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">fs_mount</span>: <span class="string">&quot;my_mount&quot;</span>.<span class="ident">to_string</span>(),
@@ -1055,6 +1077,7 @@
             ..<span class="ident">Default::default</span>()
         };
         <span class="kw">let</span> <span class="ident">row</span> <span class="op">=</span> <span class="ident">Row</span> {
+            <span class="ident">file</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;/path/to/file&quot;</span>.<span class="ident">to_string</span>()),
             <span class="ident">fs_device</span>: <span class="string">&quot;my_device&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">fs_type</span>: <span class="string">&quot;my_type&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">fs_mount</span>: <span class="string">&quot;my_mount&quot;</span>.<span class="ident">to_string</span>(),
@@ -1086,6 +1109,7 @@
             ..<span class="ident">Default::default</span>()
         };
         <span class="kw">let</span> <span class="ident">row</span> <span class="op">=</span> <span class="ident">Row</span> {
+            <span class="ident">file</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;/path/to/file&quot;</span>.<span class="ident">to_string</span>()),
             <span class="ident">fs_device</span>: <span class="string">&quot;my_device&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">fs_type</span>: <span class="string">&quot;my_type&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">fs_mount</span>: <span class="string">&quot;my_mount&quot;</span>.<span class="ident">to_string</span>(),
@@ -1117,6 +1141,7 @@
             ..<span class="ident">Default::default</span>()
         };
         <span class="kw">let</span> <span class="ident">row</span> <span class="op">=</span> <span class="ident">Row</span> {
+            <span class="ident">file</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;/path/to/file&quot;</span>.<span class="ident">to_string</span>()),
             <span class="ident">fs_device</span>: <span class="string">&quot;my_device&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">fs_type</span>: <span class="string">&quot;my_type&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">fs_mount</span>: <span class="string">&quot;my_mount&quot;</span>.<span class="ident">to_string</span>(),
@@ -1147,6 +1172,7 @@
             ..<span class="ident">Default::default</span>()
         };
         <span class="kw">let</span> <span class="ident">row</span> <span class="op">=</span> <span class="ident">Row</span> {
+            <span class="ident">file</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;/path/to/file&quot;</span>.<span class="ident">to_string</span>()),
             <span class="ident">fs_device</span>: <span class="string">&quot;my_device&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">fs_type</span>: <span class="string">&quot;my_type&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">fs_mount</span>: <span class="string">&quot;my_mount&quot;</span>.<span class="ident">to_string</span>(),
