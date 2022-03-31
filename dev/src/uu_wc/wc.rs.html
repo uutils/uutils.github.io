@@ -531,77 +531,6 @@
 <span id="529">529</span>
 <span id="530">530</span>
 <span id="531">531</span>
-<span id="532">532</span>
-<span id="533">533</span>
-<span id="534">534</span>
-<span id="535">535</span>
-<span id="536">536</span>
-<span id="537">537</span>
-<span id="538">538</span>
-<span id="539">539</span>
-<span id="540">540</span>
-<span id="541">541</span>
-<span id="542">542</span>
-<span id="543">543</span>
-<span id="544">544</span>
-<span id="545">545</span>
-<span id="546">546</span>
-<span id="547">547</span>
-<span id="548">548</span>
-<span id="549">549</span>
-<span id="550">550</span>
-<span id="551">551</span>
-<span id="552">552</span>
-<span id="553">553</span>
-<span id="554">554</span>
-<span id="555">555</span>
-<span id="556">556</span>
-<span id="557">557</span>
-<span id="558">558</span>
-<span id="559">559</span>
-<span id="560">560</span>
-<span id="561">561</span>
-<span id="562">562</span>
-<span id="563">563</span>
-<span id="564">564</span>
-<span id="565">565</span>
-<span id="566">566</span>
-<span id="567">567</span>
-<span id="568">568</span>
-<span id="569">569</span>
-<span id="570">570</span>
-<span id="571">571</span>
-<span id="572">572</span>
-<span id="573">573</span>
-<span id="574">574</span>
-<span id="575">575</span>
-<span id="576">576</span>
-<span id="577">577</span>
-<span id="578">578</span>
-<span id="579">579</span>
-<span id="580">580</span>
-<span id="581">581</span>
-<span id="582">582</span>
-<span id="583">583</span>
-<span id="584">584</span>
-<span id="585">585</span>
-<span id="586">586</span>
-<span id="587">587</span>
-<span id="588">588</span>
-<span id="589">589</span>
-<span id="590">590</span>
-<span id="591">591</span>
-<span id="592">592</span>
-<span id="593">593</span>
-<span id="594">594</span>
-<span id="595">595</span>
-<span id="596">596</span>
-<span id="597">597</span>
-<span id="598">598</span>
-<span id="599">599</span>
-<span id="600">600</span>
-<span id="601">601</span>
-<span id="602">602</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Boden Garman &lt;bpgarman@gmail.com&gt;</span>
@@ -1003,46 +932,6 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
     }
 }
 
-<span class="doccomment">/// Compute the number of digits needed to represent any count for this input.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If `input` is [`Input::Stdin`], then this function returns</span>
-<span class="doccomment">/// [`MINIMUM_WIDTH`]. Otherwise, if metadata could not be read from</span>
-<span class="doccomment">/// `input` then this function returns 1.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Errors</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This function will return an error if `input` is a [`Input::Path`]</span>
-<span class="doccomment">/// and there is a problem accessing the metadata of the given `input`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// A [`Input::Stdin`] gets a default minimum width:</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust,ignore</span>
-<span class="doccomment">/// let input = Input::Stdin(StdinKind::Explicit);</span>
-<span class="doccomment">/// assert_eq!(7, digit_width(input));</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">fn</span> <span class="ident">digit_width</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">Input</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">input</span> {
-        <span class="ident">Input::Stdin</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">MINIMUM_WIDTH</span>),
-        <span class="ident">Input::Path</span>(<span class="ident">filename</span>) =&gt; {
-            <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="ident">filename</span>);
-            <span class="kw">let</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">fs::metadata</span>(<span class="ident">path</span>)<span class="question-mark">?</span>;
-            <span class="kw">if</span> <span class="ident">metadata</span>.<span class="ident">is_file</span>() {
-                <span class="comment">// TODO We are now computing the number of bytes in a file</span>
-                <span class="comment">// twice: once here and once in `WordCount::from_line()` (or</span>
-                <span class="comment">// in `count_bytes_fast()` if that function is called</span>
-                <span class="comment">// instead). See GitHub issue #2201.</span>
-                <span class="kw">let</span> <span class="ident">num_bytes</span> <span class="op">=</span> <span class="ident">metadata</span>.<span class="ident">len</span>();
-                <span class="kw">let</span> <span class="ident">num_digits</span> <span class="op">=</span> <span class="ident">num_bytes</span>.<span class="ident">to_string</span>().<span class="ident">len</span>();
-                <span class="prelude-val">Ok</span>(<span class="ident">num_digits</span>)
-            } <span class="kw">else</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">MINIMUM_WIDTH</span>)
-            }
-        }
-    }
-}
-
 <span class="doccomment">/// Compute the number of digits needed to represent all counts in all inputs.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// `inputs` may include zero or more [`Input::Stdin`] entries, each of</span>
@@ -1050,52 +939,45 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
 <span class="doccomment">/// entry causes this function to return a width that is at least</span>
 <span class="doccomment">/// [`MINIMUM_WIDTH`].</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// If `input` is empty, then this function returns 1. If file metadata</span>
-<span class="doccomment">/// could not be read from any of the [`Input::Path`] inputs and there</span>
-<span class="doccomment">/// are no [`Input::Stdin`] inputs, then this function returns 1.</span>
+<span class="doccomment">/// If `input` is empty, or if only one number needs to be printed (for just</span>
+<span class="doccomment">/// one file) then this function is optimized to return 1 without making any</span>
+<span class="doccomment">/// calls to get file metadata.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// If there is a problem accessing the metadata, this function will</span>
-<span class="doccomment">/// silently ignore the error and assume that the number of digits</span>
-<span class="doccomment">/// needed to display the counts for that file is 1.</span>
+<span class="doccomment">/// If file metadata could not be read from any of the [`Input::Path`] input,</span>
+<span class="doccomment">/// that input does not affect number width computation</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// An empty slice implies a width of 1:</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust,ignore</span>
-<span class="doccomment">/// assert_eq!(1, max_width(&amp;vec![]));</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The presence of [`Input::Stdin`] implies a minimum width:</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust,ignore</span>
-<span class="doccomment">/// let inputs = vec![Input::Stdin(StdinKind::Explicit)];</span>
-<span class="doccomment">/// assert_eq!(7, max_width(&amp;inputs));</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">fn</span> <span class="ident">max_width</span>(<span class="ident">inputs</span>: <span class="kw-2">&amp;</span>[<span class="ident">Input</span>]) -&gt; <span class="ident">usize</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="number">1</span>;
+<span class="doccomment">/// Otherwise, the file sizes in the file metadata are summed and the number of</span>
+<span class="doccomment">/// digits in that total size is returned as the number width</span>
+<span class="kw">fn</span> <span class="ident">compute_number_width</span>(<span class="ident">inputs</span>: <span class="kw-2">&amp;</span>[<span class="ident">Input</span>], <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>) -&gt; <span class="ident">usize</span> {
+    <span class="kw">if</span> <span class="ident">inputs</span>.<span class="ident">is_empty</span>() <span class="op">|</span><span class="op">|</span> (<span class="ident">inputs</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">settings</span>.<span class="ident">number_enabled</span>() <span class="op">==</span> <span class="number">1</span>) {
+        <span class="kw">return</span> <span class="number">1</span>;
+    }
+
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">minimum_width</span> <span class="op">=</span> <span class="number">1</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">total</span> <span class="op">=</span> <span class="number">0</span>;
+
     <span class="kw">for</span> <span class="ident">input</span> <span class="kw">in</span> <span class="ident">inputs</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">n</span>) <span class="op">=</span> <span class="ident">digit_width</span>(<span class="ident">input</span>) {
-            <span class="ident">result</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">max</span>(<span class="ident">n</span>);
+        <span class="kw">match</span> <span class="ident">input</span> {
+            <span class="ident">Input::Stdin</span>(<span class="kw">_</span>) =&gt; {
+                <span class="ident">minimum_width</span> <span class="op">=</span> <span class="ident">MINIMUM_WIDTH</span>;
+            }
+            <span class="ident">Input::Path</span>(<span class="ident">path</span>) =&gt; {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">meta</span>) <span class="op">=</span> <span class="ident">fs::metadata</span>(<span class="ident">path</span>) {
+                    <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">is_file</span>() {
+                        <span class="ident">total</span> <span class="op">+</span><span class="op">=</span> <span class="ident">meta</span>.<span class="ident">len</span>();
+                    } <span class="kw">else</span> {
+                        <span class="ident">minimum_width</span> <span class="op">=</span> <span class="ident">MINIMUM_WIDTH</span>;
+                    }
+                }
+            }
         }
     }
-    <span class="ident">result</span>
+
+    <span class="ident">max</span>(<span class="ident">minimum_width</span>, <span class="ident">total</span>.<span class="ident">to_string</span>().<span class="ident">len</span>())
 }
 
 <span class="kw">fn</span> <span class="ident">wc</span>(<span class="ident">inputs</span>: <span class="kw-2">&amp;</span>[<span class="ident">Input</span>], <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="comment">// Compute the width, in digits, to use when formatting counts.</span>
-    <span class="comment">//</span>
-    <span class="comment">// The width is the number of digits needed to print the number of</span>
-    <span class="comment">// bytes in the largest file. This is true regardless of whether</span>
-    <span class="comment">// the `settings` indicate that the bytes will be displayed.</span>
-    <span class="comment">//</span>
-    <span class="comment">// If we only need to display a single number, set this to 0 to</span>
-    <span class="comment">// prevent leading spaces.</span>
-    <span class="kw">let</span> <span class="ident">max_width</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">number_enabled</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">1</span> {
-        <span class="number">0</span>
-    } <span class="kw">else</span> {
-        <span class="ident">max_width</span>(<span class="ident">inputs</span>)
-    };
+    <span class="kw">let</span> <span class="ident">number_width</span> <span class="op">=</span> <span class="ident">compute_number_width</span>(<span class="ident">inputs</span>, <span class="ident">settings</span>);
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">total_word_count</span> <span class="op">=</span> <span class="ident">WordCount::default</span>();
 
@@ -1121,7 +1003,7 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
         };
         <span class="ident">total_word_count</span> <span class="op">+</span><span class="op">=</span> <span class="ident">word_count</span>;
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">word_count</span>.<span class="ident">with_title</span>(<span class="ident">input</span>.<span class="ident">to_title</span>());
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="ident">print_stats</span>(<span class="ident">settings</span>, <span class="kw-2">&amp;</span><span class="ident">result</span>, <span class="ident">max_width</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="ident">print_stats</span>(<span class="ident">settings</span>, <span class="kw-2">&amp;</span><span class="ident">result</span>, <span class="ident">number_width</span>) {
             <span class="macro">show!</span>(<span class="ident">USimpleError::new</span>(
                 <span class="number">1</span>,
                 <span class="macro">format!</span>(
@@ -1138,7 +1020,7 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
 
     <span class="kw">if</span> <span class="ident">num_inputs</span> <span class="op">&gt;</span> <span class="number">1</span> {
         <span class="kw">let</span> <span class="ident">total_result</span> <span class="op">=</span> <span class="ident">total_word_count</span>.<span class="ident">with_title</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;total&quot;</span>.<span class="ident">as_ref</span>()));
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="ident">print_stats</span>(<span class="ident">settings</span>, <span class="kw-2">&amp;</span><span class="ident">total_result</span>, <span class="ident">max_width</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="ident">print_stats</span>(<span class="ident">settings</span>, <span class="kw-2">&amp;</span><span class="ident">total_result</span>, <span class="ident">number_width</span>) {
             <span class="macro">show!</span>(<span class="ident">USimpleError::new</span>(
                 <span class="number">1</span>,
                 <span class="macro">format!</span>(<span class="string">&quot;failed to print total: {}&quot;</span>, <span class="ident">err</span>)
@@ -1151,58 +1033,34 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">fn</span> <span class="ident">print_stats</span>(<span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>, <span class="ident">result</span>: <span class="kw-2">&amp;</span><span class="ident">TitledWordCount</span>, <span class="ident">min_width</span>: <span class="ident">usize</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">stdout</span> <span class="op">=</span> <span class="ident">io::stdout</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stdout_lock</span> <span class="op">=</span> <span class="ident">stdout</span>.<span class="ident">lock</span>();
-
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">is_first</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="bool-val">true</span>;
+<span class="kw">fn</span> <span class="ident">print_stats</span>(
+    <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>,
+    <span class="ident">result</span>: <span class="kw-2">&amp;</span><span class="ident">TitledWordCount</span>,
+    <span class="ident">number_width</span>: <span class="ident">usize</span>,
+) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">columns</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
 
     <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">show_lines</span> {
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">is_first</span> {
-            <span class="macro">write!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot; &quot;</span>)<span class="question-mark">?</span>;
-        }
-        <span class="macro">write!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot;{:1$}&quot;</span>, <span class="ident">result</span>.<span class="ident">count</span>.<span class="ident">lines</span>, <span class="ident">min_width</span>)<span class="question-mark">?</span>;
-        <span class="ident">is_first</span> <span class="op">=</span> <span class="bool-val">false</span>;
+        <span class="ident">columns</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;{:1$}&quot;</span>, <span class="ident">result</span>.<span class="ident">count</span>.<span class="ident">lines</span>, <span class="ident">number_width</span>));
     }
     <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">show_words</span> {
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">is_first</span> {
-            <span class="macro">write!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot; &quot;</span>)<span class="question-mark">?</span>;
-        }
-        <span class="macro">write!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot;{:1$}&quot;</span>, <span class="ident">result</span>.<span class="ident">count</span>.<span class="ident">words</span>, <span class="ident">min_width</span>)<span class="question-mark">?</span>;
-        <span class="ident">is_first</span> <span class="op">=</span> <span class="bool-val">false</span>;
+        <span class="ident">columns</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;{:1$}&quot;</span>, <span class="ident">result</span>.<span class="ident">count</span>.<span class="ident">words</span>, <span class="ident">number_width</span>));
     }
     <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">show_chars</span> {
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">is_first</span> {
-            <span class="macro">write!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot; &quot;</span>)<span class="question-mark">?</span>;
-        }
-        <span class="macro">write!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot;{:1$}&quot;</span>, <span class="ident">result</span>.<span class="ident">count</span>.<span class="ident">chars</span>, <span class="ident">min_width</span>)<span class="question-mark">?</span>;
-        <span class="ident">is_first</span> <span class="op">=</span> <span class="bool-val">false</span>;
+        <span class="ident">columns</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;{:1$}&quot;</span>, <span class="ident">result</span>.<span class="ident">count</span>.<span class="ident">chars</span>, <span class="ident">number_width</span>));
     }
     <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">show_bytes</span> {
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">is_first</span> {
-            <span class="macro">write!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot; &quot;</span>)<span class="question-mark">?</span>;
-        }
-        <span class="macro">write!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot;{:1$}&quot;</span>, <span class="ident">result</span>.<span class="ident">count</span>.<span class="ident">bytes</span>, <span class="ident">min_width</span>)<span class="question-mark">?</span>;
-        <span class="ident">is_first</span> <span class="op">=</span> <span class="bool-val">false</span>;
+        <span class="ident">columns</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;{:1$}&quot;</span>, <span class="ident">result</span>.<span class="ident">count</span>.<span class="ident">bytes</span>, <span class="ident">number_width</span>));
     }
     <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">show_max_line_length</span> {
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">is_first</span> {
-            <span class="macro">write!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot; &quot;</span>)<span class="question-mark">?</span>;
-        }
-        <span class="macro">write!</span>(
-            <span class="ident">stdout_lock</span>,
-            <span class="string">&quot;{:1$}&quot;</span>,
-            <span class="ident">result</span>.<span class="ident">count</span>.<span class="ident">max_line_length</span>, <span class="ident">min_width</span>
-        )<span class="question-mark">?</span>;
+        <span class="ident">columns</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;{:1$}&quot;</span>, <span class="ident">result</span>.<span class="ident">count</span>.<span class="ident">max_line_length</span>, <span class="ident">number_width</span>));
     }
 
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">title</span>) <span class="op">=</span> <span class="ident">result</span>.<span class="ident">title</span> {
-        <span class="macro">writeln!</span>(<span class="ident">stdout_lock</span>, <span class="string">&quot; {}&quot;</span>, <span class="ident">title</span>.<span class="ident">maybe_quote</span>())<span class="question-mark">?</span>;
-    } <span class="kw">else</span> {
-        <span class="macro">writeln!</span>(<span class="ident">stdout_lock</span>)<span class="question-mark">?</span>;
+        <span class="ident">columns</span>.<span class="ident">push</span>(<span class="ident">title</span>.<span class="ident">maybe_quote</span>().<span class="ident">to_string</span>());
     }
 
-    <span class="prelude-val">Ok</span>(())
+    <span class="macro">writeln!</span>(<span class="ident">io::stdout</span>().<span class="ident">lock</span>(), <span class="string">&quot;{}&quot;</span>, <span class="ident">columns</span>.<span class="ident">join</span>(<span class="string">&quot; &quot;</span>))
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_wc" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.59.0 (9d1b2106e 2022-02-23)" ></div>
