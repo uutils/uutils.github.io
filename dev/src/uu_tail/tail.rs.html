@@ -677,6 +677,15 @@
 <span id="675">675</span>
 <span id="676">676</span>
 <span id="677">677</span>
+<span id="678">678</span>
+<span id="679">679</span>
+<span id="680">680</span>
+<span id="681">681</span>
+<span id="682">682</span>
+<span id="683">683</span>
+<span id="684">684</span>
+<span id="685">685</span>
+<span id="686">686</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Morten Olsen Lysgaard &lt;morten@lysgaard.no&gt;</span>
@@ -742,6 +751,7 @@
     <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">SLEEP_INT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;sleep-interval&quot;</span>;
     <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">ZERO_TERM</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;zero-terminated&quot;</span>;
     <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">ARG_FILES</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;files&quot;</span>;
+    <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">PRESUME_INPUT_PIPE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;-presume-input-pipe&quot;</span>;
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
@@ -766,6 +776,7 @@
     <span class="ident">follow</span>: <span class="ident">bool</span>,
     <span class="ident">pid</span>: <span class="ident">platform::Pid</span>,
     <span class="ident">files</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="ident">presume_input_pipe</span>: <span class="ident">bool</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Settings</span> {
@@ -827,6 +838,7 @@
 
         <span class="ident">settings</span>.<span class="ident">verbose</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::verbosity::VERBOSE</span>);
         <span class="ident">settings</span>.<span class="ident">quiet</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::verbosity::QUIET</span>);
+        <span class="ident">settings</span>.<span class="ident">presume_input_pipe</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::PRESUME_INPUT_PIPE</span>);
 
         <span class="ident">settings</span>.<span class="ident">files</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="ident">options::ARG_FILES</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">v</span>) =&gt; <span class="ident">v</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_owned</span>()).<span class="ident">collect</span>(),
@@ -871,7 +883,7 @@
         }
         <span class="ident">first_header</span> <span class="op">=</span> <span class="bool-val">false</span>;
 
-        <span class="kw">if</span> <span class="ident">use_stdin</span> {
+        <span class="kw">if</span> <span class="ident">use_stdin</span> <span class="op">|</span><span class="op">|</span> <span class="ident">settings</span>.<span class="ident">presume_input_pipe</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">reader</span> <span class="op">=</span> <span class="ident">BufReader::new</span>(<span class="ident">stdin</span>());
             <span class="ident">unbounded_tail</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>, <span class="ident">settings</span>)<span class="question-mark">?</span>;
 
@@ -1017,6 +1029,12 @@
                 .<span class="ident">short</span>(<span class="string">&#39;z&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::ZERO_TERM</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Line delimiter is NUL, not newline&quot;</span>),
+        )
+        .<span class="ident">arg</span>(
+            <span class="ident">Arg::new</span>(<span class="ident">options::PRESUME_INPUT_PIPE</span>)
+                .<span class="ident">long</span>(<span class="ident">options::PRESUME_INPUT_PIPE</span>)
+                .<span class="ident">alias</span>(<span class="ident">options::PRESUME_INPUT_PIPE</span>)
+                .<span class="ident">hide</span>(<span class="bool-val">true</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ARG_FILES</span>)
