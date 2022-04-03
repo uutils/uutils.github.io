@@ -602,6 +602,10 @@
 <span id="600">600</span>
 <span id="601">601</span>
 <span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -706,6 +710,7 @@
     <span class="kw">fn</span> <span class="ident">add_assign</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">rhs</span>: <span class="self">Self</span>) {
         <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">bytes</span> <span class="op">+</span> <span class="ident">rhs</span>.<span class="ident">bytes</span>;
         <span class="kw">let</span> <span class="ident">bytes_used</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">bytes_used</span> <span class="op">+</span> <span class="ident">rhs</span>.<span class="ident">bytes_used</span>;
+        <span class="kw">let</span> <span class="ident">bytes_avail</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">bytes_avail</span> <span class="op">+</span> <span class="ident">rhs</span>.<span class="ident">bytes_avail</span>;
         <span class="kw">let</span> <span class="ident">inodes</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inodes</span> <span class="op">+</span> <span class="ident">rhs</span>.<span class="ident">inodes</span>;
         <span class="kw">let</span> <span class="ident">inodes_used</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inodes_used</span> <span class="op">+</span> <span class="ident">rhs</span>.<span class="ident">inodes_used</span>;
         <span class="kw-2">*</span><span class="self">self</span> <span class="op">=</span> <span class="self">Self</span> {
@@ -715,11 +720,14 @@
             <span class="ident">fs_mount</span>: <span class="string">&quot;-&quot;</span>.<span class="ident">into</span>(),
             <span class="ident">bytes</span>,
             <span class="ident">bytes_used</span>,
-            <span class="ident">bytes_avail</span>: <span class="self">self</span>.<span class="ident">bytes_avail</span> <span class="op">+</span> <span class="ident">rhs</span>.<span class="ident">bytes_avail</span>,
+            <span class="ident">bytes_avail</span>,
             <span class="ident">bytes_usage</span>: <span class="kw">if</span> <span class="ident">bytes</span> <span class="op">==</span> <span class="number">0</span> {
                 <span class="prelude-val">None</span>
             } <span class="kw">else</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">bytes_used</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">/</span> <span class="ident">bytes</span> <span class="kw">as</span> <span class="ident">f64</span>)
+                <span class="comment">// We use &quot;(bytes_used + bytes_avail)&quot; instead of &quot;bytes&quot; because on some filesystems (e.g.</span>
+                <span class="comment">// ext4) &quot;bytes&quot; also includes reserved blocks we ignore for the usage calculation.</span>
+                <span class="comment">// https://www.gnu.org/software/coreutils/faq/coreutils-faq.html#df-Size-and-Used-and-Available-do-not-add-up</span>
+                <span class="prelude-val">Some</span>(<span class="ident">bytes_used</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">/</span> (<span class="ident">bytes_used</span> <span class="op">+</span> <span class="ident">bytes_avail</span>) <span class="kw">as</span> <span class="ident">f64</span>)
             },
             <span class="comment">// TODO Figure out how to compute this.</span>
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
@@ -768,7 +776,7 @@
                 <span class="comment">// We use &quot;(bused + bavail)&quot; instead of &quot;blocks&quot; because on some filesystems (e.g.</span>
                 <span class="comment">// ext4) &quot;blocks&quot; also includes reserved blocks we ignore for the usage calculation.</span>
                 <span class="comment">// https://www.gnu.org/software/coreutils/faq/coreutils-faq.html#df-Size-and-Used-and-Available-do-not-add-up</span>
-                <span class="prelude-val">Some</span>((<span class="ident">bused</span> <span class="kw">as</span> <span class="ident">f64</span>) <span class="op">/</span> (<span class="ident">bused</span> <span class="op">+</span> <span class="ident">bavail</span>) <span class="kw">as</span> <span class="ident">f64</span>)
+                <span class="prelude-val">Some</span>(<span class="ident">bused</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">/</span> (<span class="ident">bused</span> <span class="op">+</span> <span class="ident">bavail</span>) <span class="kw">as</span> <span class="ident">f64</span>)
             },
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
             <span class="ident">bytes_capacity</span>: <span class="kw">if</span> <span class="ident">bavail</span> <span class="op">==</span> <span class="number">0</span> {

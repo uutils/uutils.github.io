@@ -995,9 +995,6 @@
 <span id="993">993</span>
 <span id="994">994</span>
 <span id="995">995</span>
-<span id="996">996</span>
-<span id="997">997</span>
-<span id="998">998</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Konstantin Pospelov &lt;kupospelov@gmail.com&gt;</span>
@@ -1018,6 +1015,7 @@
 <span class="kw">use</span> <span class="ident">std::fmt::Display</span>;
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">stdout</span>, <span class="ident">BufRead</span>, <span class="ident">BufReader</span>, <span class="ident">BufWriter</span>, <span class="ident">Split</span>, <span class="ident">Stdin</span>, <span class="ident">Write</span>};
+<span class="kw">use</span> <span class="ident">std::num::IntErrorKind</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::os::unix::ffi::OsStrExt</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
@@ -1965,13 +1963,9 @@ FILENUM is 1 or 2, corresponding to FILE1 or FILE2&quot;</span>,
 <span class="doccomment">/// Parse the specified field string as a natural number and return</span>
 <span class="doccomment">/// the zero-based field number.</span>
 <span class="kw">fn</span> <span class="ident">parse_field_number</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-    <span class="comment">// TODO: use ParseIntError.kind() once MSRV &gt;= 1.55</span>
-    <span class="comment">// For now, store an overflow Err from parsing a value 10x 64 bit usize::MAX</span>
-    <span class="comment">// Adapted from https://github.com/rust-lang/rust/issues/22639</span>
-    <span class="kw">let</span> <span class="ident">overflow</span> <span class="op">=</span> <span class="string">&quot;184467440737095516150&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>().<span class="ident">err</span>().<span class="ident">unwrap</span>();
     <span class="kw">match</span> <span class="ident">value</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
         <span class="prelude-val">Ok</span>(<span class="ident">result</span>) <span class="kw">if</span> <span class="ident">result</span> <span class="op">&gt;</span> <span class="number">0</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">result</span> <span class="op">-</span> <span class="number">1</span>),
-        <span class="prelude-val">Err</span>(<span class="kw-2">ref</span> <span class="ident">e</span>) <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">e</span> <span class="op">==</span> <span class="ident">overflow</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">usize::MAX</span>),
+        <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">kind</span>() <span class="op">==</span> <span class="kw-2">&amp;</span><span class="ident">IntErrorKind::PosOverflow</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">usize::MAX</span>),
         <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(
             <span class="number">1</span>,
             <span class="macro">format!</span>(<span class="string">&quot;invalid field number: {}&quot;</span>, <span class="ident">value</span>.<span class="ident">quote</span>()),
