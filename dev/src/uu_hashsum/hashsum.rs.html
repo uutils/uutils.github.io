@@ -657,6 +657,16 @@
 <span id="655">655</span>
 <span id="656">656</span>
 <span id="657">657</span>
+<span id="658">658</span>
+<span id="659">659</span>
+<span id="660">660</span>
+<span id="661">661</span>
+<span id="662">662</span>
+<span id="663">663</span>
+<span id="664">664</span>
+<span id="665">665</span>
+<span id="666">666</span>
+<span id="667">667</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Alex Lyon &lt;arcterus@mail.com&gt;</span>
@@ -666,7 +676,7 @@
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
 <span class="comment">//  * file that was distributed with this source code.</span>
 
-<span class="comment">// spell-checker:ignore (ToDO) algo, algoname, regexes, nread</span>
+<span class="comment">// spell-checker:ignore (ToDO) algo, algoname, regexes, nread, nonames</span>
 
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">clap</span>;
@@ -705,6 +715,7 @@
     <span class="ident">binary</span>: <span class="ident">bool</span>,
     <span class="ident">check</span>: <span class="ident">bool</span>,
     <span class="ident">tag</span>: <span class="ident">bool</span>,
+    <span class="ident">nonames</span>: <span class="ident">bool</span>,
     <span class="ident">status</span>: <span class="ident">bool</span>,
     <span class="ident">quiet</span>: <span class="ident">bool</span>,
     <span class="ident">strict</span>: <span class="ident">bool</span>,
@@ -975,6 +986,7 @@
     };
     <span class="kw">let</span> <span class="ident">check</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;check&quot;</span>);
     <span class="kw">let</span> <span class="ident">tag</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;tag&quot;</span>);
+    <span class="kw">let</span> <span class="ident">nonames</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;no-names&quot;</span>);
     <span class="kw">let</span> <span class="ident">status</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;status&quot;</span>);
     <span class="kw">let</span> <span class="ident">quiet</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;quiet&quot;</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">status</span>;
     <span class="kw">let</span> <span class="ident">strict</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;strict&quot;</span>);
@@ -987,6 +999,7 @@
         <span class="ident">binary</span>,
         <span class="ident">check</span>,
         <span class="ident">tag</span>,
+        <span class="ident">nonames</span>,
         <span class="ident">status</span>,
         <span class="ident">quiet</span>,
         <span class="ident">strict</span>,
@@ -1028,6 +1041,11 @@
             <span class="ident">Arg::new</span>(<span class="string">&quot;tag&quot;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;tag&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;create a BSD-style checksum&quot;</span>),
+        )
+        .<span class="ident">arg</span>(
+            <span class="ident">Arg::new</span>(<span class="string">&quot;no-names&quot;</span>)
+                .<span class="ident">long</span>(<span class="string">&quot;no-names&quot;</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;Omits filenames in the output (option not present in GNU/Coreutils)&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="string">&quot;text&quot;</span>)
@@ -1261,6 +1279,8 @@
             .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to read input&quot;</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
             <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">tag</span> {
                 <span class="macro">println!</span>(<span class="string">&quot;{} ({}) = {}&quot;</span>, <span class="ident">options</span>.<span class="ident">algoname</span>, <span class="ident">filename</span>.<span class="ident">display</span>(), <span class="ident">sum</span>);
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">nonames</span> {
+                <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">sum</span>);
             } <span class="kw">else</span> {
                 <span class="macro">println!</span>(<span class="string">&quot;{} {}{}&quot;</span>, <span class="ident">sum</span>, <span class="ident">binary_marker</span>, <span class="ident">filename</span>.<span class="ident">display</span>());
             }
