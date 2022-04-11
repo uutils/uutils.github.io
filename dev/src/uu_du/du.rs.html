@@ -863,6 +863,11 @@
 <span id="858">858</span>
 <span id="859">859</span>
 <span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Derek Chiang &lt;derekchiang93@gmail.com&gt;</span>
@@ -896,7 +901,7 @@
 <span class="kw">use</span> <span class="ident">std::time</span>::{<span class="ident">Duration</span>, <span class="ident">UNIX_EPOCH</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">error::Error</span>, <span class="ident">fmt::Display</span>};
 <span class="kw">use</span> <span class="ident">uucore::display</span>::{<span class="ident">print_verbatim</span>, <span class="ident">Quotable</span>};
-<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UError</span>, <span class="ident">UResult</span>};
+<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">set_exit_code</span>, <span class="ident">UError</span>, <span class="ident">UResult</span>};
 <span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 <span class="kw">use</span> <span class="ident">uucore::parse_size</span>::{<span class="ident">parse_size</span>, <span class="ident">ParseSizeError</span>};
 <span class="kw">use</span> <span class="ident">uucore::InvalidEncodingHandling</span>;
@@ -1166,6 +1171,7 @@ of 1000).
                     <span class="ident">my_stat</span>.<span class="ident">path</span>.<span class="ident">quote</span>(),
                     <span class="ident">e</span>
                 );
+                <span class="ident">set_exit_code</span>(<span class="number">1</span>);
                 <span class="kw">return</span> <span class="ident">Box::new</span>(<span class="ident">iter::once</span>(<span class="ident">my_stat</span>));
             }
         };
@@ -1205,8 +1211,12 @@ of 1000).
                             <span class="kw">let</span> <span class="ident">description</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;cannot access {}&quot;</span>, <span class="ident">entry</span>.<span class="ident">path</span>().<span class="ident">quote</span>());
                             <span class="kw">let</span> <span class="ident">error_message</span> <span class="op">=</span> <span class="string">&quot;Permission denied&quot;</span>;
                             <span class="macro">show_error_custom_description!</span>(<span class="ident">description</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">error_message</span>);
+                            <span class="ident">set_exit_code</span>(<span class="number">1</span>);
                         }
-                        <span class="kw">_</span> =&gt; <span class="macro">show_error!</span>(<span class="string">&quot;cannot access {}: {}&quot;</span>, <span class="ident">entry</span>.<span class="ident">path</span>().<span class="ident">quote</span>(), <span class="ident">error</span>),
+                        <span class="kw">_</span> =&gt; {
+                            <span class="ident">set_exit_code</span>(<span class="number">1</span>);
+                            <span class="macro">show_error!</span>(<span class="string">&quot;cannot access {}: {}&quot;</span>, <span class="ident">entry</span>.<span class="ident">path</span>().<span class="ident">quote</span>(), <span class="ident">error</span>);
+                        }
                     },
                 },
                 <span class="prelude-val">Err</span>(<span class="ident">error</span>) =&gt; <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">error</span>),
