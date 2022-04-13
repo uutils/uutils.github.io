@@ -454,7 +454,7 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">intermed_in</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
     <span class="kw">for</span> <span class="ident">c</span> <span class="kw">in</span> <span class="ident">src</span>.<span class="ident">chars</span>() {
         <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::single_match</span>)]</span>
-        <span class="kw">match</span> <span class="ident">radix_def_src</span>.<span class="ident">from_char</span>(<span class="ident">c</span>) {
+        <span class="kw">match</span> <span class="ident">radix_def_src</span>.<span class="ident">parse_char</span>(<span class="ident">c</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">u</span>) =&gt; {
                 <span class="ident">intermed_in</span>.<span class="ident">push</span>(<span class="ident">u</span>);
             }
@@ -468,7 +468,7 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">str_out</span> <span class="op">=</span> <span class="ident">String::new</span>();
     <span class="kw">for</span> <span class="ident">u</span> <span class="kw">in</span> <span class="ident">src</span>.<span class="ident">iter</span>() {
         <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::single_match</span>)]</span>
-        <span class="kw">match</span> <span class="ident">radix_def_dest</span>.<span class="ident">from_u8</span>(<span class="kw-2">*</span><span class="ident">u</span>) {
+        <span class="kw">match</span> <span class="ident">radix_def_dest</span>.<span class="ident">format_u8</span>(<span class="kw-2">*</span><span class="ident">u</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">c</span>) =&gt; {
                 <span class="ident">str_out</span>.<span class="ident">push</span>(<span class="ident">c</span>);
             }
@@ -494,8 +494,8 @@
 
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">RadixDef</span> {
     <span class="kw">fn</span> <span class="ident">get_max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u8</span>;
-    <span class="kw">fn</span> <span class="ident">from_char</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">char</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">from_u8</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">u8</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">parse_char</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">char</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">format_u8</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">u8</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span>;
 }
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RadixTen</span>;
 
@@ -507,13 +507,13 @@
     <span class="kw">fn</span> <span class="ident">get_max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u8</span> {
         <span class="number">10</span>
     }
-    <span class="kw">fn</span> <span class="ident">from_char</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">c</span>: <span class="ident">char</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">parse_char</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">c</span>: <span class="ident">char</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">c</span> {
             <span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;9&#39;</span> =&gt; <span class="prelude-val">Some</span>(<span class="ident">c</span> <span class="kw">as</span> <span class="ident">u8</span> <span class="op">-</span> <span class="ident">ZERO_ASC</span>),
             <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
         }
     }
-    <span class="kw">fn</span> <span class="ident">from_u8</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">u</span>: <span class="ident">u8</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">format_u8</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">u</span>: <span class="ident">u8</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">u</span> {
             <span class="number">0</span>..<span class="op">=</span><span class="number">9</span> =&gt; <span class="prelude-val">Some</span>((<span class="ident">ZERO_ASC</span> <span class="op">+</span> <span class="ident">u</span>) <span class="kw">as</span> <span class="ident">char</span>),
             <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
@@ -525,7 +525,7 @@
     <span class="kw">fn</span> <span class="ident">get_max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u8</span> {
         <span class="number">16</span>
     }
-    <span class="kw">fn</span> <span class="ident">from_char</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">c</span>: <span class="ident">char</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">parse_char</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">c</span>: <span class="ident">char</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">c</span> {
             <span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;9&#39;</span> =&gt; <span class="prelude-val">Some</span>(<span class="ident">c</span> <span class="kw">as</span> <span class="ident">u8</span> <span class="op">-</span> <span class="ident">ZERO_ASC</span>),
             <span class="string">&#39;A&#39;</span>..<span class="op">=</span><span class="string">&#39;F&#39;</span> =&gt; <span class="prelude-val">Some</span>(<span class="ident">c</span> <span class="kw">as</span> <span class="ident">u8</span> <span class="op">+</span> <span class="number">10</span> <span class="op">-</span> <span class="ident">UPPER_A_ASC</span>),
@@ -533,7 +533,7 @@
             <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
         }
     }
-    <span class="kw">fn</span> <span class="ident">from_u8</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">u</span>: <span class="ident">u8</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">format_u8</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">u</span>: <span class="ident">u8</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">u</span> {
             <span class="number">0</span>..<span class="op">=</span><span class="number">9</span> =&gt; <span class="prelude-val">Some</span>((<span class="ident">ZERO_ASC</span> <span class="op">+</span> <span class="ident">u</span>) <span class="kw">as</span> <span class="ident">char</span>),
             <span class="number">10</span>..<span class="op">=</span><span class="number">15</span> =&gt; <span class="prelude-val">Some</span>((<span class="ident">UPPER_A_ASC</span> <span class="op">+</span> (<span class="ident">u</span> <span class="op">-</span> <span class="number">10</span>)) <span class="kw">as</span> <span class="ident">char</span>),
