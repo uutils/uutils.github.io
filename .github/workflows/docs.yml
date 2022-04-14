@@ -85,3 +85,34 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./coreutils/target/doc
         destination_dir: dev/
+
+
+  build-report:
+    name: generate the build report
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        repository: uutils/coreutils
+        path: './coreutils'
+        fetch-depth: 0
+
+    - name: Install `rust` toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        default: true
+        profile: minimal
+
+    - name: Build report
+      run: |
+        cd coreutils
+        cargo +nightly build --timings=html  -Zunstable-options
+
+    - name: Deploy build report
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./coreutils/target/cargo-timings/cargo-timing.html
+        destination_dir: dev/
