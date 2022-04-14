@@ -1,1 +1,0 @@
-initSidebarItems({"constant":[["EXACT",""],["FILE",""],["FORCE",""],["ITERATIONS",""],["REMOVE",""],["SIZE",""],["VERBOSE",""],["ZERO",""]]});

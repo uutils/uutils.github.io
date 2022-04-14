@@ -1,1 +1,0 @@
-initSidebarItems({"static":[["BYTES",""],["CHAR",""],["FILES0_FROM",""],["LINES",""],["MAX_LINE_LENGTH",""],["WORDS",""]]});

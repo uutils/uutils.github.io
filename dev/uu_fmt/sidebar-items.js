@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["uu_app",""],["uumain",""]],"struct":[["FmtOptions",""]],"type":[["FileOrStdReader",""]]});

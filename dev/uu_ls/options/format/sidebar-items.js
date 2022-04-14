@@ -1,1 +1,0 @@
-initSidebarItems({"static":[["ACROSS",""],["COLUMNS",""],["COMMAS",""],["LONG",""],["LONG_NO_GROUP",""],["LONG_NO_OWNER",""],["LONG_NUMERIC_UID_GID",""],["ONE_LINE",""]]});

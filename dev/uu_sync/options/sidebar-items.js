@@ -1,1 +1,0 @@
-initSidebarItems({"static":[["DATA",""],["FILE_SYSTEM",""]]});

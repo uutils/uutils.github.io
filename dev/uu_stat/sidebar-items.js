@@ -1,1 +1,0 @@
-initSidebarItems({"constant":[["F_ALTER",""],["F_GROUP",""],["F_LEFT",""],["F_SIGN",""],["F_SPACE",""],["F_ZERO",""]],"enum":[["OutputType",""],["Token",""]],"fn":[["group_num",""],["uu_app",""],["uumain",""]],"mod":[["options",""]],"struct":[["Stater",""]],"trait":[["ScanUtil",""]]});

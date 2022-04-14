@@ -1,1 +1,0 @@
-initSidebarItems({"static":[["QUIET",""],["VERBOSE",""]]});
