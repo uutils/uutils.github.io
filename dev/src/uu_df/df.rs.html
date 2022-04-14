@@ -773,6 +773,15 @@
 <span id="768">768</span>
 <span id="769">769</span>
 <span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Fangxu Hu &lt;framlog@gmail.com&gt;</span>
@@ -1133,21 +1142,30 @@
     }
 
     <span class="kw">let</span> <span class="ident">opt</span> <span class="op">=</span> <span class="ident">Options::from</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>).<span class="ident">map_err</span>(<span class="ident">DfError::OptionsError</span>)<span class="question-mark">?</span>;
-
     <span class="comment">// Get the list of filesystems to display in the output table.</span>
     <span class="kw">let</span> <span class="ident">filesystems</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Filesystem</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="ident">OPT_PATHS</span>) {
-        <span class="prelude-val">None</span> =&gt; <span class="ident">get_all_filesystems</span>(<span class="kw-2">&amp;</span><span class="ident">opt</span>),
+        <span class="prelude-val">None</span> =&gt; {
+            <span class="kw">let</span> <span class="ident">filesystems</span> <span class="op">=</span> <span class="ident">get_all_filesystems</span>(<span class="kw-2">&amp;</span><span class="ident">opt</span>);
+
+            <span class="kw">if</span> <span class="ident">filesystems</span>.<span class="ident">is_empty</span>() {
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;No file systems processed&quot;</span>));
+            }
+
+            <span class="ident">filesystems</span>
+        }
         <span class="prelude-val">Some</span>(<span class="ident">paths</span>) =&gt; {
             <span class="kw">let</span> <span class="ident">paths</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">paths</span>.<span class="ident">collect</span>();
-            <span class="ident">get_named_filesystems</span>(<span class="kw-2">&amp;</span><span class="ident">paths</span>)
+            <span class="kw">let</span> <span class="ident">filesystems</span> <span class="op">=</span> <span class="ident">get_named_filesystems</span>(<span class="kw-2">&amp;</span><span class="ident">paths</span>);
+
+            <span class="comment">// This can happen if paths are given as command-line arguments</span>
+            <span class="comment">// but none of the paths exist.</span>
+            <span class="kw">if</span> <span class="ident">filesystems</span>.<span class="ident">is_empty</span>() {
+                <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+            }
+
+            <span class="ident">filesystems</span>
         }
     };
-
-    <span class="comment">// This can happen if paths are given as command-line arguments</span>
-    <span class="comment">// but none of the paths exist.</span>
-    <span class="kw">if</span> <span class="ident">filesystems</span>.<span class="ident">is_empty</span>() {
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
-    }
 
     <span class="comment">// The running total of filesystem sizes and usage.</span>
     <span class="comment">//</span>
