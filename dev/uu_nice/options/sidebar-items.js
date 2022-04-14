@@ -1,0 +1,1 @@
+initSidebarItems({"static":[["ADJUSTMENT",""],["COMMAND",""]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["mute_sigpipe_panic","Terminate without error on panics that occur due to broken pipe errors."]]});

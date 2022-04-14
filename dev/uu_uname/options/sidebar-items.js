@@ -1,0 +1,1 @@
+initSidebarItems({"static":[["ALL",""],["HWPLATFORM",""],["KERNELNAME",""],["KERNELRELEASE",""],["KERNELVERSION",""],["MACHINE",""],["NODENAME",""],["OS",""],["PROCESSOR",""]]});

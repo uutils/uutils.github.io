@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["verbosity",""]],"static":[["ARG_FILES",""],["BYTES",""],["FOLLOW",""],["LINES",""],["PID",""],["PRESUME_INPUT_PIPE",""],["SLEEP_INT",""],["ZERO_TERM",""]]});
