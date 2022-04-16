@@ -2771,7 +2771,6 @@
 <span id="2766">2766</span>
 <span id="2767">2767</span>
 <span id="2768">2768</span>
-<span id="2769">2769</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jeremiah Peschka &lt;jeremiah.peschka@gmail.com&gt;</span>
@@ -2787,7 +2786,8 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">lazy_static</span>;
 
-<span class="kw">mod</span> <span class="ident">quoting_style</span>;
+<span class="comment">// dir and vdir also need access to the quoting_style module</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">quoting_style</span>;
 
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">glob::Pattern</span>;
@@ -3016,7 +3016,7 @@
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">enum</span> <span class="ident">Format</span> {
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Format</span> {
     <span class="ident">Columns</span>,
     <span class="ident">Long</span>,
     <span class="ident">OneLine</span>,
@@ -3078,8 +3078,9 @@
     <span class="ident">Classify</span>,
 }
 
-<span class="kw">struct</span> <span class="ident">Config</span> {
-    <span class="ident">format</span>: <span class="ident">Format</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Config</span> {
+    <span class="comment">// Dir and vdir needs access to this field</span>
+    <span class="kw">pub</span> <span class="ident">format</span>: <span class="ident">Format</span>,
     <span class="ident">files</span>: <span class="ident">Files</span>,
     <span class="ident">sort</span>: <span class="ident">Sort</span>,
     <span class="ident">recursive</span>: <span class="ident">bool</span>,
@@ -3096,7 +3097,8 @@
     <span class="ident">alloc_size</span>: <span class="ident">bool</span>,
     <span class="ident">block_size</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>,
     <span class="ident">width</span>: <span class="ident">u16</span>,
-    <span class="ident">quoting_style</span>: <span class="ident">QuotingStyle</span>,
+    <span class="comment">// Dir and vdir needs access to this field</span>
+    <span class="kw">pub</span> <span class="ident">quoting_style</span>: <span class="ident">QuotingStyle</span>,
     <span class="ident">indicator_style</span>: <span class="ident">IndicatorStyle</span>,
     <span class="ident">time_style</span>: <span class="ident">TimeStyle</span>,
     <span class="ident">context</span>: <span class="ident">bool</span>,
@@ -3129,7 +3131,7 @@
 
 <span class="kw">impl</span> <span class="ident">Config</span> {
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::cognitive_complexity</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">clap::ArgMatches</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">clap::ArgMatches</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::CONTEXT</span>);
         <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">format</span>, <span class="ident">opt</span>) <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">format_</span>) <span class="op">=</span> <span class="ident">options</span>.<span class="ident">value_of</span>(<span class="ident">options::FORMAT</span>) {
             (
@@ -3574,615 +3576,611 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
-        .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
-        .<span class="ident">about</span>(
-            <span class="string">&quot;By default, ls will list the files and contents of any directories on \
-            the command line, expect that it will ignore files and directories \
-            whose names start with &#39;.&#39;.&quot;</span>,
-        )
-        .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::HELP</span>)
-                .<span class="ident">long</span>(<span class="ident">options::HELP</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Print help information.&quot;</span>)
-        )
-        <span class="comment">// Format arguments</span>
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::FORMAT</span>)
-                .<span class="ident">long</span>(<span class="ident">options::FORMAT</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Set the display format.&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span>[
-                    <span class="string">&quot;long&quot;</span>,
-                    <span class="string">&quot;verbose&quot;</span>,
-                    <span class="string">&quot;single-column&quot;</span>,
-                    <span class="string">&quot;columns&quot;</span>,
-                    <span class="string">&quot;vertical&quot;</span>,
-                    <span class="string">&quot;across&quot;</span>,
-                    <span class="string">&quot;horizontal&quot;</span>,
-                    <span class="string">&quot;commas&quot;</span>,
-                ])
-                .<span class="ident">hide_possible_values</span>(<span class="bool-val">true</span>)
-                .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::FORMAT</span>,
-                    <span class="ident">options::format::COLUMNS</span>,
-                    <span class="ident">options::format::LONG</span>,
-                    <span class="ident">options::format::ACROSS</span>,
-                    <span class="ident">options::format::COLUMNS</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::format::COLUMNS</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;C&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Display the files in columns.&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::FORMAT</span>,
-                    <span class="ident">options::format::COLUMNS</span>,
-                    <span class="ident">options::format::LONG</span>,
-                    <span class="ident">options::format::ACROSS</span>,
-                    <span class="ident">options::format::COLUMNS</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::format::LONG</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;l&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::format::LONG</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Display detailed information.&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::FORMAT</span>,
-                    <span class="ident">options::format::COLUMNS</span>,
-                    <span class="ident">options::format::LONG</span>,
-                    <span class="ident">options::format::ACROSS</span>,
-                    <span class="ident">options::format::COLUMNS</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::format::ACROSS</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;x&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;List entries in rows instead of in columns.&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::FORMAT</span>,
-                    <span class="ident">options::format::COLUMNS</span>,
-                    <span class="ident">options::format::LONG</span>,
-                    <span class="ident">options::format::ACROSS</span>,
-                    <span class="ident">options::format::COLUMNS</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::format::COMMAS</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;m&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;List entries separated by commas.&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::FORMAT</span>,
-                    <span class="ident">options::format::COLUMNS</span>,
-                    <span class="ident">options::format::LONG</span>,
-                    <span class="ident">options::format::ACROSS</span>,
-                    <span class="ident">options::format::COLUMNS</span>,
-                ]),
-        )
-        <span class="comment">// The next four arguments do not override with the other format</span>
-        <span class="comment">// options, see the comment in Config::from for the reason.</span>
-        <span class="comment">// Ideally, they would use Arg::override_with, with their own name</span>
-        <span class="comment">// but that doesn&#39;t seem to work in all cases. Example:</span>
-        <span class="comment">// ls -1g1</span>
-        <span class="comment">// even though `ls -11` and `ls -1 -g -1` work.</span>
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::format::ONE_LINE</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;1&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;List one file per line.&quot;</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::format::LONG_NO_GROUP</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;o&#39;</span>)
-                .<span class="ident">help</span>(
-                    <span class="string">&quot;Long format without group information. \
-                    Identical to --format=long with --no-group.&quot;</span>,
-                )
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::format::LONG_NO_OWNER</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;g&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Long format without owner information.&quot;</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::format::LONG_NUMERIC_UID_GID</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;n&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::format::LONG_NUMERIC_UID_GID</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;-l with numeric UIDs and GIDs.&quot;</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>),
-        )
-        <span class="comment">// Quoting style</span>
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::QUOTING_STYLE</span>)
-                .<span class="ident">long</span>(<span class="ident">options::QUOTING_STYLE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Set quoting style.&quot;</span>)
-                .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span>[
-                    <span class="string">&quot;literal&quot;</span>,
-                    <span class="string">&quot;shell&quot;</span>,
-                    <span class="string">&quot;shell-always&quot;</span>,
-                    <span class="string">&quot;shell-escape&quot;</span>,
-                    <span class="string">&quot;shell-escape-always&quot;</span>,
-                    <span class="string">&quot;c&quot;</span>,
-                    <span class="string">&quot;escape&quot;</span>,
-                ])
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::QUOTING_STYLE</span>,
-                    <span class="ident">options::quoting::LITERAL</span>,
-                    <span class="ident">options::quoting::ESCAPE</span>,
-                    <span class="ident">options::quoting::C</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::quoting::LITERAL</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;N&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::quoting::LITERAL</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Use literal quoting style. Equivalent to `--quoting-style=literal`&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::QUOTING_STYLE</span>,
-                    <span class="ident">options::quoting::LITERAL</span>,
-                    <span class="ident">options::quoting::ESCAPE</span>,
-                    <span class="ident">options::quoting::C</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::quoting::ESCAPE</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;b&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::quoting::ESCAPE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Use escape quoting style. Equivalent to `--quoting-style=escape`&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::QUOTING_STYLE</span>,
-                    <span class="ident">options::quoting::LITERAL</span>,
-                    <span class="ident">options::quoting::ESCAPE</span>,
-                    <span class="ident">options::quoting::C</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::quoting::C</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;Q&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::quoting::C</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Use C quoting style. Equivalent to `--quoting-style=c`&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::QUOTING_STYLE</span>,
-                    <span class="ident">options::quoting::LITERAL</span>,
-                    <span class="ident">options::quoting::ESCAPE</span>,
-                    <span class="ident">options::quoting::C</span>,
-                ]),
-        )
-        <span class="comment">// Control characters</span>
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::HIDE_CONTROL_CHARS</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;q&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::HIDE_CONTROL_CHARS</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Replace control characters with &#39;?&#39; if they are not escaped.&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::HIDE_CONTROL_CHARS</span>, <span class="ident">options::SHOW_CONTROL_CHARS</span>]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::SHOW_CONTROL_CHARS</span>)
-                .<span class="ident">long</span>(<span class="ident">options::SHOW_CONTROL_CHARS</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Show control characters &#39;as is&#39; if they are not escaped.&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::HIDE_CONTROL_CHARS</span>, <span class="ident">options::SHOW_CONTROL_CHARS</span>]),
-        )
-        <span class="comment">// Time arguments</span>
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::TIME</span>)
-                .<span class="ident">long</span>(<span class="ident">options::TIME</span>)
-                .<span class="ident">help</span>(
-                    <span class="string">&quot;Show time in &lt;field&gt;:\n\
-                    \taccess time (-u): atime, access, use;\n\
-                    \tchange time (-t): ctime, status.\n\
-                    \tbirth time: birth, creation;&quot;</span>,
-                )
-                .<span class="ident">value_name</span>(<span class="string">&quot;field&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span>[
-                    <span class="string">&quot;atime&quot;</span>, <span class="string">&quot;access&quot;</span>, <span class="string">&quot;use&quot;</span>, <span class="string">&quot;ctime&quot;</span>, <span class="string">&quot;status&quot;</span>, <span class="string">&quot;birth&quot;</span>, <span class="string">&quot;creation&quot;</span>,
-                ])
-                .<span class="ident">hide_possible_values</span>(<span class="bool-val">true</span>)
-                .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::TIME</span>, <span class="ident">options::time::ACCESS</span>, <span class="ident">options::time::CHANGE</span>]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::time::CHANGE</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;c&#39;</span>)
-                .<span class="ident">help</span>(
-                    <span class="string">&quot;If the long listing format (e.g., -l, -o) is being used, print the status \
-                change time (the &#39;ctime&#39; in the inode) instead of the modification time. When \
-                explicitly sorting by time (--sort=time or -t) or when not using a long listing \
-                format, sort according to the status change time.&quot;</span>,
-                )
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::TIME</span>, <span class="ident">options::time::ACCESS</span>, <span class="ident">options::time::CHANGE</span>]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::time::ACCESS</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;u&#39;</span>)
-                .<span class="ident">help</span>(
-                    <span class="string">&quot;If the long listing format (e.g., -l, -o) is being used, print the status \
-                access time instead of the modification time. When explicitly sorting by time \
-                (--sort=time or -t) or when not using a long listing format, sort according to the \
-                access time.&quot;</span>,
-                )
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::TIME</span>, <span class="ident">options::time::ACCESS</span>, <span class="ident">options::time::CHANGE</span>]),
-        )
-        <span class="comment">// Hide and ignore</span>
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::HIDE</span>)
-                .<span class="ident">long</span>(<span class="ident">options::HIDE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;PATTERN&quot;</span>)
-                .<span class="ident">help</span>(
-                    <span class="string">&quot;do not list implied entries matching shell PATTERN (overridden by -a or -A)&quot;</span>,
-                ),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::IGNORE</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;I&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::IGNORE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;PATTERN&quot;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;do not list implied entries matching shell PATTERN&quot;</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::IGNORE_BACKUPS</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;B&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::IGNORE_BACKUPS</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Ignore entries which end with ~.&quot;</span>),
-        )
-        <span class="comment">// Sort arguments</span>
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::SORT</span>)
-                .<span class="ident">long</span>(<span class="ident">options::SORT</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Sort by &lt;field&gt;: name, none (-U), time (-t), size (-S) or extension (-X)&quot;</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;field&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;name&quot;</span>, <span class="string">&quot;none&quot;</span>, <span class="string">&quot;time&quot;</span>, <span class="string">&quot;size&quot;</span>, <span class="string">&quot;version&quot;</span>, <span class="string">&quot;extension&quot;</span>])
-                .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::SORT</span>,
-                    <span class="ident">options::sort::SIZE</span>,
-                    <span class="ident">options::sort::TIME</span>,
-                    <span class="ident">options::sort::NONE</span>,
-                    <span class="ident">options::sort::VERSION</span>,
-                    <span class="ident">options::sort::EXTENSION</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::sort::SIZE</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;S&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Sort by file size, largest first.&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::SORT</span>,
-                    <span class="ident">options::sort::SIZE</span>,
-                    <span class="ident">options::sort::TIME</span>,
-                    <span class="ident">options::sort::NONE</span>,
-                    <span class="ident">options::sort::VERSION</span>,
-                    <span class="ident">options::sort::EXTENSION</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::sort::TIME</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;t&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Sort by modification time (the &#39;mtime&#39; in the inode), newest first.&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::SORT</span>,
-                    <span class="ident">options::sort::SIZE</span>,
-                    <span class="ident">options::sort::TIME</span>,
-                    <span class="ident">options::sort::NONE</span>,
-                    <span class="ident">options::sort::VERSION</span>,
-                    <span class="ident">options::sort::EXTENSION</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::sort::VERSION</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;v&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Natural sort of (version) numbers in the filenames.&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::SORT</span>,
-                    <span class="ident">options::sort::SIZE</span>,
-                    <span class="ident">options::sort::TIME</span>,
-                    <span class="ident">options::sort::NONE</span>,
-                    <span class="ident">options::sort::VERSION</span>,
-                    <span class="ident">options::sort::EXTENSION</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::sort::EXTENSION</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;X&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Sort alphabetically by entry extension.&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::SORT</span>,
-                    <span class="ident">options::sort::SIZE</span>,
-                    <span class="ident">options::sort::TIME</span>,
-                    <span class="ident">options::sort::NONE</span>,
-                    <span class="ident">options::sort::VERSION</span>,
-                    <span class="ident">options::sort::EXTENSION</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::sort::NONE</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;U&#39;</span>)
-                .<span class="ident">help</span>(
-                    <span class="string">&quot;Do not sort; list the files in whatever order they are stored in the \
-    directory.  This is especially useful when listing very large directories, \
-    since not doing any sorting can be noticeably faster.&quot;</span>,
-                )
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::SORT</span>,
-                    <span class="ident">options::sort::SIZE</span>,
-                    <span class="ident">options::sort::TIME</span>,
-                    <span class="ident">options::sort::NONE</span>,
-                    <span class="ident">options::sort::VERSION</span>,
-                    <span class="ident">options::sort::EXTENSION</span>,
-                ]),
-        )
-        <span class="comment">// Dereferencing</span>
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::dereference::ALL</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;L&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::dereference::ALL</span>)
-                .<span class="ident">help</span>(
-                    <span class="string">&quot;When showing file information for a symbolic link, show information for the \
-                file the link references rather than the link itself.&quot;</span>,
-                )
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::dereference::ALL</span>,
-                    <span class="ident">options::dereference::DIR_ARGS</span>,
-                    <span class="ident">options::dereference::ARGS</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::dereference::DIR_ARGS</span>)
-                .<span class="ident">long</span>(<span class="ident">options::dereference::DIR_ARGS</span>)
-                .<span class="ident">help</span>(
-                    <span class="string">&quot;Do not dereference symlinks except when they link to directories and are \
-                given as command line arguments.&quot;</span>,
-                )
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::dereference::ALL</span>,
-                    <span class="ident">options::dereference::DIR_ARGS</span>,
-                    <span class="ident">options::dereference::ARGS</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::dereference::ARGS</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;H&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::dereference::ARGS</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Do not dereference symlinks except when given as command line arguments.&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::dereference::ALL</span>,
-                    <span class="ident">options::dereference::DIR_ARGS</span>,
-                    <span class="ident">options::dereference::ARGS</span>,
-                ]),
-        )
-        <span class="comment">// Long format options</span>
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::NO_GROUP</span>)
-                .<span class="ident">long</span>(<span class="ident">options::NO_GROUP</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;G&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Do not show group in long format.&quot;</span>),
-        )
-        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::AUTHOR</span>).<span class="ident">long</span>(<span class="ident">options::AUTHOR</span>).<span class="ident">help</span>(
-            <span class="string">&quot;Show author in long format. \
-            On the supported platforms, the author always matches the file owner.&quot;</span>,
-        ))
-        <span class="comment">// Other Flags</span>
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::files::ALL</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;a&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::files::ALL</span>)
-                <span class="comment">// Overrides -A (as the order matters)</span>
-                .<span class="ident">overrides_with</span>(<span class="ident">options::files::ALMOST_ALL</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Do not ignore hidden files (files with names that start with &#39;.&#39;).&quot;</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::files::ALMOST_ALL</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;A&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::files::ALMOST_ALL</span>)
-                <span class="comment">// Overrides -a (as the order matters)</span>
-                .<span class="ident">overrides_with</span>(<span class="ident">options::files::ALL</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">help</span>(
-                    <span class="string">&quot;In a directory, do not ignore all file names that start with &#39;.&#39;, \
-only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
-                ),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::DIRECTORY</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;d&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::DIRECTORY</span>)
-                .<span class="ident">help</span>(
-                    <span class="string">&quot;Only list the names of directories, rather than listing directory contents. \
-                This will not follow symbolic links unless one of `--dereference-command-line \
-                (-H)`, `--dereference (-L)`, or `--dereference-command-line-symlink-to-dir` is \
-                specified.&quot;</span>,
-                ),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::size::HUMAN_READABLE</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;h&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::size::HUMAN_READABLE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Print human readable file sizes (e.g. 1K 234M 56G).&quot;</span>)
-                .<span class="ident">overrides_with</span>(<span class="ident">options::size::SI</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::size::KIBIBYTES</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;k&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::size::KIBIBYTES</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;default to 1024-byte blocks for file system usage; used only with -s and per directory totals&quot;</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::size::SI</span>)
-                .<span class="ident">long</span>(<span class="ident">options::size::SI</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Print human readable file sizes using powers of 1000 instead of 1024.&quot;</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::size::BLOCK_SIZE</span>)
-                .<span class="ident">long</span>(<span class="ident">options::size::BLOCK_SIZE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;BLOCK_SIZE&quot;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;scale sizes by BLOCK_SIZE when printing them&quot;</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::INODE</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;i&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::INODE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;print the index number of each file&quot;</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::REVERSE</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;r&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::REVERSE</span>)
-                .<span class="ident">help</span>(
-                    <span class="string">&quot;Reverse whatever the sorting method is e.g., list files in reverse \
-                alphabetical order, youngest first, smallest first, or whatever.&quot;</span>,
-                ),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::RECURSIVE</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;R&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::RECURSIVE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;List the contents of all directories recursively.&quot;</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::WIDTH</span>)
-                .<span class="ident">long</span>(<span class="ident">options::WIDTH</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;w&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Assume that the terminal is COLS columns wide.&quot;</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;COLS&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::size::ALLOCATION_SIZE</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::size::ALLOCATION_SIZE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;print the allocated size of each file, in blocks&quot;</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::COLOR</span>)
-                .<span class="ident">long</span>(<span class="ident">options::COLOR</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Color output based on file type.&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span>[
-                    <span class="string">&quot;always&quot;</span>, <span class="string">&quot;yes&quot;</span>, <span class="string">&quot;force&quot;</span>, <span class="string">&quot;auto&quot;</span>, <span class="string">&quot;tty&quot;</span>, <span class="string">&quot;if-tty&quot;</span>, <span class="string">&quot;never&quot;</span>, <span class="string">&quot;no&quot;</span>, <span class="string">&quot;none&quot;</span>,
-                ])
-                .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
-                .<span class="ident">min_values</span>(<span class="number">0</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::INDICATOR_STYLE</span>)
-                .<span class="ident">long</span>(<span class="ident">options::INDICATOR_STYLE</span>)
-                .<span class="ident">help</span>(
-                    <span class="string">&quot;Append indicator with style WORD to entry names: \
-                    none (default),  slash (-p), file-type (--file-type), classify (-F)&quot;</span>,
-                )
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;none&quot;</span>, <span class="string">&quot;slash&quot;</span>, <span class="string">&quot;file-type&quot;</span>, <span class="string">&quot;classify&quot;</span>])
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::indicator_style::FILE_TYPE</span>,
-                    <span class="ident">options::indicator_style::SLASH</span>,
-                    <span class="ident">options::indicator_style::CLASSIFY</span>,
-                    <span class="ident">options::INDICATOR_STYLE</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="comment">// The --classify flag can take an optional when argument to</span>
-            <span class="comment">// control its behavior from version 9 of GNU coreutils.</span>
-            <span class="comment">// There is currently an inconsistency where GNU coreutils allows only</span>
-            <span class="comment">// the long form of the flag to take the argument while we allow it</span>
-            <span class="comment">// for both the long and short form of the flag.</span>
-            <span class="ident">Arg::new</span>(<span class="ident">options::indicator_style::CLASSIFY</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;F&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::indicator_style::CLASSIFY</span>)
-                .<span class="ident">help</span>(
-                    <span class="string">&quot;Append a character to each file name indicating the file type. Also, for \
-                regular files that are executable, append &#39;*&#39;. The file type indicators are \
-                &#39;/&#39; for directories, &#39;@&#39; for symbolic links, &#39;|&#39; for FIFOs, &#39;=&#39; for sockets, \
-                &#39;&gt;&#39; for doors, and nothing for regular files. when may be omitted, or one of:\n\
-                    \tnone - Do not classify. This is the default.\n\
-                    \tauto - Only classify if standard output is a terminal.\n\
-                    \talways - Always classify.\n\
-                Specifying --classify and no when is equivalent to --classify=always. This will not follow\
-                symbolic links listed on the command line unless the --dereference-command-line (-H),\
-                --dereference (-L), or --dereference-command-line-symlink-to-dir options are specified.&quot;</span>,
-                )
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;when&quot;</span>)
-                .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span>[
-                    <span class="string">&quot;always&quot;</span>, <span class="string">&quot;yes&quot;</span>, <span class="string">&quot;force&quot;</span>, <span class="string">&quot;auto&quot;</span>, <span class="string">&quot;tty&quot;</span>, <span class="string">&quot;if-tty&quot;</span>, <span class="string">&quot;never&quot;</span>, <span class="string">&quot;no&quot;</span>, <span class="string">&quot;none&quot;</span>,
-                ])
-                .<span class="ident">default_missing_value</span>(<span class="string">&quot;always&quot;</span>)
-                .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
-                .<span class="ident">min_values</span>(<span class="number">0</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::indicator_style::FILE_TYPE</span>,
-                    <span class="ident">options::indicator_style::SLASH</span>,
-                    <span class="ident">options::indicator_style::CLASSIFY</span>,
-                    <span class="ident">options::INDICATOR_STYLE</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::indicator_style::FILE_TYPE</span>)
-                .<span class="ident">long</span>(<span class="ident">options::indicator_style::FILE_TYPE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Same as --classify, but do not append &#39;*&#39;&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::indicator_style::FILE_TYPE</span>,
-                    <span class="ident">options::indicator_style::SLASH</span>,
-                    <span class="ident">options::indicator_style::CLASSIFY</span>,
-                    <span class="ident">options::INDICATOR_STYLE</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::indicator_style::SLASH</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;p&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Append / indicator to directories.&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
-                    <span class="ident">options::indicator_style::FILE_TYPE</span>,
-                    <span class="ident">options::indicator_style::SLASH</span>,
-                    <span class="ident">options::indicator_style::CLASSIFY</span>,
-                    <span class="ident">options::INDICATOR_STYLE</span>,
-                ]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="comment">//This still needs support for posix-*, +FORMAT</span>
-            <span class="ident">Arg::new</span>(<span class="ident">options::TIME_STYLE</span>)
-                .<span class="ident">long</span>(<span class="ident">options::TIME_STYLE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;time/date format with -l; see TIME_STYLE below&quot;</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;TIME_STYLE&quot;</span>)
-                .<span class="ident">env</span>(<span class="string">&quot;TIME_STYLE&quot;</span>)
-                .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;full-iso&quot;</span>, <span class="string">&quot;long-iso&quot;</span>, <span class="string">&quot;iso&quot;</span>, <span class="string">&quot;locale&quot;</span>])
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::TIME_STYLE</span>]),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::FULL_TIME</span>)
-                .<span class="ident">long</span>(<span class="ident">options::FULL_TIME</span>)
-                .<span class="ident">overrides_with</span>(<span class="ident">options::FULL_TIME</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;like -l --time-style=full-iso&quot;</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::CONTEXT</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;Z&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::CONTEXT</span>)
-                .<span class="ident">help</span>(<span class="ident">CONTEXT_HELP_TEXT</span>),
-        )
-        <span class="comment">// Positional arguments</span>
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::PATHS</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">allow_invalid_utf8</span>(<span class="bool-val">true</span>),
-        )
-        .<span class="ident">after_help</span>(
-            <span class="string">&quot;The TIME_STYLE argument can be full-iso, long-iso, iso. \
-            Also the TIME_STYLE environment variable sets the default style to use.&quot;</span>,
-        )
+            .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
+            .<span class="ident">about</span>(<span class="string">&quot;List directory contents. Ignore files and directories starting with a &#39;.&#39; by default&quot;</span>)
+            .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::HELP</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::HELP</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Print help information.&quot;</span>)
+            )
+            <span class="comment">// Format arguments</span>
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::FORMAT</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::FORMAT</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Set the display format.&quot;</span>)
+                    .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span>[
+                        <span class="string">&quot;long&quot;</span>,
+                        <span class="string">&quot;verbose&quot;</span>,
+                        <span class="string">&quot;single-column&quot;</span>,
+                        <span class="string">&quot;columns&quot;</span>,
+                        <span class="string">&quot;vertical&quot;</span>,
+                        <span class="string">&quot;across&quot;</span>,
+                        <span class="string">&quot;horizontal&quot;</span>,
+                        <span class="string">&quot;commas&quot;</span>,
+                    ])
+                    .<span class="ident">hide_possible_values</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::FORMAT</span>,
+                        <span class="ident">options::format::COLUMNS</span>,
+                        <span class="ident">options::format::LONG</span>,
+                        <span class="ident">options::format::ACROSS</span>,
+                        <span class="ident">options::format::COLUMNS</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::format::COLUMNS</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;C&#39;</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Display the files in columns.&quot;</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::FORMAT</span>,
+                        <span class="ident">options::format::COLUMNS</span>,
+                        <span class="ident">options::format::LONG</span>,
+                        <span class="ident">options::format::ACROSS</span>,
+                        <span class="ident">options::format::COLUMNS</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::format::LONG</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;l&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::format::LONG</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Display detailed information.&quot;</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::FORMAT</span>,
+                        <span class="ident">options::format::COLUMNS</span>,
+                        <span class="ident">options::format::LONG</span>,
+                        <span class="ident">options::format::ACROSS</span>,
+                        <span class="ident">options::format::COLUMNS</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::format::ACROSS</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;x&#39;</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;List entries in rows instead of in columns.&quot;</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::FORMAT</span>,
+                        <span class="ident">options::format::COLUMNS</span>,
+                        <span class="ident">options::format::LONG</span>,
+                        <span class="ident">options::format::ACROSS</span>,
+                        <span class="ident">options::format::COLUMNS</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::format::COMMAS</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;m&#39;</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;List entries separated by commas.&quot;</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::FORMAT</span>,
+                        <span class="ident">options::format::COLUMNS</span>,
+                        <span class="ident">options::format::LONG</span>,
+                        <span class="ident">options::format::ACROSS</span>,
+                        <span class="ident">options::format::COLUMNS</span>,
+                    ]),
+            )
+            <span class="comment">// The next four arguments do not override with the other format</span>
+            <span class="comment">// options, see the comment in Config::from for the reason.</span>
+            <span class="comment">// Ideally, they would use Arg::override_with, with their own name</span>
+            <span class="comment">// but that doesn&#39;t seem to work in all cases. Example:</span>
+            <span class="comment">// ls -1g1</span>
+            <span class="comment">// even though `ls -11` and `ls -1 -g -1` work.</span>
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::format::ONE_LINE</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;1&#39;</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;List one file per line.&quot;</span>)
+                    .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::format::LONG_NO_GROUP</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;o&#39;</span>)
+                    .<span class="ident">help</span>(
+                        <span class="string">&quot;Long format without group information. \
+                        Identical to --format=long with --no-group.&quot;</span>,
+                    )
+                    .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::format::LONG_NO_OWNER</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;g&#39;</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Long format without owner information.&quot;</span>)
+                    .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::format::LONG_NUMERIC_UID_GID</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;n&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::format::LONG_NUMERIC_UID_GID</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;-l with numeric UIDs and GIDs.&quot;</span>)
+                    .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>),
+            )
+            <span class="comment">// Quoting style</span>
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::QUOTING_STYLE</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::QUOTING_STYLE</span>)
+                    .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Set quoting style.&quot;</span>)
+                    .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span>[
+                        <span class="string">&quot;literal&quot;</span>,
+                        <span class="string">&quot;shell&quot;</span>,
+                        <span class="string">&quot;shell-always&quot;</span>,
+                        <span class="string">&quot;shell-escape&quot;</span>,
+                        <span class="string">&quot;shell-escape-always&quot;</span>,
+                        <span class="string">&quot;c&quot;</span>,
+                        <span class="string">&quot;escape&quot;</span>,
+                    ])
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::QUOTING_STYLE</span>,
+                        <span class="ident">options::quoting::LITERAL</span>,
+                        <span class="ident">options::quoting::ESCAPE</span>,
+                        <span class="ident">options::quoting::C</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::quoting::LITERAL</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;N&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::quoting::LITERAL</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Use literal quoting style. Equivalent to `--quoting-style=literal`&quot;</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::QUOTING_STYLE</span>,
+                        <span class="ident">options::quoting::LITERAL</span>,
+                        <span class="ident">options::quoting::ESCAPE</span>,
+                        <span class="ident">options::quoting::C</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::quoting::ESCAPE</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;b&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::quoting::ESCAPE</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Use escape quoting style. Equivalent to `--quoting-style=escape`&quot;</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::QUOTING_STYLE</span>,
+                        <span class="ident">options::quoting::LITERAL</span>,
+                        <span class="ident">options::quoting::ESCAPE</span>,
+                        <span class="ident">options::quoting::C</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::quoting::C</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;Q&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::quoting::C</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Use C quoting style. Equivalent to `--quoting-style=c`&quot;</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::QUOTING_STYLE</span>,
+                        <span class="ident">options::quoting::LITERAL</span>,
+                        <span class="ident">options::quoting::ESCAPE</span>,
+                        <span class="ident">options::quoting::C</span>,
+                    ]),
+            )
+            <span class="comment">// Control characters</span>
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::HIDE_CONTROL_CHARS</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;q&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::HIDE_CONTROL_CHARS</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Replace control characters with &#39;?&#39; if they are not escaped.&quot;</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::HIDE_CONTROL_CHARS</span>, <span class="ident">options::SHOW_CONTROL_CHARS</span>]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::SHOW_CONTROL_CHARS</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::SHOW_CONTROL_CHARS</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Show control characters &#39;as is&#39; if they are not escaped.&quot;</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::HIDE_CONTROL_CHARS</span>, <span class="ident">options::SHOW_CONTROL_CHARS</span>]),
+            )
+            <span class="comment">// Time arguments</span>
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::TIME</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::TIME</span>)
+                    .<span class="ident">help</span>(
+                        <span class="string">&quot;Show time in &lt;field&gt;:\n\
+                        \taccess time (-u): atime, access, use;\n\
+                        \tchange time (-t): ctime, status.\n\
+                        \tbirth time: birth, creation;&quot;</span>,
+                    )
+                    .<span class="ident">value_name</span>(<span class="string">&quot;field&quot;</span>)
+                    .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span>[
+                        <span class="string">&quot;atime&quot;</span>, <span class="string">&quot;access&quot;</span>, <span class="string">&quot;use&quot;</span>, <span class="string">&quot;ctime&quot;</span>, <span class="string">&quot;status&quot;</span>, <span class="string">&quot;birth&quot;</span>, <span class="string">&quot;creation&quot;</span>,
+                    ])
+                    .<span class="ident">hide_possible_values</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::TIME</span>, <span class="ident">options::time::ACCESS</span>, <span class="ident">options::time::CHANGE</span>]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::time::CHANGE</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;c&#39;</span>)
+                    .<span class="ident">help</span>(
+                        <span class="string">&quot;If the long listing format (e.g., -l, -o) is being used, print the status \
+                    change time (the &#39;ctime&#39; in the inode) instead of the modification time. When \
+                    explicitly sorting by time (--sort=time or -t) or when not using a long listing \
+                    format, sort according to the status change time.&quot;</span>,
+                    )
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::TIME</span>, <span class="ident">options::time::ACCESS</span>, <span class="ident">options::time::CHANGE</span>]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::time::ACCESS</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;u&#39;</span>)
+                    .<span class="ident">help</span>(
+                        <span class="string">&quot;If the long listing format (e.g., -l, -o) is being used, print the status \
+                    access time instead of the modification time. When explicitly sorting by time \
+                    (--sort=time or -t) or when not using a long listing format, sort according to the \
+                    access time.&quot;</span>,
+                    )
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::TIME</span>, <span class="ident">options::time::ACCESS</span>, <span class="ident">options::time::CHANGE</span>]),
+            )
+            <span class="comment">// Hide and ignore</span>
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::HIDE</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::HIDE</span>)
+                    .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">value_name</span>(<span class="string">&quot;PATTERN&quot;</span>)
+                    .<span class="ident">help</span>(
+                        <span class="string">&quot;do not list implied entries matching shell PATTERN (overridden by -a or -A)&quot;</span>,
+                    ),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::IGNORE</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;I&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::IGNORE</span>)
+                    .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">value_name</span>(<span class="string">&quot;PATTERN&quot;</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;do not list implied entries matching shell PATTERN&quot;</span>),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::IGNORE_BACKUPS</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;B&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::IGNORE_BACKUPS</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Ignore entries which end with ~.&quot;</span>),
+            )
+            <span class="comment">// Sort arguments</span>
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::SORT</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::SORT</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Sort by &lt;field&gt;: name, none (-U), time (-t), size (-S) or extension (-X)&quot;</span>)
+                    .<span class="ident">value_name</span>(<span class="string">&quot;field&quot;</span>)
+                    .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;name&quot;</span>, <span class="string">&quot;none&quot;</span>, <span class="string">&quot;time&quot;</span>, <span class="string">&quot;size&quot;</span>, <span class="string">&quot;version&quot;</span>, <span class="string">&quot;extension&quot;</span>])
+                    .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::SORT</span>,
+                        <span class="ident">options::sort::SIZE</span>,
+                        <span class="ident">options::sort::TIME</span>,
+                        <span class="ident">options::sort::NONE</span>,
+                        <span class="ident">options::sort::VERSION</span>,
+                        <span class="ident">options::sort::EXTENSION</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::sort::SIZE</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;S&#39;</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Sort by file size, largest first.&quot;</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::SORT</span>,
+                        <span class="ident">options::sort::SIZE</span>,
+                        <span class="ident">options::sort::TIME</span>,
+                        <span class="ident">options::sort::NONE</span>,
+                        <span class="ident">options::sort::VERSION</span>,
+                        <span class="ident">options::sort::EXTENSION</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::sort::TIME</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;t&#39;</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Sort by modification time (the &#39;mtime&#39; in the inode), newest first.&quot;</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::SORT</span>,
+                        <span class="ident">options::sort::SIZE</span>,
+                        <span class="ident">options::sort::TIME</span>,
+                        <span class="ident">options::sort::NONE</span>,
+                        <span class="ident">options::sort::VERSION</span>,
+                        <span class="ident">options::sort::EXTENSION</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::sort::VERSION</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;v&#39;</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Natural sort of (version) numbers in the filenames.&quot;</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::SORT</span>,
+                        <span class="ident">options::sort::SIZE</span>,
+                        <span class="ident">options::sort::TIME</span>,
+                        <span class="ident">options::sort::NONE</span>,
+                        <span class="ident">options::sort::VERSION</span>,
+                        <span class="ident">options::sort::EXTENSION</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::sort::EXTENSION</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;X&#39;</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Sort alphabetically by entry extension.&quot;</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::SORT</span>,
+                        <span class="ident">options::sort::SIZE</span>,
+                        <span class="ident">options::sort::TIME</span>,
+                        <span class="ident">options::sort::NONE</span>,
+                        <span class="ident">options::sort::VERSION</span>,
+                        <span class="ident">options::sort::EXTENSION</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::sort::NONE</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;U&#39;</span>)
+                    .<span class="ident">help</span>(
+                        <span class="string">&quot;Do not sort; list the files in whatever order they are stored in the \
+        directory.  This is especially useful when listing very large directories, \
+        since not doing any sorting can be noticeably faster.&quot;</span>,
+                    )
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::SORT</span>,
+                        <span class="ident">options::sort::SIZE</span>,
+                        <span class="ident">options::sort::TIME</span>,
+                        <span class="ident">options::sort::NONE</span>,
+                        <span class="ident">options::sort::VERSION</span>,
+                        <span class="ident">options::sort::EXTENSION</span>,
+                    ]),
+            )
+            <span class="comment">// Dereferencing</span>
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::dereference::ALL</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;L&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::dereference::ALL</span>)
+                    .<span class="ident">help</span>(
+                        <span class="string">&quot;When showing file information for a symbolic link, show information for the \
+                    file the link references rather than the link itself.&quot;</span>,
+                    )
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::dereference::ALL</span>,
+                        <span class="ident">options::dereference::DIR_ARGS</span>,
+                        <span class="ident">options::dereference::ARGS</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::dereference::DIR_ARGS</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::dereference::DIR_ARGS</span>)
+                    .<span class="ident">help</span>(
+                        <span class="string">&quot;Do not dereference symlinks except when they link to directories and are \
+                    given as command line arguments.&quot;</span>,
+                    )
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::dereference::ALL</span>,
+                        <span class="ident">options::dereference::DIR_ARGS</span>,
+                        <span class="ident">options::dereference::ARGS</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::dereference::ARGS</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;H&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::dereference::ARGS</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Do not dereference symlinks except when given as command line arguments.&quot;</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::dereference::ALL</span>,
+                        <span class="ident">options::dereference::DIR_ARGS</span>,
+                        <span class="ident">options::dereference::ARGS</span>,
+                    ]),
+            )
+            <span class="comment">// Long format options</span>
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::NO_GROUP</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::NO_GROUP</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;G&#39;</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Do not show group in long format.&quot;</span>),
+            )
+            .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::AUTHOR</span>).<span class="ident">long</span>(<span class="ident">options::AUTHOR</span>).<span class="ident">help</span>(
+                <span class="string">&quot;Show author in long format. \
+                On the supported platforms, the author always matches the file owner.&quot;</span>,
+            ))
+            <span class="comment">// Other Flags</span>
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::files::ALL</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;a&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::files::ALL</span>)
+                    <span class="comment">// Overrides -A (as the order matters)</span>
+                    .<span class="ident">overrides_with</span>(<span class="ident">options::files::ALMOST_ALL</span>)
+                    .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Do not ignore hidden files (files with names that start with &#39;.&#39;).&quot;</span>),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::files::ALMOST_ALL</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;A&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::files::ALMOST_ALL</span>)
+                    <span class="comment">// Overrides -a (as the order matters)</span>
+                    .<span class="ident">overrides_with</span>(<span class="ident">options::files::ALL</span>)
+                    .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">help</span>(
+                        <span class="string">&quot;In a directory, do not ignore all file names that start with &#39;.&#39;, \
+    only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
+                    ),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::DIRECTORY</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;d&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::DIRECTORY</span>)
+                    .<span class="ident">help</span>(
+                        <span class="string">&quot;Only list the names of directories, rather than listing directory contents. \
+                    This will not follow symbolic links unless one of `--dereference-command-line \
+                    (-H)`, `--dereference (-L)`, or `--dereference-command-line-symlink-to-dir` is \
+                    specified.&quot;</span>,
+                    ),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::size::HUMAN_READABLE</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;h&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::size::HUMAN_READABLE</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Print human readable file sizes (e.g. 1K 234M 56G).&quot;</span>)
+                    .<span class="ident">overrides_with</span>(<span class="ident">options::size::SI</span>),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::size::KIBIBYTES</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;k&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::size::KIBIBYTES</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;default to 1024-byte blocks for file system usage; used only with -s and per directory totals&quot;</span>),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::size::SI</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::size::SI</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Print human readable file sizes using powers of 1000 instead of 1024.&quot;</span>),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::size::BLOCK_SIZE</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::size::BLOCK_SIZE</span>)
+                    .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">value_name</span>(<span class="string">&quot;BLOCK_SIZE&quot;</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;scale sizes by BLOCK_SIZE when printing them&quot;</span>),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::INODE</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;i&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::INODE</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;print the index number of each file&quot;</span>),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::REVERSE</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;r&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::REVERSE</span>)
+                    .<span class="ident">help</span>(
+                        <span class="string">&quot;Reverse whatever the sorting method is e.g., list files in reverse \
+                    alphabetical order, youngest first, smallest first, or whatever.&quot;</span>,
+                    ),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::RECURSIVE</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;R&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::RECURSIVE</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;List the contents of all directories recursively.&quot;</span>),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::WIDTH</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::WIDTH</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;w&#39;</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Assume that the terminal is COLS columns wide.&quot;</span>)
+                    .<span class="ident">value_name</span>(<span class="string">&quot;COLS&quot;</span>)
+                    .<span class="ident">takes_value</span>(<span class="bool-val">true</span>),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::size::ALLOCATION_SIZE</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::size::ALLOCATION_SIZE</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;print the allocated size of each file, in blocks&quot;</span>),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::COLOR</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::COLOR</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Color output based on file type.&quot;</span>)
+                    .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span>[
+                        <span class="string">&quot;always&quot;</span>, <span class="string">&quot;yes&quot;</span>, <span class="string">&quot;force&quot;</span>, <span class="string">&quot;auto&quot;</span>, <span class="string">&quot;tty&quot;</span>, <span class="string">&quot;if-tty&quot;</span>, <span class="string">&quot;never&quot;</span>, <span class="string">&quot;no&quot;</span>, <span class="string">&quot;none&quot;</span>,
+                    ])
+                    .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">min_values</span>(<span class="number">0</span>),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::INDICATOR_STYLE</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::INDICATOR_STYLE</span>)
+                    .<span class="ident">help</span>(
+                        <span class="string">&quot;Append indicator with style WORD to entry names: \
+                        none (default),  slash (-p), file-type (--file-type), classify (-F)&quot;</span>,
+                    )
+                    .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;none&quot;</span>, <span class="string">&quot;slash&quot;</span>, <span class="string">&quot;file-type&quot;</span>, <span class="string">&quot;classify&quot;</span>])
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::indicator_style::FILE_TYPE</span>,
+                        <span class="ident">options::indicator_style::SLASH</span>,
+                        <span class="ident">options::indicator_style::CLASSIFY</span>,
+                        <span class="ident">options::INDICATOR_STYLE</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="comment">// The --classify flag can take an optional when argument to</span>
+                <span class="comment">// control its behavior from version 9 of GNU coreutils.</span>
+                <span class="comment">// There is currently an inconsistency where GNU coreutils allows only</span>
+                <span class="comment">// the long form of the flag to take the argument while we allow it</span>
+                <span class="comment">// for both the long and short form of the flag.</span>
+                <span class="ident">Arg::new</span>(<span class="ident">options::indicator_style::CLASSIFY</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;F&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::indicator_style::CLASSIFY</span>)
+                    .<span class="ident">help</span>(
+                        <span class="string">&quot;Append a character to each file name indicating the file type. Also, for \
+                    regular files that are executable, append &#39;*&#39;. The file type indicators are \
+                    &#39;/&#39; for directories, &#39;@&#39; for symbolic links, &#39;|&#39; for FIFOs, &#39;=&#39; for sockets, \
+                    &#39;&gt;&#39; for doors, and nothing for regular files. when may be omitted, or one of:\n\
+                        \tnone - Do not classify. This is the default.\n\
+                        \tauto - Only classify if standard output is a terminal.\n\
+                        \talways - Always classify.\n\
+                    Specifying --classify and no when is equivalent to --classify=always. This will not follow\
+                    symbolic links listed on the command line unless the --dereference-command-line (-H),\
+                    --dereference (-L), or --dereference-command-line-symlink-to-dir options are specified.&quot;</span>,
+                    )
+                    .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">value_name</span>(<span class="string">&quot;when&quot;</span>)
+                    .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span>[
+                        <span class="string">&quot;always&quot;</span>, <span class="string">&quot;yes&quot;</span>, <span class="string">&quot;force&quot;</span>, <span class="string">&quot;auto&quot;</span>, <span class="string">&quot;tty&quot;</span>, <span class="string">&quot;if-tty&quot;</span>, <span class="string">&quot;never&quot;</span>, <span class="string">&quot;no&quot;</span>, <span class="string">&quot;none&quot;</span>,
+                    ])
+                    .<span class="ident">default_missing_value</span>(<span class="string">&quot;always&quot;</span>)
+                    .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">min_values</span>(<span class="number">0</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::indicator_style::FILE_TYPE</span>,
+                        <span class="ident">options::indicator_style::SLASH</span>,
+                        <span class="ident">options::indicator_style::CLASSIFY</span>,
+                        <span class="ident">options::INDICATOR_STYLE</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::indicator_style::FILE_TYPE</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::indicator_style::FILE_TYPE</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Same as --classify, but do not append &#39;*&#39;&quot;</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::indicator_style::FILE_TYPE</span>,
+                        <span class="ident">options::indicator_style::SLASH</span>,
+                        <span class="ident">options::indicator_style::CLASSIFY</span>,
+                        <span class="ident">options::INDICATOR_STYLE</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::indicator_style::SLASH</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;p&#39;</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;Append / indicator to directories.&quot;</span>)
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                        <span class="ident">options::indicator_style::FILE_TYPE</span>,
+                        <span class="ident">options::indicator_style::SLASH</span>,
+                        <span class="ident">options::indicator_style::CLASSIFY</span>,
+                        <span class="ident">options::INDICATOR_STYLE</span>,
+                    ]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="comment">//This still needs support for posix-*, +FORMAT</span>
+                <span class="ident">Arg::new</span>(<span class="ident">options::TIME_STYLE</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::TIME_STYLE</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;time/date format with -l; see TIME_STYLE below&quot;</span>)
+                    .<span class="ident">value_name</span>(<span class="string">&quot;TIME_STYLE&quot;</span>)
+                    .<span class="ident">env</span>(<span class="string">&quot;TIME_STYLE&quot;</span>)
+                    .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;full-iso&quot;</span>, <span class="string">&quot;long-iso&quot;</span>, <span class="string">&quot;iso&quot;</span>, <span class="string">&quot;locale&quot;</span>])
+                    .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::TIME_STYLE</span>]),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::FULL_TIME</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::FULL_TIME</span>)
+                    .<span class="ident">overrides_with</span>(<span class="ident">options::FULL_TIME</span>)
+                    .<span class="ident">help</span>(<span class="string">&quot;like -l --time-style=full-iso&quot;</span>),
+            )
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::CONTEXT</span>)
+                    .<span class="ident">short</span>(<span class="string">&#39;Z&#39;</span>)
+                    .<span class="ident">long</span>(<span class="ident">options::CONTEXT</span>)
+                    .<span class="ident">help</span>(<span class="ident">CONTEXT_HELP_TEXT</span>),
+            )
+            <span class="comment">// Positional arguments</span>
+            .<span class="ident">arg</span>(
+                <span class="ident">Arg::new</span>(<span class="ident">options::PATHS</span>)
+                    .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                    .<span class="ident">allow_invalid_utf8</span>(<span class="bool-val">true</span>),
+            )
+            .<span class="ident">after_help</span>(
+                <span class="string">&quot;The TIME_STYLE argument can be full-iso, long-iso, iso. \
+                Also the TIME_STYLE environment variable sets the default style to use.&quot;</span>,
+            )
 }
 
 <span class="doccomment">/// Represents a Path along with it&#39;s associated data.</span>
@@ -4317,7 +4315,7 @@ only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
     }
 }
 
-<span class="kw">fn</span> <span class="ident">list</span>(<span class="ident">locs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span>, <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">list</span>(<span class="ident">locs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span>, <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">files</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">PathData</span><span class="op">&gt;</span><span class="ident">::new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dirs</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">PathData</span><span class="op">&gt;</span><span class="ident">::new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">BufWriter::new</span>(<span class="ident">stdout</span>());
