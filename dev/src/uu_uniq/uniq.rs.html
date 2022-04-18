@@ -429,6 +429,14 @@
 <span id="424">424</span>
 <span id="425">425</span>
 <span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Chirag B Jadwani &lt;chirag.jadwani@gmail.com&gt;</span>
@@ -443,7 +451,7 @@
 <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
 <span class="kw">use</span> <span class="ident">strum_macros</span>::{<span class="ident">AsRefStr</span>, <span class="ident">EnumString</span>};
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
-<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
+<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>, <span class="ident">UUsageError</span>};
 <span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Report or omit repeated lines.&quot;</span>;
@@ -715,6 +723,14 @@
         <span class="ident">ignore_case</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::IGNORE_CASE</span>),
         <span class="ident">zero_terminated</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::ZERO_TERMINATED</span>),
     };
+
+    <span class="kw">if</span> <span class="ident">uniq</span>.<span class="ident">show_counts</span> <span class="op">&amp;&amp;</span> <span class="ident">uniq</span>.<span class="ident">all_repeated</span> {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">UUsageError::new</span>(
+            <span class="number">1</span>,
+            <span class="string">&quot;printing all duplicated lines and repeat counts is meaningless&quot;</span>,
+        ));
+    }
+
     <span class="ident">uniq</span>.<span class="ident">print_uniq</span>(
         <span class="kw-2">&amp;mut</span> <span class="ident">open_input_file</span>(<span class="kw-2">&amp;</span><span class="ident">in_file_name</span>)<span class="question-mark">?</span>,
         <span class="kw-2">&amp;mut</span> <span class="ident">open_output_file</span>(<span class="kw-2">&amp;</span><span class="ident">out_file_name</span>)<span class="question-mark">?</span>,
