@@ -780,6 +780,12 @@
 <span id="775">775</span>
 <span id="776">776</span>
 <span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Ben Eills &lt;ben@beneills.com&gt;</span>
@@ -1376,13 +1382,19 @@
         <span class="kw">match</span> <span class="ident">process::Command::new</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>.<span class="ident">strip_program</span>).<span class="ident">arg</span>(<span class="ident">to</span>).<span class="ident">output</span>() {
             <span class="prelude-val">Ok</span>(<span class="ident">o</span>) =&gt; {
                 <span class="kw">if</span> <span class="op">!</span><span class="ident">o</span>.<span class="ident">status</span>.<span class="ident">success</span>() {
+                    <span class="comment">// Follow GNU&#39;s behavior: if strip fails, removes the target</span>
+                    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">fs::remove_file</span>(<span class="ident">to</span>);
                     <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">InstallError::StripProgramFailed</span>(
                         <span class="ident">String::from_utf8</span>(<span class="ident">o</span>.<span class="ident">stderr</span>).<span class="ident">unwrap_or_default</span>(),
                     )
                     .<span class="ident">into</span>());
                 }
             }
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">InstallError::StripProgramFailed</span>(<span class="ident">e</span>.<span class="ident">to_string</span>()).<span class="ident">into</span>()),
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
+                <span class="comment">// Follow GNU&#39;s behavior: if strip fails, removes the target</span>
+                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">fs::remove_file</span>(<span class="ident">to</span>);
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">InstallError::StripProgramFailed</span>(<span class="ident">e</span>.<span class="ident">to_string</span>()).<span class="ident">into</span>());
+            }
         }
     }
 
