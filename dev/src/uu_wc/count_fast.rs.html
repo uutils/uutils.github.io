@@ -177,8 +177,8 @@
         .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="number">0_usize</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">null_rdev</span> <span class="op">=</span> <span class="ident">stat::fstat</span>(<span class="ident">null_file</span>.<span class="ident">as_raw_fd</span>())
         .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="number">0_usize</span>)<span class="question-mark">?</span>
-        .<span class="ident">st_rdev</span>;
-    <span class="kw">if</span> (<span class="ident">stat::major</span>(<span class="ident">null_rdev</span>), <span class="ident">stat::minor</span>(<span class="ident">null_rdev</span>)) <span class="op">!</span><span class="op">=</span> (<span class="number">1</span>, <span class="number">3</span>) {
+        .<span class="ident">st_rdev</span> <span class="kw">as</span> <span class="ident">libc::dev_t</span>;
+    <span class="kw">if</span> <span class="kw">unsafe</span> { (<span class="ident">libc::major</span>(<span class="ident">null_rdev</span>), <span class="ident">libc::minor</span>(<span class="ident">null_rdev</span>)) } <span class="op">!</span><span class="op">=</span> (<span class="number">1</span>, <span class="number">3</span>) {
         <span class="comment">// This is not a proper /dev/null, writing to it is probably bad</span>
         <span class="comment">// Bit of an edge case, but it has been known to happen</span>
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="number">0</span>);
@@ -227,14 +227,14 @@
             <span class="comment">// The second case happens for files in pseudo-filesystems. For</span>
             <span class="comment">// example with /proc/version and /sys/kernel/profiling. So,</span>
             <span class="comment">// if it is 0 we don&#39;t report that and instead do a full read.</span>
-            <span class="kw">if</span> (<span class="ident">stat</span>.<span class="ident">st_mode</span> <span class="op">&amp;</span> <span class="ident">S_IFREG</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="ident">stat</span>.<span class="ident">st_size</span> <span class="op">&gt;</span> <span class="number">0</span> {
+            <span class="kw">if</span> (<span class="ident">stat</span>.<span class="ident">st_mode</span> <span class="kw">as</span> <span class="ident">libc::mode_t</span> <span class="op">&amp;</span> <span class="ident">S_IFREG</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="ident">stat</span>.<span class="ident">st_size</span> <span class="op">&gt;</span> <span class="number">0</span> {
                 <span class="kw">return</span> (<span class="ident">stat</span>.<span class="ident">st_size</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="prelude-val">None</span>);
             }
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;android&quot;</span>))]</span>
             {
                 <span class="comment">// Else, if we&#39;re on Linux and our file is a FIFO pipe</span>
                 <span class="comment">// (or stdin), we use splice to count the number of bytes.</span>
-                <span class="kw">if</span> (<span class="ident">stat</span>.<span class="ident">st_mode</span> <span class="op">&amp;</span> <span class="ident">S_IFIFO</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+                <span class="kw">if</span> (<span class="ident">stat</span>.<span class="ident">st_mode</span> <span class="kw">as</span> <span class="ident">libc::mode_t</span> <span class="op">&amp;</span> <span class="ident">S_IFIFO</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
                     <span class="kw">match</span> <span class="ident">count_bytes_using_splice</span>(<span class="ident">handle</span>) {
                         <span class="prelude-val">Ok</span>(<span class="ident">n</span>) =&gt; <span class="kw">return</span> (<span class="ident">n</span>, <span class="prelude-val">None</span>),
                         <span class="prelude-val">Err</span>(<span class="ident">n</span>) =&gt; <span class="ident">byte_count</span> <span class="op">=</span> <span class="ident">n</span>,

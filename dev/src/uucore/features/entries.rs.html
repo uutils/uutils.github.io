@@ -380,6 +380,17 @@
 <span id="375">375</span>
 <span id="376">376</span>
 <span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;</span>
@@ -529,16 +540,16 @@
     <span class="doccomment">/// AKA passwd.pw_gid</span>
     <span class="kw">pub</span> <span class="ident">gid</span>: <span class="ident">gid_t</span>,
     <span class="doccomment">/// AKA passwd.pw_gecos</span>
-    <span class="kw">pub</span> <span class="ident">user_info</span>: <span class="ident">String</span>,
+    <span class="kw">pub</span> <span class="ident">user_info</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="doccomment">/// AKA passwd.pw_shell</span>
-    <span class="kw">pub</span> <span class="ident">user_shell</span>: <span class="ident">String</span>,
+    <span class="kw">pub</span> <span class="ident">user_shell</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="doccomment">/// AKA passwd.pw_dir</span>
-    <span class="kw">pub</span> <span class="ident">user_dir</span>: <span class="ident">String</span>,
+    <span class="kw">pub</span> <span class="ident">user_dir</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="doccomment">/// AKA passwd.pw_passwd</span>
-    <span class="kw">pub</span> <span class="ident">user_passwd</span>: <span class="ident">String</span>,
+    <span class="kw">pub</span> <span class="ident">user_passwd</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="doccomment">/// AKA passwd.pw_class</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>, <span class="ident">target_vendor</span> <span class="op">=</span> <span class="string">&quot;apple&quot;</span>))]</span>
-    <span class="kw">pub</span> <span class="ident">user_access_class</span>: <span class="ident">String</span>,
+    <span class="kw">pub</span> <span class="ident">user_access_class</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="doccomment">/// AKA passwd.pw_change</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>, <span class="ident">target_vendor</span> <span class="op">=</span> <span class="string">&quot;apple&quot;</span>))]</span>
     <span class="kw">pub</span> <span class="ident">passwd_change_time</span>: <span class="ident">time_t</span>,
@@ -548,8 +559,13 @@
 }
 
 <span class="doccomment">/// SAFETY: ptr must point to a valid C string.</span>
-<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">cstr2string</span>(<span class="ident">ptr</span>: <span class="kw-2">*const</span> <span class="ident">c_char</span>) -&gt; <span class="ident">String</span> {
-    <span class="ident">CStr::from_ptr</span>(<span class="ident">ptr</span>).<span class="ident">to_string_lossy</span>().<span class="ident">into_owned</span>()
+<span class="doccomment">/// Returns None if ptr is null.</span>
+<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">cstr2string</span>(<span class="ident">ptr</span>: <span class="kw-2">*const</span> <span class="ident">c_char</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">if</span> <span class="op">!</span><span class="ident">ptr</span>.<span class="ident">is_null</span>() {
+        <span class="prelude-val">Some</span>(<span class="ident">CStr::from_ptr</span>(<span class="ident">ptr</span>).<span class="ident">to_string_lossy</span>().<span class="ident">into_owned</span>())
+    } <span class="kw">else</span> {
+        <span class="prelude-val">None</span>
+    }
 }
 
 <span class="kw">impl</span> <span class="ident">Passwd</span> {
@@ -557,10 +573,16 @@
     <span class="doccomment">/// the function runs. That means PW_LOCK must be held.</span>
     <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_raw</span>(<span class="ident">raw</span>: <span class="ident">passwd</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
-            <span class="ident">name</span>: <span class="ident">cstr2string</span>(<span class="ident">raw</span>.<span class="ident">pw_name</span>),
+            <span class="ident">name</span>: <span class="ident">cstr2string</span>(<span class="ident">raw</span>.<span class="ident">pw_name</span>).<span class="ident">expect</span>(<span class="string">&quot;passwd without name&quot;</span>),
             <span class="ident">uid</span>: <span class="ident">raw</span>.<span class="ident">pw_uid</span>,
             <span class="ident">gid</span>: <span class="ident">raw</span>.<span class="ident">pw_gid</span>,
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(
+                <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;android&quot;</span>,
+                <span class="ident">any</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86&quot;</span>, <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;arm&quot;</span>)
+            )))]</span>
             <span class="ident">user_info</span>: <span class="ident">cstr2string</span>(<span class="ident">raw</span>.<span class="ident">pw_gecos</span>),
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;android&quot;</span>, <span class="ident">any</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86&quot;</span>, <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;arm&quot;</span>)))]</span>
+            <span class="ident">user_info</span>: <span class="prelude-val">None</span>,
             <span class="ident">user_shell</span>: <span class="ident">cstr2string</span>(<span class="ident">raw</span>.<span class="ident">pw_shell</span>),
             <span class="ident">user_dir</span>: <span class="ident">cstr2string</span>(<span class="ident">raw</span>.<span class="ident">pw_dir</span>),
             <span class="ident">user_passwd</span>: <span class="ident">cstr2string</span>(<span class="ident">raw</span>.<span class="ident">pw_passwd</span>),
@@ -625,7 +647,7 @@
     <span class="doccomment">/// the function runs. That means PW_LOCK must be held.</span>
     <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_raw</span>(<span class="ident">raw</span>: <span class="ident">group</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
-            <span class="ident">name</span>: <span class="ident">cstr2string</span>(<span class="ident">raw</span>.<span class="ident">gr_name</span>),
+            <span class="ident">name</span>: <span class="ident">cstr2string</span>(<span class="ident">raw</span>.<span class="ident">gr_name</span>).<span class="ident">expect</span>(<span class="string">&quot;group without name&quot;</span>),
             <span class="ident">gid</span>: <span class="ident">raw</span>.<span class="ident">gr_gid</span>,
         }
     }
