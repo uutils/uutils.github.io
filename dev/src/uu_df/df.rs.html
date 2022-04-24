@@ -773,6 +773,20 @@
 <span id="768">768</span>
 <span id="769">769</span>
 <span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Fangxu Hu &lt;framlog@gmail.com&gt;</span>
@@ -1067,7 +1081,7 @@
 }
 
 <span class="doccomment">/// For each path, get the filesystem that contains that path.</span>
-<span class="kw">fn</span> <span class="ident">get_named_filesystems</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(<span class="ident">paths</span>: <span class="kw-2">&amp;</span>[<span class="ident">P</span>]) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Filesystem</span><span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">get_named_filesystems</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(<span class="ident">paths</span>: <span class="kw-2">&amp;</span>[<span class="ident">P</span>], <span class="ident">opt</span>: <span class="kw-2">&amp;</span><span class="ident">Options</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Filesystem</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>,
 {
@@ -1077,21 +1091,35 @@
     <span class="comment">// considered. The &quot;lofs&quot; filesystem is a loopback</span>
     <span class="comment">// filesystem present on Solaris and FreeBSD systems. It</span>
     <span class="comment">// is similar to a symbolic link.</span>
-    <span class="kw">let</span> <span class="ident">mounts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MountInfo</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">read_fs_list</span>()
+    <span class="kw">let</span> <span class="ident">mounts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MountInfo</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">filter_mount_list</span>(<span class="ident">read_fs_list</span>(), <span class="ident">opt</span>)
         .<span class="ident">into_iter</span>()
         .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">mi</span><span class="op">|</span> <span class="ident">mi</span>.<span class="ident">fs_type</span> <span class="op">!</span><span class="op">=</span> <span class="string">&quot;lofs&quot;</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">mi</span>.<span class="ident">dummy</span>)
         .<span class="ident">collect</span>();
 
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+
+    <span class="comment">// this happens if the file system type doesn&#39;t exist</span>
+    <span class="kw">if</span> <span class="ident">mounts</span>.<span class="ident">is_empty</span>() {
+        <span class="macro">show!</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;no file systems processed&quot;</span>));
+        <span class="kw">return</span> <span class="ident">result</span>;
+    }
+
     <span class="comment">// Convert each path into a `Filesystem`, which contains</span>
     <span class="comment">// both the mount information and usage information.</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="macro">vec!</span>[];
     <span class="kw">for</span> <span class="ident">path</span> <span class="kw">in</span> <span class="ident">paths</span> {
         <span class="kw">match</span> <span class="ident">Filesystem::from_path</span>(<span class="kw-2">&amp;</span><span class="ident">mounts</span>, <span class="ident">path</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">fs</span>) =&gt; <span class="ident">result</span>.<span class="ident">push</span>(<span class="ident">fs</span>),
-            <span class="prelude-val">None</span> =&gt; <span class="macro">show!</span>(<span class="ident">USimpleError::new</span>(
-                <span class="number">1</span>,
-                <span class="macro">format!</span>(<span class="string">&quot;{}: No such file or directory&quot;</span>, <span class="ident">path</span>.<span class="ident">as_ref</span>().<span class="ident">display</span>())
-            )),
+            <span class="prelude-val">None</span> =&gt; {
+                <span class="comment">// this happens if specified file system type != file system type of the file</span>
+                <span class="kw">if</span> <span class="ident">path</span>.<span class="ident">as_ref</span>().<span class="ident">exists</span>() {
+                    <span class="macro">show!</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;no file systems processed&quot;</span>));
+                } <span class="kw">else</span> {
+                    <span class="macro">show!</span>(<span class="ident">USimpleError::new</span>(
+                        <span class="number">1</span>,
+                        <span class="macro">format!</span>(<span class="string">&quot;{}: No such file or directory&quot;</span>, <span class="ident">path</span>.<span class="ident">as_ref</span>().<span class="ident">display</span>())
+                    ));
+                }
+            }
         }
     }
     <span class="ident">result</span>
@@ -1145,7 +1173,7 @@
         }
         <span class="prelude-val">Some</span>(<span class="ident">paths</span>) =&gt; {
             <span class="kw">let</span> <span class="ident">paths</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">paths</span>.<span class="ident">collect</span>();
-            <span class="kw">let</span> <span class="ident">filesystems</span> <span class="op">=</span> <span class="ident">get_named_filesystems</span>(<span class="kw-2">&amp;</span><span class="ident">paths</span>);
+            <span class="kw">let</span> <span class="ident">filesystems</span> <span class="op">=</span> <span class="ident">get_named_filesystems</span>(<span class="kw-2">&amp;</span><span class="ident">paths</span>, <span class="kw-2">&amp;</span><span class="ident">opt</span>);
 
             <span class="comment">// This can happen if paths are given as command-line arguments</span>
             <span class="comment">// but none of the paths exist.</span>
