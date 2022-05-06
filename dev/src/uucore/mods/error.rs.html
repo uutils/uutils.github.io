@@ -631,6 +631,69 @@
 <span id="626">626</span>
 <span id="627">627</span>
 <span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
+<span id="632">632</span>
+<span id="633">633</span>
+<span id="634">634</span>
+<span id="635">635</span>
+<span id="636">636</span>
+<span id="637">637</span>
+<span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
+<span id="644">644</span>
+<span id="645">645</span>
+<span id="646">646</span>
+<span id="647">647</span>
+<span id="648">648</span>
+<span id="649">649</span>
+<span id="650">650</span>
+<span id="651">651</span>
+<span id="652">652</span>
+<span id="653">653</span>
+<span id="654">654</span>
+<span id="655">655</span>
+<span id="656">656</span>
+<span id="657">657</span>
+<span id="658">658</span>
+<span id="659">659</span>
+<span id="660">660</span>
+<span id="661">661</span>
+<span id="662">662</span>
+<span id="663">663</span>
+<span id="664">664</span>
+<span id="665">665</span>
+<span id="666">666</span>
+<span id="667">667</span>
+<span id="668">668</span>
+<span id="669">669</span>
+<span id="670">670</span>
+<span id="671">671</span>
+<span id="672">672</span>
+<span id="673">673</span>
+<span id="674">674</span>
+<span id="675">675</span>
+<span id="676">676</span>
+<span id="677">677</span>
+<span id="678">678</span>
+<span id="679">679</span>
+<span id="680">680</span>
+<span id="681">681</span>
+<span id="682">682</span>
+<span id="683">683</span>
+<span id="684">684</span>
+<span id="685">685</span>
+<span id="686">686</span>
+<span id="687">687</span>
+<span id="688">688</span>
+<span id="689">689</span>
+<span id="690">690</span>
+<span id="691">691</span>
 </pre><pre class="rust"><code><span class="doccomment">//! All utils return exit with an exit code. Usually, the following scheme is used:</span>
 <span class="doccomment">//! * `0`: succeeded</span>
 <span class="doccomment">//! * `1`: minor problems</span>
@@ -1250,13 +1313,76 @@
     }
 }
 
-<span class="doccomment">/// Implementations for clap::Error</span>
-<span class="kw">impl</span> <span class="ident">UError</span> <span class="kw">for</span> <span class="ident">clap::Error</span> {
+<span class="doccomment">/// A wrapper for `clap::Error` that implements [`UError`]</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Contains a custom error code. When `Display::fmt` is called on this struct</span>
+<span class="doccomment">/// the [`clap::Error`] will be printed _directly to `stdout` or `stderr`_.</span>
+<span class="doccomment">/// This is because `clap` only supports colored output when it prints directly.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`ClapErrorWrapper`] is generally created by calling the</span>
+<span class="doccomment">/// [`UClapError::with_exit_code`] method on [`clap::Error`] or using the [`From`]</span>
+<span class="doccomment">/// implementation from [`clap::Error`] to `Box&lt;dyn UError&gt;`, which constructs</span>
+<span class="doccomment">/// a [`ClapErrorWrapper`] with an exit code of `1`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```rust</span>
+<span class="doccomment">/// use uucore::error::{ClapErrorWrapper, UError, UClapError};</span>
+<span class="doccomment">/// let command = clap::Command::new(&quot;test&quot;);</span>
+<span class="doccomment">/// let result: Result&lt;_, ClapErrorWrapper&gt; = command.try_get_matches().with_exit_code(125);</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// let command = clap::Command::new(&quot;test&quot;);</span>
+<span class="doccomment">/// let result: Result&lt;_, Box&lt;dyn UError&gt;&gt; = command.try_get_matches().map_err(Into::into);</span>
+<span class="doccomment">/// ```</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ClapErrorWrapper</span> {
+    <span class="ident">code</span>: <span class="ident">i32</span>,
+    <span class="ident">error</span>: <span class="ident">clap::Error</span>,
+}
+
+<span class="doccomment">/// Extension trait for `clap::Error` to adjust the exit code.</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">UClapError</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">with_exit_code</span>(<span class="self">self</span>, <span class="ident">code</span>: <span class="ident">i32</span>) -&gt; <span class="ident">T</span>;
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">clap::Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">UError</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">e</span>: <span class="ident">clap::Error</span>) -&gt; <span class="self">Self</span> {
+        <span class="ident">Box::new</span>(<span class="ident">ClapErrorWrapper</span> { <span class="ident">code</span>: <span class="number">1</span>, <span class="ident">error</span>: <span class="ident">e</span> })
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">UClapError</span><span class="op">&lt;</span><span class="ident">ClapErrorWrapper</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">clap::Error</span> {
+    <span class="kw">fn</span> <span class="ident">with_exit_code</span>(<span class="self">self</span>, <span class="ident">code</span>: <span class="ident">i32</span>) -&gt; <span class="ident">ClapErrorWrapper</span> {
+        <span class="ident">ClapErrorWrapper</span> { <span class="ident">code</span>, <span class="ident">error</span>: <span class="self">self</span> }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">UClapError</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">clap::ArgMatches</span>, <span class="ident">ClapErrorWrapper</span><span class="op">&gt;</span><span class="op">&gt;</span>
+    <span class="kw">for</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">clap::ArgMatches</span>, <span class="ident">clap::Error</span><span class="op">&gt;</span>
+{
+    <span class="kw">fn</span> <span class="ident">with_exit_code</span>(<span class="self">self</span>, <span class="ident">code</span>: <span class="ident">i32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">clap::ArgMatches</span>, <span class="ident">ClapErrorWrapper</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">with_exit_code</span>(<span class="ident">code</span>))
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">UError</span> <span class="kw">for</span> <span class="ident">ClapErrorWrapper</span> {
     <span class="kw">fn</span> <span class="ident">code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">i32</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">kind</span>() {
-            <span class="ident">clap::ErrorKind::DisplayHelp</span> <span class="op">|</span> <span class="ident">clap::ErrorKind::DisplayVersion</span> =&gt; <span class="number">0</span>,
-            <span class="kw">_</span> =&gt; <span class="number">1</span>,
+        <span class="comment">// If the error is a DisplayHelp or DisplayVersion variant,</span>
+        <span class="comment">// we don&#39;t want to apply the custom error code, but leave</span>
+        <span class="comment">// it 0.</span>
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">clap::ErrorKind::DisplayHelp</span> <span class="op">|</span> <span class="ident">clap::ErrorKind::DisplayVersion</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">error</span>.<span class="ident">kind</span>() {
+            <span class="number">0</span>
+        } <span class="kw">else</span> {
+            <span class="self">self</span>.<span class="ident">code</span>
         }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="ident">ClapErrorWrapper</span> {}
+
+<span class="comment">// This is abuse of the Display trait</span>
+<span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">ClapErrorWrapper</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">std::fmt::Error</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">error</span>.<span class="ident">print</span>().<span class="ident">unwrap</span>();
+        <span class="prelude-val">Ok</span>(())
     }
 }
 </code></pre></div>

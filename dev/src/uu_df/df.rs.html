@@ -796,6 +796,18 @@
 <span id="791">791</span>
 <span id="792">792</span>
 <span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Fangxu Hu &lt;framlog@gmail.com&gt;</span>
@@ -809,6 +821,7 @@
 <span class="kw">mod</span> <span class="ident">filesystem</span>;
 <span class="kw">mod</span> <span class="ident">table</span>;
 
+<span class="kw">use</span> <span class="ident">blocks</span>::{<span class="ident">HumanReadable</span>, <span class="ident">SizeFormat</span>};
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UError</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
 <span class="kw">use</span> <span class="ident">uucore::fsext</span>::{<span class="ident">read_fs_list</span>, <span class="ident">MountInfo</span>};
@@ -860,6 +873,7 @@
 <span class="kw">struct</span> <span class="ident">Options</span> {
     <span class="ident">show_local_fs</span>: <span class="ident">bool</span>,
     <span class="ident">show_all_fs</span>: <span class="ident">bool</span>,
+    <span class="ident">size_format</span>: <span class="ident">SizeFormat</span>,
     <span class="ident">block_size</span>: <span class="ident">BlockSize</span>,
 
     <span class="doccomment">/// Optional list of filesystem types to include in the output table.</span>
@@ -887,6 +901,7 @@
             <span class="ident">show_local_fs</span>: <span class="ident">Default::default</span>(),
             <span class="ident">show_all_fs</span>: <span class="ident">Default::default</span>(),
             <span class="ident">block_size</span>: <span class="ident">Default::default</span>(),
+            <span class="ident">size_format</span>: <span class="ident">Default::default</span>(),
             <span class="ident">include</span>: <span class="ident">Default::default</span>(),
             <span class="ident">exclude</span>: <span class="ident">Default::default</span>(),
             <span class="ident">show_total</span>: <span class="ident">Default::default</span>(),
@@ -964,6 +979,15 @@
                 ),
                 <span class="ident">ParseSizeError::ParseFailure</span>(<span class="ident">s</span>) =&gt; <span class="ident">OptionsError::InvalidBlockSize</span>(<span class="ident">s</span>),
             })<span class="question-mark">?</span>,
+            <span class="ident">size_format</span>: {
+                <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_BINARY</span>) {
+                    <span class="ident">SizeFormat::HumanReadable</span>(<span class="ident">HumanReadable::Binary</span>)
+                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_DECIMAL</span>) {
+                    <span class="ident">SizeFormat::HumanReadable</span>(<span class="ident">HumanReadable::Decimal</span>)
+                } <span class="kw">else</span> {
+                    <span class="ident">SizeFormat::StaticBlockSize</span>
+                }
+            },
             <span class="ident">include</span>,
             <span class="ident">exclude</span>,
             <span class="ident">show_total</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_TOTAL</span>),

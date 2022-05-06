@@ -201,12 +201,62 @@
 <span id="196">196</span>
 <span id="197">197</span>
 <span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
 <span class="comment">//  * file that was distributed with this source code.</span>
 <span class="doccomment">//! Types for representing and displaying block sizes.</span>
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">OPT_BLOCKSIZE</span>, <span class="ident">OPT_HUMAN_READABLE_BINARY</span>, <span class="ident">OPT_HUMAN_READABLE_DECIMAL</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::OPT_BLOCKSIZE</span>;
 <span class="kw">use</span> <span class="ident">clap::ArgMatches</span>;
 <span class="kw">use</span> <span class="ident">std::fmt</span>;
 
@@ -228,6 +278,22 @@
 
 <span class="doccomment">/// Suffixes for the first nine multi-byte unit suffixes.</span>
 <span class="kw">const</span> <span class="ident">SUFFIXES</span>: [<span class="ident">char</span>; <span class="number">9</span>] <span class="op">=</span> [<span class="string">&#39;B&#39;</span>, <span class="string">&#39;K&#39;</span>, <span class="string">&#39;M&#39;</span>, <span class="string">&#39;G&#39;</span>, <span class="string">&#39;T&#39;</span>, <span class="string">&#39;P&#39;</span>, <span class="string">&#39;E&#39;</span>, <span class="string">&#39;Z&#39;</span>, <span class="string">&#39;Y&#39;</span>];
+
+<span class="kw">const</span> <span class="ident">SI_BASES</span>: [<span class="ident">u128</span>; <span class="number">10</span>] <span class="op">=</span> [
+    <span class="number">1</span>,
+    <span class="number">1_000</span>,
+    <span class="number">1_000_000</span>,
+    <span class="number">1_000_000_000</span>,
+    <span class="number">1_000_000_000_000</span>,
+    <span class="number">1_000_000_000_000_000</span>,
+    <span class="number">1_000_000_000_000_000_000</span>,
+    <span class="number">1_000_000_000_000_000_000_000</span>,
+    <span class="number">1_000_000_000_000_000_000_000_000</span>,
+    <span class="number">1_000_000_000_000_000_000_000_000_000</span>,
+];
+
+<span class="comment">// we use &quot;kB&quot; instead of &quot;KB&quot; because of GNU df</span>
+<span class="kw">const</span> <span class="ident">SI_SUFFIXES</span>: [<span class="kw-2">&amp;</span><span class="ident">str</span>; <span class="number">9</span>] <span class="op">=</span> [<span class="string">&quot;B&quot;</span>, <span class="string">&quot;kB&quot;</span>, <span class="string">&quot;MB&quot;</span>, <span class="string">&quot;GB&quot;</span>, <span class="string">&quot;TB&quot;</span>, <span class="string">&quot;PB&quot;</span>, <span class="string">&quot;EB&quot;</span>, <span class="string">&quot;ZB&quot;</span>, <span class="string">&quot;YB&quot;</span>];
 
 <span class="doccomment">/// Convert a multiple of 1024 into a string like &quot;12K&quot; or &quot;34M&quot;.</span>
 <span class="doccomment">///</span>
@@ -260,6 +326,37 @@
     <span class="prelude-val">Err</span>(())
 }
 
+<span class="doccomment">/// Convert a number, except multiples of 1024, into a string like &quot;12kB&quot; or &quot;34MB&quot;.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Powers of 1000 become &quot;1kB&quot;, &quot;1MB&quot;, &quot;1GB&quot;, etc.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The returned string has a maximum length of 5 chars, for example: &quot;1.1kB&quot;, &quot;999kB&quot;, &quot;1MB&quot;.</span>
+<span class="kw">fn</span> <span class="ident">to_magnitude_and_suffix_not_powers_of_1024</span>(<span class="ident">n</span>: <span class="ident">u128</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, ()<span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="number">0</span>;
+
+    <span class="kw">while</span> <span class="ident">SI_BASES</span>[<span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>] <span class="op">-</span> <span class="ident">SI_BASES</span>[<span class="ident">i</span>] <span class="op">&lt;</span> <span class="ident">n</span> <span class="op">&amp;&amp;</span> <span class="ident">i</span> <span class="op">&lt;</span> <span class="ident">SI_SUFFIXES</span>.<span class="ident">len</span>() {
+        <span class="ident">i</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+    }
+
+    <span class="kw">let</span> <span class="ident">quot</span> <span class="op">=</span> <span class="ident">n</span> <span class="op">/</span> <span class="ident">SI_BASES</span>[<span class="ident">i</span>];
+    <span class="kw">let</span> <span class="ident">rem</span> <span class="op">=</span> <span class="ident">n</span> <span class="op">%</span> <span class="ident">SI_BASES</span>[<span class="ident">i</span>];
+    <span class="kw">let</span> <span class="ident">suffix</span> <span class="op">=</span> <span class="ident">SI_SUFFIXES</span>[<span class="ident">i</span>];
+
+    <span class="kw">if</span> <span class="ident">rem</span> <span class="op">==</span> <span class="number">0</span> {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">quot</span>, <span class="ident">suffix</span>))
+    } <span class="kw">else</span> {
+        <span class="kw">let</span> <span class="ident">tenths_place</span> <span class="op">=</span> <span class="ident">rem</span> <span class="op">/</span> (<span class="ident">SI_BASES</span>[<span class="ident">i</span>] <span class="op">/</span> <span class="number">10</span>);
+
+        <span class="kw">if</span> <span class="ident">rem</span> <span class="op">%</span> (<span class="ident">SI_BASES</span>[<span class="ident">i</span>] <span class="op">/</span> <span class="number">10</span>) <span class="op">==</span> <span class="number">0</span> {
+            <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.{}{}&quot;</span>, <span class="ident">quot</span>, <span class="ident">tenths_place</span>, <span class="ident">suffix</span>))
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">tenths_place</span> <span class="op">+</span> <span class="number">1</span> <span class="op">==</span> <span class="number">10</span> {
+            <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">quot</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">suffix</span>))
+        } <span class="kw">else</span> {
+            <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.{}{}&quot;</span>, <span class="ident">quot</span>, <span class="ident">tenths_place</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">suffix</span>))
+        }
+    }
+}
+
 <span class="doccomment">/// Convert a number into a magnitude and a multi-byte unit suffix.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Errors</span>
@@ -269,19 +366,50 @@
     <span class="kw">if</span> <span class="ident">n</span> <span class="op">%</span> <span class="number">1024</span> <span class="op">==</span> <span class="number">0</span> {
         <span class="ident">to_magnitude_and_suffix_1024</span>(<span class="ident">n</span>)
     } <span class="kw">else</span> {
-        <span class="comment">// TODO Implement this, probably using code from `numfmt`.</span>
-        <span class="prelude-val">Ok</span>(<span class="string">&quot;1kB&quot;</span>.<span class="ident">into</span>())
+        <span class="ident">to_magnitude_and_suffix_not_powers_of_1024</span>(<span class="ident">n</span>)
     }
+}
+
+<span class="doccomment">/// A mode to use in condensing the display of a large number of bytes.</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="ident">SizeFormat</span> {
+    <span class="ident">HumanReadable</span>(<span class="ident">HumanReadable</span>),
+    <span class="ident">StaticBlockSize</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">SizeFormat</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
+        <span class="ident"><span class="self">Self</span>::StaticBlockSize</span>
+    }
+}
+
+<span class="doccomment">/// A mode to use in condensing the human readable display of a large number</span>
+<span class="doccomment">/// of bytes.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The [`HumanReadable::Decimal`] and[`HumanReadable::Binary`] variants</span>
+<span class="doccomment">/// represent dynamic block sizes: as the number of bytes increases, the</span>
+<span class="doccomment">/// divisor increases as well (for example, from 1 to 1,000 to 1,000,000</span>
+<span class="doccomment">/// and so on in the case of [`HumanReadable::Decimal`]).</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="ident">HumanReadable</span> {
+    <span class="doccomment">/// Use the largest divisor corresponding to a unit, like B, K, M, G, etc.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This variant represents powers of 1,000. Contrast with</span>
+    <span class="doccomment">/// [`HumanReadable::Binary`], which represents powers of</span>
+    <span class="doccomment">/// 1,024.</span>
+    <span class="ident">Decimal</span>,
+
+    <span class="doccomment">/// Use the largest divisor corresponding to a unit, like B, K, M, G, etc.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This variant represents powers of 1,024. Contrast with</span>
+    <span class="doccomment">/// [`HumanReadable::Decimal`], which represents powers</span>
+    <span class="doccomment">/// of 1,000.</span>
+    <span class="ident">Binary</span>,
 }
 
 <span class="doccomment">/// A block size to use in condensing the display of a large number of bytes.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// The [`BlockSize::Bytes`] variant represents a static block</span>
-<span class="doccomment">/// size. The [`BlockSize::HumanReadableDecimal`] and</span>
-<span class="doccomment">/// [`BlockSize::HumanReadableBinary`] variants represent dynamic</span>
-<span class="doccomment">/// block sizes: as the number of bytes increases, the divisor</span>
-<span class="doccomment">/// increases as well (for example, from 1 to 1,000 to 1,000,000 and</span>
-<span class="doccomment">/// so on in the case of [`BlockSize::HumanReadableDecimal`]).</span>
+<span class="doccomment">/// size.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// The default variant is `Bytes(1024)`.</span>
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="ident">BlockSize</span> {
@@ -289,20 +417,6 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// The number must be positive.</span>
     <span class="ident">Bytes</span>(<span class="ident">u64</span>),
-
-    <span class="doccomment">/// Use the largest divisor corresponding to a unit, like B, K, M, G, etc.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This variant represents powers of 1,000. Contrast with</span>
-    <span class="doccomment">/// [`BlockSize::HumanReadableBinary`], which represents powers of</span>
-    <span class="doccomment">/// 1,024.</span>
-    <span class="ident">HumanReadableDecimal</span>,
-
-    <span class="doccomment">/// Use the largest divisor corresponding to a unit, like B, K, M, G, etc.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This variant represents powers of 1,024. Contrast with</span>
-    <span class="doccomment">/// [`BlockSize::HumanReadableDecimal`], which represents powers</span>
-    <span class="doccomment">/// of 1,000.</span>
-    <span class="ident">HumanReadableBinary</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">BlockSize</span> {
@@ -312,11 +426,7 @@
 }
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">block_size_from_matches</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BlockSize</span>, <span class="ident">ParseSizeError</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_BINARY</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">BlockSize::HumanReadableBinary</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_DECIMAL</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">BlockSize::HumanReadableDecimal</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_BLOCKSIZE</span>) {
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_BLOCKSIZE</span>) {
         <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_BLOCKSIZE</span>).<span class="ident">unwrap</span>();
         <span class="prelude-val">Ok</span>(<span class="ident">BlockSize::Bytes</span>(<span class="ident">parse_size</span>(<span class="ident">s</span>)<span class="question-mark">?</span>))
     } <span class="kw">else</span> {
@@ -327,10 +437,8 @@
 <span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">BlockSize</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::HumanReadableBinary</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Size&quot;</span>),
-            <span class="ident"><span class="self">Self</span>::HumanReadableDecimal</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Size&quot;</span>),
             <span class="ident"><span class="self">Self</span>::Bytes</span>(<span class="ident">n</span>) =&gt; <span class="kw">match</span> <span class="ident">to_magnitude_and_suffix</span>(<span class="kw-2">*</span><span class="ident">n</span> <span class="kw">as</span> <span class="ident">u128</span>) {
-                <span class="prelude-val">Ok</span>(<span class="ident">s</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}-blocks&quot;</span>, <span class="ident">s</span>),
+                <span class="prelude-val">Ok</span>(<span class="ident">s</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">s</span>),
                 <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">fmt::Error</span>),
             },
         }
@@ -356,47 +464,39 @@
         );
     }
 
-    <span class="comment">// TODO We have not yet implemented this behavior, but when we do,</span>
-    <span class="comment">// uncomment this test.</span>
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_to_magnitude_and_suffix_not_powers_of_1024</span>() {
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">1</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;1B&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">999</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;999B&quot;</span>);
 
-    <span class="comment">// #[test]</span>
-    <span class="comment">// fn test_to_magnitude_and_suffix_not_powers_of_1024() {</span>
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(1).unwrap(), &quot;1B&quot;);</span>
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(999).unwrap(), &quot;999B&quot;);</span>
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">1000</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;1kB&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">1001</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;1.1kB&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">1023</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;1.1kB&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">1025</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;1.1kB&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">999_000</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;999kB&quot;</span>);
 
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(1000).unwrap(), &quot;1kB&quot;);</span>
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(1001).unwrap(), &quot;1.1kB&quot;);</span>
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(1023).unwrap(), &quot;1.1kB&quot;);</span>
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(1025).unwrap(), &quot;1.1kB&quot;);</span>
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(999_000).unwrap(), &quot;999kB&quot;);</span>
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">999_001</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;1MB&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">999_999</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;1MB&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">1_000_000</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;1MB&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">1_000_001</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;1.1MB&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">1_100_000</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;1.1MB&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">1_100_001</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;1.2MB&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">1_900_000</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;1.9MB&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">1_900_001</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;2MB&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">9_900_000</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;9.9MB&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">9_900_001</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;10MB&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">999_000_000</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;999MB&quot;</span>);
 
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(999_001).unwrap(), &quot;1MB&quot;);</span>
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(999_999).unwrap(), &quot;1MB&quot;);</span>
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(1_000_000).unwrap(), &quot;1MB&quot;);</span>
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(1_000_001).unwrap(), &quot;1.1MB&quot;);</span>
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(1_100_000).unwrap(), &quot;1.1MB&quot;);</span>
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(1_100_001).unwrap(), &quot;1.2MB&quot;);</span>
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(1_900_000).unwrap(), &quot;1.9MB&quot;);</span>
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(1_900_001).unwrap(), &quot;2MB&quot;);</span>
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(9_900_000).unwrap(), &quot;9.9MB&quot;);</span>
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(9_900_001).unwrap(), &quot;10MB&quot;);</span>
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(999_000_000).unwrap(), &quot;999MB&quot;);</span>
-
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(999_000_001).unwrap(), &quot;1GB&quot;);</span>
-    <span class="comment">//     assert_eq!(to_magnitude_and_suffix(1_000_000_000).unwrap(), &quot;1GB&quot;);</span>
-    <span class="comment">//     // etc.</span>
-    <span class="comment">// }</span>
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">999_000_001</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;1GB&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">1_000_000_000</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;1GB&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">to_magnitude_and_suffix</span>(<span class="number">1_000_000_001</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;1.1GB&quot;</span>);
+    }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_block_size_display</span>() {
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">BlockSize::HumanReadableBinary</span>), <span class="string">&quot;Size&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">BlockSize::HumanReadableDecimal</span>), <span class="string">&quot;Size&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">BlockSize::Bytes</span>(<span class="number">1024</span>)), <span class="string">&quot;1K-blocks&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">BlockSize::Bytes</span>(<span class="number">2</span> <span class="op">*</span> <span class="number">1024</span>)), <span class="string">&quot;2K-blocks&quot;</span>);
-        <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">BlockSize::Bytes</span>(<span class="number">3</span> <span class="op">*</span> <span class="number">1024</span> <span class="op">*</span> <span class="number">1024</span>)),
-            <span class="string">&quot;3M-blocks&quot;</span>
-        );
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">BlockSize::Bytes</span>(<span class="number">1024</span>)), <span class="string">&quot;1K&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">BlockSize::Bytes</span>(<span class="number">2</span> <span class="op">*</span> <span class="number">1024</span>)), <span class="string">&quot;2K&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">BlockSize::Bytes</span>(<span class="number">3</span> <span class="op">*</span> <span class="number">1024</span> <span class="op">*</span> <span class="number">1024</span>)), <span class="string">&quot;3M&quot;</span>);
     }
 }
 </code></pre></div>
