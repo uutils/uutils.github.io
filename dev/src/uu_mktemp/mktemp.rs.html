@@ -309,6 +309,65 @@
 <span id="304">304</span>
 <span id="305">305</span>
 <span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Sunrin SHIMURA</span>
@@ -516,20 +575,41 @@
         )
 }
 
+<span class="doccomment">/// Parse a template string into prefix, suffix, and random components.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `temp` is the template string, with three or more consecutive `X`s</span>
+<span class="doccomment">/// representing a placeholder for randomly generated characters (for</span>
+<span class="doccomment">/// example, `&quot;abc_XXX.txt&quot;`). If `temp` ends in an `X`, then a suffix</span>
+<span class="doccomment">/// can be specified by `suffix` instead.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Errors</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * If there are fewer than three consecutive `X`s in `temp`.</span>
+<span class="doccomment">/// * If `suffix` is a [`Some`] object but `temp` does not end in `X`.</span>
+<span class="doccomment">/// * If the suffix (specified either way) contains a path separator.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```rust,ignore</span>
+<span class="doccomment">/// assert_eq!(parse_template(&quot;XXX&quot;, None).unwrap(), (&quot;&quot;, 3, &quot;&quot;));</span>
+<span class="doccomment">/// assert_eq!(parse_template(&quot;abcXXX&quot;, None).unwrap(), (&quot;abc&quot;, 3, &quot;&quot;));</span>
+<span class="doccomment">/// assert_eq!(parse_template(&quot;XXXdef&quot;, None).unwrap(), (&quot;&quot;, 3, &quot;def&quot;));</span>
+<span class="doccomment">/// assert_eq!(parse_template(&quot;abcXXXdef&quot;, None).unwrap(), (&quot;abc&quot;, 3, &quot;def&quot;));</span>
+<span class="doccomment">/// ```</span>
 <span class="kw">fn</span> <span class="ident">parse_template</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
     <span class="ident">temp</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
     <span class="ident">suffix</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>,
-) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>)<span class="op">&gt;</span> {
+) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>), <span class="ident">MkTempError</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">right</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">temp</span>.<span class="ident">rfind</span>(<span class="string">&#39;X&#39;</span>) {
         <span class="prelude-val">Some</span>(<span class="ident">r</span>) =&gt; <span class="ident">r</span> <span class="op">+</span> <span class="number">1</span>,
-        <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::TooFewXs</span>(<span class="ident">temp</span>.<span class="ident">into</span>()).<span class="ident">into</span>()),
+        <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::TooFewXs</span>(<span class="ident">temp</span>.<span class="ident">into</span>())),
     };
     <span class="kw">let</span> <span class="ident">left</span> <span class="op">=</span> <span class="ident">temp</span>[..<span class="ident">right</span>].<span class="ident">rfind</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span> <span class="op">!</span><span class="op">=</span> <span class="string">&#39;X&#39;</span>).<span class="ident">map_or</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>);
     <span class="kw">let</span> <span class="ident">prefix</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">temp</span>[..<span class="ident">left</span>];
     <span class="kw">let</span> <span class="ident">rand</span> <span class="op">=</span> <span class="ident">right</span> <span class="op">-</span> <span class="ident">left</span>;
 
     <span class="kw">if</span> <span class="ident">rand</span> <span class="op">&lt;</span> <span class="number">3</span> {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::TooFewXs</span>(<span class="ident">temp</span>.<span class="ident">into</span>()).<span class="ident">into</span>());
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::TooFewXs</span>(<span class="ident">temp</span>.<span class="ident">into</span>()));
     }
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">suf</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">temp</span>[<span class="ident">right</span>..];
@@ -538,12 +618,12 @@
         <span class="kw">if</span> <span class="ident">suf</span>.<span class="ident">is_empty</span>() {
             <span class="ident">suf</span> <span class="op">=</span> <span class="ident">s</span>;
         } <span class="kw">else</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::MustEndInX</span>(<span class="ident">temp</span>.<span class="ident">into</span>()).<span class="ident">into</span>());
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::MustEndInX</span>(<span class="ident">temp</span>.<span class="ident">into</span>()));
         }
     };
 
     <span class="kw">if</span> <span class="ident">suf</span>.<span class="ident">chars</span>().<span class="ident">any</span>(<span class="ident">is_separator</span>) {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::ContainsDirSeparator</span>(<span class="ident">suf</span>.<span class="ident">into</span>()).<span class="ident">into</span>());
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::ContainsDirSeparator</span>(<span class="ident">suf</span>.<span class="ident">into</span>()));
     }
 
     <span class="prelude-val">Ok</span>((<span class="ident">prefix</span>, <span class="ident">rand</span>, <span class="ident">suf</span>))
@@ -614,6 +694,44 @@
     <span class="ident">path</span>.<span class="ident">push</span>(<span class="ident">filename</span>);
 
     <span class="ident">println_verbatim</span>(<span class="ident">path</span>).<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to print directory name&quot;</span>.<span class="ident">to_owned</span>())
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">mod</span> <span class="ident">tests</span> {
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::parse_template</span>;
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_parse_template_no_suffix</span>() {
+        <span class="macro">assert_eq!</span>(<span class="ident">parse_template</span>(<span class="string">&quot;XXX&quot;</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>(), (<span class="string">&quot;&quot;</span>, <span class="number">3</span>, <span class="string">&quot;&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="ident">parse_template</span>(<span class="string">&quot;abcXXX&quot;</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>(), (<span class="string">&quot;abc&quot;</span>, <span class="number">3</span>, <span class="string">&quot;&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="ident">parse_template</span>(<span class="string">&quot;XXXdef&quot;</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>(), (<span class="string">&quot;&quot;</span>, <span class="number">3</span>, <span class="string">&quot;def&quot;</span>));
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">parse_template</span>(<span class="string">&quot;abcXXXdef&quot;</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>(),
+            (<span class="string">&quot;abc&quot;</span>, <span class="number">3</span>, <span class="string">&quot;def&quot;</span>)
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_parse_template_suffix</span>() {
+        <span class="macro">assert_eq!</span>(<span class="ident">parse_template</span>(<span class="string">&quot;XXX&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;def&quot;</span>)).<span class="ident">unwrap</span>(), (<span class="string">&quot;&quot;</span>, <span class="number">3</span>, <span class="string">&quot;def&quot;</span>));
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">parse_template</span>(<span class="string">&quot;abcXXX&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;def&quot;</span>)).<span class="ident">unwrap</span>(),
+            (<span class="string">&quot;abc&quot;</span>, <span class="number">3</span>, <span class="string">&quot;def&quot;</span>)
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_parse_template_errors</span>() {
+        <span class="comment">// TODO This should be an error as well, but we are not</span>
+        <span class="comment">// catching it just yet. A future commit will correct this.</span>
+        <span class="comment">//</span>
+        <span class="comment">//     assert!(parse_template(&quot;a/bXXX&quot;, None).is_err());</span>
+        <span class="comment">//</span>
+        <span class="macro">assert!</span>(<span class="ident">parse_template</span>(<span class="string">&quot;XXXa/b&quot;</span>, <span class="prelude-val">None</span>).<span class="ident">is_err</span>());
+        <span class="macro">assert!</span>(<span class="ident">parse_template</span>(<span class="string">&quot;XX&quot;</span>, <span class="prelude-val">None</span>).<span class="ident">is_err</span>());
+        <span class="macro">assert!</span>(<span class="ident">parse_template</span>(<span class="string">&quot;XXXabc&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;def&quot;</span>)).<span class="ident">is_err</span>());
+        <span class="macro">assert!</span>(<span class="ident">parse_template</span>(<span class="string">&quot;XXX&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;a/b&quot;</span>)).<span class="ident">is_err</span>());
+    }
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_mktemp" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>
