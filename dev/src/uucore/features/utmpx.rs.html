@@ -357,6 +357,8 @@
 <span id="352">352</span>
 <span id="353">353</span>
 <span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;</span>
@@ -391,7 +393,6 @@
 <span class="doccomment">//! ```</span>
 
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">time</span>;
-<span class="kw">use</span> <span class="ident"><span class="self">self</span>::time</span>::{<span class="ident">Timespec</span>, <span class="ident">Tm</span>};
 
 <span class="kw">use</span> <span class="ident">std::ffi::CString</span>;
 <span class="kw">use</span> <span class="ident">std::io::Result</span> <span class="kw">as</span> <span class="ident">IOResult</span>;
@@ -548,11 +549,14 @@
         <span class="macro">chars2string!</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">ut_line</span>)
     }
     <span class="doccomment">/// A.K.A. ut.ut_tv</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">login_time</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Tm</span> {
-        <span class="ident">time::at</span>(<span class="ident">Timespec::new</span>(
-            <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">ut_tv</span>.<span class="ident">tv_sec</span> <span class="kw">as</span> <span class="ident">i64</span>,
-            <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">ut_tv</span>.<span class="ident">tv_usec</span> <span class="kw">as</span> <span class="ident">i32</span>,
-        ))
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">login_time</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">time::OffsetDateTime</span> {
+        <span class="kw">let</span> <span class="ident">ts_nanos</span>: <span class="ident">i128</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">ut_tv</span>.<span class="ident">tv_sec</span> <span class="kw">as</span> <span class="ident">i64</span> <span class="op">*</span> <span class="number">1_000_000_000_i64</span>
+            <span class="op">+</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">ut_tv</span>.<span class="ident">tv_usec</span> <span class="kw">as</span> <span class="ident">i64</span> <span class="op">*</span> <span class="number">1_000_i64</span>)
+            .<span class="ident">into</span>();
+        <span class="kw">let</span> <span class="ident">local_offset</span> <span class="op">=</span> <span class="ident">time::OffsetDateTime::now_local</span>().<span class="ident">unwrap</span>().<span class="ident">offset</span>();
+        <span class="ident">time::OffsetDateTime::from_unix_timestamp_nanos</span>(<span class="ident">ts_nanos</span>)
+            .<span class="ident">unwrap</span>()
+            .<span class="ident">to_offset</span>(<span class="ident">local_offset</span>)
     }
     <span class="doccomment">/// A.K.A. ut.ut_exit</span>
     <span class="doccomment">///</span>
