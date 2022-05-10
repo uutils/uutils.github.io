@@ -258,6 +258,21 @@
 <span id="253">253</span>
 <span id="254">254</span>
 <span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -265,7 +280,7 @@
 <span class="doccomment">//! Types for representing and displaying block sizes.</span>
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::OPT_BLOCKSIZE</span>;
 <span class="kw">use</span> <span class="ident">clap::ArgMatches</span>;
-<span class="kw">use</span> <span class="ident">std::fmt</span>;
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">env</span>, <span class="ident">fmt</span>};
 
 <span class="kw">use</span> <span class="ident">uucore::parse_size</span>::{<span class="ident">parse_size</span>, <span class="ident">ParseSizeError</span>};
 
@@ -419,6 +434,7 @@
 <span class="doccomment">/// size.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// The default variant is `Bytes(1024)`.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="ident">BlockSize</span> {
     <span class="doccomment">/// A fixed number of bytes.</span>
     <span class="doccomment">///</span>
@@ -428,7 +444,11 @@
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">BlockSize</span> {
     <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::Bytes</span>(<span class="number">1024</span>)
+        <span class="kw">if</span> <span class="ident">env::var</span>(<span class="string">&quot;POSIXLY_CORRECT&quot;</span>).<span class="ident">is_ok</span>() {
+            <span class="ident"><span class="self">Self</span>::Bytes</span>(<span class="number">512</span>)
+        } <span class="kw">else</span> {
+            <span class="ident"><span class="self">Self</span>::Bytes</span>(<span class="number">1024</span>)
+        }
     }
 }
 
@@ -454,6 +474,8 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
+
+    <span class="kw">use</span> <span class="ident">std::env</span>;
 
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::blocks</span>::{<span class="ident">to_magnitude_and_suffix</span>, <span class="ident">BlockSize</span>};
 
@@ -511,6 +533,14 @@
         <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">BlockSize::Bytes</span>(<span class="number">1024</span>)), <span class="string">&quot;1K&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">BlockSize::Bytes</span>(<span class="number">2</span> <span class="op">*</span> <span class="number">1024</span>)), <span class="string">&quot;2K&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">BlockSize::Bytes</span>(<span class="number">3</span> <span class="op">*</span> <span class="number">1024</span> <span class="op">*</span> <span class="number">1024</span>)), <span class="string">&quot;3M&quot;</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_default_block_size</span>() {
+        <span class="macro">assert_eq!</span>(<span class="ident">BlockSize::Bytes</span>(<span class="number">1024</span>), <span class="ident">BlockSize::default</span>());
+        <span class="ident">env::set_var</span>(<span class="string">&quot;POSIXLY_CORRECT&quot;</span>, <span class="string">&quot;1&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">BlockSize::Bytes</span>(<span class="number">512</span>), <span class="ident">BlockSize::default</span>());
+        <span class="ident">env::remove_var</span>(<span class="string">&quot;POSIXLY_CORRECT&quot;</span>);
     }
 }
 </code></pre></div>
