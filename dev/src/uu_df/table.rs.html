@@ -763,6 +763,42 @@
 <span id="758">758</span>
 <span id="759">759</span>
 <span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -1054,6 +1090,23 @@
     }
 }
 
+<span class="doccomment">/// A HeaderMode defines what header labels should be shown.</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="ident">HeaderMode</span> {
+    <span class="ident">Default</span>,
+    <span class="comment">// the user used -h or -H</span>
+    <span class="ident">HumanReadable</span>,
+    <span class="comment">// the user used -P</span>
+    <span class="ident">PosixPortability</span>,
+    <span class="comment">// the user used --output</span>
+    <span class="ident">Output</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">HeaderMode</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
+        <span class="ident"><span class="self">Self</span>::Default</span>
+    }
+}
+
 <span class="doccomment">/// The data of the header row.</span>
 <span class="kw">struct</span> <span class="ident">Header</span> {}
 
@@ -1067,15 +1120,22 @@
         <span class="kw">for</span> <span class="ident">column</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">options</span>.<span class="ident">columns</span> {
             <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">column</span> {
                 <span class="ident">Column::Source</span> =&gt; <span class="ident">String::from</span>(<span class="string">&quot;Filesystem&quot;</span>),
-                <span class="ident">Column::Size</span> =&gt; <span class="kw">match</span> <span class="ident">options</span>.<span class="ident">size_format</span> {
-                    <span class="ident">SizeFormat::HumanReadable</span>(<span class="kw">_</span>) =&gt; <span class="ident">String::from</span>(<span class="string">&quot;Size&quot;</span>),
-                    <span class="ident">SizeFormat::StaticBlockSize</span> =&gt; {
-                        <span class="macro">format!</span>(<span class="string">&quot;{}-blocks&quot;</span>, <span class="ident">options</span>.<span class="ident">block_size</span>)
+                <span class="ident">Column::Size</span> =&gt; <span class="kw">match</span> <span class="ident">options</span>.<span class="ident">header_mode</span> {
+                    <span class="ident">HeaderMode::HumanReadable</span> =&gt; <span class="ident">String::from</span>(<span class="string">&quot;Size&quot;</span>),
+                    <span class="ident">HeaderMode::PosixPortability</span> =&gt; {
+                        <span class="macro">format!</span>(<span class="string">&quot;{}-blocks&quot;</span>, <span class="ident">options</span>.<span class="ident">block_size</span>.<span class="ident">as_u64</span>())
                     }
+                    <span class="kw">_</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}-blocks&quot;</span>, <span class="ident">options</span>.<span class="ident">block_size</span>),
                 },
                 <span class="ident">Column::Used</span> =&gt; <span class="ident">String::from</span>(<span class="string">&quot;Used&quot;</span>),
-                <span class="ident">Column::Avail</span> =&gt; <span class="ident">String::from</span>(<span class="string">&quot;Available&quot;</span>),
-                <span class="ident">Column::Pcent</span> =&gt; <span class="ident">String::from</span>(<span class="string">&quot;Use%&quot;</span>),
+                <span class="ident">Column::Avail</span> =&gt; <span class="kw">match</span> <span class="ident">options</span>.<span class="ident">header_mode</span> {
+                    <span class="ident">HeaderMode::HumanReadable</span> <span class="op">|</span> <span class="ident">HeaderMode::Output</span> =&gt; <span class="ident">String::from</span>(<span class="string">&quot;Avail&quot;</span>),
+                    <span class="kw">_</span> =&gt; <span class="ident">String::from</span>(<span class="string">&quot;Available&quot;</span>),
+                },
+                <span class="ident">Column::Pcent</span> =&gt; <span class="kw">match</span> <span class="ident">options</span>.<span class="ident">header_mode</span> {
+                    <span class="ident">HeaderMode::PosixPortability</span> =&gt; <span class="ident">String::from</span>(<span class="string">&quot;Capacity&quot;</span>),
+                    <span class="kw">_</span> =&gt; <span class="ident">String::from</span>(<span class="string">&quot;Use%&quot;</span>),
+                },
                 <span class="ident">Column::Target</span> =&gt; <span class="ident">String::from</span>(<span class="string">&quot;Mounted on&quot;</span>),
                 <span class="ident">Column::Itotal</span> =&gt; <span class="ident">String::from</span>(<span class="string">&quot;Inodes&quot;</span>),
                 <span class="ident">Column::Iused</span> =&gt; <span class="ident">String::from</span>(<span class="string">&quot;IUsed&quot;</span>),
@@ -1193,7 +1253,7 @@
 
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::blocks</span>::{<span class="ident">HumanReadable</span>, <span class="ident">SizeFormat</span>};
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::columns::Column</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::table</span>::{<span class="ident">Header</span>, <span class="ident">Row</span>, <span class="ident">RowFormatter</span>};
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::table</span>::{<span class="ident">Header</span>, <span class="ident">HeaderMode</span>, <span class="ident">Row</span>, <span class="ident">RowFormatter</span>};
     <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">BlockSize</span>, <span class="ident">Options</span>};
 
     <span class="kw">const</span> <span class="ident">COLUMNS_WITH_FS_TYPE</span>: [<span class="ident">Column</span>; <span class="number">7</span>] <span class="op">=</span> [
@@ -1313,37 +1373,49 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_header_with_human_readable_binary</span>() {
+    <span class="kw">fn</span> <span class="ident">test_human_readable_header</span>() {
         <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">Options</span> {
-            <span class="ident">size_format</span>: <span class="ident">SizeFormat::HumanReadable</span>(<span class="ident">HumanReadable::Binary</span>),
+            <span class="ident">header_mode</span>: <span class="ident">HeaderMode::HumanReadable</span>,
+            ..<span class="ident">Default::default</span>()
+        };
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">Header::get_headers</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>),
+            <span class="macro">vec!</span>(<span class="string">&quot;Filesystem&quot;</span>, <span class="string">&quot;Size&quot;</span>, <span class="string">&quot;Used&quot;</span>, <span class="string">&quot;Avail&quot;</span>, <span class="string">&quot;Use%&quot;</span>, <span class="string">&quot;Mounted on&quot;</span>)
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_posix_portability_header</span>() {
+        <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">Options</span> {
+            <span class="ident">header_mode</span>: <span class="ident">HeaderMode::PosixPortability</span>,
             ..<span class="ident">Default::default</span>()
         };
         <span class="macro">assert_eq!</span>(
             <span class="ident">Header::get_headers</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>),
             <span class="macro">vec!</span>(
                 <span class="string">&quot;Filesystem&quot;</span>,
-                <span class="string">&quot;Size&quot;</span>,
+                <span class="string">&quot;1024-blocks&quot;</span>,
                 <span class="string">&quot;Used&quot;</span>,
                 <span class="string">&quot;Available&quot;</span>,
-                <span class="string">&quot;Use%&quot;</span>,
+                <span class="string">&quot;Capacity&quot;</span>,
                 <span class="string">&quot;Mounted on&quot;</span>
             )
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_header_with_human_readable_si</span>() {
+    <span class="kw">fn</span> <span class="ident">test_output_header</span>() {
         <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">Options</span> {
-            <span class="ident">size_format</span>: <span class="ident">SizeFormat::HumanReadable</span>(<span class="ident">HumanReadable::Decimal</span>),
+            <span class="ident">header_mode</span>: <span class="ident">HeaderMode::Output</span>,
             ..<span class="ident">Default::default</span>()
         };
         <span class="macro">assert_eq!</span>(
             <span class="ident">Header::get_headers</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>),
             <span class="macro">vec!</span>(
                 <span class="string">&quot;Filesystem&quot;</span>,
-                <span class="string">&quot;Size&quot;</span>,
+                <span class="string">&quot;1K-blocks&quot;</span>,
                 <span class="string">&quot;Used&quot;</span>,
-                <span class="string">&quot;Available&quot;</span>,
+                <span class="string">&quot;Avail&quot;</span>,
                 <span class="string">&quot;Use%&quot;</span>,
                 <span class="string">&quot;Mounted on&quot;</span>
             )

@@ -820,6 +820,24 @@
 <span id="815">815</span>
 <span id="816">816</span>
 <span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Fangxu Hu &lt;framlog@gmail.com&gt;</span>
@@ -834,6 +852,7 @@
 <span class="kw">mod</span> <span class="ident">table</span>;
 
 <span class="kw">use</span> <span class="ident">blocks</span>::{<span class="ident">HumanReadable</span>, <span class="ident">SizeFormat</span>};
+<span class="kw">use</span> <span class="ident">table::HeaderMode</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UError</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
 <span class="kw">use</span> <span class="ident">uucore::fsext</span>::{<span class="ident">read_fs_list</span>, <span class="ident">MountInfo</span>};
@@ -894,6 +913,7 @@ of 1000).&quot;</span>;
     <span class="ident">show_all_fs</span>: <span class="ident">bool</span>,
     <span class="ident">size_format</span>: <span class="ident">SizeFormat</span>,
     <span class="ident">block_size</span>: <span class="ident">BlockSize</span>,
+    <span class="ident">header_mode</span>: <span class="ident">HeaderMode</span>,
 
     <span class="doccomment">/// Optional list of filesystem types to include in the output table.</span>
     <span class="doccomment">///</span>
@@ -921,6 +941,7 @@ of 1000).&quot;</span>;
             <span class="ident">show_all_fs</span>: <span class="ident">Default::default</span>(),
             <span class="ident">block_size</span>: <span class="ident">Default::default</span>(),
             <span class="ident">size_format</span>: <span class="ident">Default::default</span>(),
+            <span class="ident">header_mode</span>: <span class="ident">Default::default</span>(),
             <span class="ident">include</span>: <span class="ident">Default::default</span>(),
             <span class="ident">exclude</span>: <span class="ident">Default::default</span>(),
             <span class="ident">show_total</span>: <span class="ident">Default::default</span>(),
@@ -998,6 +1019,21 @@ of 1000).&quot;</span>;
                 ),
                 <span class="ident">ParseSizeError::ParseFailure</span>(<span class="ident">s</span>) =&gt; <span class="ident">OptionsError::InvalidBlockSize</span>(<span class="ident">s</span>),
             })<span class="question-mark">?</span>,
+            <span class="ident">header_mode</span>: {
+                <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_BINARY</span>)
+                    <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_DECIMAL</span>)
+                {
+                    <span class="ident">HeaderMode::HumanReadable</span>
+                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_PORTABILITY</span>) {
+                    <span class="ident">HeaderMode::PosixPortability</span>
+                <span class="comment">// is_present() doesn&#39;t work here, it always returns true because OPT_OUTPUT has</span>
+                <span class="comment">// default values and hence is always present</span>
+                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">occurrences_of</span>(<span class="ident">OPT_OUTPUT</span>) <span class="op">&gt;</span> <span class="number">0</span> {
+                    <span class="ident">HeaderMode::Output</span>
+                } <span class="kw">else</span> {
+                    <span class="ident">HeaderMode::Default</span>
+                }
+            },
             <span class="ident">size_format</span>: {
                 <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_BINARY</span>) {
                     <span class="ident">SizeFormat::HumanReadable</span>(<span class="ident">HumanReadable::Binary</span>)
