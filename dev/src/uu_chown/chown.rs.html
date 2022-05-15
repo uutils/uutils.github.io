@@ -237,6 +237,35 @@
 <span id="232">232</span>
 <span id="233">233</span>
 <span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;</span>
@@ -373,6 +402,7 @@
                 .<span class="ident">long</span>(<span class="ident">options::REFERENCE</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;use RFILE&#39;s owner and group rather than specifying OWNER:GROUP values&quot;</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;RFILE&quot;</span>)
+                .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>)
                 .<span class="ident">min_values</span>(<span class="number">1</span>),
         )
         .<span class="ident">arg</span>(
@@ -406,17 +436,18 @@
         )
 }
 
-<span class="doccomment">/// Parse the username and groupname</span>
+<span class="doccomment">/// Parse the owner/group specifier string into a user ID and a group ID.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// In theory, it should be username:groupname</span>
-<span class="doccomment">/// but ...</span>
-<span class="doccomment">/// it can user.name:groupname</span>
-<span class="doccomment">/// or username.groupname</span>
+<span class="doccomment">/// The `spec` can be of the form:</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// # Arguments</span>
+<span class="doccomment">/// * `&quot;owner:group&quot;`,</span>
+<span class="doccomment">/// * `&quot;owner&quot;`,</span>
+<span class="doccomment">/// * `&quot;:group&quot;`,</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// * `spec` - The input from the user</span>
-<span class="doccomment">/// * `sep` - Should be &#39;:&#39; or &#39;.&#39;</span>
+<span class="doccomment">/// and the owner or group can be specified either as an ID or a</span>
+<span class="doccomment">/// name. The `sep` argument specifies which character to use as a</span>
+<span class="doccomment">/// separator between the owner and group; calling code should set</span>
+<span class="doccomment">/// this to `&#39;:&#39;`.</span>
 <span class="kw">fn</span> <span class="ident">parse_spec</span>(<span class="ident">spec</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">sep</span>: <span class="ident">char</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>)<span class="op">&gt;</span> {
     <span class="macro">assert!</span>([<span class="string">&#39;.&#39;</span>, <span class="string">&#39;:&#39;</span>].<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">sep</span>));
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">spec</span>.<span class="ident">splitn</span>(<span class="number">2</span>, <span class="ident">sep</span>);
@@ -436,10 +467,17 @@
                     <span class="comment">// So, try to parse it this way</span>
                     <span class="kw">return</span> <span class="ident">parse_spec</span>(<span class="ident">spec</span>, <span class="string">&#39;.&#39;</span>);
                 } <span class="kw">else</span> {
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(
-                        <span class="number">1</span>,
-                        <span class="macro">format!</span>(<span class="string">&quot;invalid user: {}&quot;</span>, <span class="ident">spec</span>.<span class="ident">quote</span>()),
-                    ));
+                    <span class="comment">// It&#39;s possible that the `user` string contains a</span>
+                    <span class="comment">// numeric user ID, in which case, we respect that.</span>
+                    <span class="kw">match</span> <span class="ident">user</span>.<span class="ident">parse</span>() {
+                        <span class="prelude-val">Ok</span>(<span class="ident">uid</span>) =&gt; <span class="ident">uid</span>,
+                        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
+                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(
+                                <span class="number">1</span>,
+                                <span class="macro">format!</span>(<span class="string">&quot;invalid user: {}&quot;</span>, <span class="ident">spec</span>.<span class="ident">quote</span>()),
+                            ))
+                        }
+                    }
                 }
             }
         })
@@ -447,11 +485,18 @@
         <span class="prelude-val">None</span>
     };
     <span class="kw">let</span> <span class="ident">gid</span> <span class="op">=</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">group</span>.<span class="ident">is_empty</span>() {
-        <span class="prelude-val">Some</span>(
-            <span class="ident">Group::locate</span>(<span class="ident">group</span>)
-                .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;invalid group: {}&quot;</span>, <span class="ident">spec</span>.<span class="ident">quote</span>())))<span class="question-mark">?</span>
-                .<span class="ident">gid</span>,
-        )
+        <span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="ident">Group::locate</span>(<span class="ident">group</span>) {
+            <span class="prelude-val">Ok</span>(<span class="ident">g</span>) =&gt; <span class="ident">g</span>.<span class="ident">gid</span>,
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">match</span> <span class="ident">group</span>.<span class="ident">parse</span>() {
+                <span class="prelude-val">Ok</span>(<span class="ident">gid</span>) =&gt; <span class="ident">gid</span>,
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(
+                        <span class="number">1</span>,
+                        <span class="macro">format!</span>(<span class="string">&quot;invalid group: {}&quot;</span>, <span class="ident">spec</span>.<span class="ident">quote</span>()),
+                    ));
+                }
+            },
+        })
     } <span class="kw">else</span> {
         <span class="prelude-val">None</span>
     };
@@ -469,6 +514,19 @@
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">parse_spec</span>(<span class="string">&quot;.&quot;</span>, <span class="string">&#39;.&#39;</span>), <span class="prelude-val">Ok</span>((<span class="prelude-val">None</span>, <span class="prelude-val">None</span>))));
         <span class="macro">assert!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">parse_spec</span>(<span class="string">&quot;::&quot;</span>, <span class="string">&#39;:&#39;</span>).<span class="ident">err</span>().<span class="ident">unwrap</span>()).<span class="ident">starts_with</span>(<span class="string">&quot;invalid group: &quot;</span>));
         <span class="macro">assert!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">parse_spec</span>(<span class="string">&quot;..&quot;</span>, <span class="string">&#39;:&#39;</span>).<span class="ident">err</span>().<span class="ident">unwrap</span>()).<span class="ident">starts_with</span>(<span class="string">&quot;invalid group: &quot;</span>));
+    }
+
+    <span class="doccomment">/// Test for parsing IDs that don&#39;t correspond to a named user or group.</span>
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_parse_spec_nameless_ids</span>() {
+        <span class="comment">// This assumes that there is no named user with ID 12345.</span>
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">parse_spec</span>(<span class="string">&quot;12345&quot;</span>, <span class="string">&#39;:&#39;</span>), <span class="prelude-val">Ok</span>((<span class="prelude-val">Some</span>(<span class="number">12345</span>), <span class="prelude-val">None</span>))));
+        <span class="comment">// This assumes that there is no named group with ID 54321.</span>
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">parse_spec</span>(<span class="string">&quot;:54321&quot;</span>, <span class="string">&#39;:&#39;</span>), <span class="prelude-val">Ok</span>((<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="number">54321</span>)))));
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
+            <span class="ident">parse_spec</span>(<span class="string">&quot;12345:54321&quot;</span>, <span class="string">&#39;:&#39;</span>),
+            <span class="prelude-val">Ok</span>((<span class="prelude-val">Some</span>(<span class="number">12345</span>), <span class="prelude-val">Some</span>(<span class="number">54321</span>)))
+        ));
     }
 }
 </code></pre></div>

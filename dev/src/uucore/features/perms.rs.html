@@ -532,6 +532,13 @@
 <span id="527">527</span>
 <span id="528">528</span>
 <span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// For the full copyright and license information, please view the LICENSE</span>
@@ -626,22 +633,25 @@
                 );
                 <span class="kw">if</span> <span class="ident">level</span> <span class="op">==</span> <span class="ident">VerbosityLevel::Verbose</span> {
                     <span class="ident">out</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">verbosity</span>.<span class="ident">groups_only</span> {
+                        <span class="kw">let</span> <span class="ident">gid</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">gid</span>();
                         <span class="macro">format!</span>(
                             <span class="string">&quot;{}\nfailed to change group of {} from {} to {}&quot;</span>,
                             <span class="ident">out</span>,
                             <span class="ident">path</span>.<span class="ident">quote</span>(),
-                            <span class="ident">entries::gid2grp</span>(<span class="ident">meta</span>.<span class="ident">gid</span>()).<span class="ident">unwrap</span>(),
-                            <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap</span>()
+                            <span class="ident">entries::gid2grp</span>(<span class="ident">gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">gid</span>.<span class="ident">to_string</span>()),
+                            <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">dest_gid</span>.<span class="ident">to_string</span>())
                         )
                     } <span class="kw">else</span> {
+                        <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">uid</span>();
+                        <span class="kw">let</span> <span class="ident">gid</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">gid</span>();
                         <span class="macro">format!</span>(
                             <span class="string">&quot;{}\nfailed to change ownership of {} from {}:{} to {}:{}&quot;</span>,
                             <span class="ident">out</span>,
                             <span class="ident">path</span>.<span class="ident">quote</span>(),
-                            <span class="ident">entries::uid2usr</span>(<span class="ident">meta</span>.<span class="ident">uid</span>()).<span class="ident">unwrap</span>(),
-                            <span class="ident">entries::gid2grp</span>(<span class="ident">meta</span>.<span class="ident">gid</span>()).<span class="ident">unwrap</span>(),
-                            <span class="ident">entries::uid2usr</span>(<span class="ident">dest_uid</span>).<span class="ident">unwrap</span>(),
-                            <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap</span>()
+                            <span class="ident">entries::uid2usr</span>(<span class="ident">uid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">uid</span>.<span class="ident">to_string</span>()),
+                            <span class="ident">entries::gid2grp</span>(<span class="ident">gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">gid</span>.<span class="ident">to_string</span>()),
+                            <span class="ident">entries::uid2usr</span>(<span class="ident">dest_uid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">dest_uid</span>.<span class="ident">to_string</span>()),
+                            <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">dest_gid</span>.<span class="ident">to_string</span>())
                         )
                     };
                 };
@@ -653,21 +663,24 @@
         <span class="kw">if</span> <span class="ident">changed</span> {
             <span class="kw">match</span> <span class="ident">verbosity</span>.<span class="ident">level</span> {
                 <span class="ident">VerbosityLevel::Changes</span> <span class="op">|</span> <span class="ident">VerbosityLevel::Verbose</span> =&gt; {
+                    <span class="kw">let</span> <span class="ident">gid</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">gid</span>();
                     <span class="ident">out</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">verbosity</span>.<span class="ident">groups_only</span> {
                         <span class="macro">format!</span>(
                             <span class="string">&quot;changed group of {} from {} to {}&quot;</span>,
                             <span class="ident">path</span>.<span class="ident">quote</span>(),
-                            <span class="ident">entries::gid2grp</span>(<span class="ident">meta</span>.<span class="ident">gid</span>()).<span class="ident">unwrap</span>(),
-                            <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap</span>()
+                            <span class="ident">entries::gid2grp</span>(<span class="ident">gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">gid</span>.<span class="ident">to_string</span>()),
+                            <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">dest_gid</span>.<span class="ident">to_string</span>())
                         )
                     } <span class="kw">else</span> {
+                        <span class="kw">let</span> <span class="ident">gid</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">gid</span>();
+                        <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">uid</span>();
                         <span class="macro">format!</span>(
                             <span class="string">&quot;changed ownership of {} from {}:{} to {}:{}&quot;</span>,
                             <span class="ident">path</span>.<span class="ident">quote</span>(),
-                            <span class="ident">entries::uid2usr</span>(<span class="ident">meta</span>.<span class="ident">uid</span>()).<span class="ident">unwrap</span>(),
-                            <span class="ident">entries::gid2grp</span>(<span class="ident">meta</span>.<span class="ident">gid</span>()).<span class="ident">unwrap</span>(),
-                            <span class="ident">entries::uid2usr</span>(<span class="ident">dest_uid</span>).<span class="ident">unwrap</span>(),
-                            <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap</span>()
+                            <span class="ident">entries::uid2usr</span>(<span class="ident">uid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">uid</span>.<span class="ident">to_string</span>()),
+                            <span class="ident">entries::gid2grp</span>(<span class="ident">gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">gid</span>.<span class="ident">to_string</span>()),
+                            <span class="ident">entries::uid2usr</span>(<span class="ident">dest_uid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">dest_uid</span>.<span class="ident">to_string</span>()),
+                            <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">dest_gid</span>.<span class="ident">to_string</span>())
                         )
                     };
                 }
@@ -684,8 +697,8 @@
                 <span class="macro">format!</span>(
                     <span class="string">&quot;ownership of {} retained as {}:{}&quot;</span>,
                     <span class="ident">path</span>.<span class="ident">quote</span>(),
-                    <span class="ident">entries::uid2usr</span>(<span class="ident">dest_uid</span>).<span class="ident">unwrap</span>(),
-                    <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap</span>()
+                    <span class="ident">entries::uid2usr</span>(<span class="ident">dest_uid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">dest_uid</span>.<span class="ident">to_string</span>()),
+                    <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">dest_gid</span>.<span class="ident">to_string</span>())
                 )
             };
         }
@@ -990,6 +1003,7 @@
     <span class="ident">command</span> <span class="op">=</span> <span class="ident">command</span>.<span class="ident">arg</span>(
         <span class="ident">Arg::new</span>(<span class="ident">options::ARG_FILES</span>)
             .<span class="ident">value_name</span>(<span class="ident">options::ARG_FILES</span>)
+            .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>)
             .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
             .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
             .<span class="ident">required</span>(<span class="bool-val">true</span>)
