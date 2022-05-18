@@ -685,6 +685,11 @@
 <span id="680">680</span>
 <span id="681">681</span>
 <span id="682">682</span>
+<span id="683">683</span>
+<span id="684">684</span>
+<span id="685">685</span>
+<span id="686">686</span>
+<span id="687">687</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Ben Hirsch &lt;benhirsch24@gmail.com&gt;</span>
@@ -716,6 +721,7 @@
 <span class="kw">mod</span> <span class="ident">prn_int</span>;
 
 <span class="kw">use</span> <span class="ident">std::cmp</span>;
+<span class="kw">use</span> <span class="ident">std::fmt::Write</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::byteorder_io</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::formatteriteminfo</span>::<span class="kw-2">*</span>;
@@ -1287,11 +1293,13 @@ exitcode will be non-zero.&quot;#</span>;
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">b</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">while</span> <span class="ident">b</span> <span class="op">&lt;</span> <span class="ident">input_decoder</span>.<span class="ident">length</span>() {
-            <span class="ident">output_text</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+            <span class="macro">write!</span>(
+                <span class="ident">output_text</span>,
                 <span class="string">&quot;{:&gt;width$}&quot;</span>,
                 <span class="string">&quot;&quot;</span>,
                 <span class="ident">width</span> <span class="op">=</span> <span class="ident">f</span>.<span class="ident">spacing</span>[<span class="ident">b</span> <span class="op">%</span> <span class="ident">output_info</span>.<span class="ident">byte_size_block</span>]
-            ));
+            )
+            .<span class="ident">unwrap</span>();
 
             <span class="kw">match</span> <span class="ident">f</span>.<span class="ident">formatter_item_info</span>.<span class="ident">formatter</span> {
                 <span class="ident">FormatWriter::IntWriter</span>(<span class="ident">func</span>) =&gt; {
@@ -1314,12 +1322,14 @@ exitcode will be non-zero.&quot;#</span>;
             <span class="kw">let</span> <span class="ident">missing_spacing</span> <span class="op">=</span> <span class="ident">output_info</span>
                 .<span class="ident">print_width_line</span>
                 .<span class="ident">saturating_sub</span>(<span class="ident">output_text</span>.<span class="ident">chars</span>().<span class="ident">count</span>());
-            <span class="ident">output_text</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+            <span class="macro">write!</span>(
+                <span class="ident">output_text</span>,
                 <span class="string">&quot;{:&gt;width$}  {}&quot;</span>,
                 <span class="string">&quot;&quot;</span>,
                 <span class="ident">format_ascii_dump</span>(<span class="ident">input_decoder</span>.<span class="ident">get_buffer</span>(<span class="number">0</span>)),
                 <span class="ident">width</span> <span class="op">=</span> <span class="ident">missing_spacing</span>
-            ));
+            )
+            .<span class="ident">unwrap</span>();
         }
 
         <span class="kw">if</span> <span class="ident">first</span> {
