@@ -319,6 +319,15 @@
 <span id="314">314</span>
 <span id="315">315</span>
 <span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -393,7 +402,8 @@
         <span class="string">&quot;EB&quot;</span> <span class="op">|</span> <span class="string">&quot;eB&quot;</span> =&gt; (<span class="number">1000</span>, <span class="number">6</span>),
         <span class="string">&quot;ZB&quot;</span> <span class="op">|</span> <span class="string">&quot;zB&quot;</span> =&gt; (<span class="number">1000</span>, <span class="number">7</span>),
         <span class="string">&quot;YB&quot;</span> <span class="op">|</span> <span class="string">&quot;yB&quot;</span> =&gt; (<span class="number">1000</span>, <span class="number">8</span>),
-        <span class="kw">_</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseSizeError::parse_failure</span>(<span class="ident">size</span>)),
+        <span class="kw">_</span> <span class="kw">if</span> <span class="ident">numeric_string</span>.<span class="ident">is_empty</span>() =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseSizeError::parse_failure</span>(<span class="ident">size</span>)),
+        <span class="kw">_</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseSizeError::invalid_suffix</span>(<span class="ident">size</span>)),
     };
     <span class="kw">let</span> <span class="ident">factor</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">u64::try_from</span>(<span class="ident">base</span>.<span class="ident">pow</span>(<span class="ident">exponent</span>)) {
         <span class="prelude-val">Ok</span>(<span class="ident">n</span>) =&gt; <span class="ident">n</span>,
@@ -406,13 +416,15 @@
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ParseSizeError</span> {
-    <span class="ident">ParseFailure</span>(<span class="ident">String</span>), <span class="comment">// Syntax</span>
-    <span class="ident">SizeTooBig</span>(<span class="ident">String</span>),   <span class="comment">// Overflow</span>
+    <span class="ident">InvalidSuffix</span>(<span class="ident">String</span>), <span class="comment">// Suffix</span>
+    <span class="ident">ParseFailure</span>(<span class="ident">String</span>),  <span class="comment">// Syntax</span>
+    <span class="ident">SizeTooBig</span>(<span class="ident">String</span>),    <span class="comment">// Overflow</span>
 }
 
 <span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="ident">ParseSizeError</span> {
     <span class="kw">fn</span> <span class="ident">description</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
+            <span class="ident">ParseSizeError::InvalidSuffix</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) =&gt; <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">s</span>,
             <span class="ident">ParseSizeError::ParseFailure</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) =&gt; <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">s</span>,
             <span class="ident">ParseSizeError::SizeTooBig</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) =&gt; <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">s</span>,
         }
@@ -422,7 +434,9 @@
 <span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">ParseSizeError</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">fmt::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ParseSizeError::ParseFailure</span>(<span class="ident">s</span>) <span class="op">|</span> <span class="ident">ParseSizeError::SizeTooBig</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>,
+            <span class="ident">ParseSizeError::InvalidSuffix</span>(<span class="ident">s</span>)
+            <span class="op">|</span> <span class="ident">ParseSizeError::ParseFailure</span>(<span class="ident">s</span>)
+            <span class="op">|</span> <span class="ident">ParseSizeError::SizeTooBig</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>,
         };
         <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">s</span>)
     }
@@ -432,6 +446,10 @@
 <span class="comment">// but there&#39;s a lot of downstream code that constructs these errors manually</span>
 <span class="comment">// that would be affected</span>
 <span class="kw">impl</span> <span class="ident">ParseSizeError</span> {
+    <span class="kw">fn</span> <span class="ident">invalid_suffix</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
+        <span class="ident"><span class="self">Self</span>::InvalidSuffix</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">s</span>.<span class="ident">quote</span>()))
+    }
+
     <span class="kw">fn</span> <span class="ident">parse_failure</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
         <span class="comment">// stderr on linux (GNU coreutils 8.32) (LC_ALL=C)</span>
         <span class="comment">// has to be handled in the respective uutils because strings differ, e.g.:</span>
@@ -559,19 +577,19 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">invalid_suffix</span>() {
+        <span class="kw">let</span> <span class="ident">test_strings</span> <span class="op">=</span> [<span class="string">&quot;328hdsf3290&quot;</span>, <span class="string">&quot;5mib&quot;</span>, <span class="string">&quot;1e2&quot;</span>, <span class="string">&quot;1H&quot;</span>, <span class="string">&quot;1.2&quot;</span>];
+        <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">test_string</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">test_strings</span> {
+            <span class="macro">assert_eq!</span>(
+                <span class="ident">parse_size</span>(<span class="ident">test_string</span>).<span class="ident">unwrap_err</span>(),
+                <span class="ident">ParseSizeError::InvalidSuffix</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">test_string</span>.<span class="ident">quote</span>()))
+            );
+        }
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">invalid_syntax</span>() {
-        <span class="kw">let</span> <span class="ident">test_strings</span> <span class="op">=</span> [
-            <span class="string">&quot;328hdsf3290&quot;</span>,
-            <span class="string">&quot;5MiB nonsense&quot;</span>,
-            <span class="string">&quot;5mib&quot;</span>,
-            <span class="string">&quot;biB&quot;</span>,
-            <span class="string">&quot;-&quot;</span>,
-            <span class="string">&quot;+&quot;</span>,
-            <span class="string">&quot;&quot;</span>,
-            <span class="string">&quot;-1&quot;</span>,
-            <span class="string">&quot;1e2&quot;</span>,
-            <span class="string">&quot;∞&quot;</span>,
-        ];
+        <span class="kw">let</span> <span class="ident">test_strings</span> <span class="op">=</span> [<span class="string">&quot;biB&quot;</span>, <span class="string">&quot;-&quot;</span>, <span class="string">&quot;+&quot;</span>, <span class="string">&quot;&quot;</span>, <span class="string">&quot;-1&quot;</span>, <span class="string">&quot;∞&quot;</span>];
         <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">test_string</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">test_strings</span> {
             <span class="macro">assert_eq!</span>(
                 <span class="ident">parse_size</span>(<span class="ident">test_string</span>).<span class="ident">unwrap_err</span>(),

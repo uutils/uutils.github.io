@@ -173,6 +173,15 @@
 <span id="168">168</span>
 <span id="169">169</span>
 <span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Joao Oliveira &lt;joaoxsouls@gmail.com&gt;</span>
@@ -265,34 +274,41 @@
         <span class="ident">output</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">uname</span>.<span class="ident">nodename</span>());
         <span class="ident">output</span>.<span class="ident">push</span>(<span class="string">&#39; &#39;</span>);
     }
+
     <span class="kw">if</span> <span class="ident">kernelrelease</span> <span class="op">|</span><span class="op">|</span> <span class="ident">all</span> {
         <span class="ident">output</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">uname</span>.<span class="ident">release</span>());
         <span class="ident">output</span>.<span class="ident">push</span>(<span class="string">&#39; &#39;</span>);
     }
+
     <span class="kw">if</span> <span class="ident">kernelversion</span> <span class="op">|</span><span class="op">|</span> <span class="ident">all</span> {
         <span class="ident">output</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">uname</span>.<span class="ident">version</span>());
         <span class="ident">output</span>.<span class="ident">push</span>(<span class="string">&#39; &#39;</span>);
     }
+
     <span class="kw">if</span> <span class="ident">machine</span> <span class="op">|</span><span class="op">|</span> <span class="ident">all</span> {
         <span class="ident">output</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">uname</span>.<span class="ident">machine</span>());
         <span class="ident">output</span>.<span class="ident">push</span>(<span class="string">&#39; &#39;</span>);
     }
-    <span class="kw">if</span> <span class="ident">processor</span> <span class="op">|</span><span class="op">|</span> <span class="ident">all</span> {
-        <span class="comment">// According to https://stackoverflow.com/posts/394271/revisions</span>
-        <span class="comment">// Most of the time, it returns unknown</span>
-        <span class="ident">output</span>.<span class="ident">push_str</span>(<span class="string">&quot;unknown&quot;</span>);
-        <span class="ident">output</span>.<span class="ident">push</span>(<span class="string">&#39; &#39;</span>);
-    }
-    <span class="kw">if</span> <span class="ident">hwplatform</span> <span class="op">|</span><span class="op">|</span> <span class="ident">all</span> {
-        <span class="comment">// According to https://lists.gnu.org/archive/html/bug-coreutils/2005-09/msg00063.html</span>
-        <span class="comment">// Most of the time, it returns unknown</span>
-        <span class="ident">output</span>.<span class="ident">push_str</span>(<span class="string">&quot;unknown&quot;</span>);
-        <span class="ident">output</span>.<span class="ident">push</span>(<span class="string">&#39; &#39;</span>);
-    }
+
     <span class="kw">if</span> <span class="ident">os</span> <span class="op">|</span><span class="op">|</span> <span class="ident">all</span> {
         <span class="ident">output</span>.<span class="ident">push_str</span>(<span class="ident">HOST_OS</span>);
         <span class="ident">output</span>.<span class="ident">push</span>(<span class="string">&#39; &#39;</span>);
     }
+
+    <span class="comment">// This option is unsupported on modern Linux systems</span>
+    <span class="comment">// See: https://lists.gnu.org/archive/html/bug-coreutils/2005-09/msg00063.html</span>
+    <span class="kw">if</span> <span class="ident">processor</span> {
+        <span class="ident">output</span>.<span class="ident">push_str</span>(<span class="string">&quot;unknown&quot;</span>);
+        <span class="ident">output</span>.<span class="ident">push</span>(<span class="string">&#39; &#39;</span>);
+    }
+
+    <span class="comment">// This option is unsupported on modern Linux systems</span>
+    <span class="comment">// See: https://lists.gnu.org/archive/html/bug-coreutils/2005-09/msg00063.html</span>
+    <span class="kw">if</span> <span class="ident">hwplatform</span> {
+        <span class="ident">output</span>.<span class="ident">push_str</span>(<span class="string">&quot;unknown&quot;</span>);
+        <span class="ident">output</span>.<span class="ident">push</span>(<span class="string">&#39; &#39;</span>);
+    }
+
     <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">output</span>.<span class="ident">trim_end</span>());
 
     <span class="prelude-val">Ok</span>(())
@@ -326,22 +342,24 @@
             .<span class="ident">short</span>(<span class="string">&#39;v&#39;</span>)
             .<span class="ident">long</span>(<span class="ident">options::KERNELVERSION</span>)
             .<span class="ident">help</span>(<span class="string">&quot;print the operating system version.&quot;</span>))
-        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::HWPLATFORM</span>)
-            .<span class="ident">short</span>(<span class="string">&#39;i&#39;</span>)
-            .<span class="ident">long</span>(<span class="ident">options::HWPLATFORM</span>)
-            .<span class="ident">help</span>(<span class="string">&quot;print the hardware platform (non-portable)&quot;</span>))
         .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::MACHINE</span>)
             .<span class="ident">short</span>(<span class="string">&#39;m&#39;</span>)
             .<span class="ident">long</span>(<span class="ident">options::MACHINE</span>)
             .<span class="ident">help</span>(<span class="string">&quot;print the machine hardware name.&quot;</span>))
-        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::PROCESSOR</span>)
-            .<span class="ident">short</span>(<span class="string">&#39;p&#39;</span>)
-            .<span class="ident">long</span>(<span class="ident">options::PROCESSOR</span>)
-            .<span class="ident">help</span>(<span class="string">&quot;print the processor type (non-portable)&quot;</span>))
         .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::OS</span>)
             .<span class="ident">short</span>(<span class="string">&#39;o&#39;</span>)
             .<span class="ident">long</span>(<span class="ident">options::OS</span>)
             .<span class="ident">help</span>(<span class="string">&quot;print the operating system name.&quot;</span>))
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::PROCESSOR</span>)
+            .<span class="ident">short</span>(<span class="string">&#39;p&#39;</span>)
+            .<span class="ident">long</span>(<span class="ident">options::PROCESSOR</span>)
+            .<span class="ident">help</span>(<span class="string">&quot;print the processor type (non-portable)&quot;</span>)
+            .<span class="ident">hide</span>(<span class="bool-val">true</span>))
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::HWPLATFORM</span>)
+            .<span class="ident">short</span>(<span class="string">&#39;i&#39;</span>)
+            .<span class="ident">long</span>(<span class="ident">options::HWPLATFORM</span>)
+            .<span class="ident">help</span>(<span class="string">&quot;print the hardware platform (non-portable)&quot;</span>)
+            .<span class="ident">hide</span>(<span class="bool-val">true</span>))
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_uname" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>

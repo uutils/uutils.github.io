@@ -842,6 +842,11 @@
 <span id="837">837</span>
 <span id="838">838</span>
 <span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Fangxu Hu &lt;framlog@gmail.com&gt;</span>
@@ -965,6 +970,7 @@ of 1000).&quot;</span>;
 <span class="kw">enum</span> <span class="ident">OptionsError</span> {
     <span class="ident">BlockSizeTooLarge</span>(<span class="ident">String</span>),
     <span class="ident">InvalidBlockSize</span>(<span class="ident">String</span>),
+    <span class="ident">InvalidSuffix</span>(<span class="ident">String</span>),
 
     <span class="doccomment">/// An error getting the columns to display in the output table.</span>
     <span class="ident">ColumnError</span>(<span class="ident">ColumnError</span>),
@@ -983,6 +989,9 @@ of 1000).&quot;</span>;
             <span class="comment">// TODO This needs to vary based on whether `--block-size`</span>
             <span class="comment">// or `-B` were provided.</span>
             <span class="ident"><span class="self">Self</span>::InvalidBlockSize</span>(<span class="ident">s</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;invalid --block-size argument {}&quot;</span>, <span class="ident">s</span>),
+            <span class="comment">// TODO This needs to vary based on whether `--block-size`</span>
+            <span class="comment">// or `-B` were provided.</span>
+            <span class="ident"><span class="self">Self</span>::InvalidSuffix</span>(<span class="ident">s</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;invalid suffix in --block-size argument {}&quot;</span>, <span class="ident">s</span>),
             <span class="ident"><span class="self">Self</span>::ColumnError</span>(<span class="ident">ColumnError::MultipleColumns</span>(<span class="ident">s</span>)) =&gt; <span class="macro">write!</span>(
                 <span class="ident">f</span>,
                 <span class="string">&quot;option --output: field {} used more than once&quot;</span>,
@@ -1018,6 +1027,7 @@ of 1000).&quot;</span>;
             <span class="ident">show_local_fs</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_LOCAL</span>),
             <span class="ident">show_all_fs</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_ALL</span>),
             <span class="ident">block_size</span>: <span class="ident">block_size_from_matches</span>(<span class="ident">matches</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">e</span> {
+                <span class="ident">ParseSizeError::InvalidSuffix</span>(<span class="ident">s</span>) =&gt; <span class="ident">OptionsError::InvalidSuffix</span>(<span class="ident">s</span>),
                 <span class="ident">ParseSizeError::SizeTooBig</span>(<span class="kw">_</span>) =&gt; <span class="ident">OptionsError::BlockSizeTooLarge</span>(
                     <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_BLOCKSIZE</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
                 ),
