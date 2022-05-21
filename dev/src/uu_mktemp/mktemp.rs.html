@@ -381,6 +381,19 @@
 <span id="376">376</span>
 <span id="377">377</span>
 <span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Sunrin SHIMURA</span>
@@ -400,7 +413,7 @@
 <span class="kw">use</span> <span class="ident">std::error::Error</span>;
 <span class="kw">use</span> <span class="ident">std::fmt::Display</span>;
 <span class="kw">use</span> <span class="ident">std::iter</span>;
-<span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">is_separator</span>, <span class="ident">Path</span>, <span class="ident">PathBuf</span>};
+<span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">is_separator</span>, <span class="ident">Path</span>, <span class="ident">PathBuf</span>, <span class="ident">MAIN_SEPARATOR</span>};
 
 <span class="kw">use</span> <span class="ident">rand::Rng</span>;
 <span class="kw">use</span> <span class="ident">tempfile::Builder</span>;
@@ -512,6 +525,19 @@
             };
             <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">file_name</span>();
             <span class="kw">let</span> <span class="ident">template</span> <span class="op">=</span> <span class="ident">filename</span>.<span class="ident">unwrap</span>().<span class="ident">to_str</span>().<span class="ident">unwrap</span>();
+            <span class="comment">// If the command line was `mktemp aXXX/b`, then we will</span>
+            <span class="comment">// find that `tmp`, which is the result of getting the</span>
+            <span class="comment">// parent when treating the argument as a path, contains</span>
+            <span class="comment">// at least three consecutive Xs. This means that there</span>
+            <span class="comment">// was a path separator in the suffix, which is not</span>
+            <span class="comment">// allowed.</span>
+            <span class="kw">if</span> <span class="ident">tmp</span>.<span class="ident">display</span>().<span class="ident">to_string</span>().<span class="ident">contains</span>(<span class="string">&quot;XXX&quot;</span>) {
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::SuffixContainsDirSeparator</span>(<span class="macro">format!</span>(
+                    <span class="string">&quot;{}{}&quot;</span>,
+                    <span class="ident">MAIN_SEPARATOR</span>, <span class="ident">template</span>
+                ))
+                .<span class="ident">into</span>());
+            }
             (<span class="ident">template</span>, <span class="ident">tmp</span>)
         }
     } <span class="kw">else</span> {
