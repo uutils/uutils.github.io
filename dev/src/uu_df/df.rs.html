@@ -861,7 +861,7 @@
 <span class="kw">mod</span> <span class="ident">filesystem</span>;
 <span class="kw">mod</span> <span class="ident">table</span>;
 
-<span class="kw">use</span> <span class="ident">blocks</span>::{<span class="ident">HumanReadable</span>, <span class="ident">SizeFormat</span>};
+<span class="kw">use</span> <span class="ident">blocks::HumanReadable</span>;
 <span class="kw">use</span> <span class="ident">table::HeaderMode</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UError</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
@@ -875,7 +875,7 @@
 <span class="kw">use</span> <span class="ident">std::fmt</span>;
 <span class="kw">use</span> <span class="ident">std::path::Path</span>;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::blocks</span>::{<span class="ident">block_size_from_matches</span>, <span class="ident">BlockSize</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::blocks</span>::{<span class="ident">read_block_size</span>, <span class="ident">BlockSize</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::columns</span>::{<span class="ident">Column</span>, <span class="ident">ColumnError</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::filesystem::Filesystem</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::table::Table</span>;
@@ -921,7 +921,7 @@ of 1000).&quot;</span>;
 <span class="kw">struct</span> <span class="ident">Options</span> {
     <span class="ident">show_local_fs</span>: <span class="ident">bool</span>,
     <span class="ident">show_all_fs</span>: <span class="ident">bool</span>,
-    <span class="ident">size_format</span>: <span class="ident">SizeFormat</span>,
+    <span class="ident">human_readable</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">HumanReadable</span><span class="op">&gt;</span>,
     <span class="ident">block_size</span>: <span class="ident">BlockSize</span>,
     <span class="ident">header_mode</span>: <span class="ident">HeaderMode</span>,
 
@@ -950,7 +950,7 @@ of 1000).&quot;</span>;
             <span class="ident">show_local_fs</span>: <span class="ident">Default::default</span>(),
             <span class="ident">show_all_fs</span>: <span class="ident">Default::default</span>(),
             <span class="ident">block_size</span>: <span class="ident">Default::default</span>(),
-            <span class="ident">size_format</span>: <span class="ident">Default::default</span>(),
+            <span class="ident">human_readable</span>: <span class="ident">Default::default</span>(),
             <span class="ident">header_mode</span>: <span class="ident">Default::default</span>(),
             <span class="ident">include</span>: <span class="ident">Default::default</span>(),
             <span class="ident">exclude</span>: <span class="ident">Default::default</span>(),
@@ -1028,7 +1028,7 @@ of 1000).&quot;</span>;
         <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
             <span class="ident">show_local_fs</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_LOCAL</span>),
             <span class="ident">show_all_fs</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_ALL</span>),
-            <span class="ident">block_size</span>: <span class="ident">block_size_from_matches</span>(<span class="ident">matches</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">e</span> {
+            <span class="ident">block_size</span>: <span class="ident">read_block_size</span>(<span class="ident">matches</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">e</span> {
                 <span class="ident">ParseSizeError::InvalidSuffix</span>(<span class="ident">s</span>) =&gt; <span class="ident">OptionsError::InvalidSuffix</span>(<span class="ident">s</span>),
                 <span class="ident">ParseSizeError::SizeTooBig</span>(<span class="kw">_</span>) =&gt; <span class="ident">OptionsError::BlockSizeTooLarge</span>(
                     <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_BLOCKSIZE</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
@@ -1050,13 +1050,13 @@ of 1000).&quot;</span>;
                     <span class="ident">HeaderMode::Default</span>
                 }
             },
-            <span class="ident">size_format</span>: {
+            <span class="ident">human_readable</span>: {
                 <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_BINARY</span>) {
-                    <span class="ident">SizeFormat::HumanReadable</span>(<span class="ident">HumanReadable::Binary</span>)
+                    <span class="prelude-val">Some</span>(<span class="ident">HumanReadable::Binary</span>)
                 } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_DECIMAL</span>) {
-                    <span class="ident">SizeFormat::HumanReadable</span>(<span class="ident">HumanReadable::Decimal</span>)
+                    <span class="prelude-val">Some</span>(<span class="ident">HumanReadable::Decimal</span>)
                 } <span class="kw">else</span> {
-                    <span class="ident">SizeFormat::StaticBlockSize</span>
+                    <span class="prelude-val">None</span>
                 }
             },
             <span class="ident">include</span>,
