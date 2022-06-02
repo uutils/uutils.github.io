@@ -410,6 +410,51 @@
 <span id="405">405</span>
 <span id="406">406</span>
 <span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Sunrin SHIMURA</span>
@@ -420,7 +465,7 @@
 
 <span class="comment">// spell-checker:ignore (paths) GPGHome</span>
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">uucore::display</span>::{<span class="ident">println_verbatim</span>, <span class="ident">Quotable</span>};
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UError</span>, <span class="ident">UResult</span>};
 <span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
@@ -429,7 +474,7 @@
 <span class="kw">use</span> <span class="ident">std::error::Error</span>;
 <span class="kw">use</span> <span class="ident">std::fmt::Display</span>;
 <span class="kw">use</span> <span class="ident">std::iter</span>;
-<span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">is_separator</span>, <span class="ident">Path</span>, <span class="ident">PathBuf</span>, <span class="ident">MAIN_SEPARATOR</span>};
+<span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>, <span class="ident">MAIN_SEPARATOR</span>};
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::fs</span>;
@@ -501,86 +546,229 @@
     }
 }
 
+<span class="doccomment">/// Options parsed from the command-line.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This provides a layer of indirection between the application logic</span>
+<span class="doccomment">/// and the argument parsing library `clap`, allowing each to vary</span>
+<span class="doccomment">/// independently.</span>
+<span class="kw">struct</span> <span class="ident">Options</span> {
+    <span class="doccomment">/// Whether to create a temporary directory instead of a file.</span>
+    <span class="ident">directory</span>: <span class="ident">bool</span>,
+
+    <span class="doccomment">/// Whether to just print the name of a file that would have been created.</span>
+    <span class="ident">dry_run</span>: <span class="ident">bool</span>,
+
+    <span class="doccomment">/// Whether to suppress file creation error messages.</span>
+    <span class="ident">quiet</span>: <span class="ident">bool</span>,
+
+    <span class="doccomment">/// The directory in which to create the temporary file.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If `None`, the file will be created in the current directory.</span>
+    <span class="ident">tmpdir</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+
+    <span class="doccomment">/// The suffix to append to the temporary file, if any.</span>
+    <span class="ident">suffix</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+
+    <span class="doccomment">/// Whether to treat the template argument as a single file path component.</span>
+    <span class="ident">treat_as_template</span>: <span class="ident">bool</span>,
+
+    <span class="doccomment">/// The template to use for the name of the temporary file.</span>
+    <span class="ident">template</span>: <span class="ident">String</span>,
+}
+
+<span class="doccomment">/// Decide whether the argument to `--tmpdir` should actually be the template.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function is required to work around a limitation of `clap`,</span>
+<span class="doccomment">/// the command-line argument parsing library. In case the command</span>
+<span class="doccomment">/// line is</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```sh</span>
+<span class="doccomment">/// mktemp --tmpdir XXX</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// the program should behave like</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```sh</span>
+<span class="doccomment">/// mktemp --tmpdir=${TMPDIR:-/tmp} XXX</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// However, `clap` thinks that `XXX` is the value of the `--tmpdir`</span>
+<span class="doccomment">/// option. This function returns `true` in this case and `false`</span>
+<span class="doccomment">/// in all other cases.</span>
+<span class="kw">fn</span> <span class="ident">is_tmpdir_argument_actually_the_template</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="ident">bool</span> {
+    <span class="kw">if</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">ARG_TEMPLATE</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">tmpdir</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_TMPDIR</span>) {
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">Path::new</span>(<span class="ident">tmpdir</span>).<span class="ident">is_dir</span>() <span class="op">&amp;&amp;</span> <span class="ident">tmpdir</span>.<span class="ident">contains</span>(<span class="string">&quot;XXX&quot;</span>) {
+                <span class="kw">return</span> <span class="bool-val">true</span>;
+            }
+        }
+    }
+    <span class="bool-val">false</span>
+}
+
+<span class="kw">impl</span> <span class="ident">Options</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="self">Self</span> {
+        <span class="comment">// Special case to work around a limitation of `clap`; see</span>
+        <span class="comment">// `is_tmpdir_argument_actually_the_template()` for more</span>
+        <span class="comment">// information.</span>
+        <span class="comment">//</span>
+        <span class="comment">// Fixed in clap 3</span>
+        <span class="comment">// See https://github.com/clap-rs/clap/pull/1587</span>
+        <span class="kw">let</span> (<span class="ident">tmpdir</span>, <span class="ident">template</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">is_tmpdir_argument_actually_the_template</span>(<span class="ident">matches</span>) {
+            <span class="kw">let</span> <span class="ident">tmpdir</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">env::temp_dir</span>().<span class="ident">display</span>().<span class="ident">to_string</span>());
+            <span class="kw">let</span> <span class="ident">template</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_TMPDIR</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>();
+            (<span class="ident">tmpdir</span>, <span class="ident">template</span>)
+        } <span class="kw">else</span> {
+            <span class="kw">let</span> <span class="ident">tmpdir</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_TMPDIR</span>).<span class="ident">map</span>(<span class="ident">String::from</span>);
+            <span class="kw">let</span> <span class="ident">template</span> <span class="op">=</span> <span class="ident">matches</span>
+                .<span class="ident">value_of</span>(<span class="ident">ARG_TEMPLATE</span>)
+                .<span class="ident">unwrap_or</span>(<span class="ident">DEFAULT_TEMPLATE</span>)
+                .<span class="ident">to_string</span>();
+            (<span class="ident">tmpdir</span>, <span class="ident">template</span>)
+        };
+        <span class="self">Self</span> {
+            <span class="ident">directory</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_DIRECTORY</span>),
+            <span class="ident">dry_run</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_DRY_RUN</span>),
+            <span class="ident">quiet</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_QUIET</span>),
+            <span class="ident">tmpdir</span>,
+            <span class="ident">suffix</span>: <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_SUFFIX</span>).<span class="ident">map</span>(<span class="ident">String::from</span>),
+            <span class="ident">treat_as_template</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_T</span>),
+            <span class="ident">template</span>,
+        }
+    }
+}
+
+<span class="doccomment">/// Parameters that control the path to and name of the temporary file.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The temporary file will be created at</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```text</span>
+<span class="doccomment">/// {directory}/{prefix}{XXX}{suffix}</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// where `{XXX}` is a sequence of random characters whose length is</span>
+<span class="doccomment">/// `num_rand_chars`.</span>
+<span class="kw">struct</span> <span class="ident">Params</span> {
+    <span class="doccomment">/// The directory that will contain the temporary file.</span>
+    <span class="ident">directory</span>: <span class="ident">String</span>,
+
+    <span class="doccomment">/// The (non-random) prefix of the temporary file.</span>
+    <span class="ident">prefix</span>: <span class="ident">String</span>,
+
+    <span class="doccomment">/// The number of random characters in the name of the temporary file.</span>
+    <span class="ident">num_rand_chars</span>: <span class="ident">usize</span>,
+
+    <span class="doccomment">/// The (non-random) suffix of the temporary file.</span>
+    <span class="ident">suffix</span>: <span class="ident">String</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">Params</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="ident">Options</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">MkTempError</span><span class="op">&gt;</span> {
+        <span class="comment">// Get the start and end indices of the randomized part of the template.</span>
+        <span class="comment">//</span>
+        <span class="comment">// For example, if the template is &quot;abcXXXXyz&quot;, then `i` is 3 and `j` is 7.</span>
+        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">options</span>.<span class="ident">template</span>.<span class="ident">find</span>(<span class="string">&quot;XXX&quot;</span>) {
+            <span class="prelude-val">None</span> =&gt; {
+                <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">options</span>.<span class="ident">suffix</span> {
+                    <span class="prelude-val">None</span> =&gt; <span class="ident">options</span>.<span class="ident">template</span>,
+                    <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">options</span>.<span class="ident">template</span>, <span class="ident">s</span>),
+                };
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::TooFewXs</span>(<span class="ident">s</span>));
+            }
+            <span class="prelude-val">Some</span>(<span class="ident">i</span>) =&gt; <span class="ident">i</span>,
+        };
+        <span class="kw">let</span> <span class="ident">j</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">template</span>.<span class="ident">rfind</span>(<span class="string">&quot;XXX&quot;</span>).<span class="ident">unwrap</span>() <span class="op">+</span> <span class="number">3</span>;
+
+        <span class="comment">// Combine the directory given as an option and the prefix of the template.</span>
+        <span class="comment">//</span>
+        <span class="comment">// For example, if `tmpdir` is &quot;a/b&quot; and the template is &quot;c/dXXX&quot;,</span>
+        <span class="comment">// then `prefix` is &quot;a/b/c/d&quot;.</span>
+        <span class="kw">let</span> <span class="ident">tmpdir</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">tmpdir</span>;
+        <span class="kw">let</span> <span class="ident">prefix_from_option</span> <span class="op">=</span> <span class="ident">tmpdir</span>.<span class="ident">clone</span>().<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>());
+        <span class="kw">let</span> <span class="ident">prefix_from_template</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">options</span>.<span class="ident">template</span>[..<span class="ident">i</span>];
+        <span class="kw">let</span> <span class="ident">prefix</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">prefix_from_option</span>)
+            .<span class="ident">join</span>(<span class="ident">prefix_from_template</span>)
+            .<span class="ident">display</span>()
+            .<span class="ident">to_string</span>();
+        <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">treat_as_template</span> <span class="op">&amp;&amp;</span> <span class="ident">prefix</span>.<span class="ident">contains</span>(<span class="ident">MAIN_SEPARATOR</span>) {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::PrefixContainsDirSeparator</span>(<span class="ident">options</span>.<span class="ident">template</span>));
+        }
+        <span class="kw">if</span> <span class="ident">tmpdir</span>.<span class="ident">is_some</span>() <span class="op">&amp;&amp;</span> <span class="ident">Path::new</span>(<span class="ident">prefix_from_template</span>).<span class="ident">is_absolute</span>() {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::InvalidTemplate</span>(<span class="ident">options</span>.<span class="ident">template</span>));
+        }
+
+        <span class="comment">// Split the parent directory from the file part of the prefix.</span>
+        <span class="comment">//</span>
+        <span class="comment">// For example, if `prefix` is &quot;a/b/c/d&quot;, then `directory` is</span>
+        <span class="comment">// &quot;a/b/c&quot; is `prefix` gets reassigned to &quot;d&quot;.</span>
+        <span class="kw">let</span> (<span class="ident">directory</span>, <span class="ident">prefix</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">prefix</span>.<span class="ident">ends_with</span>(<span class="ident">MAIN_SEPARATOR</span>) {
+            (<span class="ident">prefix</span>, <span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>())
+        } <span class="kw">else</span> {
+            <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">prefix</span>);
+            <span class="kw">let</span> <span class="ident">directory</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">path</span>.<span class="ident">parent</span>() {
+                <span class="prelude-val">None</span> =&gt; <span class="ident">String::new</span>(),
+                <span class="prelude-val">Some</span>(<span class="ident">d</span>) =&gt; <span class="ident">d</span>.<span class="ident">display</span>().<span class="ident">to_string</span>(),
+            };
+            <span class="kw">let</span> <span class="ident">prefix</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">path</span>.<span class="ident">file_name</span>() {
+                <span class="prelude-val">None</span> =&gt; <span class="ident">String::new</span>(),
+                <span class="prelude-val">Some</span>(<span class="ident">f</span>) =&gt; <span class="ident">f</span>.<span class="ident">to_str</span>().<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
+            };
+            (<span class="ident">directory</span>, <span class="ident">prefix</span>)
+        };
+
+        <span class="comment">// Combine the suffix from the template with the suffix given as an option.</span>
+        <span class="comment">//</span>
+        <span class="comment">// For example, if the suffix command-line argument is &quot;.txt&quot; and</span>
+        <span class="comment">// the template is &quot;XXXabc&quot;, then `suffix` is &quot;abc.txt&quot;.</span>
+        <span class="kw">let</span> <span class="ident">suffix_from_option</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">suffix</span>.<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>());
+        <span class="kw">let</span> <span class="ident">suffix_from_template</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">options</span>.<span class="ident">template</span>[<span class="ident">j</span>..];
+        <span class="kw">let</span> <span class="ident">suffix</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">suffix_from_template</span>, <span class="ident">suffix_from_option</span>);
+        <span class="kw">if</span> <span class="ident">suffix</span>.<span class="ident">contains</span>(<span class="ident">MAIN_SEPARATOR</span>) {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::SuffixContainsDirSeparator</span>(<span class="ident">suffix</span>));
+        }
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">suffix_from_template</span>.<span class="ident">is_empty</span>() <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">suffix_from_option</span>.<span class="ident">is_empty</span>() {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::MustEndInX</span>(<span class="ident">options</span>.<span class="ident">template</span>));
+        }
+
+        <span class="comment">// The number of random characters in the template.</span>
+        <span class="comment">//</span>
+        <span class="comment">// For example, if the template is &quot;abcXXXXyz&quot;, then the number of</span>
+        <span class="comment">// random characters is four.</span>
+        <span class="kw">let</span> <span class="ident">num_rand_chars</span> <span class="op">=</span> <span class="ident">j</span> <span class="op">-</span> <span class="ident">i</span>;
+
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
+            <span class="ident">directory</span>,
+            <span class="ident">prefix</span>,
+            <span class="ident">num_rand_chars</span>,
+            <span class="ident">suffix</span>,
+        })
+    }
+}
+
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">template</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">ARG_TEMPLATE</span>).<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">tmpdir</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_TMPDIR</span>).<span class="ident">unwrap_or_default</span>();
+    <span class="comment">// Parse command-line options into a format suitable for the</span>
+    <span class="comment">// application logic.</span>
+    <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">Options::from</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>);
+    <span class="kw">let</span> <span class="ident">dry_run</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">dry_run</span>;
+    <span class="kw">let</span> <span class="ident">suppress_file_err</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">quiet</span>;
+    <span class="kw">let</span> <span class="ident">make_dir</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">directory</span>;
 
-    <span class="comment">// Treat the template string as a path to get the directory</span>
-    <span class="comment">// containing the last component.</span>
-    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">PathBuf::from</span>(<span class="ident">template</span>);
+    <span class="comment">// Parse file path parameters from the command-line options.</span>
+    <span class="kw">let</span> <span class="ident">Params</span> {
+        <span class="ident">directory</span>: <span class="ident">tmpdir</span>,
+        <span class="ident">prefix</span>,
+        <span class="ident">num_rand_chars</span>: <span class="ident">rand</span>,
+        <span class="ident">suffix</span>,
+    } <span class="op">=</span> <span class="ident">Params::from</span>(<span class="ident">options</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> (<span class="ident">template</span>, <span class="ident">tmpdir</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_TMPDIR</span>)
-        <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">PathBuf::from</span>(<span class="ident">tmpdir</span>).<span class="ident">is_dir</span>() <span class="comment">// if a temp dir is provided, it must be an actual path</span>
-        <span class="op">&amp;&amp;</span> <span class="ident">tmpdir</span>.<span class="ident">contains</span>(<span class="string">&quot;XXX&quot;</span>)
-    <span class="comment">// If this is a template, it has to contain at least 3 X</span>
-        <span class="op">&amp;&amp;</span> <span class="ident">template</span> <span class="op">==</span> <span class="ident">DEFAULT_TEMPLATE</span>
-    <span class="comment">// That means that clap does not think we provided a template</span>
-    {
-        <span class="comment">// Special case to workaround a limitation of clap when doing</span>
-        <span class="comment">// mktemp --tmpdir apt-key-gpghome.XXX</span>
-        <span class="comment">// The behavior should be</span>
-        <span class="comment">// mktemp --tmpdir $TMPDIR apt-key-gpghome.XX</span>
-        <span class="comment">// As --tmpdir is empty</span>
-        <span class="comment">//</span>
-        <span class="comment">// Fixed in clap 3</span>
-        <span class="comment">// See https://github.com/clap-rs/clap/pull/1587</span>
-        <span class="kw">let</span> <span class="ident">tmp</span> <span class="op">=</span> <span class="ident">env::temp_dir</span>();
-        (<span class="ident">tmpdir</span>, <span class="ident">tmp</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_TMPDIR</span>) {
-        <span class="comment">// In this case, the command line was `mktemp -t XXX`, so we</span>
-        <span class="comment">// treat the argument `XXX` as though it were a filename</span>
-        <span class="comment">// regardless of whether it has path separators in it.</span>
-        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_T</span>) {
-            <span class="kw">let</span> <span class="ident">tmp</span> <span class="op">=</span> <span class="ident">env::temp_dir</span>();
-            (<span class="ident">template</span>, <span class="ident">tmp</span>)
-        <span class="comment">// In this case, the command line was `mktemp XXX`, so we need</span>
-        <span class="comment">// to parse out the parent directory and the filename from the</span>
-        <span class="comment">// argument `XXX`, since it may be include path separators.</span>
-        } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">tmp</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">path</span>.<span class="ident">parent</span>() {
-                <span class="prelude-val">None</span> =&gt; <span class="ident">PathBuf::from</span>(<span class="string">&quot;.&quot;</span>),
-                <span class="prelude-val">Some</span>(<span class="ident">d</span>) =&gt; <span class="ident">PathBuf::from</span>(<span class="ident">d</span>),
-            };
-            <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">file_name</span>();
-            <span class="kw">let</span> <span class="ident">template</span> <span class="op">=</span> <span class="ident">filename</span>.<span class="ident">unwrap</span>().<span class="ident">to_str</span>().<span class="ident">unwrap</span>();
-            <span class="comment">// If the command line was `mktemp aXXX/b`, then we will</span>
-            <span class="comment">// find that `tmp`, which is the result of getting the</span>
-            <span class="comment">// parent when treating the argument as a path, contains</span>
-            <span class="comment">// at least three consecutive Xs. This means that there</span>
-            <span class="comment">// was a path separator in the suffix, which is not</span>
-            <span class="comment">// allowed.</span>
-            <span class="kw">if</span> <span class="ident">tmp</span>.<span class="ident">display</span>().<span class="ident">to_string</span>().<span class="ident">contains</span>(<span class="string">&quot;XXX&quot;</span>) {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::SuffixContainsDirSeparator</span>(<span class="macro">format!</span>(
-                    <span class="string">&quot;{}{}&quot;</span>,
-                    <span class="ident">MAIN_SEPARATOR</span>, <span class="ident">template</span>
-                ))
-                .<span class="ident">into</span>());
-            }
-            (<span class="ident">template</span>, <span class="ident">tmp</span>)
-        }
-    } <span class="kw">else</span> {
-        (<span class="ident">template</span>, <span class="ident">PathBuf::from</span>(<span class="ident">tmpdir</span>))
-    };
-
-    <span class="kw">let</span> <span class="ident">make_dir</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_DIRECTORY</span>);
-    <span class="kw">let</span> <span class="ident">dry_run</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_DRY_RUN</span>);
-    <span class="kw">let</span> <span class="ident">suppress_file_err</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_QUIET</span>);
-
-    <span class="comment">// If `--tmpdir` is given, the template cannot be an absolute</span>
-    <span class="comment">// path. For example, `mktemp --tmpdir=a /XXX` is not allowed.</span>
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_TMPDIR</span>) <span class="op">&amp;&amp;</span> <span class="ident">PathBuf::from</span>(<span class="ident">template</span>).<span class="ident">is_absolute</span>() {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::InvalidTemplate</span>(<span class="ident">template</span>.<span class="ident">into</span>()).<span class="ident">into</span>());
-    }
-
-    <span class="kw">let</span> (<span class="ident">prefix</span>, <span class="ident">rand</span>, <span class="ident">suffix</span>) <span class="op">=</span> <span class="ident">parse_template</span>(<span class="ident">template</span>, <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_SUFFIX</span>))<span class="question-mark">?</span>;
-
+    <span class="comment">// Create the temporary file or directory, or simulate creating it.</span>
     <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">dry_run</span> {
-        <span class="ident">dry_exec</span>(<span class="ident">tmpdir</span>, <span class="ident">prefix</span>, <span class="ident">rand</span>, <span class="ident">suffix</span>)
+        <span class="ident">dry_exec</span>(<span class="kw-2">&amp;</span><span class="ident">tmpdir</span>, <span class="kw-2">&amp;</span><span class="ident">prefix</span>, <span class="ident">rand</span>, <span class="kw-2">&amp;</span><span class="ident">suffix</span>)
     } <span class="kw">else</span> {
-        <span class="ident">exec</span>(<span class="kw-2">&amp;</span><span class="ident">tmpdir</span>, <span class="ident">prefix</span>, <span class="ident">rand</span>, <span class="ident">suffix</span>, <span class="ident">make_dir</span>)
+        <span class="ident">exec</span>(<span class="kw-2">&amp;</span><span class="ident">tmpdir</span>, <span class="kw-2">&amp;</span><span class="ident">prefix</span>, <span class="ident">rand</span>, <span class="kw-2">&amp;</span><span class="ident">suffix</span>, <span class="ident">make_dir</span>)
     };
 
     <span class="kw">if</span> <span class="ident">suppress_file_err</span> {
@@ -646,73 +834,10 @@
                 .<span class="ident">multiple_occurrences</span>(<span class="bool-val">false</span>)
                 .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">max_values</span>(<span class="number">1</span>)
-                .<span class="ident">default_value</span>(<span class="ident">DEFAULT_TEMPLATE</span>),
         )
 }
 
-<span class="doccomment">/// Parse a template string into prefix, suffix, and random components.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `temp` is the template string, with three or more consecutive `X`s</span>
-<span class="doccomment">/// representing a placeholder for randomly generated characters (for</span>
-<span class="doccomment">/// example, `&quot;abc_XXX.txt&quot;`). If `temp` ends in an `X`, then a suffix</span>
-<span class="doccomment">/// can be specified by `suffix` instead.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Errors</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * If there are fewer than three consecutive `X`s in `temp`.</span>
-<span class="doccomment">/// * If `suffix` is a [`Some`] object but `temp` does not end in `X`.</span>
-<span class="doccomment">/// * If the suffix (specified either way) contains a path separator.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust,ignore</span>
-<span class="doccomment">/// assert_eq!(parse_template(&quot;XXX&quot;, None).unwrap(), (&quot;&quot;, 3, &quot;&quot;));</span>
-<span class="doccomment">/// assert_eq!(parse_template(&quot;abcXXX&quot;, None).unwrap(), (&quot;abc&quot;, 3, &quot;&quot;));</span>
-<span class="doccomment">/// assert_eq!(parse_template(&quot;XXXdef&quot;, None).unwrap(), (&quot;&quot;, 3, &quot;def&quot;));</span>
-<span class="doccomment">/// assert_eq!(parse_template(&quot;abcXXXdef&quot;, None).unwrap(), (&quot;abc&quot;, 3, &quot;def&quot;));</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">fn</span> <span class="ident">parse_template</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
-    <span class="ident">temp</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
-    <span class="ident">suffix</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>), <span class="ident">MkTempError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">right</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">temp</span>.<span class="ident">rfind</span>(<span class="string">&#39;X&#39;</span>) {
-        <span class="prelude-val">Some</span>(<span class="ident">r</span>) =&gt; <span class="ident">r</span> <span class="op">+</span> <span class="number">1</span>,
-        <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::TooFewXs</span>(<span class="ident">temp</span>.<span class="ident">into</span>())),
-    };
-    <span class="kw">let</span> <span class="ident">left</span> <span class="op">=</span> <span class="ident">temp</span>[..<span class="ident">right</span>].<span class="ident">rfind</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span> <span class="op">!</span><span class="op">=</span> <span class="string">&#39;X&#39;</span>).<span class="ident">map_or</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>);
-    <span class="kw">let</span> <span class="ident">prefix</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">temp</span>[..<span class="ident">left</span>];
-    <span class="kw">let</span> <span class="ident">rand</span> <span class="op">=</span> <span class="ident">right</span> <span class="op">-</span> <span class="ident">left</span>;
-
-    <span class="kw">if</span> <span class="ident">rand</span> <span class="op">&lt;</span> <span class="number">3</span> {
-        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">suffix</span> {
-            <span class="prelude-val">None</span> =&gt; <span class="ident">temp</span>.<span class="ident">into</span>(),
-            <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">temp</span>, <span class="ident">s</span>),
-        };
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::TooFewXs</span>(<span class="ident">s</span>));
-    }
-
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">suf</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">temp</span>[<span class="ident">right</span>..];
-
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">suffix</span> {
-        <span class="kw">if</span> <span class="ident">suf</span>.<span class="ident">is_empty</span>() {
-            <span class="ident">suf</span> <span class="op">=</span> <span class="ident">s</span>;
-        } <span class="kw">else</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::MustEndInX</span>(<span class="ident">temp</span>.<span class="ident">into</span>()));
-        }
-    };
-
-    <span class="kw">if</span> <span class="ident">prefix</span>.<span class="ident">chars</span>().<span class="ident">any</span>(<span class="ident">is_separator</span>) {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::PrefixContainsDirSeparator</span>(<span class="ident">temp</span>.<span class="ident">into</span>()));
-    }
-
-    <span class="kw">if</span> <span class="ident">suf</span>.<span class="ident">chars</span>().<span class="ident">any</span>(<span class="ident">is_separator</span>) {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::SuffixContainsDirSeparator</span>(<span class="ident">suf</span>.<span class="ident">into</span>()));
-    }
-
-    <span class="prelude-val">Ok</span>((<span class="ident">prefix</span>, <span class="ident">rand</span>, <span class="ident">suf</span>))
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dry_exec</span>(<span class="kw-2">mut</span> <span class="ident">tmpdir</span>: <span class="ident">PathBuf</span>, <span class="ident">prefix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">rand</span>: <span class="ident">usize</span>, <span class="ident">suffix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dry_exec</span>(<span class="ident">tmpdir</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">prefix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">rand</span>: <span class="ident">usize</span>, <span class="ident">suffix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">prefix</span>.<span class="ident">len</span>() <span class="op">+</span> <span class="ident">suffix</span>.<span class="ident">len</span>() <span class="op">+</span> <span class="ident">rand</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">len</span>);
     <span class="ident">buf</span>.<span class="ident">extend</span>(<span class="ident">prefix</span>.<span class="ident">as_bytes</span>());
@@ -732,11 +857,11 @@
     }
     <span class="comment">// We guarantee utf8.</span>
     <span class="kw">let</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">String::from_utf8</span>(<span class="ident">buf</span>).<span class="ident">unwrap</span>();
-    <span class="ident">tmpdir</span>.<span class="ident">push</span>(<span class="ident">buf</span>);
+    <span class="kw">let</span> <span class="ident">tmpdir</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="ident">tmpdir</span>).<span class="ident">join</span>(<span class="ident">buf</span>);
     <span class="ident">println_verbatim</span>(<span class="ident">tmpdir</span>).<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to print directory name&quot;</span>.<span class="ident">to_owned</span>())
 }
 
-<span class="kw">fn</span> <span class="ident">exec</span>(<span class="ident">dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">prefix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">rand</span>: <span class="ident">usize</span>, <span class="ident">suffix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">make_dir</span>: <span class="ident">bool</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">exec</span>(<span class="ident">dir</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">prefix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">rand</span>: <span class="ident">usize</span>, <span class="ident">suffix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">make_dir</span>: <span class="ident">bool</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> {
         <span class="macro">format!</span>(
             <span class="string">&quot;failed to create file via template &#39;{}{}{}&#39;&quot;</span>,
@@ -778,44 +903,9 @@
     <span class="comment">// the absolute path and we need to return a filename that matches</span>
     <span class="comment">// the template given on the command-line which might be a</span>
     <span class="comment">// relative path.</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">dir</span>.<span class="ident">to_path_buf</span>();
-    <span class="ident">path</span>.<span class="ident">push</span>(<span class="ident">filename</span>);
+    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="ident">dir</span>).<span class="ident">join</span>(<span class="ident">filename</span>);
 
     <span class="ident">println_verbatim</span>(<span class="ident">path</span>).<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to print directory name&quot;</span>.<span class="ident">to_owned</span>())
-}
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::parse_template</span>;
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_parse_template_no_suffix</span>() {
-        <span class="macro">assert_eq!</span>(<span class="ident">parse_template</span>(<span class="string">&quot;XXX&quot;</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>(), (<span class="string">&quot;&quot;</span>, <span class="number">3</span>, <span class="string">&quot;&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">parse_template</span>(<span class="string">&quot;abcXXX&quot;</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>(), (<span class="string">&quot;abc&quot;</span>, <span class="number">3</span>, <span class="string">&quot;&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">parse_template</span>(<span class="string">&quot;XXXdef&quot;</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>(), (<span class="string">&quot;&quot;</span>, <span class="number">3</span>, <span class="string">&quot;def&quot;</span>));
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">parse_template</span>(<span class="string">&quot;abcXXXdef&quot;</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>(),
-            (<span class="string">&quot;abc&quot;</span>, <span class="number">3</span>, <span class="string">&quot;def&quot;</span>)
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_parse_template_suffix</span>() {
-        <span class="macro">assert_eq!</span>(<span class="ident">parse_template</span>(<span class="string">&quot;XXX&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;def&quot;</span>)).<span class="ident">unwrap</span>(), (<span class="string">&quot;&quot;</span>, <span class="number">3</span>, <span class="string">&quot;def&quot;</span>));
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">parse_template</span>(<span class="string">&quot;abcXXX&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;def&quot;</span>)).<span class="ident">unwrap</span>(),
-            (<span class="string">&quot;abc&quot;</span>, <span class="number">3</span>, <span class="string">&quot;def&quot;</span>)
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_parse_template_errors</span>() {
-        <span class="macro">assert!</span>(<span class="ident">parse_template</span>(<span class="string">&quot;a/bXXX&quot;</span>, <span class="prelude-val">None</span>).<span class="ident">is_err</span>());
-        <span class="macro">assert!</span>(<span class="ident">parse_template</span>(<span class="string">&quot;XXXa/b&quot;</span>, <span class="prelude-val">None</span>).<span class="ident">is_err</span>());
-        <span class="macro">assert!</span>(<span class="ident">parse_template</span>(<span class="string">&quot;XX&quot;</span>, <span class="prelude-val">None</span>).<span class="ident">is_err</span>());
-        <span class="macro">assert!</span>(<span class="ident">parse_template</span>(<span class="string">&quot;XXXabc&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;def&quot;</span>)).<span class="ident">is_err</span>());
-        <span class="macro">assert!</span>(<span class="ident">parse_template</span>(<span class="string">&quot;XXX&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;a/b&quot;</span>)).<span class="ident">is_err</span>());
-    }
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_mktemp" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>

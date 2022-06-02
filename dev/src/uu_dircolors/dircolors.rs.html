@@ -377,6 +377,43 @@
 <span id="372">372</span>
 <span id="373">373</span>
 <span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;</span>
@@ -400,6 +437,7 @@
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">BOURNE_SHELL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;bourne-shell&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">C_SHELL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;c-shell&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PRINT_DATABASE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;print-database&quot;</span>;
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PRINT_LS_COLORS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;print-ls-colors&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FILE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;FILE&quot;</span>;
 }
 
@@ -418,6 +456,7 @@
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">OutputFmt</span> {
     <span class="ident">Shell</span>,
     <span class="ident">CShell</span>,
+    <span class="ident">Display</span>,
     <span class="ident">Unknown</span>,
 }
 
@@ -455,12 +494,20 @@
     <span class="comment">// clap provides .conflicts_with / .conflicts_with_all, but we want to</span>
     <span class="comment">// manually handle conflicts so we can match the output of GNU coreutils</span>
     <span class="kw">if</span> (<span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::C_SHELL</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::BOURNE_SHELL</span>))
-        <span class="op">&amp;&amp;</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::PRINT_DATABASE</span>)
+        <span class="op">&amp;&amp;</span> (<span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::PRINT_DATABASE</span>)
+            <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::PRINT_LS_COLORS</span>))
     {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">UUsageError::new</span>(
             <span class="number">1</span>,
             <span class="string">&quot;the options to output dircolors&#39; internal database and\nto select a shell \
              syntax are mutually exclusive&quot;</span>,
+        ));
+    }
+
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::PRINT_DATABASE</span>) <span class="op">&amp;&amp;</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::PRINT_LS_COLORS</span>) {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">UUsageError::new</span>(
+            <span class="number">1</span>,
+            <span class="string">&quot;options --print-database and --print-ls-colors are mutually exclusive&quot;</span>,
         ));
     }
 
@@ -479,12 +526,15 @@
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
     }
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out_format</span> <span class="op">=</span> <span class="ident">OutputFmt::Unknown</span>;
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::C_SHELL</span>) {
-        <span class="ident">out_format</span> <span class="op">=</span> <span class="ident">OutputFmt::CShell</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out_format</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::C_SHELL</span>) {
+        <span class="ident">OutputFmt::CShell</span>
     } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::BOURNE_SHELL</span>) {
-        <span class="ident">out_format</span> <span class="op">=</span> <span class="ident">OutputFmt::Shell</span>;
-    }
+        <span class="ident">OutputFmt::Shell</span>
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::PRINT_LS_COLORS</span>) {
+        <span class="ident">OutputFmt::Display</span>
+    } <span class="kw">else</span> {
+        <span class="ident">OutputFmt::Unknown</span>
+    };
 
     <span class="kw">if</span> <span class="ident">out_format</span> <span class="op">==</span> <span class="ident">OutputFmt::Unknown</span> {
         <span class="kw">match</span> <span class="ident">guess_syntax</span>() {
@@ -566,6 +616,12 @@
                 .<span class="ident">display_order</span>(<span class="number">3</span>),
         )
         .<span class="ident">arg</span>(
+            <span class="ident">Arg::new</span>(<span class="ident">options::PRINT_LS_COLORS</span>)
+                .<span class="ident">long</span>(<span class="string">&quot;print-ls-colors&quot;</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;output fully escaped colors for display&quot;</span>)
+                .<span class="ident">display_order</span>(<span class="number">4</span>),
+        )
+        .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FILE</span>)
                 .<span class="ident">hide</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>)
@@ -633,6 +689,7 @@
     <span class="ident">Continue</span>,
     <span class="ident">Pass</span>,
 }
+
 <span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
 <span class="kw">use</span> <span class="ident">uucore</span>::{<span class="ident">format_usage</span>, <span class="ident">InvalidEncodingHandling</span>};
 
@@ -641,11 +698,12 @@
     <span class="ident">T</span>: <span class="ident">IntoIterator</span>,
     <span class="ident">T::Item</span>: <span class="ident">Borrow</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span>,
 {
-    <span class="comment">// 1440 &gt; $(dircolors | wc -m)</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">String::with_capacity</span>(<span class="number">1440</span>);
+    <span class="comment">// 1790 &gt; $(dircolors | wc -m)</span>
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">String::with_capacity</span>(<span class="number">1790</span>);
     <span class="kw">match</span> <span class="ident">fmt</span> {
         <span class="ident">OutputFmt::Shell</span> =&gt; <span class="ident">result</span>.<span class="ident">push_str</span>(<span class="string">&quot;LS_COLORS=&#39;&quot;</span>),
         <span class="ident">OutputFmt::CShell</span> =&gt; <span class="ident">result</span>.<span class="ident">push_str</span>(<span class="string">&quot;setenv LS_COLORS &#39;&quot;</span>),
+        <span class="ident">OutputFmt::Display</span> =&gt; (),
         <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(),
     }
 
@@ -724,13 +782,25 @@
             }
             <span class="kw">if</span> <span class="ident">state</span> <span class="op">!</span><span class="op">=</span> <span class="ident">ParseState::Pass</span> {
                 <span class="kw">if</span> <span class="ident">key</span>.<span class="ident">starts_with</span>(<span class="string">&#39;.&#39;</span>) {
-                    <span class="ident">result</span>.<span class="ident">push_str</span>(<span class="macro">format!</span>(<span class="string">&quot;*{}={}:&quot;</span>, <span class="ident">key</span>, <span class="ident">val</span>).<span class="ident">as_str</span>());
+                    <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">fmt</span> <span class="op">==</span> <span class="ident">OutputFmt::Display</span> {
+                        <span class="ident">result</span>.<span class="ident">push_str</span>(<span class="macro">format!</span>(<span class="string">&quot;\x1b[{1}m*{0}\t{1}\x1b[0m\n&quot;</span>, <span class="ident">key</span>, <span class="ident">val</span>).<span class="ident">as_str</span>());
+                    } <span class="kw">else</span> {
+                        <span class="ident">result</span>.<span class="ident">push_str</span>(<span class="macro">format!</span>(<span class="string">&quot;*{}={}:&quot;</span>, <span class="ident">key</span>, <span class="ident">val</span>).<span class="ident">as_str</span>());
+                    }
                 } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">key</span>.<span class="ident">starts_with</span>(<span class="string">&#39;*&#39;</span>) {
-                    <span class="ident">result</span>.<span class="ident">push_str</span>(<span class="macro">format!</span>(<span class="string">&quot;{}={}:&quot;</span>, <span class="ident">key</span>, <span class="ident">val</span>).<span class="ident">as_str</span>());
+                    <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">fmt</span> <span class="op">==</span> <span class="ident">OutputFmt::Display</span> {
+                        <span class="ident">result</span>.<span class="ident">push_str</span>(<span class="macro">format!</span>(<span class="string">&quot;\x1b[{1}m{0}\t{1}\x1b[0m\n&quot;</span>, <span class="ident">key</span>, <span class="ident">val</span>).<span class="ident">as_str</span>());
+                    } <span class="kw">else</span> {
+                        <span class="ident">result</span>.<span class="ident">push_str</span>(<span class="macro">format!</span>(<span class="string">&quot;{}={}:&quot;</span>, <span class="ident">key</span>, <span class="ident">val</span>).<span class="ident">as_str</span>());
+                    }
                 } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">lower</span> <span class="op">==</span> <span class="string">&quot;options&quot;</span> <span class="op">|</span><span class="op">|</span> <span class="ident">lower</span> <span class="op">==</span> <span class="string">&quot;color&quot;</span> <span class="op">|</span><span class="op">|</span> <span class="ident">lower</span> <span class="op">==</span> <span class="string">&quot;eightbit&quot;</span> {
                     <span class="comment">// Slackware only. Ignore</span>
                 } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">table</span>.<span class="ident">get</span>(<span class="ident">lower</span>.<span class="ident">as_str</span>()) {
-                    <span class="ident">result</span>.<span class="ident">push_str</span>(<span class="macro">format!</span>(<span class="string">&quot;{}={}:&quot;</span>, <span class="ident">s</span>, <span class="ident">val</span>).<span class="ident">as_str</span>());
+                    <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">fmt</span> <span class="op">==</span> <span class="ident">OutputFmt::Display</span> {
+                        <span class="ident">result</span>.<span class="ident">push_str</span>(<span class="macro">format!</span>(<span class="string">&quot;\x1b[{1}m{0}\t{1}\x1b[0m\n&quot;</span>, <span class="ident">s</span>, <span class="ident">val</span>).<span class="ident">as_str</span>());
+                    } <span class="kw">else</span> {
+                        <span class="ident">result</span>.<span class="ident">push_str</span>(<span class="macro">format!</span>(<span class="string">&quot;{}={}:&quot;</span>, <span class="ident">s</span>, <span class="ident">val</span>).<span class="ident">as_str</span>());
+                    }
                 } <span class="kw">else</span> {
                     <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(
                         <span class="string">&quot;{}:{}: unrecognized keyword {}&quot;</span>,
@@ -746,6 +816,10 @@
     <span class="kw">match</span> <span class="ident">fmt</span> {
         <span class="ident">OutputFmt::Shell</span> =&gt; <span class="ident">result</span>.<span class="ident">push_str</span>(<span class="string">&quot;&#39;;\nexport LS_COLORS&quot;</span>),
         <span class="ident">OutputFmt::CShell</span> =&gt; <span class="ident">result</span>.<span class="ident">push</span>(<span class="string">&#39;\&#39;&#39;</span>),
+        <span class="ident">OutputFmt::Display</span> =&gt; {
+            <span class="comment">// remove latest &quot;\n&quot;</span>
+            <span class="ident">result</span>.<span class="ident">pop</span>();
+        }
         <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(),
     }
 
