@@ -515,6 +515,36 @@
 <span id="510">510</span>
 <span id="511">511</span>
 <span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Joseph Crail &lt;jbcrail@gmail.com&gt;</span>
@@ -553,6 +583,7 @@
     <span class="ident">suffix</span>: <span class="ident">String</span>,
     <span class="ident">symbolic</span>: <span class="ident">bool</span>,
     <span class="ident">relative</span>: <span class="ident">bool</span>,
+    <span class="ident">logical</span>: <span class="ident">bool</span>,
     <span class="ident">target_dir</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="ident">no_target_dir</span>: <span class="ident">bool</span>,
     <span class="ident">no_dereference</span>: <span class="ident">bool</span>,
@@ -638,9 +669,12 @@
 
 <span class="kw">mod</span> <span class="ident">options</span> {
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FORCE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;force&quot;</span>;
+    <span class="comment">//pub const DIRECTORY: &amp;str = &quot;directory&quot;;</span>
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">INTERACTIVE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;interactive&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NO_DEREFERENCE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;no-dereference&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SYMBOLIC</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;symbolic&quot;</span>;
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LOGICAL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;logical&quot;</span>;
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PHYSICAL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;physical&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TARGET_DIRECTORY</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;target-directory&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NO_TARGET_DIRECTORY</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;no-target-directory&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RELATIVE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;relative&quot;</span>;
@@ -669,6 +703,8 @@
         .<span class="ident">map</span>(<span class="ident">PathBuf::from</span>)
         .<span class="ident">collect</span>();
 
+    <span class="kw">let</span> <span class="ident">symbolic</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::SYMBOLIC</span>);
+
     <span class="kw">let</span> <span class="ident">overwrite_mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::FORCE</span>) {
         <span class="ident">OverwriteMode::Force</span>
     } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::INTERACTIVE</span>) {
@@ -680,11 +716,15 @@
     <span class="kw">let</span> <span class="ident">backup_mode</span> <span class="op">=</span> <span class="ident">backup_control::determine_backup_mode</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">backup_suffix</span> <span class="op">=</span> <span class="ident">backup_control::determine_backup_suffix</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>);
 
+    <span class="comment">// When we have &quot;-L&quot; or &quot;-L -P&quot;, false otherwise</span>
+    <span class="kw">let</span> <span class="ident">logical</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::LOGICAL</span>);
+
     <span class="kw">let</span> <span class="ident">settings</span> <span class="op">=</span> <span class="ident">Settings</span> {
         <span class="ident">overwrite</span>: <span class="ident">overwrite_mode</span>,
         <span class="ident">backup</span>: <span class="ident">backup_mode</span>,
         <span class="ident">suffix</span>: <span class="ident">backup_suffix</span>,
-        <span class="ident">symbolic</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::SYMBOLIC</span>),
+        <span class="ident">symbolic</span>,
+        <span class="ident">logical</span>,
         <span class="ident">relative</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::RELATIVE</span>),
         <span class="ident">target_dir</span>: <span class="ident">matches</span>
             .<span class="ident">value_of</span>(<span class="ident">options::TARGET_DIRECTORY</span>)
@@ -705,9 +745,12 @@
         .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
         .<span class="ident">arg</span>(<span class="ident">backup_control::arguments::backup</span>())
         .<span class="ident">arg</span>(<span class="ident">backup_control::arguments::backup_no_args</span>())
-        <span class="comment">// TODO: opts.arg(</span>
-        <span class="comment">//    Arg::new((&quot;d&quot;, &quot;directory&quot;, &quot;allow users with appropriate privileges to attempt \</span>
-        <span class="comment">//                                       to make hard links to directories&quot;);</span>
+        <span class="comment">/*.arg(
+            Arg::new(options::DIRECTORY)
+                .short(&#39;d&#39;)
+                .long(options::DIRECTORY)
+                .help(&quot;allow users with appropriate privileges to attempt to make hard links to directories&quot;)
+        )*/</span>
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FORCE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;f&#39;</span>)
@@ -729,15 +772,24 @@
                      symbolic link to a directory&quot;</span>,
                 ),
         )
-        <span class="comment">// TODO: opts.arg(</span>
-        <span class="comment">//    Arg::new((&quot;L&quot;, &quot;logical&quot;, &quot;dereference TARGETs that are symbolic links&quot;);</span>
-        <span class="comment">//</span>
-        <span class="comment">// TODO: opts.arg(</span>
-        <span class="comment">//    Arg::new((&quot;P&quot;, &quot;physical&quot;, &quot;make hard links directly to symbolic links&quot;);</span>
+        .<span class="ident">arg</span>(
+            <span class="ident">Arg::new</span>(<span class="ident">options::LOGICAL</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;L&#39;</span>)
+                .<span class="ident">long</span>(<span class="ident">options::LOGICAL</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;dereference TARGETs that are symbolic links&quot;</span>)
+                .<span class="ident">overrides_with</span>(<span class="ident">options::PHYSICAL</span>),
+        )
+        .<span class="ident">arg</span>(
+            <span class="comment">// Not implemented yet</span>
+            <span class="ident">Arg::new</span>(<span class="ident">options::PHYSICAL</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;P&#39;</span>)
+                .<span class="ident">long</span>(<span class="ident">options::PHYSICAL</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;make hard links directly to symbolic links&quot;</span>),
+        )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::SYMBOLIC</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
-                .<span class="ident">long</span>(<span class="string">&quot;symbolic&quot;</span>)
+                .<span class="ident">long</span>(<span class="ident">options::SYMBOLIC</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;make symbolic links instead of hard links&quot;</span>)
                 <span class="comment">// override added for https://github.com/uutils/coreutils/issues/2359</span>
                 .<span class="ident">overrides_with</span>(<span class="ident">options::SYMBOLIC</span>),
@@ -963,7 +1015,15 @@
     <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">symbolic</span> {
         <span class="ident">symlink</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>, <span class="ident">dst</span>)<span class="question-mark">?</span>;
     } <span class="kw">else</span> {
-        <span class="ident">fs::hard_link</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>, <span class="ident">dst</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">logical</span> <span class="op">&amp;&amp;</span> <span class="ident">is_symlink</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>) {
+            <span class="comment">// if we want to have an hard link,</span>
+            <span class="comment">// source is a symlink and -L is passed</span>
+            <span class="comment">// we want to resolve the symlink to create the hardlink</span>
+            <span class="ident">std::fs::canonicalize</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>)<span class="question-mark">?</span>
+        } <span class="kw">else</span> {
+            <span class="ident">source</span>.<span class="ident">to_path_buf</span>()
+        };
+        <span class="ident">fs::hard_link</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>, <span class="ident">dst</span>)<span class="question-mark">?</span>;
     }
 
     <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">verbose</span> {
