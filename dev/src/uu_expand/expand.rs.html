@@ -400,6 +400,49 @@
 <span id="395">395</span>
 <span id="396">396</span>
 <span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Virgile Andreani &lt;virgile.andreani@anbuco.fr&gt;</span>
@@ -415,12 +458,14 @@
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">std::error::Error</span>;
+<span class="kw">use</span> <span class="ident">std::fmt</span>;
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">stdout</span>, <span class="ident">BufRead</span>, <span class="ident">BufReader</span>, <span class="ident">BufWriter</span>, <span class="ident">Read</span>, <span class="ident">Write</span>};
 <span class="kw">use</span> <span class="ident">std::str::from_utf8</span>;
 <span class="kw">use</span> <span class="ident">unicode_width::UnicodeWidthChar</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
-<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UResult</span>};
+<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UError</span>, <span class="ident">UResult</span>};
 <span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Convert tabs in each FILE to spaces, writing to standard output.
@@ -459,6 +504,36 @@
     <span class="ident">c</span> <span class="op">==</span> <span class="string">&#39; &#39;</span> <span class="op">|</span><span class="op">|</span> <span class="ident">c</span> <span class="op">==</span> <span class="string">&#39;,&#39;</span>
 }
 
+<span class="doccomment">/// Errors that can occur when parsing a `--tabs` argument.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">enum</span> <span class="ident">ParseError</span> {
+    <span class="ident">InvalidCharacter</span>(<span class="ident">String</span>),
+    <span class="ident">SpecifierNotAtStartOfNumber</span>(<span class="ident">String</span>, <span class="ident">String</span>),
+    <span class="ident">TabSizeCannotBeZero</span>,
+    <span class="ident">TabSizesMustBeAscending</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="ident">ParseError</span> {}
+<span class="kw">impl</span> <span class="ident">UError</span> <span class="kw">for</span> <span class="ident">ParseError</span> {}
+
+<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">ParseError</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident"><span class="self">Self</span>::InvalidCharacter</span>(<span class="ident">s</span>) =&gt; {
+                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;tab size contains invalid character(s): {}&quot;</span>, <span class="ident">s</span>.<span class="ident">quote</span>())
+            }
+            <span class="ident"><span class="self">Self</span>::SpecifierNotAtStartOfNumber</span>(<span class="ident">specifier</span>, <span class="ident">s</span>) =&gt; <span class="macro">write!</span>(
+                <span class="ident">f</span>,
+                <span class="string">&quot;{} specifier not at start of number: {}&quot;</span>,
+                <span class="ident">specifier</span>.<span class="ident">quote</span>(),
+                <span class="ident">s</span>.<span class="ident">quote</span>(),
+            ),
+            <span class="ident"><span class="self">Self</span>::TabSizeCannotBeZero</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;tab size cannot be 0&quot;</span>),
+            <span class="ident"><span class="self">Self</span>::TabSizesMustBeAscending</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;tab sizes must be ascending&quot;</span>),
+        }
+    }
+}
+
 <span class="doccomment">/// Parse a list of tabstops from a `--tabs` argument.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This function returns both the vector of numbers appearing in the</span>
@@ -467,14 +542,14 @@
 <span class="doccomment">/// in the list. This mode defines the strategy to use for computing the</span>
 <span class="doccomment">/// number of spaces to use for columns beyond the end of the tab stop</span>
 <span class="doccomment">/// list specified here.</span>
-<span class="kw">fn</span> <span class="ident">tabstops_parse</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; (<span class="ident">RemainingMode</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+<span class="kw">fn</span> <span class="ident">tabstops_parse</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">RemainingMode</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>), <span class="ident">ParseError</span><span class="op">&gt;</span> {
     <span class="comment">// Leading commas and spaces are ignored.</span>
     <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">trim_start_matches</span>(<span class="ident">is_space_or_comma</span>);
 
     <span class="comment">// If there were only commas and spaces in the string, just use the</span>
     <span class="comment">// default tabstops.</span>
     <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">is_empty</span>() {
-        <span class="kw">return</span> (<span class="ident">RemainingMode::None</span>, <span class="macro">vec!</span>[<span class="ident">DEFAULT_TABSTOP</span>]);
+        <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="ident">RemainingMode::None</span>, <span class="macro">vec!</span>[<span class="ident">DEFAULT_TABSTOP</span>]));
     }
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">nums</span> <span class="op">=</span> <span class="macro">vec!</span>[];
@@ -491,23 +566,34 @@
                 }
                 <span class="kw">_</span> =&gt; {
                     <span class="comment">// Parse a number from the byte sequence.</span>
-                    <span class="kw">let</span> <span class="ident">num</span> <span class="op">=</span> <span class="ident">from_utf8</span>(<span class="kw-2">&amp;</span><span class="ident">bytes</span>[<span class="ident">i</span>..]).<span class="ident">unwrap</span>().<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>();
+                    <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">from_utf8</span>(<span class="kw-2">&amp;</span><span class="ident">bytes</span>[<span class="ident">i</span>..]).<span class="ident">unwrap</span>();
+                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">num</span>) <span class="op">=</span> <span class="ident">s</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
+                        <span class="comment">// Tab size must be positive.</span>
+                        <span class="kw">if</span> <span class="ident">num</span> <span class="op">==</span> <span class="number">0</span> {
+                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::TabSizeCannotBeZero</span>);
+                        }
 
-                    <span class="comment">// Tab size must be positive.</span>
-                    <span class="kw">if</span> <span class="ident">num</span> <span class="op">==</span> <span class="number">0</span> {
-                        <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;tab size cannot be 0&quot;</span>);
-                    }
+                        <span class="comment">// Tab sizes must be ascending.</span>
+                        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">last_stop</span>) <span class="op">=</span> <span class="ident">nums</span>.<span class="ident">last</span>() {
+                            <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">last_stop</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">num</span> {
+                                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::TabSizesMustBeAscending</span>);
+                            }
+                        }
 
-                    <span class="comment">// Tab sizes must be ascending.</span>
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">last_stop</span>) <span class="op">=</span> <span class="ident">nums</span>.<span class="ident">last</span>() {
-                        <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">last_stop</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">num</span> {
-                            <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;tab sizes must be ascending&quot;</span>);
+                        <span class="comment">// Append this tab stop to the list of all tabstops.</span>
+                        <span class="ident">nums</span>.<span class="ident">push</span>(<span class="ident">num</span>);
+                        <span class="kw">break</span>;
+                    } <span class="kw">else</span> {
+                        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">trim_start_matches</span>(<span class="ident">char::is_numeric</span>);
+                        <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">starts_with</span>(<span class="string">&#39;/&#39;</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">starts_with</span>(<span class="string">&#39;+&#39;</span>) {
+                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::SpecifierNotAtStartOfNumber</span>(
+                                <span class="ident">s</span>[<span class="number">0</span>..<span class="number">1</span>].<span class="ident">to_string</span>(),
+                                <span class="ident">s</span>.<span class="ident">to_string</span>(),
+                            ));
+                        } <span class="kw">else</span> {
+                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::InvalidCharacter</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()));
                         }
                     }
-
-                    <span class="comment">// Append this tab stop to the list of all tabstops.</span>
-                    <span class="ident">nums</span>.<span class="ident">push</span>(<span class="ident">num</span>);
-                    <span class="kw">break</span>;
                 }
             }
         }
@@ -517,7 +603,7 @@
     <span class="kw">if</span> <span class="ident">nums</span>.<span class="ident">is_empty</span>() {
         <span class="ident">nums</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">DEFAULT_TABSTOP</span>];
     }
-    (<span class="ident">remaining_mode</span>, <span class="ident">nums</span>)
+    <span class="prelude-val">Ok</span>((<span class="ident">remaining_mode</span>, <span class="ident">nums</span>))
 }
 
 <span class="kw">struct</span> <span class="ident">Options</span> {
@@ -533,9 +619,9 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Options</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> (<span class="ident">remaining_mode</span>, <span class="ident">tabstops</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="ident">options::TABS</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="ident">tabstops_parse</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="ident">join</span>(<span class="string">&quot;,&quot;</span>)),
+            <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="ident">tabstops_parse</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="ident">join</span>(<span class="string">&quot;,&quot;</span>))<span class="question-mark">?</span>,
             <span class="prelude-val">None</span> =&gt; (<span class="ident">RemainingMode::None</span>, <span class="macro">vec!</span>[<span class="ident">DEFAULT_TABSTOP</span>]),
         };
 
@@ -560,14 +646,14 @@
             <span class="prelude-val">None</span> =&gt; <span class="macro">vec!</span>[<span class="string">&quot;-&quot;</span>.<span class="ident">to_owned</span>()],
         };
 
-        <span class="self">Self</span> {
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
             <span class="ident">files</span>,
             <span class="ident">tabstops</span>,
             <span class="ident">tspaces</span>,
             <span class="ident">iflag</span>,
             <span class="ident">uflag</span>,
             <span class="ident">remaining_mode</span>,
-        }
+        })
     }
 }
 
@@ -575,7 +661,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
-    <span class="ident">expand</span>(<span class="kw-2">&amp;</span><span class="ident">Options::new</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>)).<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to write output&quot;</span>.<span class="ident">to_string</span>())
+    <span class="ident">expand</span>(<span class="kw-2">&amp;</span><span class="ident">Options::new</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>)<span class="question-mark">?</span>).<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to write output&quot;</span>.<span class="ident">to_string</span>())
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
