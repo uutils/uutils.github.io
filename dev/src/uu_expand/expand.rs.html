@@ -443,6 +443,16 @@
 <span id="438">438</span>
 <span id="439">439</span>
 <span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Virgile Andreani &lt;virgile.andreani@anbuco.fr&gt;</span>
@@ -462,6 +472,7 @@
 <span class="kw">use</span> <span class="ident">std::fmt</span>;
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">stdout</span>, <span class="ident">BufRead</span>, <span class="ident">BufReader</span>, <span class="ident">BufWriter</span>, <span class="ident">Read</span>, <span class="ident">Write</span>};
+<span class="kw">use</span> <span class="ident">std::num::IntErrorKind</span>;
 <span class="kw">use</span> <span class="ident">std::str::from_utf8</span>;
 <span class="kw">use</span> <span class="ident">unicode_width::UnicodeWidthChar</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
@@ -510,6 +521,7 @@
     <span class="ident">InvalidCharacter</span>(<span class="ident">String</span>),
     <span class="ident">SpecifierNotAtStartOfNumber</span>(<span class="ident">String</span>, <span class="ident">String</span>),
     <span class="ident">TabSizeCannotBeZero</span>,
+    <span class="ident">TabSizeTooLarge</span>(<span class="ident">String</span>),
     <span class="ident">TabSizesMustBeAscending</span>,
 }
 
@@ -529,6 +541,7 @@
                 <span class="ident">s</span>.<span class="ident">quote</span>(),
             ),
             <span class="ident"><span class="self">Self</span>::TabSizeCannotBeZero</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;tab size cannot be 0&quot;</span>),
+            <span class="ident"><span class="self">Self</span>::TabSizeTooLarge</span>(<span class="ident">s</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;tab stop is too large {}&quot;</span>, <span class="ident">s</span>.<span class="ident">quote</span>()),
             <span class="ident"><span class="self">Self</span>::TabSizesMustBeAscending</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;tab sizes must be ascending&quot;</span>),
         }
     }
@@ -567,31 +580,38 @@
                 <span class="kw">_</span> =&gt; {
                     <span class="comment">// Parse a number from the byte sequence.</span>
                     <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">from_utf8</span>(<span class="kw-2">&amp;</span><span class="ident">bytes</span>[<span class="ident">i</span>..]).<span class="ident">unwrap</span>();
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">num</span>) <span class="op">=</span> <span class="ident">s</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
-                        <span class="comment">// Tab size must be positive.</span>
-                        <span class="kw">if</span> <span class="ident">num</span> <span class="op">==</span> <span class="number">0</span> {
-                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::TabSizeCannotBeZero</span>);
-                        }
-
-                        <span class="comment">// Tab sizes must be ascending.</span>
-                        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">last_stop</span>) <span class="op">=</span> <span class="ident">nums</span>.<span class="ident">last</span>() {
-                            <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">last_stop</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">num</span> {
-                                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::TabSizesMustBeAscending</span>);
+                    <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
+                        <span class="prelude-val">Ok</span>(<span class="ident">num</span>) =&gt; {
+                            <span class="comment">// Tab size must be positive.</span>
+                            <span class="kw">if</span> <span class="ident">num</span> <span class="op">==</span> <span class="number">0</span> {
+                                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::TabSizeCannotBeZero</span>);
                             }
-                        }
 
-                        <span class="comment">// Append this tab stop to the list of all tabstops.</span>
-                        <span class="ident">nums</span>.<span class="ident">push</span>(<span class="ident">num</span>);
-                        <span class="kw">break</span>;
-                    } <span class="kw">else</span> {
-                        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">trim_start_matches</span>(<span class="ident">char::is_numeric</span>);
-                        <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">starts_with</span>(<span class="string">&#39;/&#39;</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">starts_with</span>(<span class="string">&#39;+&#39;</span>) {
-                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::SpecifierNotAtStartOfNumber</span>(
-                                <span class="ident">s</span>[<span class="number">0</span>..<span class="number">1</span>].<span class="ident">to_string</span>(),
-                                <span class="ident">s</span>.<span class="ident">to_string</span>(),
-                            ));
-                        } <span class="kw">else</span> {
-                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::InvalidCharacter</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()));
+                            <span class="comment">// Tab sizes must be ascending.</span>
+                            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">last_stop</span>) <span class="op">=</span> <span class="ident">nums</span>.<span class="ident">last</span>() {
+                                <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">last_stop</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">num</span> {
+                                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::TabSizesMustBeAscending</span>);
+                                }
+                            }
+
+                            <span class="comment">// Append this tab stop to the list of all tabstops.</span>
+                            <span class="ident">nums</span>.<span class="ident">push</span>(<span class="ident">num</span>);
+                            <span class="kw">break</span>;
+                        }
+                        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
+                            <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">e</span>.<span class="ident">kind</span>() <span class="op">==</span> <span class="ident">IntErrorKind::PosOverflow</span> {
+                                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::TabSizeTooLarge</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()));
+                            }
+
+                            <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">trim_start_matches</span>(<span class="ident">char::is_numeric</span>);
+                            <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">starts_with</span>(<span class="string">&#39;/&#39;</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">starts_with</span>(<span class="string">&#39;+&#39;</span>) {
+                                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::SpecifierNotAtStartOfNumber</span>(
+                                    <span class="ident">s</span>[<span class="number">0</span>..<span class="number">1</span>].<span class="ident">to_string</span>(),
+                                    <span class="ident">s</span>.<span class="ident">to_string</span>(),
+                                ));
+                            } <span class="kw">else</span> {
+                                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::InvalidCharacter</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()));
+                            }
                         }
                     }
                 }

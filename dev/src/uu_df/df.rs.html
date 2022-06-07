@@ -848,6 +848,23 @@
 <span id="843">843</span>
 <span id="844">844</span>
 <span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Fangxu Hu &lt;framlog@gmail.com&gt;</span>
@@ -937,6 +954,9 @@ of 1000).&quot;</span>;
     <span class="doccomment">/// types will *not* be listed.</span>
     <span class="ident">exclude</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 
+    <span class="doccomment">/// Whether to sync before operating.</span>
+    <span class="ident">sync</span>: <span class="ident">bool</span>,
+
     <span class="doccomment">/// Whether to show a final row comprising the totals for each column.</span>
     <span class="ident">show_total</span>: <span class="ident">bool</span>,
 
@@ -954,6 +974,7 @@ of 1000).&quot;</span>;
             <span class="ident">header_mode</span>: <span class="ident">Default::default</span>(),
             <span class="ident">include</span>: <span class="ident">Default::default</span>(),
             <span class="ident">exclude</span>: <span class="ident">Default::default</span>(),
+            <span class="ident">sync</span>: <span class="ident">Default::default</span>(),
             <span class="ident">show_total</span>: <span class="ident">Default::default</span>(),
             <span class="ident">columns</span>: <span class="macro">vec!</span>[
                 <span class="ident">Column::Source</span>,
@@ -1028,6 +1049,7 @@ of 1000).&quot;</span>;
         <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
             <span class="ident">show_local_fs</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_LOCAL</span>),
             <span class="ident">show_all_fs</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_ALL</span>),
+            <span class="ident">sync</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_SYNC</span>),
             <span class="ident">block_size</span>: <span class="ident">read_block_size</span>(<span class="ident">matches</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">e</span> {
                 <span class="ident">ParseSizeError::InvalidSuffix</span>(<span class="ident">s</span>) =&gt; <span class="ident">OptionsError::InvalidSuffix</span>(<span class="ident">s</span>),
                 <span class="ident">ParseSizeError::SizeTooBig</span>(<span class="kw">_</span>) =&gt; <span class="ident">OptionsError::BlockSizeTooLarge</span>(
@@ -1175,9 +1197,21 @@ of 1000).&quot;</span>;
 
 <span class="doccomment">/// Get all currently mounted filesystems.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// `opt` excludes certain filesystems from consideration; see</span>
+<span class="doccomment">/// `opt` excludes certain filesystems from consideration and allows for the synchronization of filesystems before running; see</span>
 <span class="doccomment">/// [`Options`] for more information.</span>
+
 <span class="kw">fn</span> <span class="ident">get_all_filesystems</span>(<span class="ident">opt</span>: <span class="kw-2">&amp;</span><span class="ident">Options</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Filesystem</span><span class="op">&gt;</span> {
+    <span class="comment">// Run a sync call before any operation if so instructed.</span>
+    <span class="kw">if</span> <span class="ident">opt</span>.<span class="ident">sync</span> {
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
+        <span class="kw">unsafe</span> {
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;android&quot;</span>))]</span>
+            <span class="ident">uucore::libc::sync</span>();
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;android&quot;</span>)]</span>
+            <span class="ident">uucore::libc::syscall</span>(<span class="ident">uucore::libc::SYS_sync</span>);
+        }
+    }
+
     <span class="comment">// The list of all mounted filesystems.</span>
     <span class="comment">//</span>
     <span class="comment">// Filesystems excluded by the command-line options are</span>
@@ -1409,7 +1443,7 @@ of 1000).&quot;</span>;
             <span class="ident">Arg::new</span>(<span class="ident">OPT_SYNC</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;sync&quot;</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">OPT_NO_SYNC</span>, <span class="ident">OPT_SYNC</span>])
-                .<span class="ident">help</span>(<span class="string">&quot;invoke sync before getting usage info&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;invoke sync before getting usage info (non-windows only)&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_TYPE</span>)
