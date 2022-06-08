@@ -489,6 +489,8 @@
 <span id="484">484</span>
 <span id="485">485</span>
 <span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Sunrin SHIMURA</span>
@@ -715,6 +717,11 @@
 
 <span class="kw">impl</span> <span class="ident">Params</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="ident">Options</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">MkTempError</span><span class="op">&gt;</span> {
+        <span class="comment">// The template argument must end in &#39;X&#39; if a suffix option is given.</span>
+        <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">suffix</span>.<span class="ident">is_some</span>() <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">template</span>.<span class="ident">ends_with</span>(<span class="string">&#39;X&#39;</span>) {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::MustEndInX</span>(<span class="ident">options</span>.<span class="ident">template</span>));
+        }
+
         <span class="comment">// Get the start and end indices of the randomized part of the template.</span>
         <span class="comment">//</span>
         <span class="comment">// For example, if the template is &quot;abcXXXXyz&quot;, then `i` is 3 and `j` is 7.</span>
@@ -775,9 +782,6 @@
         <span class="kw">let</span> <span class="ident">suffix</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">suffix_from_template</span>, <span class="ident">suffix_from_option</span>);
         <span class="kw">if</span> <span class="ident">suffix</span>.<span class="ident">contains</span>(<span class="ident">MAIN_SEPARATOR</span>) {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::SuffixContainsDirSeparator</span>(<span class="ident">suffix</span>));
-        }
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">suffix_from_template</span>.<span class="ident">is_empty</span>() <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">suffix_from_option</span>.<span class="ident">is_empty</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MkTempError::MustEndInX</span>(<span class="ident">options</span>.<span class="ident">template</span>));
         }
 
         <span class="comment">// The number of random characters in the template.</span>

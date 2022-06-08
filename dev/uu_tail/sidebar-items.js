@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["uu_app",""],["uumain",""]],"mod":[["options",""]]});
+initSidebarItems({"fn":[["stdin_is_bad_fd",""],["stdin_is_pipe_or_fifo",""],["uu_app",""],["uumain",""]],"mod":[["options",""],["text",""]]});
