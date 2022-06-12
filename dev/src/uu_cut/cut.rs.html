@@ -623,6 +623,7 @@
 <span id="618">618</span>
 <span id="619">619</span>
 <span id="620">620</span>
+<span id="621">621</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Rolf Morel &lt;rolfmorel@gmail.com&gt;</span>
@@ -1027,6 +1028,7 @@
         .<span class="ident">collect_str</span>(<span class="ident">InvalidEncodingHandling::Ignore</span>)
         .<span class="ident">accept_any</span>();
 
+    <span class="kw">let</span> <span class="ident">delimiter_is_equal</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="string">&quot;-d=&quot;</span>.<span class="ident">to_string</span>()); <span class="comment">// special case</span>
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
     <span class="kw">let</span> <span class="ident">complement</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::COMPLEMENT</span>);
@@ -1085,11 +1087,11 @@
                         <span class="comment">// GNU&#39;s `cut` supports `-d=` to set the delimiter to `=`.</span>
                         <span class="comment">// Clap parsing is limited in this situation, see:</span>
                         <span class="comment">// https://github.com/uutils/coreutils/issues/2424#issuecomment-863825242</span>
-                        <span class="comment">// Since clap parsing handles `-d=` as delimiter explicitly set to &quot;&quot; and</span>
-                        <span class="comment">// an empty delimiter is not accepted by GNU&#39;s `cut` (and makes no sense),</span>
-                        <span class="comment">// we can use this as basis for a simple workaround:</span>
-                        <span class="kw">if</span> <span class="ident">delim</span>.<span class="ident">is_empty</span>() {
+                        <span class="kw">if</span> <span class="ident">delimiter_is_equal</span> {
                             <span class="ident">delim</span> <span class="op">=</span> <span class="string">&quot;=&quot;</span>;
+                        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">delim</span> <span class="op">==</span> <span class="string">&quot;&#39;&#39;&quot;</span> {
+                            <span class="comment">// treat `&#39;&#39;` as empty delimiter</span>
+                            <span class="ident">delim</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>;
                         }
                         <span class="kw">if</span> <span class="ident">delim</span>.<span class="ident">chars</span>().<span class="ident">count</span>() <span class="op">&gt;</span> <span class="number">1</span> {
                             <span class="prelude-val">Err</span>(<span class="string">&quot;invalid input: The &#39;--delimiter&#39; (&#39;-d&#39;) option expects empty or 1 character long, but was provided a value 2 characters or longer&quot;</span>.<span class="ident">into</span>())
