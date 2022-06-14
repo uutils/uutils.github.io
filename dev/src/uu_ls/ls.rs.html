@@ -2795,6 +2795,16 @@
 <span id="2790">2790</span>
 <span id="2791">2791</span>
 <span id="2792">2792</span>
+<span id="2793">2793</span>
+<span id="2794">2794</span>
+<span id="2795">2795</span>
+<span id="2796">2796</span>
+<span id="2797">2797</span>
+<span id="2798">2798</span>
+<span id="2799">2799</span>
+<span id="2800">2800</span>
+<span id="2801">2801</span>
+<span id="2802">2802</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jeremiah Peschka &lt;jeremiah.peschka@gmail.com&gt;</span>
@@ -3366,10 +3376,20 @@
         };
 
         <span class="kw">let</span> <span class="ident">width</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">options</span>.<span class="ident">value_of</span>(<span class="ident">options::WIDTH</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">x</span>) =&gt; <span class="kw">match</span> <span class="ident">x</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span>() {
-                <span class="prelude-val">Ok</span>(<span class="ident">u</span>) =&gt; <span class="ident">u</span>,
-                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">LsError::InvalidLineWidth</span>(<span class="ident">x</span>.<span class="ident">into</span>()).<span class="ident">into</span>()),
-            },
+            <span class="prelude-val">Some</span>(<span class="ident">x</span>) =&gt; {
+                <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">starts_with</span>(<span class="string">&#39;0&#39;</span>) <span class="op">&amp;&amp;</span> <span class="ident">x</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span> {
+                    <span class="comment">// Read number as octal</span>
+                    <span class="kw">match</span> <span class="ident">u16::from_str_radix</span>(<span class="ident">x</span>, <span class="number">8</span>) {
+                        <span class="prelude-val">Ok</span>(<span class="ident">v</span>) =&gt; <span class="ident">v</span>,
+                        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">LsError::InvalidLineWidth</span>(<span class="ident">x</span>.<span class="ident">into</span>()).<span class="ident">into</span>()),
+                    }
+                } <span class="kw">else</span> {
+                    <span class="kw">match</span> <span class="ident">x</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span>() {
+                        <span class="prelude-val">Ok</span>(<span class="ident">u</span>) =&gt; <span class="ident">u</span>,
+                        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">LsError::InvalidLineWidth</span>(<span class="ident">x</span>.<span class="ident">into</span>()).<span class="ident">into</span>()),
+                    }
+                }
+            }
             <span class="prelude-val">None</span> =&gt; <span class="kw">match</span> <span class="ident">termsize::get</span>() {
                 <span class="prelude-val">Some</span>(<span class="ident">size</span>) =&gt; <span class="ident">size</span>.<span class="ident">cols</span>,
                 <span class="prelude-val">None</span> =&gt; <span class="kw">match</span> <span class="ident">std::env::var_os</span>(<span class="string">&quot;COLUMNS&quot;</span>) {
