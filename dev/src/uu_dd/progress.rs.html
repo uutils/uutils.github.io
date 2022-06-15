@@ -520,6 +520,53 @@
 <span id="515">515</span>
 <span id="516">516</span>
 <span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -640,10 +687,7 @@
     <span class="doccomment">/// let mut cursor = Cursor::new(vec![]);</span>
     <span class="doccomment">/// let rewrite = false;</span>
     <span class="doccomment">/// prog_update.write_prog_line(&amp;mut cursor, rewrite).unwrap();</span>
-    <span class="doccomment">/// assert_eq!(</span>
-    <span class="doccomment">///     cursor.get_ref(),</span>
-    <span class="doccomment">///     b&quot;0 bytes (0 B, 0 B) copied, 1.0 s, 0 B/s\n&quot;</span>
-    <span class="doccomment">/// );</span>
+    <span class="doccomment">/// assert_eq!(cursor.get_ref(), b&quot;0 bytes copied, 1.0 s, 0 B/s\n&quot;);</span>
     <span class="doccomment">/// ```</span>
     <span class="kw">fn</span> <span class="ident">write_prog_line</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">w</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <span class="ident">Write</span>, <span class="ident">rewrite</span>: <span class="ident">bool</span>) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">btotal_metric</span> <span class="op">=</span> <span class="ident">Byte::from_bytes</span>(<span class="self">self</span>.<span class="ident">write_stat</span>.<span class="ident">bytes_total</span>)
@@ -659,17 +703,38 @@
 
         <span class="kw">let</span> <span class="ident">btotal</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">write_stat</span>.<span class="ident">bytes_total</span>;
         <span class="kw">let</span> <span class="ident">duration</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">duration</span>.<span class="ident">as_secs_f64</span>();
-        <span class="kw">if</span> <span class="ident">rewrite</span> {
+
+        <span class="comment">// If we are rewriting the progress line, do write a carriage</span>
+        <span class="comment">// return (`\r`) at the beginning and don&#39;t write a newline</span>
+        <span class="comment">// (`\n`) at the end.</span>
+        <span class="kw">let</span> (<span class="ident">carriage_return</span>, <span class="ident">newline</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">rewrite</span> { (<span class="string">&quot;\r&quot;</span>, <span class="string">&quot;&quot;</span>) } <span class="kw">else</span> { (<span class="string">&quot;&quot;</span>, <span class="string">&quot;\n&quot;</span>) };
+
+        <span class="comment">// If the number of bytes written is sufficiently large, then</span>
+        <span class="comment">// print a more concise representation of the number, like</span>
+        <span class="comment">// &quot;1.2 kB&quot; and &quot;1.0 KiB&quot;.</span>
+        <span class="kw">if</span> <span class="ident">btotal</span> <span class="op">&lt;</span> <span class="number">1000</span> {
             <span class="macro">write!</span>(
                 <span class="ident">w</span>,
-                <span class="string">&quot;\r{} bytes ({}, {}) copied, {:.1} s, {}/s&quot;</span>,
-                <span class="ident">btotal</span>, <span class="ident">btotal_metric</span>, <span class="ident">btotal_bin</span>, <span class="ident">duration</span>, <span class="ident">transfer_rate</span>
+                <span class="string">&quot;{}{} bytes copied, {:.1} s, {}/s{}&quot;</span>,
+                <span class="ident">carriage_return</span>, <span class="ident">btotal</span>, <span class="ident">duration</span>, <span class="ident">transfer_rate</span>, <span class="ident">newline</span>,
+            )
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">btotal</span> <span class="op">&lt;</span> <span class="number">1024</span> {
+            <span class="macro">write!</span>(
+                <span class="ident">w</span>,
+                <span class="string">&quot;{}{} bytes ({}) copied, {:.1} s, {}/s{}&quot;</span>,
+                <span class="ident">carriage_return</span>, <span class="ident">btotal</span>, <span class="ident">btotal_metric</span>, <span class="ident">duration</span>, <span class="ident">transfer_rate</span>, <span class="ident">newline</span>,
             )
         } <span class="kw">else</span> {
-            <span class="macro">writeln!</span>(
+            <span class="macro">write!</span>(
                 <span class="ident">w</span>,
-                <span class="string">&quot;{} bytes ({}, {}) copied, {:.1} s, {}/s&quot;</span>,
-                <span class="ident">btotal</span>, <span class="ident">btotal_metric</span>, <span class="ident">btotal_bin</span>, <span class="ident">duration</span>, <span class="ident">transfer_rate</span>
+                <span class="string">&quot;{}{} bytes ({}, {}) copied, {:.1} s, {}/s{}&quot;</span>,
+                <span class="ident">carriage_return</span>,
+                <span class="ident">btotal</span>,
+                <span class="ident">btotal_metric</span>,
+                <span class="ident">btotal_bin</span>,
+                <span class="ident">duration</span>,
+                <span class="ident">transfer_rate</span>,
+                <span class="ident">newline</span>,
             )
         }
     }
@@ -698,10 +763,7 @@
     <span class="doccomment">/// let mut iter = cursor.get_ref().split(|v| *v == b&#39;\n&#39;);</span>
     <span class="doccomment">/// assert_eq!(iter.next().unwrap(), b&quot;0+0 records in&quot;);</span>
     <span class="doccomment">/// assert_eq!(iter.next().unwrap(), b&quot;0+0 records out&quot;);</span>
-    <span class="doccomment">/// assert_eq!(</span>
-    <span class="doccomment">///     iter.next().unwrap(),</span>
-    <span class="doccomment">///     b&quot;0 bytes (0 B, 0 B) copied, 1.0 s, 0 B/s&quot;</span>
-    <span class="doccomment">/// );</span>
+    <span class="doccomment">/// assert_eq!(iter.next().unwrap(), b&quot;0 bytes copied, 1.0 s, 0 B/s&quot;);</span>
     <span class="doccomment">/// assert_eq!(iter.next().unwrap(), b&quot;&quot;);</span>
     <span class="doccomment">/// assert!(iter.next().is_none());</span>
     <span class="doccomment">/// ```</span>
@@ -959,6 +1021,17 @@
 
     <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">ProgUpdate</span>, <span class="ident">ReadStat</span>, <span class="ident">WriteStat</span>};
 
+    <span class="kw">fn</span> <span class="ident">prog_update_write</span>(<span class="ident">n</span>: <span class="ident">u128</span>) -&gt; <span class="ident">ProgUpdate</span> {
+        <span class="ident">ProgUpdate</span> {
+            <span class="ident">read_stat</span>: <span class="ident">Default::default</span>(),
+            <span class="ident">write_stat</span>: <span class="ident">WriteStat</span> {
+                <span class="ident">bytes_total</span>: <span class="ident">n</span>,
+                ..<span class="ident">Default::default</span>()
+            },
+            <span class="ident">duration</span>: <span class="ident">Duration::new</span>(<span class="number">1</span>, <span class="number">0</span>), <span class="comment">// one second</span>
+        }
+    }
+
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_read_stat_report</span>() {
         <span class="kw">let</span> <span class="ident">read_stat</span> <span class="op">=</span> <span class="ident">ReadStat::new</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);
@@ -996,12 +1069,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_prog_update_write_prog_line</span>() {
-        <span class="kw">let</span> <span class="ident">prog_update</span> <span class="op">=</span> <span class="ident">ProgUpdate</span> {
-            <span class="ident">read_stat</span>: <span class="ident">Default::default</span>(),
-            <span class="ident">write_stat</span>: <span class="ident">Default::default</span>(),
-            <span class="ident">duration</span>: <span class="ident">Duration::new</span>(<span class="number">1</span>, <span class="number">0</span>), <span class="comment">// one second</span>
-        };
-
+        <span class="kw">let</span> <span class="ident">prog_update</span> <span class="op">=</span> <span class="ident">prog_update_write</span>(<span class="number">0</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cursor</span> <span class="op">=</span> <span class="ident">Cursor::new</span>(<span class="macro">vec!</span>[]);
         <span class="kw">let</span> <span class="ident">rewrite</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="ident">prog_update</span>.<span class="ident">write_prog_line</span>(<span class="kw-2">&amp;mut</span> <span class="ident">cursor</span>, <span class="ident">rewrite</span>).<span class="ident">unwrap</span>();
@@ -1011,9 +1079,38 @@
         <span class="comment">//     $ : | dd</span>
         <span class="comment">//     0 bytes copied, 7.9151e-05 s, 0.0 kB/s</span>
         <span class="comment">//</span>
+        <span class="comment">// The throughput still does not match GNU dd. For the ones</span>
+        <span class="comment">// that include the concise byte counts, the format is also</span>
+        <span class="comment">// not right.</span>
+        <span class="macro">assert_eq!</span>(<span class="ident">cursor</span>.<span class="ident">get_ref</span>(), <span class="string">b&quot;0 bytes copied, 1.0 s, 0 B/s\n&quot;</span>);
+
+        <span class="kw">let</span> <span class="ident">prog_update</span> <span class="op">=</span> <span class="ident">prog_update_write</span>(<span class="number">999</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cursor</span> <span class="op">=</span> <span class="ident">Cursor::new</span>(<span class="macro">vec!</span>[]);
+        <span class="ident">prog_update</span>.<span class="ident">write_prog_line</span>(<span class="kw-2">&amp;mut</span> <span class="ident">cursor</span>, <span class="ident">rewrite</span>).<span class="ident">unwrap</span>();
+        <span class="macro">assert_eq!</span>(<span class="ident">cursor</span>.<span class="ident">get_ref</span>(), <span class="string">b&quot;999 bytes copied, 1.0 s, 0 B/s\n&quot;</span>);
+
+        <span class="kw">let</span> <span class="ident">prog_update</span> <span class="op">=</span> <span class="ident">prog_update_write</span>(<span class="number">1000</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cursor</span> <span class="op">=</span> <span class="ident">Cursor::new</span>(<span class="macro">vec!</span>[]);
+        <span class="ident">prog_update</span>.<span class="ident">write_prog_line</span>(<span class="kw-2">&amp;mut</span> <span class="ident">cursor</span>, <span class="ident">rewrite</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(
             <span class="ident">cursor</span>.<span class="ident">get_ref</span>(),
-            <span class="string">b&quot;0 bytes (0 B, 0 B) copied, 1.0 s, 0 B/s\n&quot;</span>
+            <span class="string">b&quot;1000 bytes (1000 B) copied, 1.0 s, 1000 B/s\n&quot;</span>
+        );
+
+        <span class="kw">let</span> <span class="ident">prog_update</span> <span class="op">=</span> <span class="ident">prog_update_write</span>(<span class="number">1023</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cursor</span> <span class="op">=</span> <span class="ident">Cursor::new</span>(<span class="macro">vec!</span>[]);
+        <span class="ident">prog_update</span>.<span class="ident">write_prog_line</span>(<span class="kw-2">&amp;mut</span> <span class="ident">cursor</span>, <span class="ident">rewrite</span>).<span class="ident">unwrap</span>();
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">cursor</span>.<span class="ident">get_ref</span>(),
+            <span class="string">b&quot;1023 bytes (1 KB) copied, 1.0 s, 1000 B/s\n&quot;</span>
+        );
+
+        <span class="kw">let</span> <span class="ident">prog_update</span> <span class="op">=</span> <span class="ident">prog_update_write</span>(<span class="number">1024</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cursor</span> <span class="op">=</span> <span class="ident">Cursor::new</span>(<span class="macro">vec!</span>[]);
+        <span class="ident">prog_update</span>.<span class="ident">write_prog_line</span>(<span class="kw-2">&amp;mut</span> <span class="ident">cursor</span>, <span class="ident">rewrite</span>).<span class="ident">unwrap</span>();
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">std::str::from_utf8</span>(<span class="ident">cursor</span>.<span class="ident">get_ref</span>()).<span class="ident">unwrap</span>(),
+            <span class="string">&quot;1024 bytes (1 KB, 1024 B) copied, 1.0 s, 1000 B/s\n&quot;</span>
         );
     }
 
@@ -1029,10 +1126,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">cursor</span>.<span class="ident">get_ref</span>().<span class="ident">split</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">v</span> <span class="op">==</span> <span class="string">b&#39;\n&#39;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">b&quot;0+0 records in&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">b&quot;0+0 records out&quot;</span>);
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(),
-            <span class="string">b&quot;0 bytes (0 B, 0 B) copied, 1.0 s, 0 B/s&quot;</span>
-        );
+        <span class="macro">assert_eq!</span>(<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">b&quot;0 bytes copied, 1.0 s, 0 B/s&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">b&quot;&quot;</span>);
         <span class="macro">assert!</span>(<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">is_none</span>());
     }
