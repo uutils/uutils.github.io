@@ -1713,6 +1713,12 @@
 <span id="1708">1708</span>
 <span id="1709">1709</span>
 <span id="1710">1710</span>
+<span id="1711">1711</span>
+<span id="1712">1712</span>
+<span id="1713">1713</span>
+<span id="1714">1714</span>
+<span id="1715">1715</span>
+<span id="1716">1716</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::missing_safety_doc</span>)]</span>
 
 <span class="comment">// This file is part of the uutils coreutils package.</span>
@@ -1725,9 +1731,6 @@
 
 <span class="comment">// spell-checker:ignore (ToDO) ficlone linkgs lstat nlink nlinks pathbuf reflink strs xattrs symlinked</span>
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;android&quot;</span>))]</span>
-<span class="attribute">#[<span class="ident">macro_use</span>]</span>
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ioctl_sys</span>;
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">quick_error</span>;
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
@@ -1775,9 +1778,6 @@
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">set_exit_code</span>, <span class="ident">ExitCode</span>, <span class="ident">UClapError</span>, <span class="ident">UError</span>, <span class="ident">UResult</span>};
 <span class="kw">use</span> <span class="ident">uucore::fs</span>::{<span class="ident">canonicalize</span>, <span class="ident">MissingHandling</span>, <span class="ident">ResolveMode</span>};
 <span class="kw">use</span> <span class="ident">walkdir::WalkDir</span>;
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;android&quot;</span>))]</span>
-<span class="macro">ioctl!</span>(<span class="ident">write</span> <span class="ident">ficlone</span> <span class="ident">with</span> <span class="number">0x94</span>, <span class="number">9</span>; <span class="ident">std::os::raw::c_int</span>);
 
 <span class="macro">quick_error!</span> {
     <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
@@ -1943,6 +1943,16 @@
     <span class="ident">target_dir</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="ident">update</span>: <span class="ident">bool</span>,
     <span class="ident">verbose</span>: <span class="ident">bool</span>,
+}
+
+<span class="comment">// From /usr/include/linux/fs.h:</span>
+<span class="comment">// #define FICLONE		_IOW(0x94, 9, int)</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;android&quot;</span>))]</span>
+<span class="comment">// Use a macro as libc::ioctl expects u32 or u64 depending on the arch</span>
+<span class="macro">macro_rules!</span> <span class="ident">FICLONE</span> {
+    () =&gt; {
+        <span class="number">0x40049409</span>
+    };
 }
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.&quot;</span>;
@@ -3282,7 +3292,8 @@
         .<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
     <span class="kw">match</span> <span class="ident">mode</span> {
         <span class="ident">ReflinkMode::Always</span> =&gt; <span class="kw">unsafe</span> {
-            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">ficlone</span>(<span class="ident">dst_file</span>.<span class="ident">as_raw_fd</span>(), <span class="ident">src_file</span>.<span class="ident">as_raw_fd</span>() <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">i32</span>);
+            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">libc::ioctl</span>(<span class="ident">dst_file</span>.<span class="ident">as_raw_fd</span>(), <span class="macro">FICLONE!</span>(), <span class="ident">src_file</span>.<span class="ident">as_raw_fd</span>());
+
             <span class="kw">if</span> <span class="ident">result</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
                 <span class="prelude-val">Err</span>(<span class="macro">format!</span>(
                     <span class="string">&quot;failed to clone {:?} from {:?}: {}&quot;</span>,
@@ -3296,7 +3307,8 @@
             }
         },
         <span class="ident">ReflinkMode::Auto</span> =&gt; <span class="kw">unsafe</span> {
-            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">ficlone</span>(<span class="ident">dst_file</span>.<span class="ident">as_raw_fd</span>(), <span class="ident">src_file</span>.<span class="ident">as_raw_fd</span>() <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">i32</span>);
+            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">libc::ioctl</span>(<span class="ident">dst_file</span>.<span class="ident">as_raw_fd</span>(), <span class="macro">FICLONE!</span>(), <span class="ident">src_file</span>.<span class="ident">as_raw_fd</span>());
+
             <span class="kw">if</span> <span class="ident">result</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
                 <span class="ident">fs::copy</span>(<span class="ident">source</span>, <span class="ident">dest</span>).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
             }
