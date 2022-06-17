@@ -474,6 +474,47 @@
 <span id="469">469</span>
 <span id="470">470</span>
 <span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Virgile Andreani &lt;virgile.andreani@anbuco.fr&gt;</span>
@@ -483,13 +524,14 @@
 <span class="comment">// For the full copyright and license information, please view the LICENSE</span>
 <span class="comment">// file that was distributed with this source code.</span>
 
-<span class="comment">// spell-checker:ignore (ToDO) ctype cwidth iflag nbytes nspaces nums tspaces uflag</span>
+<span class="comment">// spell-checker:ignore (ToDO) ctype cwidth iflag nbytes nspaces nums tspaces uflag Preprocess</span>
 
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::error::Error</span>;
+<span class="kw">use</span> <span class="ident">std::ffi::OsString</span>;
 <span class="kw">use</span> <span class="ident">std::fmt</span>;
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">stdout</span>, <span class="ident">BufRead</span>, <span class="ident">BufReader</span>, <span class="ident">BufWriter</span>, <span class="ident">Read</span>, <span class="ident">Write</span>};
@@ -497,7 +539,7 @@
 <span class="kw">use</span> <span class="ident">std::str::from_utf8</span>;
 <span class="kw">use</span> <span class="ident">unicode_width::UnicodeWidthChar</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
-<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UError</span>, <span class="ident">UResult</span>};
+<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UError</span>, <span class="ident">UResult</span>, <span class="ident">UUsageError</span>};
 <span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Convert tabs in each FILE to spaces, writing to standard output.
@@ -535,6 +577,11 @@
 <span class="doccomment">/// ```</span>
 <span class="kw">fn</span> <span class="ident">is_space_or_comma</span>(<span class="ident">c</span>: <span class="ident">char</span>) -&gt; <span class="ident">bool</span> {
     <span class="ident">c</span> <span class="op">==</span> <span class="string">&#39; &#39;</span> <span class="op">|</span><span class="op">|</span> <span class="ident">c</span> <span class="op">==</span> <span class="string">&#39;,&#39;</span>
+}
+
+<span class="doccomment">/// Decide whether the character is either a digit or a comma.</span>
+<span class="kw">fn</span> <span class="ident">is_digit_or_comma</span>(<span class="ident">c</span>: <span class="ident">char</span>) -&gt; <span class="ident">bool</span> {
+    <span class="ident">c</span>.<span class="ident">is_ascii_digit</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">c</span> <span class="op">==</span> <span class="string">&#39;,&#39;</span>
 }
 
 <span class="doccomment">/// Errors that can occur when parsing a `--tabs` argument.</span>
@@ -719,9 +766,35 @@
     }
 }
 
+<span class="doccomment">/// Preprocess command line arguments and expand shortcuts. For example, &quot;-7&quot; is expanded to</span>
+<span class="doccomment">/// &quot;--tabs=7&quot; and &quot;-1,3&quot; to &quot;--tabs=1 --tabs=3&quot;.</span>
+<span class="kw">fn</span> <span class="ident">expand_shortcuts</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
+    <span class="kw-2">mut</span> <span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>,
+) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">OsString</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="ident">Box</span><span class="op">&lt;</span>(<span class="kw">dyn</span> <span class="ident">UError</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>)<span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="comment">// argv[0] is always present</span>
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">processed_args</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">args</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>()];
+
+    <span class="kw">for</span> <span class="ident">arg</span> <span class="kw">in</span> <span class="ident">args</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">arg</span>.<span class="ident">to_str</span>() {
+            <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">starts_with</span>(<span class="string">&#39;-&#39;</span>) <span class="op">&amp;&amp;</span> <span class="ident">s</span>[<span class="number">1</span>..].<span class="ident">chars</span>().<span class="ident">all</span>(<span class="ident">is_digit_or_comma</span>) {
+                <span class="ident">s</span>[<span class="number">1</span>..]
+                    .<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>)
+                    .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="op">!</span><span class="ident">s</span>.<span class="ident">is_empty</span>())
+                    .<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">processed_args</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;--tabs={}&quot;</span>, <span class="ident">s</span>).<span class="ident">into</span>()));
+            } <span class="kw">else</span> {
+                <span class="ident">processed_args</span>.<span class="ident">push</span>(<span class="ident">arg</span>);
+            }
+        } <span class="kw">else</span> {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">UUsageError::new</span>(<span class="number">1</span>, <span class="string">&quot;bad argument encoding&quot;</span>.<span class="ident">to_owned</span>()));
+        }
+    }
+
+    <span class="prelude-val">Ok</span>(<span class="ident">Box::new</span>(<span class="ident">processed_args</span>.<span class="ident">into_iter</span>()))
+}
+
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">expand_shortcuts</span>(<span class="ident">args</span>)<span class="question-mark">?</span>);
 
     <span class="ident">expand</span>(<span class="kw-2">&amp;</span><span class="ident">Options::new</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>)<span class="question-mark">?</span>).<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to write output&quot;</span>.<span class="ident">to_string</span>())
 }
@@ -921,6 +994,8 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::is_digit_or_comma</span>;
+
     <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::next_tabstop</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::RemainingMode</span>;
 
@@ -943,6 +1018,13 @@
         <span class="macro">assert_eq!</span>(<span class="ident">next_tabstop</span>(<span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">5</span>], <span class="number">0</span>, <span class="kw-2">&amp;</span><span class="ident">RemainingMode::Slash</span>), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">next_tabstop</span>(<span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">5</span>], <span class="number">3</span>, <span class="kw-2">&amp;</span><span class="ident">RemainingMode::Slash</span>), <span class="number">2</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">next_tabstop</span>(<span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">5</span>], <span class="number">6</span>, <span class="kw-2">&amp;</span><span class="ident">RemainingMode::Slash</span>), <span class="number">4</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_is_digit_or_comma</span>() {
+        <span class="macro">assert!</span>(<span class="ident">is_digit_or_comma</span>(<span class="string">&#39;1&#39;</span>));
+        <span class="macro">assert!</span>(<span class="ident">is_digit_or_comma</span>(<span class="string">&#39;,&#39;</span>));
+        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">is_digit_or_comma</span>(<span class="string">&#39;a&#39;</span>));
     }
 }
 </code></pre></div>

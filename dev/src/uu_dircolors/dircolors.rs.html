@@ -416,6 +416,42 @@
 <span id="411">411</span>
 <span id="412">412</span>
 <span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;</span>
@@ -762,6 +798,8 @@
             <span class="kw">continue</span>;
         }
 
+        <span class="kw">let</span> <span class="ident">line</span> <span class="op">=</span> <span class="ident">escape</span>(<span class="ident">line</span>);
+
         <span class="kw">let</span> (<span class="ident">key</span>, <span class="ident">val</span>) <span class="op">=</span> <span class="ident">line</span>.<span class="ident">split_two</span>();
         <span class="kw">if</span> <span class="ident">val</span>.<span class="ident">is_empty</span>() {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(
@@ -828,6 +866,40 @@
     }
 
     <span class="prelude-val">Ok</span>(<span class="ident">result</span>)
+}
+
+<span class="doccomment">/// Escape single quotes because they are not allowed between single quotes in shell code, and code</span>
+<span class="doccomment">/// enclosed by single quotes is what is returned by `parse()`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// We also escape &quot;:&quot; to make the &quot;quote&quot; test pass in the GNU test suite:</span>
+<span class="doccomment">/// &lt;https://github.com/coreutils/coreutils/blob/master/tests/misc/dircolors.pl&gt;</span>
+<span class="kw">fn</span> <span class="ident">escape</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">String::new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">previous</span> <span class="op">=</span> <span class="string">&#39; &#39;</span>;
+
+    <span class="kw">for</span> <span class="ident">c</span> <span class="kw">in</span> <span class="ident">s</span>.<span class="ident">chars</span>() {
+        <span class="kw">match</span> <span class="ident">c</span> {
+            <span class="string">&#39;\&#39;&#39;</span> =&gt; <span class="ident">result</span>.<span class="ident">push_str</span>(<span class="string">&quot;&#39;\\&#39;&#39;&quot;</span>),
+            <span class="string">&#39;:&#39;</span> <span class="kw">if</span> <span class="ident">previous</span> <span class="op">!</span><span class="op">=</span> <span class="string">&#39;\\&#39;</span> =&gt; <span class="ident">result</span>.<span class="ident">push_str</span>(<span class="string">&quot;\\:&quot;</span>),
+            <span class="kw">_</span> =&gt; <span class="ident">result</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">c</span>.<span class="ident">to_string</span>()),
+        }
+        <span class="ident">previous</span> <span class="op">=</span> <span class="ident">c</span>;
+    }
+
+    <span class="ident">result</span>
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">mod</span> <span class="ident">tests</span> {
+    <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::escape</span>;
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_escape</span>() {
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;&quot;</span>, <span class="ident">escape</span>(<span class="string">&quot;&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;&#39;\\&#39;&#39;&quot;</span>, <span class="ident">escape</span>(<span class="string">&quot;&#39;&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;\\:&quot;</span>, <span class="ident">escape</span>(<span class="string">&quot;:&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;\\:&quot;</span>, <span class="ident">escape</span>(<span class="string">&quot;\\:&quot;</span>));
+    }
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_dircolors" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
