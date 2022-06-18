@@ -511,10 +511,6 @@
 <span id="506">506</span>
 <span id="507">507</span>
 <span id="508">508</span>
-<span id="509">509</span>
-<span id="510">510</span>
-<span id="511">511</span>
-<span id="512">512</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Virgile Andreani &lt;virgile.andreani@anbuco.fr&gt;</span>
@@ -531,7 +527,6 @@
 
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::error::Error</span>;
-<span class="kw">use</span> <span class="ident">std::ffi::OsString</span>;
 <span class="kw">use</span> <span class="ident">std::fmt</span>;
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">stdout</span>, <span class="ident">BufRead</span>, <span class="ident">BufReader</span>, <span class="ident">BufWriter</span>, <span class="ident">Read</span>, <span class="ident">Write</span>};
@@ -539,8 +534,8 @@
 <span class="kw">use</span> <span class="ident">std::str::from_utf8</span>;
 <span class="kw">use</span> <span class="ident">unicode_width::UnicodeWidthChar</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
-<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UError</span>, <span class="ident">UResult</span>, <span class="ident">UUsageError</span>};
-<span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
+<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UError</span>, <span class="ident">UResult</span>};
+<span class="kw">use</span> <span class="ident">uucore</span>::{<span class="ident">format_usage</span>, <span class="ident">InvalidEncodingHandling</span>};
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Convert tabs in each FILE to spaces, writing to standard output.
  With no FILE, or when FILE is -, read standard input.&quot;</span>;
@@ -768,33 +763,30 @@
 
 <span class="doccomment">/// Preprocess command line arguments and expand shortcuts. For example, &quot;-7&quot; is expanded to</span>
 <span class="doccomment">/// &quot;--tabs=7&quot; and &quot;-1,3&quot; to &quot;--tabs=1 --tabs=3&quot;.</span>
-<span class="kw">fn</span> <span class="ident">expand_shortcuts</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
-    <span class="kw-2">mut</span> <span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">OsString</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="ident">Box</span><span class="op">&lt;</span>(<span class="kw">dyn</span> <span class="ident">UError</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>)<span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="comment">// argv[0] is always present</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">processed_args</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">args</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>()];
+<span class="kw">fn</span> <span class="ident">expand_shortcuts</span>(<span class="ident">args</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>]) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">processed_args</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">args</span>.<span class="ident">len</span>());
 
     <span class="kw">for</span> <span class="ident">arg</span> <span class="kw">in</span> <span class="ident">args</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">arg</span>.<span class="ident">to_str</span>() {
-            <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">starts_with</span>(<span class="string">&#39;-&#39;</span>) <span class="op">&amp;&amp;</span> <span class="ident">s</span>[<span class="number">1</span>..].<span class="ident">chars</span>().<span class="ident">all</span>(<span class="ident">is_digit_or_comma</span>) {
-                <span class="ident">s</span>[<span class="number">1</span>..]
-                    .<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>)
-                    .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="op">!</span><span class="ident">s</span>.<span class="ident">is_empty</span>())
-                    .<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">processed_args</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;--tabs={}&quot;</span>, <span class="ident">s</span>).<span class="ident">into</span>()));
-            } <span class="kw">else</span> {
-                <span class="ident">processed_args</span>.<span class="ident">push</span>(<span class="ident">arg</span>);
-            }
+        <span class="kw">if</span> <span class="ident">arg</span>.<span class="ident">starts_with</span>(<span class="string">&#39;-&#39;</span>) <span class="op">&amp;&amp;</span> <span class="ident">arg</span>[<span class="number">1</span>..].<span class="ident">chars</span>().<span class="ident">all</span>(<span class="ident">is_digit_or_comma</span>) {
+            <span class="ident">arg</span>[<span class="number">1</span>..]
+                .<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>)
+                .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="op">!</span><span class="ident">s</span>.<span class="ident">is_empty</span>())
+                .<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">processed_args</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;--tabs={}&quot;</span>, <span class="ident">s</span>)));
         } <span class="kw">else</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">UUsageError::new</span>(<span class="number">1</span>, <span class="string">&quot;bad argument encoding&quot;</span>.<span class="ident">to_owned</span>()));
+            <span class="ident">processed_args</span>.<span class="ident">push</span>(<span class="ident">arg</span>.<span class="ident">to_string</span>());
         }
     }
 
-    <span class="prelude-val">Ok</span>(<span class="ident">Box::new</span>(<span class="ident">processed_args</span>.<span class="ident">into_iter</span>()))
+    <span class="ident">processed_args</span>
 }
 
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">expand_shortcuts</span>(<span class="ident">args</span>)<span class="question-mark">?</span>);
+    <span class="kw">let</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">args</span>
+        .<span class="ident">collect_str</span>(<span class="ident">InvalidEncodingHandling::Ignore</span>)
+        .<span class="ident">accept_any</span>();
+
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">expand_shortcuts</span>(<span class="kw-2">&amp;</span><span class="ident">args</span>));
 
     <span class="ident">expand</span>(<span class="kw-2">&amp;</span><span class="ident">Options::new</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>)<span class="question-mark">?</span>).<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;failed to write output&quot;</span>.<span class="ident">to_string</span>())
 }
