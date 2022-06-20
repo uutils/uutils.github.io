@@ -384,6 +384,55 @@
 <span id="379">379</span>
 <span id="380">380</span>
 <span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Virgile Andreani &lt;virgile.andreani@anbuco.fr&gt;</span>
@@ -393,7 +442,7 @@
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
 <span class="comment">//  * file that was distributed with this source code.</span>
 
-<span class="comment">// spell-checker:ignore (ToDO) nums aflag uflag scol prevtab amode ctype cwidth nbytes lastcol pctype</span>
+<span class="comment">// spell-checker:ignore (ToDO) nums aflag uflag scol prevtab amode ctype cwidth nbytes lastcol pctype Preprocess</span>
 
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
@@ -483,9 +532,9 @@
 
 <span class="kw">impl</span> <span class="ident">Options</span> {
     <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">clap::ArgMatches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">tabstops</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::TABS</span>) {
+        <span class="kw">let</span> <span class="ident">tabstops</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="ident">options::TABS</span>) {
             <span class="prelude-val">None</span> =&gt; <span class="macro">vec!</span>[<span class="ident">DEFAULT_TABSTOP</span>],
-            <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="ident">tabstops_parse</span>(<span class="ident">s</span>)<span class="question-mark">?</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="ident">tabstops_parse</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="ident">join</span>(<span class="string">&quot;,&quot;</span>))<span class="question-mark">?</span>,
         };
 
         <span class="kw">let</span> <span class="ident">aflag</span> <span class="op">=</span> (<span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::ALL</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::TABS</span>))
@@ -506,13 +555,49 @@
     }
 }
 
+<span class="doccomment">/// Decide whether the character is either a digit or a comma.</span>
+<span class="kw">fn</span> <span class="ident">is_digit_or_comma</span>(<span class="ident">c</span>: <span class="ident">char</span>) -&gt; <span class="ident">bool</span> {
+    <span class="ident">c</span>.<span class="ident">is_ascii_digit</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">c</span> <span class="op">==</span> <span class="string">&#39;,&#39;</span>
+}
+
+<span class="doccomment">/// Preprocess command line arguments and expand shortcuts. For example, &quot;-7&quot; is expanded to</span>
+<span class="doccomment">/// &quot;--tabs=7 --first-only&quot; and &quot;-1,3&quot; to &quot;--tabs=1 --tabs=3 --first-only&quot;. However, if &quot;-a&quot; or</span>
+<span class="doccomment">/// &quot;--all&quot; is provided, &quot;--first-only&quot; is omitted.</span>
+<span class="kw">fn</span> <span class="ident">expand_shortcuts</span>(<span class="ident">args</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>]) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">processed_args</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">args</span>.<span class="ident">len</span>());
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">is_all_arg_provided</span> <span class="op">=</span> <span class="bool-val">false</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">has_shortcuts</span> <span class="op">=</span> <span class="bool-val">false</span>;
+
+    <span class="kw">for</span> <span class="ident">arg</span> <span class="kw">in</span> <span class="ident">args</span> {
+        <span class="kw">if</span> <span class="ident">arg</span>.<span class="ident">starts_with</span>(<span class="string">&#39;-&#39;</span>) <span class="op">&amp;&amp;</span> <span class="ident">arg</span>[<span class="number">1</span>..].<span class="ident">chars</span>().<span class="ident">all</span>(<span class="ident">is_digit_or_comma</span>) {
+            <span class="ident">arg</span>[<span class="number">1</span>..]
+                .<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>)
+                .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="op">!</span><span class="ident">s</span>.<span class="ident">is_empty</span>())
+                .<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">processed_args</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;--tabs={}&quot;</span>, <span class="ident">s</span>)));
+            <span class="ident">has_shortcuts</span> <span class="op">=</span> <span class="bool-val">true</span>;
+        } <span class="kw">else</span> {
+            <span class="ident">processed_args</span>.<span class="ident">push</span>(<span class="ident">arg</span>.<span class="ident">to_string</span>());
+
+            <span class="kw">if</span> <span class="ident">arg</span> <span class="op">==</span> <span class="string">&quot;--all&quot;</span> <span class="op">|</span><span class="op">|</span> <span class="ident">arg</span> <span class="op">==</span> <span class="string">&quot;-a&quot;</span> {
+                <span class="ident">is_all_arg_provided</span> <span class="op">=</span> <span class="bool-val">true</span>;
+            }
+        }
+    }
+
+    <span class="kw">if</span> <span class="ident">has_shortcuts</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">is_all_arg_provided</span> {
+        <span class="ident">processed_args</span>.<span class="ident">push</span>(<span class="string">&quot;--first-only&quot;</span>.<span class="ident">into</span>());
+    }
+
+    <span class="ident">processed_args</span>
+}
+
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">args</span>
         .<span class="ident">collect_str</span>(<span class="ident">InvalidEncodingHandling::Ignore</span>)
         .<span class="ident">accept_any</span>();
 
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">expand_shortcuts</span>(<span class="kw-2">&amp;</span><span class="ident">args</span>));
 
     <span class="ident">unexpand</span>(<span class="kw-2">&amp;</span><span class="ident">Options::new</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>)<span class="question-mark">?</span>).<span class="ident">map_err_context</span>(<span class="ident">String::new</span>)
 }
@@ -549,6 +634,7 @@
                 .<span class="ident">long</span>(<span class="ident">options::TABS</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;use comma separated LIST of tab positions or have tabs N characters apart instead of 8 (enables -a)&quot;</span>)
                 .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;N, LIST&quot;</span>)
         )
         .<span class="ident">arg</span>(
@@ -764,6 +850,18 @@
         }
     }
     <span class="ident">output</span>.<span class="ident">flush</span>()
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">mod</span> <span class="ident">tests</span> {
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::is_digit_or_comma</span>;
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_is_digit_or_comma</span>() {
+        <span class="macro">assert!</span>(<span class="ident">is_digit_or_comma</span>(<span class="string">&#39;1&#39;</span>));
+        <span class="macro">assert!</span>(<span class="ident">is_digit_or_comma</span>(<span class="string">&#39;,&#39;</span>));
+        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">is_digit_or_comma</span>(<span class="string">&#39;a&#39;</span>));
+    }
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_unexpand" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
