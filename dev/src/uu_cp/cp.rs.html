@@ -1719,6 +1719,15 @@
 <span id="1714">1714</span>
 <span id="1715">1715</span>
 <span id="1716">1716</span>
+<span id="1717">1717</span>
+<span id="1718">1718</span>
+<span id="1719">1719</span>
+<span id="1720">1720</span>
+<span id="1721">1721</span>
+<span id="1722">1722</span>
+<span id="1723">1723</span>
+<span id="1724">1724</span>
+<span id="1725">1725</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::missing_safety_doc</span>)]</span>
 
 <span class="comment">// This file is part of the uutils coreutils package.</span>
@@ -2977,7 +2986,16 @@
 
     <span class="kw">let</span> <span class="ident">backup_path</span> <span class="op">=</span> <span class="ident">backup_control::get_backup_path</span>(<span class="ident">options</span>.<span class="ident">backup</span>, <span class="ident">dest</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>.<span class="ident">backup_suffix</span>);
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">backup_path</span>) <span class="op">=</span> <span class="ident">backup_path</span> {
-        <span class="ident">backup_dest</span>(<span class="ident">dest</span>, <span class="kw-2">&amp;</span><span class="ident">backup_path</span>)<span class="question-mark">?</span>;
+        <span class="kw">if</span> <span class="ident">paths_refer_to_same_file</span>(<span class="ident">source</span>, <span class="kw-2">&amp;</span><span class="ident">backup_path</span>)<span class="question-mark">?</span> {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(
+                <span class="string">&quot;backing up {} might destroy source;  {} not copied&quot;</span>,
+                <span class="ident">dest</span>.<span class="ident">quote</span>(),
+                <span class="ident">source</span>.<span class="ident">quote</span>()
+            )
+            .<span class="ident">into</span>());
+        } <span class="kw">else</span> {
+            <span class="ident">backup_dest</span>(<span class="ident">dest</span>, <span class="kw-2">&amp;</span><span class="ident">backup_path</span>)<span class="question-mark">?</span>;
+        }
     }
 
     <span class="kw">match</span> <span class="ident">options</span>.<span class="ident">overwrite</span> {
