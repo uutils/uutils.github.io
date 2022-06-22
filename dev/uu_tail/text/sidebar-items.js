@@ -1,1 +1,1 @@
-initSidebarItems({"static":[["BACKEND",""],["BAD_FD",""],["DASH",""],["DEV_STDIN",""],["NO_FILES_REMAINING",""],["NO_SUCH_FILE",""],["STDIN_HEADER",""]]});
+initSidebarItems({"static":[["BACKEND",""],["BAD_FD",""],["BECOME_INACCESSIBLE",""],["DASH",""],["DEV_STDIN",""],["NO_FILES_REMAINING",""],["NO_SUCH_FILE",""],["STDIN_HEADER",""]]});
