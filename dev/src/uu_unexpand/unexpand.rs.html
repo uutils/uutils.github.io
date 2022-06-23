@@ -433,6 +433,13 @@
 <span id="428">428</span>
 <span id="429">429</span>
 <span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Virgile Andreani &lt;virgile.andreani@anbuco.fr&gt;</span>
@@ -451,6 +458,7 @@
 <span class="kw">use</span> <span class="ident">std::fmt</span>;
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">stdout</span>, <span class="ident">BufRead</span>, <span class="ident">BufReader</span>, <span class="ident">BufWriter</span>, <span class="ident">Read</span>, <span class="ident">Stdout</span>, <span class="ident">Write</span>};
+<span class="kw">use</span> <span class="ident">std::num::IntErrorKind</span>;
 <span class="kw">use</span> <span class="ident">std::str::from_utf8</span>;
 <span class="kw">use</span> <span class="ident">unicode_width::UnicodeWidthChar</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
@@ -468,6 +476,7 @@
 <span class="kw">enum</span> <span class="ident">ParseError</span> {
     <span class="ident">InvalidCharacter</span>(<span class="ident">String</span>),
     <span class="ident">TabSizeCannotBeZero</span>,
+    <span class="ident">TabSizeTooLarge</span>,
     <span class="ident">TabSizesMustBeAscending</span>,
 }
 
@@ -481,6 +490,7 @@
                 <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;tab size contains invalid character(s): {}&quot;</span>, <span class="ident">s</span>.<span class="ident">quote</span>())
             }
             <span class="ident"><span class="self">Self</span>::TabSizeCannotBeZero</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;tab size cannot be 0&quot;</span>),
+            <span class="ident"><span class="self">Self</span>::TabSizeTooLarge</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;tab stop value is too large&quot;</span>),
             <span class="ident"><span class="self">Self</span>::TabSizesMustBeAscending</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;tab sizes must be ascending&quot;</span>),
         }
     }
@@ -492,12 +502,16 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">nums</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
 
     <span class="kw">for</span> <span class="ident">word</span> <span class="kw">in</span> <span class="ident">words</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">num</span>) <span class="op">=</span> <span class="ident">word</span>.<span class="ident">parse</span>() {
-            <span class="ident">nums</span>.<span class="ident">push</span>(<span class="ident">num</span>);
-        } <span class="kw">else</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::InvalidCharacter</span>(
-                <span class="ident">word</span>.<span class="ident">trim_start_matches</span>(<span class="ident">char::is_numeric</span>).<span class="ident">to_string</span>(),
-            ));
+        <span class="kw">match</span> <span class="ident">word</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
+            <span class="prelude-val">Ok</span>(<span class="ident">num</span>) =&gt; <span class="ident">nums</span>.<span class="ident">push</span>(<span class="ident">num</span>),
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">match</span> <span class="ident">e</span>.<span class="ident">kind</span>() {
+                <span class="ident">IntErrorKind::PosOverflow</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::TabSizeTooLarge</span>),
+                <span class="kw">_</span> =&gt; {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError::InvalidCharacter</span>(
+                        <span class="ident">word</span>.<span class="ident">trim_start_matches</span>(<span class="ident">char::is_numeric</span>).<span class="ident">to_string</span>(),
+                    ))
+                }
+            },
         }
     }
 
