@@ -1527,15 +1527,6 @@
         })
     }
 
-    <span class="doccomment">/// Print the read/write statistics.</span>
-    <span class="kw">fn</span> <span class="ident">print_stats</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="kw-2">&amp;</span><span class="ident">Input</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>, <span class="ident">prog_update</span>: <span class="kw-2">&amp;</span><span class="ident">ProgUpdate</span>) {
-        <span class="kw">match</span> <span class="ident">i</span>.<span class="ident">print_level</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">StatusLevel::None</span>) =&gt; {}
-            <span class="prelude-val">Some</span>(<span class="ident">StatusLevel::Noxfer</span>) =&gt; <span class="ident">prog_update</span>.<span class="ident">print_io_lines</span>(),
-            <span class="prelude-val">Some</span>(<span class="ident">StatusLevel::Progress</span>) <span class="op">|</span> <span class="prelude-val">None</span> =&gt; <span class="ident">prog_update</span>.<span class="ident">print_transfer_stats</span>(),
-        }
-    }
-
     <span class="doccomment">/// Flush the output to disk, if configured to do so.</span>
     <span class="kw">fn</span> <span class="ident">sync</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cflags</span>.<span class="ident">fsync</span> {
@@ -1585,15 +1576,17 @@
 
         <span class="comment">// Start a thread that reports transfer progress.</span>
         <span class="comment">//</span>
-        <span class="comment">// When `status=progress` is given on the command-line, the</span>
-        <span class="comment">// `dd` program reports its progress every second or so. We</span>
+        <span class="comment">// The `dd` program reports its progress after every block is written,</span>
+        <span class="comment">// at most every 1 second, and only if `status=progress` is given on</span>
+        <span class="comment">// the command-line or a SIGUSR1 signal is received. We</span>
         <span class="comment">// perform this reporting in a new thread so as not to take</span>
         <span class="comment">// any CPU time away from the actual reading and writing of</span>
         <span class="comment">// data. We send a `ProgUpdate` from the transmitter `prog_tx`</span>
         <span class="comment">// to the receives `rx`, and the receiver prints the transfer</span>
         <span class="comment">// information.</span>
         <span class="kw">let</span> (<span class="ident">prog_tx</span>, <span class="ident">rx</span>) <span class="op">=</span> <span class="ident">mpsc::channel</span>();
-        <span class="ident">thread::spawn</span>(<span class="ident">gen_prog_updater</span>(<span class="ident">rx</span>, <span class="ident">i</span>.<span class="ident">print_level</span>));
+        <span class="kw">let</span> <span class="ident">output_thread</span> <span class="op">=</span> <span class="ident">thread::spawn</span>(<span class="ident">gen_prog_updater</span>(<span class="ident">rx</span>, <span class="ident">i</span>.<span class="ident">print_level</span>));
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">progress_as_secs</span> <span class="op">=</span> <span class="number">0</span>;
 
         <span class="comment">// Create a common buffer with a capacity of the block size.</span>
         <span class="comment">// This is the max size needed.</span>
@@ -1618,7 +1611,7 @@
             }
             <span class="kw">let</span> <span class="ident">wstat_update</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">write_blocks</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>)<span class="question-mark">?</span>;
 
-            <span class="comment">// Update the read/write stats and inform the progress thread.</span>
+            <span class="comment">// Update the read/write stats and inform the progress thread once per second.</span>
             <span class="comment">//</span>
             <span class="comment">// If the receiver is disconnected, `send()` returns an</span>
             <span class="comment">// error. Since it is just reporting progress and is not</span>
@@ -1626,16 +1619,23 @@
             <span class="comment">// error.</span>
             <span class="ident">rstat</span> <span class="op">+</span><span class="op">=</span> <span class="ident">rstat_update</span>;
             <span class="ident">wstat</span> <span class="op">+</span><span class="op">=</span> <span class="ident">wstat_update</span>;
-            <span class="kw">let</span> <span class="ident">prog_update</span> <span class="op">=</span> <span class="ident">ProgUpdate::new</span>(<span class="ident">rstat</span>, <span class="ident">wstat</span>, <span class="ident">start</span>.<span class="ident">elapsed</span>());
-            <span class="ident">prog_tx</span>.<span class="ident">send</span>(<span class="ident">prog_update</span>).<span class="ident">unwrap_or</span>(());
+            <span class="kw">let</span> <span class="ident">prog_update</span> <span class="op">=</span> <span class="ident">ProgUpdate::new</span>(<span class="ident">rstat</span>, <span class="ident">wstat</span>, <span class="ident">start</span>.<span class="ident">elapsed</span>(), <span class="bool-val">false</span>);
+            <span class="kw">if</span> <span class="ident">prog_update</span>.<span class="ident">duration</span>.<span class="ident">as_secs</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="ident">progress_as_secs</span> {
+                <span class="ident">progress_as_secs</span> <span class="op">=</span> <span class="ident">prog_update</span>.<span class="ident">duration</span>.<span class="ident">as_secs</span>() <span class="op">+</span> <span class="number">1</span>;
+                <span class="ident">prog_tx</span>.<span class="ident">send</span>(<span class="ident">prog_update</span>).<span class="ident">unwrap_or</span>(());
+            }
         }
 
         <span class="comment">// Flush the output, if configured to do so.</span>
         <span class="self">self</span>.<span class="ident">sync</span>()<span class="question-mark">?</span>;
 
         <span class="comment">// Print the final read/write statistics.</span>
-        <span class="kw">let</span> <span class="ident">prog_update</span> <span class="op">=</span> <span class="ident">ProgUpdate::new</span>(<span class="ident">rstat</span>, <span class="ident">wstat</span>, <span class="ident">start</span>.<span class="ident">elapsed</span>());
-        <span class="self">self</span>.<span class="ident">print_stats</span>(<span class="kw-2">&amp;</span><span class="ident">i</span>, <span class="kw-2">&amp;</span><span class="ident">prog_update</span>);
+        <span class="kw">let</span> <span class="ident">prog_update</span> <span class="op">=</span> <span class="ident">ProgUpdate::new</span>(<span class="ident">rstat</span>, <span class="ident">wstat</span>, <span class="ident">start</span>.<span class="ident">elapsed</span>(), <span class="bool-val">true</span>);
+        <span class="ident">prog_tx</span>.<span class="ident">send</span>(<span class="ident">prog_update</span>).<span class="ident">unwrap_or</span>(());
+        <span class="comment">// Wait for the output thread to finish</span>
+        <span class="ident">output_thread</span>
+            .<span class="ident">join</span>()
+            .<span class="ident">expect</span>(<span class="string">&quot;Failed to join with the output thread.&quot;</span>);
         <span class="prelude-val">Ok</span>(())
     }
 }

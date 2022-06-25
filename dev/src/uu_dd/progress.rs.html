@@ -567,6 +567,85 @@
 <span id="562">562</span>
 <span id="563">563</span>
 <span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
+<span id="608">608</span>
+<span id="609">609</span>
+<span id="610">610</span>
+<span id="611">611</span>
+<span id="612">612</span>
+<span id="613">613</span>
+<span id="614">614</span>
+<span id="615">615</span>
+<span id="616">616</span>
+<span id="617">617</span>
+<span id="618">618</span>
+<span id="619">619</span>
+<span id="620">620</span>
+<span id="621">621</span>
+<span id="622">622</span>
+<span id="623">623</span>
+<span id="624">624</span>
+<span id="625">625</span>
+<span id="626">626</span>
+<span id="627">627</span>
+<span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
+<span id="632">632</span>
+<span id="633">633</span>
+<span id="634">634</span>
+<span id="635">635</span>
+<span id="636">636</span>
+<span id="637">637</span>
+<span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -613,15 +692,26 @@
 
     <span class="doccomment">/// The time period over which the reads and writes were measured.</span>
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">duration</span>: <span class="ident">Duration</span>,
+
+    <span class="doccomment">/// The status of the write.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// True if the write is completed, false if still in-progress.</span>
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">complete</span>: <span class="ident">bool</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">ProgUpdate</span> {
     <span class="doccomment">/// Instantiate this struct.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">read_stat</span>: <span class="ident">ReadStat</span>, <span class="ident">write_stat</span>: <span class="ident">WriteStat</span>, <span class="ident">duration</span>: <span class="ident">Duration</span>) -&gt; <span class="self">Self</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span>(
+        <span class="ident">read_stat</span>: <span class="ident">ReadStat</span>,
+        <span class="ident">write_stat</span>: <span class="ident">WriteStat</span>,
+        <span class="ident">duration</span>: <span class="ident">Duration</span>,
+        <span class="ident">complete</span>: <span class="ident">bool</span>,
+    ) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">read_stat</span>,
             <span class="ident">write_stat</span>,
             <span class="ident">duration</span>,
+            <span class="ident">complete</span>,
         }
     }
 
@@ -744,7 +834,8 @@
     <span class="doccomment">/// This is a convenience method that calls</span>
     <span class="doccomment">/// [`ProgUpdate::write_io_lines`] and</span>
     <span class="doccomment">/// [`ProgUpdate::write_prog_line`] in that order. The information</span>
-    <span class="doccomment">/// is written to `w`.</span>
+    <span class="doccomment">/// is written to `w`. It optionally begins by writing a new line,</span>
+    <span class="doccomment">/// intended to handle the case of an existing progress line.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Examples</span>
     <span class="doccomment">///</span>
@@ -759,7 +850,7 @@
     <span class="doccomment">///     duration: Duration::new(1, 0), // one second</span>
     <span class="doccomment">/// };</span>
     <span class="doccomment">/// let mut cursor = Cursor::new(vec![]);</span>
-    <span class="doccomment">/// prog_update.write_transfer_stats(&amp;mut cursor).unwrap();</span>
+    <span class="doccomment">/// prog_update.write_transfer_stats(&amp;mut cursor, false).unwrap();</span>
     <span class="doccomment">/// let mut iter = cursor.get_ref().split(|v| *v == b&#39;\n&#39;);</span>
     <span class="doccomment">/// assert_eq!(iter.next().unwrap(), b&quot;0+0 records in&quot;);</span>
     <span class="doccomment">/// assert_eq!(iter.next().unwrap(), b&quot;0+0 records out&quot;);</span>
@@ -767,7 +858,10 @@
     <span class="doccomment">/// assert_eq!(iter.next().unwrap(), b&quot;&quot;);</span>
     <span class="doccomment">/// assert!(iter.next().is_none());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">write_transfer_stats</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">w</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <span class="ident">Write</span>) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">write_transfer_stats</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">w</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <span class="ident">Write</span>, <span class="ident">new_line</span>: <span class="ident">bool</span>) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="ident">new_line</span> {
+            <span class="macro">writeln!</span>(<span class="ident">w</span>)<span class="question-mark">?</span>;
+        }
         <span class="self">self</span>.<span class="ident">write_io_lines</span>(<span class="ident">w</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">rewrite</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="self">self</span>.<span class="ident">write_prog_line</span>(<span class="ident">w</span>, <span class="ident">rewrite</span>)<span class="question-mark">?</span>;
@@ -794,9 +888,22 @@
     <span class="doccomment">/// Write all summary statistics.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// See [`ProgUpdate::write_transfer_stats`] for more information.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">print_transfer_stats</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">print_transfer_stats</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">new_line</span>: <span class="ident">bool</span>) {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stderr</span> <span class="op">=</span> <span class="ident">std::io::stderr</span>();
-        <span class="self">self</span>.<span class="ident">write_transfer_stats</span>(<span class="kw-2">&amp;mut</span> <span class="ident">stderr</span>).<span class="ident">unwrap</span>();
+        <span class="self">self</span>.<span class="ident">write_transfer_stats</span>(<span class="kw-2">&amp;mut</span> <span class="ident">stderr</span>, <span class="ident">new_line</span>).<span class="ident">unwrap</span>();
+    }
+
+    <span class="doccomment">/// Write all the final statistics.</span>
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">print_final_stats</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">print_level</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">StatusLevel</span><span class="op">&gt;</span>,
+        <span class="ident">progress_printed</span>: <span class="ident">bool</span>,
+    ) {
+        <span class="kw">match</span> <span class="ident">print_level</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">StatusLevel::None</span>) =&gt; {}
+            <span class="prelude-val">Some</span>(<span class="ident">StatusLevel::Noxfer</span>) =&gt; <span class="self">self</span>.<span class="ident">print_io_lines</span>(),
+            <span class="prelude-val">Some</span>(<span class="ident">StatusLevel::Progress</span>) <span class="op">|</span> <span class="prelude-val">None</span> =&gt; <span class="self">self</span>.<span class="ident">print_transfer_stats</span>(<span class="ident">progress_printed</span>),
+        }
     }
 }
 
@@ -949,9 +1056,16 @@
     <span class="ident">print_level</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">StatusLevel</span><span class="op">&gt;</span>,
 ) -&gt; <span class="kw">impl</span> <span class="ident">Fn</span>() {
     <span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">progress_printed</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">update</span>) <span class="op">=</span> <span class="ident">rx</span>.<span class="ident">recv</span>() {
+            <span class="comment">// Print the final read/write statistics.</span>
+            <span class="kw">if</span> <span class="ident">update</span>.<span class="ident">complete</span> {
+                <span class="ident">update</span>.<span class="ident">print_final_stats</span>(<span class="ident">print_level</span>, <span class="ident">progress_printed</span>);
+                <span class="kw">return</span>;
+            }
             <span class="kw">if</span> <span class="prelude-val">Some</span>(<span class="ident">StatusLevel::Progress</span>) <span class="op">==</span> <span class="ident">print_level</span> {
                 <span class="ident">update</span>.<span class="ident">reprint_prog_line</span>();
+                <span class="ident">progress_printed</span> <span class="op">=</span> <span class="bool-val">true</span>;
             }
         }
     }
@@ -996,19 +1110,29 @@
             }
         });
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">progress_as_secs</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="comment">// Holds the state of whether we have printed the current progress.</span>
+        <span class="comment">// This is needed so that we know whether or not to print a newline</span>
+        <span class="comment">// character before outputting non-progress data.</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">progress_printed</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">update</span>) <span class="op">=</span> <span class="ident">rx</span>.<span class="ident">recv</span>() {
-            <span class="comment">// (Re)print status line if progress is requested.</span>
-            <span class="kw">if</span> <span class="prelude-val">Some</span>(<span class="ident">StatusLevel::Progress</span>) <span class="op">==</span> <span class="ident">print_level</span>
-                <span class="op">&amp;&amp;</span> <span class="ident">update</span>.<span class="ident">duration</span>.<span class="ident">as_secs</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="ident">progress_as_secs</span>
-            {
-                <span class="ident">update</span>.<span class="ident">reprint_prog_line</span>();
-                <span class="ident">progress_as_secs</span> <span class="op">=</span> <span class="ident">update</span>.<span class="ident">duration</span>.<span class="ident">as_secs</span>() <span class="op">+</span> <span class="number">1</span>;
+            <span class="comment">// Print the final read/write statistics.</span>
+            <span class="kw">if</span> <span class="ident">update</span>.<span class="ident">complete</span> {
+                <span class="ident">update</span>.<span class="ident">print_final_stats</span>(<span class="ident">print_level</span>, <span class="ident">progress_printed</span>);
+                <span class="kw">return</span>;
             }
-            <span class="comment">// Handle signals</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">SIGUSR1_USIZE</span> <span class="op">=</span> <span class="ident">sigval</span>.<span class="ident">load</span>(<span class="ident">Ordering::Relaxed</span>) {
-                <span class="ident">update</span>.<span class="ident">print_transfer_stats</span>();
-            };
+            <span class="comment">// (Re)print status line if progress is requested.</span>
+            <span class="kw">if</span> <span class="prelude-val">Some</span>(<span class="ident">StatusLevel::Progress</span>) <span class="op">==</span> <span class="ident">print_level</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">update</span>.<span class="ident">complete</span> {
+                <span class="ident">update</span>.<span class="ident">reprint_prog_line</span>();
+                <span class="ident">progress_printed</span> <span class="op">=</span> <span class="bool-val">true</span>;
+            }
+            <span class="comment">// Handle signals and set the signal to un-seen.</span>
+            <span class="comment">// This will print a maximum of 1 time per second, even though it</span>
+            <span class="comment">// should be printing on every SIGUSR1.</span>
+            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">SIGUSR1_USIZE</span> <span class="op">=</span> <span class="ident">sigval</span>.<span class="ident">swap</span>(<span class="number">0</span>, <span class="ident">Ordering::Relaxed</span>) {
+                <span class="ident">update</span>.<span class="ident">print_transfer_stats</span>(<span class="ident">progress_printed</span>);
+                <span class="comment">// Reset the progress printed, since print_transfer_stats always prints a newline.</span>
+                <span class="ident">progress_printed</span> <span class="op">=</span> <span class="bool-val">false</span>;
+            }
         }
     }
 }
@@ -1029,6 +1153,7 @@
                 ..<span class="ident">Default::default</span>()
             },
             <span class="ident">duration</span>: <span class="ident">Duration::new</span>(<span class="number">1</span>, <span class="number">0</span>), <span class="comment">// one second</span>
+            <span class="ident">complete</span>: <span class="bool-val">false</span>,
         }
     }
 
@@ -1053,10 +1178,12 @@
         <span class="kw">let</span> <span class="ident">read_stat</span> <span class="op">=</span> <span class="ident">ReadStat::new</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);
         <span class="kw">let</span> <span class="ident">write_stat</span> <span class="op">=</span> <span class="ident">WriteStat::new</span>(<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>);
         <span class="kw">let</span> <span class="ident">duration</span> <span class="op">=</span> <span class="ident">Duration::new</span>(<span class="number">789</span>, <span class="number">0</span>);
+        <span class="kw">let</span> <span class="ident">complete</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="kw">let</span> <span class="ident">prog_update</span> <span class="op">=</span> <span class="ident">ProgUpdate</span> {
             <span class="ident">read_stat</span>,
             <span class="ident">write_stat</span>,
             <span class="ident">duration</span>,
+            <span class="ident">complete</span>,
         };
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cursor</span> <span class="op">=</span> <span class="ident">Cursor::new</span>(<span class="macro">vec!</span>[]);
@@ -1069,7 +1196,13 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_prog_update_write_prog_line</span>() {
-        <span class="kw">let</span> <span class="ident">prog_update</span> <span class="op">=</span> <span class="ident">prog_update_write</span>(<span class="number">0</span>);
+        <span class="kw">let</span> <span class="ident">prog_update</span> <span class="op">=</span> <span class="ident">ProgUpdate</span> {
+            <span class="ident">read_stat</span>: <span class="ident">Default::default</span>(),
+            <span class="ident">write_stat</span>: <span class="ident">Default::default</span>(),
+            <span class="ident">duration</span>: <span class="ident">Duration::new</span>(<span class="number">1</span>, <span class="number">0</span>), <span class="comment">// one second</span>
+            <span class="ident">complete</span>: <span class="bool-val">false</span>,
+        };
+
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cursor</span> <span class="op">=</span> <span class="ident">Cursor::new</span>(<span class="macro">vec!</span>[]);
         <span class="kw">let</span> <span class="ident">rewrite</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="ident">prog_update</span>.<span class="ident">write_prog_line</span>(<span class="kw-2">&amp;mut</span> <span class="ident">cursor</span>, <span class="ident">rewrite</span>).<span class="ident">unwrap</span>();
@@ -1120,10 +1253,35 @@
             <span class="ident">read_stat</span>: <span class="ident">Default::default</span>(),
             <span class="ident">write_stat</span>: <span class="ident">Default::default</span>(),
             <span class="ident">duration</span>: <span class="ident">Duration::new</span>(<span class="number">1</span>, <span class="number">0</span>), <span class="comment">// one second</span>
+            <span class="ident">complete</span>: <span class="bool-val">false</span>,
         };
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cursor</span> <span class="op">=</span> <span class="ident">Cursor::new</span>(<span class="macro">vec!</span>[]);
-        <span class="ident">prog_update</span>.<span class="ident">write_transfer_stats</span>(<span class="kw-2">&amp;mut</span> <span class="ident">cursor</span>).<span class="ident">unwrap</span>();
+        <span class="ident">prog_update</span>
+            .<span class="ident">write_transfer_stats</span>(<span class="kw-2">&amp;mut</span> <span class="ident">cursor</span>, <span class="bool-val">false</span>)
+            .<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">cursor</span>.<span class="ident">get_ref</span>().<span class="ident">split</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">v</span> <span class="op">==</span> <span class="string">b&#39;\n&#39;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">b&quot;0+0 records in&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">b&quot;0+0 records out&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">b&quot;0 bytes copied, 1.0 s, 0 B/s&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">b&quot;&quot;</span>);
+        <span class="macro">assert!</span>(<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">is_none</span>());
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">write_final_transfer_stats</span>() {
+        <span class="comment">// Tests the formatting of the final statistics written after a progress line.</span>
+        <span class="kw">let</span> <span class="ident">prog_update</span> <span class="op">=</span> <span class="ident">ProgUpdate</span> {
+            <span class="ident">read_stat</span>: <span class="ident">Default::default</span>(),
+            <span class="ident">write_stat</span>: <span class="ident">Default::default</span>(),
+            <span class="ident">duration</span>: <span class="ident">Duration::new</span>(<span class="number">1</span>, <span class="number">0</span>), <span class="comment">// one second</span>
+            <span class="ident">complete</span>: <span class="bool-val">false</span>,
+        };
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cursor</span> <span class="op">=</span> <span class="ident">Cursor::new</span>(<span class="macro">vec!</span>[]);
+        <span class="kw">let</span> <span class="ident">rewrite</span> <span class="op">=</span> <span class="bool-val">true</span>;
+        <span class="ident">prog_update</span>.<span class="ident">write_prog_line</span>(<span class="kw-2">&amp;mut</span> <span class="ident">cursor</span>, <span class="ident">rewrite</span>).<span class="ident">unwrap</span>();
+        <span class="ident">prog_update</span>.<span class="ident">write_transfer_stats</span>(<span class="kw-2">&amp;mut</span> <span class="ident">cursor</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">cursor</span>.<span class="ident">get_ref</span>().<span class="ident">split</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">v</span> <span class="op">==</span> <span class="string">b&#39;\n&#39;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">b&quot;\r0 bytes copied, 1.0 s, 0 B/s&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">b&quot;0+0 records in&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">b&quot;0+0 records out&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">b&quot;0 bytes copied, 1.0 s, 0 B/s&quot;</span>);
