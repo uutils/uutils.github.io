@@ -1,4 +1,4 @@
-var N = null;var sourcesIndex = {};
+var sourcesIndex = {};
 sourcesIndex["arch"] = {"name":"","files":["main.rs"]};
 sourcesIndex["base32"] = {"name":"","files":["main.rs"]};
 sourcesIndex["base64"] = {"name":"","files":["main.rs"]};
