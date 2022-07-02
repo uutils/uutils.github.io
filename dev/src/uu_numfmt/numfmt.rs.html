@@ -337,6 +337,13 @@
 <span id="332">332</span>
 <span id="333">333</span>
 <span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Yury Krivopalov &lt;ykrivopalov@yandex.ru&gt;</span>
@@ -442,7 +449,14 @@ Multiple fields/ranges can be separated with commas
     <span class="kw">let</span> <span class="ident">transform</span> <span class="op">=</span> <span class="ident">TransformOptions</span> { <span class="ident">from</span>, <span class="ident">to</span> };
 
     <span class="kw">let</span> <span class="ident">padding</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">value_of</span>(<span class="ident">options::PADDING</span>) {
-        <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="ident">err</span>.<span class="ident">to_string</span>()),
+        <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>
+            .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span>()
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">s</span>)
+            .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">n</span> {
+                <span class="number">0</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">s</span>),
+                <span class="kw">_</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">n</span>),
+            })
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;invalid padding value {}&quot;</span>, <span class="ident">s</span>.<span class="ident">quote</span>())),
         <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="number">0</span>),
     }<span class="question-mark">?</span>;
 
