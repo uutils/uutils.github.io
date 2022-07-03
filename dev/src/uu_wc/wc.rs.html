@@ -536,12 +536,47 @@
 <span id="531">531</span>
 <span id="532">532</span>
 <span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Boden Garman &lt;bpgarman@gmail.com&gt;</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
 <span class="comment">//  * file that was distributed with this source code.</span>
+
+<span class="comment">// cSpell:ignore wc wc&#39;s</span>
 
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
@@ -564,10 +599,10 @@
 <span class="kw">use</span> <span class="ident">std::fmt::Display</span>;
 <span class="kw">use</span> <span class="ident">std::fs</span>::{<span class="self">self</span>, <span class="ident">File</span>};
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">Read</span>, <span class="ident">Write</span>};
-<span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>};
+<span class="kw">use</span> <span class="ident">std::path::PathBuf</span>;
 
-<span class="kw">use</span> <span class="ident">uucore::display</span>::{<span class="ident">Quotable</span>, <span class="ident">Quoted</span>};
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UError</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
+<span class="kw">use</span> <span class="ident">uucore::quoting_style</span>::{<span class="ident">escape_name</span>, <span class="ident">QuotingStyle</span>};
 
 <span class="doccomment">/// The minimum character width for formatting counts when reading from stdin.</span>
 <span class="kw">const</span> <span class="ident">MINIMUM_WIDTH</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">7</span>;
@@ -578,16 +613,31 @@
     <span class="ident">show_lines</span>: <span class="ident">bool</span>,
     <span class="ident">show_words</span>: <span class="ident">bool</span>,
     <span class="ident">show_max_line_length</span>: <span class="ident">bool</span>,
+    <span class="ident">files0_from_stdin_mode</span>: <span class="ident">bool</span>,
+    <span class="ident">title_quoting_style</span>: <span class="ident">QuotingStyle</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Settings</span> {
     <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">title_quoting_style</span> <span class="op">=</span> <span class="ident">QuotingStyle::Shell</span> {
+            <span class="ident">escape</span>: <span class="bool-val">true</span>,
+            <span class="ident">always_quote</span>: <span class="bool-val">false</span>,
+            <span class="ident">show_control</span>: <span class="bool-val">false</span>,
+        };
+
+        <span class="kw">let</span> <span class="ident">files0_from_stdin_mode</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::FILES0_FROM</span>) {
+            <span class="prelude-val">Some</span>(<span class="ident">files_0_from</span>) =&gt; <span class="ident">files_0_from</span> <span class="op">==</span> <span class="ident">STDIN_REPR</span>,
+            <span class="prelude-val">None</span> =&gt; <span class="bool-val">false</span>,
+        };
+
         <span class="kw">let</span> <span class="ident">settings</span> <span class="op">=</span> <span class="self">Self</span> {
             <span class="ident">show_bytes</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::BYTES</span>),
             <span class="ident">show_chars</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::CHAR</span>),
             <span class="ident">show_lines</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::LINES</span>),
             <span class="ident">show_words</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::WORDS</span>),
             <span class="ident">show_max_line_length</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::MAX_LINE_LENGTH</span>),
+            <span class="ident">files0_from_stdin_mode</span>,
+            <span class="ident">title_quoting_style</span>,
         };
 
         <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">show_bytes</span>
@@ -605,6 +655,8 @@
             <span class="ident">show_lines</span>: <span class="bool-val">true</span>,
             <span class="ident">show_words</span>: <span class="bool-val">true</span>,
             <span class="ident">show_max_line_length</span>: <span class="bool-val">false</span>,
+            <span class="ident">files0_from_stdin_mode</span>,
+            <span class="ident">title_quoting_style</span>: <span class="ident">settings</span>.<span class="ident">title_quoting_style</span>,
         }
     }
 
@@ -664,18 +716,20 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
 
 <span class="kw">impl</span> <span class="ident">Input</span> {
     <span class="doccomment">/// Converts input to title that appears in stats.</span>
-    <span class="kw">fn</span> <span class="ident">to_title</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">to_title</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">quoting_style</span>: <span class="kw-2">&amp;</span><span class="ident">QuotingStyle</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Input::Path</span>(<span class="ident">path</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">path</span>),
-            <span class="ident">Input::Stdin</span>(<span class="ident">StdinKind::Explicit</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">STDIN_REPR</span>.<span class="ident">as_ref</span>()),
+            <span class="ident">Input::Path</span>(<span class="ident">path</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">escape_name</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>.<span class="ident">clone</span>().<span class="ident">into_os_string</span>(), <span class="ident">quoting_style</span>)),
+            <span class="ident">Input::Stdin</span>(<span class="ident">StdinKind::Explicit</span>) =&gt; {
+                <span class="prelude-val">Some</span>(<span class="ident">escape_name</span>(<span class="ident">OsStr::new</span>(<span class="ident">STDIN_REPR</span>), <span class="ident">quoting_style</span>))
+            }
             <span class="ident">Input::Stdin</span>(<span class="ident">StdinKind::Implicit</span>) =&gt; <span class="prelude-val">None</span>,
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">path_display</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Quoted</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">path_display</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">quoting_style</span>: <span class="kw-2">&amp;</span><span class="ident">QuotingStyle</span>) -&gt; <span class="ident">String</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Input::Path</span>(<span class="ident">path</span>) =&gt; <span class="ident">path</span>.<span class="ident">maybe_quote</span>(),
-            <span class="ident">Input::Stdin</span>(<span class="kw">_</span>) =&gt; <span class="string">&quot;standard input&quot;</span>.<span class="ident">maybe_quote</span>(),
+            <span class="ident">Input::Path</span>(<span class="ident">path</span>) =&gt; <span class="ident">escape_name</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>.<span class="ident">clone</span>().<span class="ident">into_os_string</span>(), <span class="ident">quoting_style</span>),
+            <span class="ident">Input::Stdin</span>(<span class="kw">_</span>) =&gt; <span class="ident">escape_name</span>(<span class="ident">OsStr::new</span>(<span class="string">&quot;standard input&quot;</span>), <span class="ident">quoting_style</span>),
         }
     }
 }
@@ -955,8 +1009,16 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
 <span class="doccomment">///</span>
 <span class="doccomment">/// Otherwise, the file sizes in the file metadata are summed and the number of</span>
 <span class="doccomment">/// digits in that total size is returned as the number width</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// To mirror GNU wc&#39;s behavior a special case is added. If --files0-from is</span>
+<span class="doccomment">/// used and input is read from stdin and there is only one calculation enabled</span>
+<span class="doccomment">/// columns will not be aligned. This is not exactly GNU wc&#39;s behavior, but it</span>
+<span class="doccomment">/// is close enough to pass the GNU test suite.</span>
 <span class="kw">fn</span> <span class="ident">compute_number_width</span>(<span class="ident">inputs</span>: <span class="kw-2">&amp;</span>[<span class="ident">Input</span>], <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>) -&gt; <span class="ident">usize</span> {
-    <span class="kw">if</span> <span class="ident">inputs</span>.<span class="ident">is_empty</span>() <span class="op">|</span><span class="op">|</span> (<span class="ident">inputs</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">settings</span>.<span class="ident">number_enabled</span>() <span class="op">==</span> <span class="number">1</span>) {
+    <span class="kw">if</span> <span class="ident">inputs</span>.<span class="ident">is_empty</span>()
+        <span class="op">|</span><span class="op">|</span> (<span class="ident">inputs</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">settings</span>.<span class="ident">number_enabled</span>() <span class="op">==</span> <span class="number">1</span>)
+        <span class="op">|</span><span class="op">|</span> (<span class="ident">settings</span>.<span class="ident">files0_from_stdin_mode</span> <span class="op">&amp;&amp;</span> <span class="ident">settings</span>.<span class="ident">number_enabled</span>() <span class="op">==</span> <span class="number">1</span>)
+    {
         <span class="kw">return</span> <span class="number">1</span>;
     }
 
@@ -996,29 +1058,34 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
             <span class="ident">CountResult::Interrupted</span>(<span class="ident">word_count</span>, <span class="ident">error</span>) =&gt; {
                 <span class="macro">show!</span>(<span class="ident">USimpleError::new</span>(
                     <span class="number">1</span>,
-                    <span class="macro">format!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">input</span>.<span class="ident">path_display</span>(), <span class="ident">error</span>)
+                    <span class="macro">format!</span>(
+                        <span class="string">&quot;{}: {}&quot;</span>,
+                        <span class="ident">input</span>.<span class="ident">path_display</span>(<span class="kw-2">&amp;</span><span class="ident">settings</span>.<span class="ident">title_quoting_style</span>),
+                        <span class="ident">error</span>
+                    )
                 ));
                 <span class="ident">word_count</span>
             }
             <span class="ident">CountResult::Failure</span>(<span class="ident">error</span>) =&gt; {
                 <span class="macro">show!</span>(<span class="ident">USimpleError::new</span>(
                     <span class="number">1</span>,
-                    <span class="macro">format!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">input</span>.<span class="ident">path_display</span>(), <span class="ident">error</span>)
+                    <span class="macro">format!</span>(
+                        <span class="string">&quot;{}: {}&quot;</span>,
+                        <span class="ident">input</span>.<span class="ident">path_display</span>(<span class="kw-2">&amp;</span><span class="ident">settings</span>.<span class="ident">title_quoting_style</span>),
+                        <span class="ident">error</span>
+                    )
                 ));
                 <span class="kw">continue</span>;
             }
         };
         <span class="ident">total_word_count</span> <span class="op">+</span><span class="op">=</span> <span class="ident">word_count</span>;
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">word_count</span>.<span class="ident">with_title</span>(<span class="ident">input</span>.<span class="ident">to_title</span>());
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">word_count</span>.<span class="ident">with_title</span>(<span class="ident">input</span>.<span class="ident">to_title</span>(<span class="kw-2">&amp;</span><span class="ident">settings</span>.<span class="ident">title_quoting_style</span>));
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="ident">print_stats</span>(<span class="ident">settings</span>, <span class="kw-2">&amp;</span><span class="ident">result</span>, <span class="ident">number_width</span>) {
             <span class="macro">show!</span>(<span class="ident">USimpleError::new</span>(
                 <span class="number">1</span>,
                 <span class="macro">format!</span>(
                     <span class="string">&quot;failed to print result for {}: {}&quot;</span>,
-                    <span class="ident">result</span>
-                        .<span class="ident">title</span>
-                        .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;&lt;stdin&gt;&quot;</span>.<span class="ident">as_ref</span>())
-                        .<span class="ident">maybe_quote</span>(),
+                    <span class="kw-2">&amp;</span><span class="ident">result</span>.<span class="ident">title</span>.<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">String::from</span>(<span class="string">&quot;&lt;stdin&gt;&quot;</span>)),
                     <span class="ident">err</span>,
                 ),
             ));
@@ -1026,7 +1093,7 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
     }
 
     <span class="kw">if</span> <span class="ident">num_inputs</span> <span class="op">&gt;</span> <span class="number">1</span> {
-        <span class="kw">let</span> <span class="ident">total_result</span> <span class="op">=</span> <span class="ident">total_word_count</span>.<span class="ident">with_title</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;total&quot;</span>.<span class="ident">as_ref</span>()));
+        <span class="kw">let</span> <span class="ident">total_result</span> <span class="op">=</span> <span class="ident">total_word_count</span>.<span class="ident">with_title</span>(<span class="prelude-val">Some</span>(<span class="ident">String::from</span>(<span class="string">&quot;total&quot;</span>)));
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="ident">print_stats</span>(<span class="ident">settings</span>, <span class="kw-2">&amp;</span><span class="ident">total_result</span>, <span class="ident">number_width</span>) {
             <span class="macro">show!</span>(<span class="ident">USimpleError::new</span>(
                 <span class="number">1</span>,
@@ -1062,9 +1129,8 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
     <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">show_max_line_length</span> {
         <span class="ident">columns</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;{:1$}&quot;</span>, <span class="ident">result</span>.<span class="ident">count</span>.<span class="ident">max_line_length</span>, <span class="ident">number_width</span>));
     }
-
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">title</span>) <span class="op">=</span> <span class="ident">result</span>.<span class="ident">title</span> {
-        <span class="ident">columns</span>.<span class="ident">push</span>(<span class="ident">title</span>.<span class="ident">maybe_quote</span>().<span class="ident">to_string</span>());
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">title</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">result</span>.<span class="ident">title</span> {
+        <span class="ident">columns</span>.<span class="ident">push</span>(<span class="ident">title</span>.<span class="ident">clone</span>());
     }
 
     <span class="macro">writeln!</span>(<span class="ident">io::stdout</span>().<span class="ident">lock</span>(), <span class="string">&quot;{}&quot;</span>, <span class="ident">columns</span>.<span class="ident">join</span>(<span class="string">&quot; &quot;</span>))

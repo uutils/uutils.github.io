@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Format",""]],"fn":[["list",""],["uu_app",""],["uumain",""]],"mod":[["options",""],["quoting_style",""]],"struct":[["Config",""]]});
+initSidebarItems({"enum":[["Format",""]],"fn":[["list",""],["uu_app",""],["uumain",""]],"mod":[["options",""]],"struct":[["Config",""]]});
