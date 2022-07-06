@@ -599,6 +599,18 @@
 <span id="594">594</span>
 <span id="595">595</span>
 <span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
+<span id="608">608</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Joseph Crail &lt;jbcrail@gmail.com&gt;</span>
@@ -608,6 +620,8 @@
 <span class="comment">// file that was distributed with this source code.</span>
 
 <span class="doccomment">//! Set of functions to manage files and symlinks</span>
+
+<span class="comment">// spell-checker:ignore backport</span>
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">libc</span>::{
@@ -820,6 +834,16 @@
         }
     }
     <span class="ident">ret</span>
+}
+
+<span class="doccomment">/// Decide whether the given path is a symbolic link.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function is essentially a backport of the</span>
+<span class="doccomment">/// [`std::path::Path::is_symlink`] function that exists in Rust</span>
+<span class="doccomment">/// version 1.58 and greater. This can be removed when the minimum</span>
+<span class="doccomment">/// supported version of Rust is 1.58.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_symlink</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">path</span>: <span class="ident">P</span>) -&gt; <span class="ident">bool</span> {
+    <span class="ident">fs::symlink_metadata</span>(<span class="ident">path</span>).<span class="ident">map_or</span>(<span class="bool-val">false</span>, <span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">file_type</span>().<span class="ident">is_symlink</span>())
 }
 
 <span class="kw">fn</span> <span class="ident">resolve</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">original</span>: <span class="ident">P</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PathBuf</span>, (<span class="ident">bool</span>, <span class="ident">PathBuf</span>, <span class="ident">IOError</span>)<span class="op">&gt;</span> {

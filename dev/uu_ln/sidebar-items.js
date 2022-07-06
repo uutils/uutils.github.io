@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["OverwriteMode",""]],"fn":[["is_symlink",""],["uu_app",""],["uumain",""]],"struct":[["Settings",""]]});
+initSidebarItems({"enum":[["OverwriteMode",""]],"fn":[["uu_app",""],["uumain",""]],"struct":[["Settings",""]]});
