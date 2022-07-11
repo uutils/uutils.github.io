@@ -1683,40 +1683,6 @@
 <span id="1678">1678</span>
 <span id="1679">1679</span>
 <span id="1680">1680</span>
-<span id="1681">1681</span>
-<span id="1682">1682</span>
-<span id="1683">1683</span>
-<span id="1684">1684</span>
-<span id="1685">1685</span>
-<span id="1686">1686</span>
-<span id="1687">1687</span>
-<span id="1688">1688</span>
-<span id="1689">1689</span>
-<span id="1690">1690</span>
-<span id="1691">1691</span>
-<span id="1692">1692</span>
-<span id="1693">1693</span>
-<span id="1694">1694</span>
-<span id="1695">1695</span>
-<span id="1696">1696</span>
-<span id="1697">1697</span>
-<span id="1698">1698</span>
-<span id="1699">1699</span>
-<span id="1700">1700</span>
-<span id="1701">1701</span>
-<span id="1702">1702</span>
-<span id="1703">1703</span>
-<span id="1704">1704</span>
-<span id="1705">1705</span>
-<span id="1706">1706</span>
-<span id="1707">1707</span>
-<span id="1708">1708</span>
-<span id="1709">1709</span>
-<span id="1710">1710</span>
-<span id="1711">1711</span>
-<span id="1712">1712</span>
-<span id="1713">1713</span>
-<span id="1714">1714</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::missing_safety_doc</span>)]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::extra_unused_lifetimes</span>)]</span>
 
@@ -1738,10 +1704,6 @@
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 <span class="kw">use</span> <span class="ident">uucore::fs::FileInformation</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">winapi::um::fileapi::CreateFileW</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">winapi::um::fileapi::GetFileInformationByHandle</span>;
 
 <span class="kw">use</span> <span class="ident">std::borrow::Cow</span>;
 
@@ -1754,22 +1716,17 @@
 <span class="kw">use</span> <span class="ident">std::env</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
 <span class="kw">use</span> <span class="ident">std::ffi::CString</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">std::ffi::OsStr</span>;
 <span class="kw">use</span> <span class="ident">std::fs</span>;
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
 <span class="kw">use</span> <span class="ident">std::fs::OpenOptions</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">stdout</span>, <span class="ident">Write</span>};
-<span class="kw">use</span> <span class="ident">std::mem</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::os::unix::ffi::OsStrExt</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::os::unix::fs</span>::{<span class="ident">FileTypeExt</span>, <span class="ident">PermissionsExt</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;android&quot;</span>))]</span>
 <span class="kw">use</span> <span class="ident">std::os::unix::io::AsRawFd</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">std::os::windows::ffi::OsStrExt</span>;
 <span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>, <span class="ident">StripPrefixError</span>};
 <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
 <span class="kw">use</span> <span class="ident">std::string::ToString</span>;
@@ -2512,59 +2469,29 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;redox&quot;</span>))]</span>
     {
         <span class="kw">if</span> <span class="op">!</span><span class="ident">source</span>.<span class="ident">is_dir</span>() {
-            <span class="kw">unsafe</span> {
-                <span class="kw">let</span> <span class="ident">inode</span>: <span class="ident">u64</span>;
-                <span class="kw">let</span> <span class="ident">nlinks</span>: <span class="ident">u64</span>;
-                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-                {
-                    <span class="kw">let</span> <span class="ident">src_path</span> <span class="op">=</span> <span class="ident">CString::new</span>(<span class="ident">source</span>.<span class="ident">as_os_str</span>().<span class="ident">to_str</span>().<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stat</span> <span class="op">=</span> <span class="ident">mem::zeroed</span>();
-                    <span class="kw">if</span> <span class="ident">libc::lstat</span>(<span class="ident">src_path</span>.<span class="ident">as_ptr</span>(), <span class="kw-2">&amp;mut</span> <span class="ident">stat</span>) <span class="op">&lt;</span> <span class="number">0</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(
-                            <span class="string">&quot;cannot stat {}: {}&quot;</span>,
-                            <span class="ident">source</span>.<span class="ident">quote</span>(),
-                            <span class="ident">std::io::Error::last_os_error</span>()
-                        )
-                        .<span class="ident">into</span>());
-                    }
-                    <span class="ident">inode</span> <span class="op">=</span> <span class="ident">stat</span>.<span class="ident">st_ino</span> <span class="kw">as</span> <span class="ident">u64</span>;
-                    <span class="ident">nlinks</span> <span class="op">=</span> <span class="ident">stat</span>.<span class="ident">st_nlink</span> <span class="kw">as</span> <span class="ident">u64</span>;
+            <span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">FileInformation::from_path</span>(<span class="ident">source</span>, <span class="bool-val">false</span>) {
+                <span class="prelude-val">Ok</span>(<span class="ident">info</span>) =&gt; <span class="ident">info</span>,
+                <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;cannot stat {}: {}&quot;</span>, <span class="ident">source</span>.<span class="ident">quote</span>(), <span class="ident">e</span>,).<span class="ident">into</span>());
                 }
-                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-                {
-                    <span class="kw">let</span> <span class="ident">src_path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">OsStr::new</span>(<span class="ident">source</span>).<span class="ident">encode_wide</span>().<span class="ident">collect</span>();
-                    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">deprecated</span>)]</span>
-                    <span class="kw">let</span> <span class="ident">stat</span> <span class="op">=</span> <span class="ident">mem::uninitialized</span>();
-                    <span class="kw">let</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">CreateFileW</span>(
-                        <span class="ident">src_path</span>.<span class="ident">as_ptr</span>(),
-                        <span class="ident">winapi::um::winnt::GENERIC_READ</span>,
-                        <span class="ident">winapi::um::winnt::FILE_SHARE_READ</span>,
-                        <span class="ident">std::ptr::null_mut</span>(),
-                        <span class="number">0</span>,
-                        <span class="number">0</span>,
-                        <span class="ident">std::ptr::null_mut</span>(),
-                    );
-                    <span class="kw">if</span> <span class="ident">GetFileInformationByHandle</span>(<span class="ident">handle</span>, <span class="ident">stat</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(
-                            <span class="string">&quot;cannot get file information {:?}: {}&quot;</span>,
-                            <span class="ident">source</span>,
-                            <span class="ident">std::io::Error::last_os_error</span>()
-                        )
-                        .<span class="ident">into</span>());
-                    }
-                    <span class="ident">inode</span> <span class="op">=</span> ((<span class="kw-2">*</span><span class="ident">stat</span>).<span class="ident">nFileIndexHigh</span> <span class="kw">as</span> <span class="ident">u64</span>) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">32</span> <span class="op">|</span> (<span class="kw-2">*</span><span class="ident">stat</span>).<span class="ident">nFileIndexLow</span> <span class="kw">as</span> <span class="ident">u64</span>;
-                    <span class="ident">nlinks</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">stat</span>).<span class="ident">nNumberOfLinks</span> <span class="kw">as</span> <span class="ident">u64</span>;
-                }
+            };
 
-                <span class="kw">for</span> <span class="ident">hard_link</span> <span class="kw">in</span> <span class="ident">hard_links</span>.<span class="ident">iter</span>() {
-                    <span class="kw">if</span> <span class="ident">hard_link</span>.<span class="number">1</span> <span class="op">==</span> <span class="ident">inode</span> {
-                        <span class="ident">std::fs::hard_link</span>(<span class="ident">hard_link</span>.<span class="number">0</span>.<span class="ident">clone</span>(), <span class="ident">dest</span>).<span class="ident">unwrap</span>();
-                        <span class="kw-2">*</span><span class="ident">found_hard_link</span> <span class="op">=</span> <span class="bool-val">true</span>;
-                    }
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
+            <span class="kw">let</span> <span class="ident">inode</span> <span class="op">=</span> <span class="ident">info</span>.<span class="ident">inode</span>();
+
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
+            <span class="kw">let</span> <span class="ident">inode</span> <span class="op">=</span> <span class="ident">info</span>.<span class="ident">file_index</span>();
+
+            <span class="kw">let</span> <span class="ident">nlinks</span> <span class="op">=</span> <span class="ident">info</span>.<span class="ident">number_of_links</span>();
+
+            <span class="kw">for</span> <span class="ident">hard_link</span> <span class="kw">in</span> <span class="ident">hard_links</span>.<span class="ident">iter</span>() {
+                <span class="kw">if</span> <span class="ident">hard_link</span>.<span class="number">1</span> <span class="op">==</span> <span class="ident">inode</span> {
+                    <span class="ident">std::fs::hard_link</span>(<span class="ident">hard_link</span>.<span class="number">0</span>.<span class="ident">clone</span>(), <span class="ident">dest</span>).<span class="ident">unwrap</span>();
+                    <span class="kw-2">*</span><span class="ident">found_hard_link</span> <span class="op">=</span> <span class="bool-val">true</span>;
                 }
-                <span class="kw">if</span> <span class="op">!</span>(<span class="kw-2">*</span><span class="ident">found_hard_link</span>) <span class="op">&amp;&amp;</span> <span class="ident">nlinks</span> <span class="op">&gt;</span> <span class="number">1</span> {
-                    <span class="ident">hard_links</span>.<span class="ident">push</span>((<span class="ident">dest</span>.<span class="ident">to_str</span>().<span class="ident">unwrap</span>().<span class="ident">to_string</span>(), <span class="ident">inode</span>));
-                }
+            }
+            <span class="kw">if</span> <span class="op">!</span>(<span class="kw-2">*</span><span class="ident">found_hard_link</span>) <span class="op">&amp;&amp;</span> <span class="ident">nlinks</span> <span class="op">&gt;</span> <span class="number">1</span> {
+                <span class="ident">hard_links</span>.<span class="ident">push</span>((<span class="ident">dest</span>.<span class="ident">to_str</span>().<span class="ident">unwrap</span>().<span class="ident">to_string</span>(), <span class="ident">inode</span>));
             }
         }
     }
@@ -2946,7 +2873,7 @@
     {
         <span class="ident">std::os::windows::fs::symlink_file</span>(<span class="ident">source</span>, <span class="ident">dest</span>).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
     }
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">file_info</span>) <span class="op">=</span> <span class="ident">FileInformation::from_path</span>(<span class="ident">dest</span>, <span class="bool-val">false</span>) {
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">file_info</span>) <span class="op">=</span> <span class="ident">FileInformation::from_path</span>(<span class="ident">dest</span>, <span class="bool-val">false</span>) {
         <span class="ident">symlinked_files</span>.<span class="ident">insert</span>(<span class="ident">file_info</span>);
     }
     <span class="prelude-val">Ok</span>(())
@@ -2964,7 +2891,8 @@
 }
 
 <span class="kw">fn</span> <span class="ident">handle_existing_dest</span>(<span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">dest</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">Options</span>) -&gt; <span class="ident">CopyResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">paths_refer_to_same_file</span>(<span class="ident">source</span>, <span class="ident">dest</span>)<span class="question-mark">?</span> {
+    <span class="kw">let</span> <span class="ident">dereference_to_compare</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">dereference</span> <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">is_symlink</span>(<span class="ident">source</span>);
+    <span class="kw">if</span> <span class="ident">paths_refer_to_same_file</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">dereference_to_compare</span>) {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;{}: same file&quot;</span>, <span class="ident">context_for</span>(<span class="ident">source</span>, <span class="ident">dest</span>)).<span class="ident">into</span>());
     }
 
@@ -2972,7 +2900,7 @@
 
     <span class="kw">let</span> <span class="ident">backup_path</span> <span class="op">=</span> <span class="ident">backup_control::get_backup_path</span>(<span class="ident">options</span>.<span class="ident">backup</span>, <span class="ident">dest</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>.<span class="ident">backup_suffix</span>);
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">backup_path</span>) <span class="op">=</span> <span class="ident">backup_path</span> {
-        <span class="kw">if</span> <span class="ident">paths_refer_to_same_file</span>(<span class="ident">source</span>, <span class="kw-2">&amp;</span><span class="ident">backup_path</span>)<span class="question-mark">?</span> {
+        <span class="kw">if</span> <span class="ident">paths_refer_to_same_file</span>(<span class="ident">source</span>, <span class="kw-2">&amp;</span><span class="ident">backup_path</span>, <span class="bool-val">true</span>) {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(
                 <span class="string">&quot;backing up {} might destroy source;  {} not copied&quot;</span>,
                 <span class="ident">dest</span>.<span class="ident">quote</span>(),
@@ -3032,7 +2960,8 @@
                 <span class="ident">dest</span>.<span class="ident">display</span>()
             )));
         }
-        <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">dereference</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">dest</span>.<span class="ident">exists</span>() {
+        <span class="kw">let</span> <span class="ident">copy_contents</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">dereference</span> <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">is_symlink</span>(<span class="ident">source</span>);
+        <span class="kw">if</span> <span class="ident">copy_contents</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">dest</span>.<span class="ident">exists</span>() {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::Error</span>(<span class="macro">format!</span>(
                 <span class="string">&quot;not writing through dangling symlink &#39;{}&#39;&quot;</span>,
                 <span class="ident">dest</span>.<span class="ident">display</span>()
@@ -3261,7 +3190,7 @@
     } <span class="kw">else</span> {
         <span class="comment">// we always need to remove the file to be able to create a symlink,</span>
         <span class="comment">// even if it is writeable.</span>
-        <span class="kw">if</span> <span class="ident">dest</span>.<span class="ident">is_file</span>() {
+        <span class="kw">if</span> <span class="ident">is_symlink</span>(<span class="ident">dest</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">dest</span>.<span class="ident">is_file</span>() {
             <span class="ident">fs::remove_file</span>(<span class="ident">dest</span>)<span class="question-mark">?</span>;
         }
         <span class="ident">dest</span>.<span class="ident">into</span>()
@@ -3404,12 +3333,15 @@
     <span class="prelude-val">Ok</span>(<span class="ident">target</span>.<span class="ident">join</span>(<span class="kw-2">&amp;</span><span class="ident">local_to_root</span>))
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">paths_refer_to_same_file</span>(<span class="ident">p1</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">p2</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">paths_refer_to_same_file</span>(<span class="ident">p1</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">p2</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">dereference</span>: <span class="ident">bool</span>) -&gt; <span class="ident">bool</span> {
     <span class="comment">// We have to take symlinks and relative paths into account.</span>
-    <span class="kw">let</span> <span class="ident">pathbuf1</span> <span class="op">=</span> <span class="ident">canonicalize</span>(<span class="ident">p1</span>, <span class="ident">MissingHandling::Normal</span>, <span class="ident">ResolveMode::Logical</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">pathbuf2</span> <span class="op">=</span> <span class="ident">canonicalize</span>(<span class="ident">p2</span>, <span class="ident">MissingHandling::Normal</span>, <span class="ident">ResolveMode::Logical</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">res1</span> <span class="op">=</span> <span class="ident">FileInformation::from_path</span>(<span class="ident">p1</span>, <span class="ident">dereference</span>);
+    <span class="kw">let</span> <span class="ident">res2</span> <span class="op">=</span> <span class="ident">FileInformation::from_path</span>(<span class="ident">p2</span>, <span class="ident">dereference</span>);
 
-    <span class="prelude-val">Ok</span>(<span class="ident">pathbuf1</span> <span class="op">==</span> <span class="ident">pathbuf2</span>)
+    <span class="kw">match</span> (<span class="ident">res1</span>, <span class="ident">res2</span>) {
+        (<span class="prelude-val">Ok</span>(<span class="ident">info1</span>), <span class="prelude-val">Ok</span>(<span class="ident">info2</span>)) =&gt; <span class="ident">info1</span> <span class="op">==</span> <span class="ident">info2</span>,
+        <span class="kw">_</span> =&gt; <span class="bool-val">false</span>,
+    }
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">path_has_prefix</span>(<span class="ident">p1</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">p2</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {

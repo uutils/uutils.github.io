@@ -601,16 +601,6 @@
 <span id="596">596</span>
 <span id="597">597</span>
 <span id="598">598</span>
-<span id="599">599</span>
-<span id="600">600</span>
-<span id="601">601</span>
-<span id="602">602</span>
-<span id="603">603</span>
-<span id="604">604</span>
-<span id="605">605</span>
-<span id="606">606</span>
-<span id="607">607</span>
-<span id="608">608</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Joseph Crail &lt;jbcrail@gmail.com&gt;</span>
@@ -630,12 +620,14 @@
     <span class="ident">S_IXUSR</span>,
 };
 <span class="kw">use</span> <span class="ident">std::borrow::Cow</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
+<span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
+<span class="kw">use</span> <span class="ident">std::collections::VecDeque</span>;
 <span class="kw">use</span> <span class="ident">std::env</span>;
+<span class="kw">use</span> <span class="ident">std::ffi</span>::{<span class="ident">OsStr</span>, <span class="ident">OsString</span>};
 <span class="kw">use</span> <span class="ident">std::fs</span>;
 <span class="kw">use</span> <span class="ident">std::hash::Hash</span>;
-<span class="kw">use</span> <span class="ident">std::io::Error</span> <span class="kw">as</span> <span class="ident">IOError</span>;
-<span class="kw">use</span> <span class="ident">std::io::Result</span> <span class="kw">as</span> <span class="ident">IOResult</span>;
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">Error</span>, <span class="ident">ErrorKind</span>};
+<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">Error</span>, <span class="ident">ErrorKind</span>, <span class="prelude-ty">Result</span> <span class="kw">as</span> <span class="ident">IOResult</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::os::unix</span>::{<span class="ident">fs::MetadataExt</span>, <span class="ident">io::AsRawFd</span>};
 <span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">Component</span>, <span class="ident">Path</span>, <span class="ident">PathBuf</span>};
@@ -659,29 +651,23 @@
 <span class="kw">impl</span> <span class="ident">FileInformation</span> {
     <span class="doccomment">/// Get information from a currently open file</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_file</span>(<span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">AsRawFd</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="ident">nix::sys::stat::fstat</span>(<span class="ident">file</span>.<span class="ident">as_raw_fd</span>()) {
-            <span class="prelude-val">Some</span>(<span class="self">Self</span>(<span class="ident">x</span>))
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_file</span>(<span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">AsRawFd</span>) -&gt; <span class="ident">IOResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">stat</span> <span class="op">=</span> <span class="ident">nix::sys::stat::fstat</span>(<span class="ident">file</span>.<span class="ident">as_raw_fd</span>())<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">stat</span>))
     }
 
     <span class="doccomment">/// Get information from a currently open file</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;windows&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_file</span>(<span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">AsHandleRef</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="ident">winapi_util::file::information</span>(<span class="ident">file</span>.<span class="ident">as_handle_ref</span>()) {
-            <span class="prelude-val">Some</span>(<span class="self">Self</span>(<span class="ident">x</span>))
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_file</span>(<span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">AsHandleRef</span>) -&gt; <span class="ident">IOResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">winapi_util::file::information</span>(<span class="ident">file</span>.<span class="ident">as_handle_ref</span>())<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">info</span>))
     }
 
     <span class="doccomment">/// Get information for a given path.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// If `path` points to a symlink and `dereference` is true, information about</span>
     <span class="doccomment">/// the link&#39;s target will be returned.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_path</span>(<span class="ident">path</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>, <span class="ident">dereference</span>: <span class="ident">bool</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_path</span>(<span class="ident">path</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>, <span class="ident">dereference</span>: <span class="ident">bool</span>) -&gt; <span class="ident">IOResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
         {
             <span class="kw">let</span> <span class="ident">stat</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">dereference</span> {
@@ -689,11 +675,7 @@
             } <span class="kw">else</span> {
                 <span class="ident">nix::sys::stat::lstat</span>(<span class="ident">path</span>.<span class="ident">as_ref</span>())
             };
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">stat</span>) <span class="op">=</span> <span class="ident">stat</span> {
-                <span class="prelude-val">Some</span>(<span class="self">Self</span>(<span class="ident">stat</span>))
-            } <span class="kw">else</span> {
-                <span class="prelude-val">None</span>
-            }
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">stat</span><span class="question-mark">?</span>))
         }
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;windows&quot;</span>)]</span>
         {
@@ -703,11 +685,8 @@
             <span class="kw">if</span> <span class="op">!</span><span class="ident">dereference</span> {
                 <span class="ident">open_options</span>.<span class="ident">custom_flags</span>(<span class="ident">winapi::um::winbase::FILE_FLAG_OPEN_REPARSE_POINT</span>);
             }
-            <span class="ident">open_options</span>
-                .<span class="ident">read</span>(<span class="bool-val">true</span>)
-                .<span class="ident">open</span>(<span class="ident">path</span>.<span class="ident">as_ref</span>())
-                .<span class="ident">ok</span>()
-                .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">file</span><span class="op">|</span> <span class="ident"><span class="self">Self</span>::from_file</span>(<span class="kw-2">&amp;</span><span class="ident">file</span>))
+            <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">open_options</span>.<span class="ident">read</span>(<span class="bool-val">true</span>).<span class="ident">open</span>(<span class="ident">path</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>;
+            <span class="ident"><span class="self">Self</span>::from_file</span>(<span class="kw-2">&amp;</span><span class="ident">file</span>)
         }
     }
 
@@ -721,6 +700,23 @@
         {
             <span class="self">self</span>.<span class="number">0</span>.<span class="ident">file_size</span>()
         }
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">file_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u64</span> {
+        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">file_index</span>()
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">number_of_links</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u64</span> {
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
+        <span class="kw">return</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">st_nlink</span> <span class="kw">as</span> <span class="ident">u64</span>;
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
+        <span class="kw">return</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">number_of_links</span>() <span class="kw">as</span> <span class="ident">u64</span>;
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">inode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u64</span> {
+        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">st_ino</span> <span class="kw">as</span> <span class="ident">u64</span>
     }
 }
 
@@ -846,47 +842,45 @@
     <span class="ident">fs::symlink_metadata</span>(<span class="ident">path</span>).<span class="ident">map_or</span>(<span class="bool-val">false</span>, <span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">file_type</span>().<span class="ident">is_symlink</span>())
 }
 
-<span class="kw">fn</span> <span class="ident">resolve</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">original</span>: <span class="ident">P</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PathBuf</span>, (<span class="ident">bool</span>, <span class="ident">PathBuf</span>, <span class="ident">IOError</span>)<span class="op">&gt;</span> {
-    <span class="kw">const</span> <span class="ident">MAX_LINKS_FOLLOWED</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">255</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">followed</span> <span class="op">=</span> <span class="number">0</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">original</span>.<span class="ident">as_ref</span>().<span class="ident">to_path_buf</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">symlink_is_absolute</span> <span class="op">=</span> <span class="bool-val">false</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">first_resolution</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+<span class="kw">fn</span> <span class="ident">resolve_symlink</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">path</span>: <span class="ident">P</span>) -&gt; <span class="ident">IOResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">fs::symlink_metadata</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>)<span class="question-mark">?</span>.<span class="ident">file_type</span>().<span class="ident">is_symlink</span>() {
+        <span class="prelude-val">Some</span>(<span class="ident">fs::read_link</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>)<span class="question-mark">?</span>)
+    } <span class="kw">else</span> {
+        <span class="prelude-val">None</span>
+    };
+    <span class="prelude-val">Ok</span>(<span class="ident">result</span>)
+}
 
-    <span class="kw">loop</span> {
-        <span class="kw">if</span> <span class="ident">followed</span> <span class="op">==</span> <span class="ident">MAX_LINKS_FOLLOWED</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>((
-                <span class="ident">symlink_is_absolute</span>,
-                <span class="comment">// When we hit MAX_LINKS_FOLLOWED we should return the first resolution (that&#39;s what GNU does - for whatever reason)</span>
-                <span class="ident">first_resolution</span>.<span class="ident">unwrap</span>(),
-                <span class="ident">Error::new</span>(<span class="ident">ErrorKind::InvalidInput</span>, <span class="string">&quot;maximum links followed&quot;</span>),
-            ));
-        }
+<span class="kw">enum</span> <span class="ident">OwningComponent</span> {
+    <span class="ident">Prefix</span>(<span class="ident">OsString</span>),
+    <span class="ident">RootDir</span>,
+    <span class="ident">CurDir</span>,
+    <span class="ident">ParentDir</span>,
+    <span class="ident">Normal</span>(<span class="ident">OsString</span>),
+}
 
-        <span class="kw">match</span> <span class="ident">fs::symlink_metadata</span>(<span class="kw-2">&amp;</span><span class="ident">result</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">meta</span>) =&gt; {
-                <span class="kw">if</span> <span class="op">!</span><span class="ident">meta</span>.<span class="ident">file_type</span>().<span class="ident">is_symlink</span>() {
-                    <span class="kw">break</span>;
-                }
-            }
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>((<span class="ident">symlink_is_absolute</span>, <span class="ident">result</span>, <span class="ident">e</span>)),
-        }
-
-        <span class="ident">followed</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-        <span class="kw">match</span> <span class="ident">fs::read_link</span>(<span class="kw-2">&amp;</span><span class="ident">result</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">path</span>) =&gt; {
-                <span class="ident">result</span>.<span class="ident">pop</span>();
-                <span class="ident">symlink_is_absolute</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">is_absolute</span>();
-                <span class="ident">result</span>.<span class="ident">push</span>(<span class="ident">path</span>);
-            }
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>((<span class="ident">symlink_is_absolute</span>, <span class="ident">result</span>, <span class="ident">e</span>)),
-        }
-
-        <span class="kw">if</span> <span class="ident">first_resolution</span>.<span class="ident">is_none</span>() {
-            <span class="ident">first_resolution</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">result</span>.<span class="ident">clone</span>());
+<span class="kw">impl</span> <span class="ident">OwningComponent</span> {
+    <span class="kw">fn</span> <span class="ident">as_os_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">OsStr</span> {
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident"><span class="self">Self</span>::Prefix</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>.<span class="ident">as_os_str</span>(),
+            <span class="ident"><span class="self">Self</span>::RootDir</span> =&gt; <span class="ident">Component::RootDir</span>.<span class="ident">as_os_str</span>(),
+            <span class="ident"><span class="self">Self</span>::CurDir</span> =&gt; <span class="ident">Component::CurDir</span>.<span class="ident">as_os_str</span>(),
+            <span class="ident"><span class="self">Self</span>::ParentDir</span> =&gt; <span class="ident">Component::ParentDir</span>.<span class="ident">as_os_str</span>(),
+            <span class="ident"><span class="self">Self</span>::Normal</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>.<span class="ident">as_os_str</span>(),
         }
     }
-    <span class="prelude-val">Ok</span>(<span class="ident">result</span>)
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Component</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">OwningComponent</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">comp</span>: <span class="ident">Component</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">match</span> <span class="ident">comp</span> {
+            <span class="ident">Component::Prefix</span>(<span class="kw">_</span>) =&gt; <span class="ident"><span class="self">Self</span>::Prefix</span>(<span class="ident">comp</span>.<span class="ident">as_os_str</span>().<span class="ident">to_os_string</span>()),
+            <span class="ident">Component::RootDir</span> =&gt; <span class="ident"><span class="self">Self</span>::RootDir</span>,
+            <span class="ident">Component::CurDir</span> =&gt; <span class="ident"><span class="self">Self</span>::CurDir</span>,
+            <span class="ident">Component::ParentDir</span> =&gt; <span class="ident"><span class="self">Self</span>::ParentDir</span>,
+            <span class="ident">Component::Normal</span>(<span class="ident">s</span>) =&gt; <span class="ident"><span class="self">Self</span>::Normal</span>(<span class="ident">s</span>.<span class="ident">to_os_string</span>()),
+        }
+    }
 }
 
 <span class="doccomment">/// Return the canonical, absolute form of a path.</span>
@@ -920,7 +914,7 @@
     <span class="ident">miss_mode</span>: <span class="ident">MissingHandling</span>,
     <span class="ident">res_mode</span>: <span class="ident">ResolveMode</span>,
 ) -&gt; <span class="ident">IOResult</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span> {
-    <span class="comment">// Create an absolute path</span>
+    <span class="kw">const</span> <span class="ident">SYMLINKS_TO_LOOK_FOR_LOOPS</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">256</span>;
     <span class="kw">let</span> <span class="ident">original</span> <span class="op">=</span> <span class="ident">original</span>.<span class="ident">as_ref</span>();
     <span class="kw">let</span> <span class="ident">original</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">original</span>.<span class="ident">is_absolute</span>() {
         <span class="ident">original</span>.<span class="ident">to_path_buf</span>()
@@ -928,86 +922,72 @@
         <span class="kw">let</span> <span class="ident">current_dir</span> <span class="op">=</span> <span class="ident">env::current_dir</span>()<span class="question-mark">?</span>;
         <span class="ident">dunce::canonicalize</span>(<span class="ident">current_dir</span>)<span class="question-mark">?</span>.<span class="ident">join</span>(<span class="ident">original</span>)
     };
-
+    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">res_mode</span> <span class="op">==</span> <span class="ident">ResolveMode::Logical</span> {
+        <span class="ident">normalize_path</span>(<span class="kw-2">&amp;</span><span class="ident">original</span>)
+    } <span class="kw">else</span> {
+        <span class="ident">original</span>
+    };
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">parts</span>: <span class="ident">VecDeque</span><span class="op">&lt;</span><span class="ident">OwningComponent</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">components</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">part</span><span class="op">|</span> <span class="ident">part</span>.<span class="ident">into</span>()).<span class="ident">collect</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">PathBuf::new</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">parts</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-
-    <span class="comment">// Split path by directory separator; add prefix (Windows-only) and root</span>
-    <span class="comment">// directory to final path buffer; add remaining parts to temporary</span>
-    <span class="comment">// vector for canonicalization.</span>
-    <span class="kw">for</span> <span class="ident">part</span> <span class="kw">in</span> <span class="ident">original</span>.<span class="ident">components</span>() {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">followed_symlinks</span> <span class="op">=</span> <span class="number">0</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">visited_files</span> <span class="op">=</span> <span class="ident">HashSet::new</span>();
+    <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">part</span>) <span class="op">=</span> <span class="ident">parts</span>.<span class="ident">pop_front</span>() {
         <span class="kw">match</span> <span class="ident">part</span> {
-            <span class="ident">Component::Prefix</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Component::RootDir</span> =&gt; {
-                <span class="ident">result</span>.<span class="ident">push</span>(<span class="ident">part</span>.<span class="ident">as_os_str</span>());
-            }
-            <span class="ident">Component::CurDir</span> =&gt; (),
-            <span class="ident">Component::ParentDir</span> =&gt; {
-                <span class="kw">if</span> <span class="ident">res_mode</span> <span class="op">==</span> <span class="ident">ResolveMode::Logical</span> {
-                    <span class="ident">parts</span>.<span class="ident">pop</span>();
-                } <span class="kw">else</span> {
-                    <span class="ident">parts</span>.<span class="ident">push</span>(<span class="ident">part</span>.<span class="ident">as_os_str</span>());
-                }
-            }
-            <span class="ident">Component::Normal</span>(<span class="kw">_</span>) =&gt; {
-                <span class="ident">parts</span>.<span class="ident">push</span>(<span class="ident">part</span>.<span class="ident">as_os_str</span>());
-            }
-        }
-    }
-
-    <span class="comment">// Resolve the symlinks where possible</span>
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">parts</span>.<span class="ident">is_empty</span>() {
-        <span class="kw">for</span> <span class="ident">part</span> <span class="kw">in</span> <span class="ident">parts</span>[..<span class="ident">parts</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>].<span class="ident">iter</span>() {
-            <span class="ident">result</span>.<span class="ident">push</span>(<span class="ident">part</span>);
-
-            <span class="comment">//resolve as we go to handle long relative paths on windows</span>
-            <span class="kw">if</span> <span class="ident">res_mode</span> <span class="op">==</span> <span class="ident">ResolveMode::Physical</span> {
-                <span class="ident">result</span> <span class="op">=</span> <span class="ident">normalize_path</span>(<span class="kw-2">&amp;</span><span class="ident">result</span>);
-            }
-
-            <span class="kw">if</span> <span class="ident">res_mode</span> <span class="op">==</span> <span class="ident">ResolveMode::None</span> {
+            <span class="ident">OwningComponent::Prefix</span>(<span class="ident">s</span>) =&gt; {
+                <span class="ident">result</span>.<span class="ident">push</span>(<span class="ident">s</span>);
                 <span class="kw">continue</span>;
             }
+            <span class="ident">OwningComponent::RootDir</span> <span class="op">|</span> <span class="ident">OwningComponent::Normal</span>(..) =&gt; {
+                <span class="ident">result</span>.<span class="ident">push</span>(<span class="ident">part</span>.<span class="ident">as_os_str</span>());
+            }
+            <span class="ident">OwningComponent::CurDir</span> =&gt; {}
+            <span class="ident">OwningComponent::ParentDir</span> =&gt; {
+                <span class="ident">result</span>.<span class="ident">pop</span>();
+            }
+        }
+        <span class="kw">if</span> <span class="ident">res_mode</span> <span class="op">==</span> <span class="ident">ResolveMode::None</span> {
+            <span class="kw">continue</span>;
+        }
+        <span class="kw">match</span> <span class="ident">resolve_symlink</span>(<span class="kw-2">&amp;</span><span class="ident">result</span>) {
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">link_path</span>)) =&gt; {
+                <span class="kw">for</span> <span class="ident">link_part</span> <span class="kw">in</span> <span class="ident">link_path</span>.<span class="ident">components</span>().<span class="ident">rev</span>() {
+                    <span class="ident">parts</span>.<span class="ident">push_front</span>(<span class="ident">link_part</span>.<span class="ident">into</span>());
+                }
+                <span class="kw">if</span> <span class="ident">followed_symlinks</span> <span class="op">&lt;</span> <span class="ident">SYMLINKS_TO_LOOK_FOR_LOOPS</span> {
+                    <span class="ident">followed_symlinks</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                } <span class="kw">else</span> {
+                    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
+                    <span class="kw">let</span> <span class="ident">has_loop</span> <span class="op">=</span> {
+                        <span class="kw">let</span> <span class="ident">file_info</span> <span class="op">=</span>
+                            <span class="ident">FileInformation::from_path</span>(<span class="kw-2">&amp;</span><span class="ident">result</span>.<span class="ident">parent</span>().<span class="ident">unwrap</span>(), <span class="bool-val">false</span>).<span class="ident">unwrap</span>();
+                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path_to_follow</span> <span class="op">=</span> <span class="ident">PathBuf::new</span>();
+                        <span class="kw">for</span> <span class="ident">part</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">parts</span> {
+                            <span class="ident">path_to_follow</span>.<span class="ident">push</span>(<span class="ident">part</span>.<span class="ident">as_os_str</span>());
+                        }
+                        <span class="op">!</span><span class="ident">visited_files</span>.<span class="ident">insert</span>((<span class="ident">file_info</span>, <span class="ident">path_to_follow</span>))
+                    };
 
-            <span class="kw">match</span> <span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">result</span>) {
-                <span class="prelude-val">Err</span>((<span class="kw">_</span>, <span class="ident">path</span>, <span class="ident">e</span>)) =&gt; {
-                    <span class="kw">if</span> <span class="ident">miss_mode</span> <span class="op">==</span> <span class="ident">MissingHandling::Missing</span> {
-                        <span class="ident">result</span> <span class="op">=</span> <span class="ident">path</span>;
-                    } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+                    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">unix</span>))]</span>
+                    <span class="kw">let</span> <span class="ident">has_loop</span> <span class="op">=</span> <span class="bool-val">true</span>;
+
+                    <span class="kw">if</span> <span class="ident">has_loop</span> {
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::new</span>(
+                            <span class="ident">ErrorKind::InvalidInput</span>,
+                            <span class="string">&quot;Too many levels of symbolic links&quot;</span>,
+                        )); <span class="comment">// TODO use ErrorKind::FilesystemLoop when stable</span>
                     }
                 }
-                <span class="prelude-val">Ok</span>(<span class="ident">path</span>) =&gt; {
-                    <span class="ident">result</span> <span class="op">=</span> <span class="ident">path</span>;
-                }
+                <span class="ident">result</span>.<span class="ident">pop</span>();
             }
-        }
-
-        <span class="ident">result</span>.<span class="ident">push</span>(<span class="ident">parts</span>.<span class="ident">last</span>().<span class="ident">unwrap</span>());
-
-        <span class="kw">if</span> <span class="ident">res_mode</span> <span class="op">==</span> <span class="ident">ResolveMode::None</span> {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">result</span>);
-        }
-
-        <span class="kw">match</span> <span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">result</span>) {
-            <span class="prelude-val">Err</span>((<span class="ident">is_absolute</span>, <span class="ident">path</span>, <span class="ident">err</span>)) =&gt; {
-                <span class="comment">// If the resolved symlink is an absolute path and non-existent,</span>
-                <span class="comment">// `realpath` throws no such file error.</span>
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
                 <span class="kw">if</span> <span class="ident">miss_mode</span> <span class="op">==</span> <span class="ident">MissingHandling::Existing</span>
-                    <span class="op">|</span><span class="op">|</span> (<span class="ident">err</span>.<span class="ident">kind</span>() <span class="op">==</span> <span class="ident">ErrorKind::NotFound</span>
-                        <span class="op">&amp;&amp;</span> <span class="ident">is_absolute</span>
-                        <span class="op">&amp;&amp;</span> <span class="ident">miss_mode</span> <span class="op">==</span> <span class="ident">MissingHandling::Normal</span>)
+                    <span class="op">|</span><span class="op">|</span> (<span class="ident">miss_mode</span> <span class="op">==</span> <span class="ident">MissingHandling::Normal</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">parts</span>.<span class="ident">is_empty</span>())
                 {
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>);
-                } <span class="kw">else</span> {
-                    <span class="ident">result</span> <span class="op">=</span> <span class="ident">path</span>;
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
                 }
             }
-            <span class="prelude-val">Ok</span>(<span class="ident">path</span>) =&gt; {
-                <span class="ident">result</span> <span class="op">=</span> <span class="ident">path</span>;
-            }
-        }
-        <span class="kw">if</span> <span class="ident">res_mode</span> <span class="op">==</span> <span class="ident">ResolveMode::Physical</span> {
-            <span class="ident">result</span> <span class="op">=</span> <span class="ident">normalize_path</span>(<span class="kw-2">&amp;</span><span class="ident">result</span>);
+            <span class="kw">_</span> =&gt; {}
         }
     }
     <span class="prelude-val">Ok</span>(<span class="ident">result</span>)
