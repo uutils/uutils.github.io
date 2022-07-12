@@ -1683,6 +1683,15 @@
 <span id="1678">1678</span>
 <span id="1679">1679</span>
 <span id="1680">1680</span>
+<span id="1681">1681</span>
+<span id="1682">1682</span>
+<span id="1683">1683</span>
+<span id="1684">1684</span>
+<span id="1685">1685</span>
+<span id="1686">1686</span>
+<span id="1687">1687</span>
+<span id="1688">1688</span>
+<span id="1689">1689</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::missing_safety_doc</span>)]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::extra_unused_lifetimes</span>)]</span>
 
@@ -2782,12 +2791,19 @@
     <span class="kw">let</span> <span class="ident">source_metadata</span> <span class="op">=</span> <span class="ident">fs::symlink_metadata</span>(<span class="ident">source</span>).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
     <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">attribute</span> {
         <span class="ident">Attribute::Mode</span> =&gt; {
-            <span class="ident">fs::set_permissions</span>(<span class="ident">dest</span>, <span class="ident">source_metadata</span>.<span class="ident">permissions</span>()).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
-            <span class="comment">// FIXME: Implement this for windows as well</span>
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;feat_acl&quot;</span>)]</span>
-            <span class="ident">exacl::getfacl</span>(<span class="ident">source</span>, <span class="prelude-val">None</span>)
-                .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">acl</span><span class="op">|</span> <span class="ident">exacl::setfacl</span>(<span class="kw-2">&amp;</span>[<span class="ident">dest</span>], <span class="kw-2">&amp;</span><span class="ident">acl</span>, <span class="prelude-val">None</span>))
-                .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="ident">Error::Error</span>(<span class="ident">err</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
+            <span class="comment">// The `chmod()` system call that underlies the</span>
+            <span class="comment">// `fs::set_permissions()` call is unable to change the</span>
+            <span class="comment">// permissions of a symbolic link. In that case, we just</span>
+            <span class="comment">// do nothing, since every symbolic link has the same</span>
+            <span class="comment">// permissions.</span>
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">is_symlink</span>(<span class="ident">dest</span>) {
+                <span class="ident">fs::set_permissions</span>(<span class="ident">dest</span>, <span class="ident">source_metadata</span>.<span class="ident">permissions</span>()).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
+                <span class="comment">// FIXME: Implement this for windows as well</span>
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;feat_acl&quot;</span>)]</span>
+                <span class="ident">exacl::getfacl</span>(<span class="ident">source</span>, <span class="prelude-val">None</span>)
+                    .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">acl</span><span class="op">|</span> <span class="ident">exacl::setfacl</span>(<span class="kw-2">&amp;</span>[<span class="ident">dest</span>], <span class="kw-2">&amp;</span><span class="ident">acl</span>, <span class="prelude-val">None</span>))
+                    .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="ident">Error::Error</span>(<span class="ident">err</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
+            }
         }
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
         <span class="ident">Attribute::Ownership</span> =&gt; {
@@ -2813,11 +2829,13 @@
             .<span class="ident">map_err</span>(<span class="ident">Error::Error</span>)<span class="question-mark">?</span>;
         }
         <span class="ident">Attribute::Timestamps</span> =&gt; {
-            <span class="ident">filetime::set_file_times</span>(
-                <span class="ident">Path::new</span>(<span class="ident">dest</span>),
-                <span class="ident">FileTime::from_last_access_time</span>(<span class="kw-2">&amp;</span><span class="ident">source_metadata</span>),
-                <span class="ident">FileTime::from_last_modification_time</span>(<span class="kw-2">&amp;</span><span class="ident">source_metadata</span>),
-            )<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">atime</span> <span class="op">=</span> <span class="ident">FileTime::from_last_access_time</span>(<span class="kw-2">&amp;</span><span class="ident">source_metadata</span>);
+            <span class="kw">let</span> <span class="ident">mtime</span> <span class="op">=</span> <span class="ident">FileTime::from_last_modification_time</span>(<span class="kw-2">&amp;</span><span class="ident">source_metadata</span>);
+            <span class="kw">if</span> <span class="ident">is_symlink</span>(<span class="ident">dest</span>) {
+                <span class="ident">filetime::set_symlink_file_times</span>(<span class="ident">dest</span>, <span class="ident">atime</span>, <span class="ident">mtime</span>)<span class="question-mark">?</span>;
+            } <span class="kw">else</span> {
+                <span class="ident">filetime::set_file_times</span>(<span class="ident">dest</span>, <span class="ident">atime</span>, <span class="ident">mtime</span>)<span class="question-mark">?</span>;
+            }
         }
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;feat_selinux&quot;</span>)]</span>
         <span class="ident">Attribute::Context</span> =&gt; {

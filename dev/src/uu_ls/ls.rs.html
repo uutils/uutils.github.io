@@ -2808,6 +2808,48 @@
 <span id="2803">2803</span>
 <span id="2804">2804</span>
 <span id="2805">2805</span>
+<span id="2806">2806</span>
+<span id="2807">2807</span>
+<span id="2808">2808</span>
+<span id="2809">2809</span>
+<span id="2810">2810</span>
+<span id="2811">2811</span>
+<span id="2812">2812</span>
+<span id="2813">2813</span>
+<span id="2814">2814</span>
+<span id="2815">2815</span>
+<span id="2816">2816</span>
+<span id="2817">2817</span>
+<span id="2818">2818</span>
+<span id="2819">2819</span>
+<span id="2820">2820</span>
+<span id="2821">2821</span>
+<span id="2822">2822</span>
+<span id="2823">2823</span>
+<span id="2824">2824</span>
+<span id="2825">2825</span>
+<span id="2826">2826</span>
+<span id="2827">2827</span>
+<span id="2828">2828</span>
+<span id="2829">2829</span>
+<span id="2830">2830</span>
+<span id="2831">2831</span>
+<span id="2832">2832</span>
+<span id="2833">2833</span>
+<span id="2834">2834</span>
+<span id="2835">2835</span>
+<span id="2836">2836</span>
+<span id="2837">2837</span>
+<span id="2838">2838</span>
+<span id="2839">2839</span>
+<span id="2840">2840</span>
+<span id="2841">2841</span>
+<span id="2842">2842</span>
+<span id="2843">2843</span>
+<span id="2844">2844</span>
+<span id="2845">2845</span>
+<span id="2846">2846</span>
+<span id="2847">2847</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jeremiah Peschka &lt;jeremiah.peschka@gmail.com&gt;</span>
@@ -2828,6 +2870,7 @@
 <span class="kw">use</span> <span class="ident">lscolors::LsColors</span>;
 <span class="kw">use</span> <span class="ident">number_prefix::NumberPrefix</span>;
 <span class="kw">use</span> <span class="ident">once_cell::unsync::OnceCell</span>;
+<span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::os::windows::fs::MetadataExt</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{
@@ -2961,6 +3004,7 @@
     <span class="ident">IOError</span>(<span class="ident">std::io::Error</span>),
     <span class="ident">IOErrorContext</span>(<span class="ident">std::io::Error</span>, <span class="ident">PathBuf</span>),
     <span class="ident">BlockSizeParseError</span>(<span class="ident">String</span>),
+    <span class="ident">AlreadyListedError</span>(<span class="ident">PathBuf</span>),
 }
 
 <span class="kw">impl</span> <span class="ident">UError</span> <span class="kw">for</span> <span class="ident">LsError</span> {
@@ -2970,6 +3014,7 @@
             <span class="ident">LsError::IOError</span>(<span class="kw">_</span>) =&gt; <span class="number">1</span>,
             <span class="ident">LsError::IOErrorContext</span>(<span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="number">1</span>,
             <span class="ident">LsError::BlockSizeParseError</span>(<span class="kw">_</span>) =&gt; <span class="number">1</span>,
+            <span class="ident">LsError::AlreadyListedError</span>(<span class="kw">_</span>) =&gt; <span class="number">2</span>,
         }
     }
 }
@@ -3045,6 +3090,13 @@
                         }
                     },
                 }
+            }
+            <span class="ident">LsError::AlreadyListedError</span>(<span class="ident">path</span>) =&gt; {
+                <span class="macro">write!</span>(
+                    <span class="ident">f</span>,
+                    <span class="string">&quot;{}: not listing already-listed directory&quot;</span>,
+                    <span class="ident">path</span>.<span class="ident">to_string_lossy</span>()
+                )
             }
         }
     }
@@ -4298,16 +4350,26 @@
 
         <span class="comment">// Why prefer to check the DirEntry file_type()?  B/c the call is</span>
         <span class="comment">// nearly free compared to a metadata() call on a Path</span>
-        <span class="kw">let</span> <span class="ident">ft</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">de</span> {
-            <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">de</span>) =&gt; {
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">ft_de</span>) <span class="op">=</span> <span class="ident">de</span>.<span class="ident">file_type</span>() {
-                    <span class="ident">OnceCell::from</span>(<span class="prelude-val">Some</span>(<span class="ident">ft_de</span>))
-                } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">md_pb</span>) <span class="op">=</span> <span class="ident">p_buf</span>.<span class="ident">metadata</span>() {
-                    <span class="ident">OnceCell::from</span>(<span class="prelude-val">Some</span>(<span class="ident">md_pb</span>.<span class="ident">file_type</span>()))
-                } <span class="kw">else</span> {
-                    <span class="ident">OnceCell::new</span>()
+        <span class="kw">fn</span> <span class="ident">get_file_type</span>(
+            <span class="ident">de</span>: <span class="kw-2">&amp;</span><span class="ident">DirEntry</span>,
+            <span class="ident">p_buf</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
+            <span class="ident">must_dereference</span>: <span class="ident">bool</span>,
+        ) -&gt; <span class="ident">OnceCell</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FileType</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+            <span class="kw">if</span> <span class="ident">must_dereference</span> {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">md_pb</span>) <span class="op">=</span> <span class="ident">p_buf</span>.<span class="ident">metadata</span>() {
+                    <span class="kw">return</span> <span class="ident">OnceCell::from</span>(<span class="prelude-val">Some</span>(<span class="ident">md_pb</span>.<span class="ident">file_type</span>()));
                 }
             }
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">ft_de</span>) <span class="op">=</span> <span class="ident">de</span>.<span class="ident">file_type</span>() {
+                <span class="ident">OnceCell::from</span>(<span class="prelude-val">Some</span>(<span class="ident">ft_de</span>))
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">md_pb</span>) <span class="op">=</span> <span class="ident">p_buf</span>.<span class="ident">symlink_metadata</span>() {
+                <span class="ident">OnceCell::from</span>(<span class="prelude-val">Some</span>(<span class="ident">md_pb</span>.<span class="ident">file_type</span>()))
+            } <span class="kw">else</span> {
+                <span class="ident">OnceCell::new</span>()
+            }
+        }
+        <span class="kw">let</span> <span class="ident">ft</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">de</span> {
+            <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">de</span>) =&gt; <span class="ident">get_file_type</span>(<span class="ident">de</span>, <span class="kw-2">&amp;</span><span class="ident">p_buf</span>, <span class="ident">must_dereference</span>),
             <span class="prelude-val">None</span> =&gt; <span class="ident">OnceCell::new</span>(),
         };
 
@@ -4429,7 +4491,12 @@
                 <span class="macro">writeln!</span>(<span class="ident">out</span>, <span class="string">&quot;\n{}:&quot;</span>, <span class="ident">path_data</span>.<span class="ident">p_buf</span>.<span class="ident">display</span>())<span class="question-mark">?</span>;
             }
         }
-        <span class="ident">enter_directory</span>(<span class="ident">path_data</span>, <span class="ident">read_dir</span>, <span class="ident">config</span>, <span class="kw-2">&amp;mut</span> <span class="ident">out</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listed_ancestors</span> <span class="op">=</span> <span class="ident">HashSet::new</span>();
+        <span class="ident">listed_ancestors</span>.<span class="ident">insert</span>(<span class="ident">FileInformation::from_path</span>(
+            <span class="kw-2">&amp;</span><span class="ident">path_data</span>.<span class="ident">p_buf</span>,
+            <span class="ident">path_data</span>.<span class="ident">must_dereference</span>,
+        )<span class="question-mark">?</span>);
+        <span class="ident">enter_directory</span>(<span class="ident">path_data</span>, <span class="ident">read_dir</span>, <span class="ident">config</span>, <span class="kw-2">&amp;mut</span> <span class="ident">out</span>, <span class="kw-2">&amp;mut</span> <span class="ident">listed_ancestors</span>)<span class="question-mark">?</span>;
     }
 
     <span class="prelude-val">Ok</span>(())
@@ -4525,6 +4592,7 @@
     <span class="ident">read_dir</span>: <span class="ident">ReadDir</span>,
     <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>,
     <span class="ident">out</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span>,
+    <span class="ident">listed_ancestors</span>: <span class="kw-2">&amp;mut</span> <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">FileInformation</span><span class="op">&gt;</span>,
 ) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="comment">// Create vec of entries with initial dot files</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">entries</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PathData</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">files</span> <span class="op">==</span> <span class="ident">Files::All</span> {
@@ -4590,8 +4658,17 @@
                     <span class="kw">continue</span>;
                 }
                 <span class="prelude-val">Ok</span>(<span class="ident">rd</span>) =&gt; {
-                    <span class="macro">writeln!</span>(<span class="ident">out</span>, <span class="string">&quot;\n{}:&quot;</span>, <span class="ident">e</span>.<span class="ident">p_buf</span>.<span class="ident">display</span>())<span class="question-mark">?</span>;
-                    <span class="ident">enter_directory</span>(<span class="ident">e</span>, <span class="ident">rd</span>, <span class="ident">config</span>, <span class="ident">out</span>)<span class="question-mark">?</span>;
+                    <span class="kw">if</span> <span class="op">!</span><span class="ident">listed_ancestors</span>
+                        .<span class="ident">insert</span>(<span class="ident">FileInformation::from_path</span>(<span class="kw-2">&amp;</span><span class="ident">e</span>.<span class="ident">p_buf</span>, <span class="ident">e</span>.<span class="ident">must_dereference</span>)<span class="question-mark">?</span>)
+                    {
+                        <span class="ident">out</span>.<span class="ident">flush</span>()<span class="question-mark">?</span>;
+                        <span class="macro">show!</span>(<span class="ident">LsError::AlreadyListedError</span>(<span class="ident">e</span>.<span class="ident">p_buf</span>.<span class="ident">clone</span>()));
+                    } <span class="kw">else</span> {
+                        <span class="macro">writeln!</span>(<span class="ident">out</span>, <span class="string">&quot;\n{}:&quot;</span>, <span class="ident">e</span>.<span class="ident">p_buf</span>.<span class="ident">display</span>())<span class="question-mark">?</span>;
+                        <span class="ident">enter_directory</span>(<span class="ident">e</span>, <span class="ident">rd</span>, <span class="ident">config</span>, <span class="ident">out</span>, <span class="ident">listed_ancestors</span>)<span class="question-mark">?</span>;
+                        <span class="ident">listed_ancestors</span>
+                            .<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">FileInformation::from_path</span>(<span class="kw-2">&amp;</span><span class="ident">e</span>.<span class="ident">p_buf</span>, <span class="ident">e</span>.<span class="ident">must_dereference</span>)<span class="question-mark">?</span>);
+                    }
                 }
             }
         }
@@ -5064,6 +5141,7 @@
 <span class="kw">use</span> <span class="ident">std::sync::Mutex</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">uucore::entries</span>;
+<span class="kw">use</span> <span class="ident">uucore::fs::FileInformation</span>;
 <span class="kw">use</span> <span class="ident">uucore::quoting_style</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
@@ -5328,12 +5406,17 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">width</span> <span class="op">=</span> <span class="ident">name</span>.<span class="ident">width</span>();
 
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ls_colors</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">color</span> {
-        <span class="ident">name</span> <span class="op">=</span> <span class="ident">color_name</span>(
-            <span class="ident">name</span>,
-            <span class="kw-2">&amp;</span><span class="ident">path</span>.<span class="ident">p_buf</span>,
-            <span class="ident">path</span>.<span class="ident">p_buf</span>.<span class="ident">symlink_metadata</span>().<span class="ident">ok</span>().<span class="ident">as_ref</span>(),
-            <span class="ident">ls_colors</span>,
-        );
+        <span class="kw">let</span> <span class="ident">md</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">md</span>(<span class="ident">out</span>);
+        <span class="ident">name</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">md</span>.<span class="ident">is_some</span>() {
+            <span class="ident">color_name</span>(<span class="ident">name</span>, <span class="kw-2">&amp;</span><span class="ident">path</span>.<span class="ident">p_buf</span>, <span class="ident">md</span>, <span class="ident">ls_colors</span>)
+        } <span class="kw">else</span> {
+            <span class="ident">color_name</span>(
+                <span class="ident">name</span>,
+                <span class="kw-2">&amp;</span><span class="ident">path</span>.<span class="ident">p_buf</span>,
+                <span class="ident">path</span>.<span class="ident">p_buf</span>.<span class="ident">symlink_metadata</span>().<span class="ident">ok</span>().<span class="ident">as_ref</span>(),
+                <span class="ident">ls_colors</span>,
+            )
+        };
     }
 
     <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">format</span> <span class="op">!</span><span class="op">=</span> <span class="ident">Format::Long</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">more_info</span>.<span class="ident">is_empty</span>() {
@@ -5374,6 +5457,7 @@
     <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">format</span> <span class="op">==</span> <span class="ident">Format::Long</span>
         <span class="op">&amp;&amp;</span> <span class="ident">path</span>.<span class="ident">file_type</span>(<span class="ident">out</span>).<span class="ident">is_some</span>()
         <span class="op">&amp;&amp;</span> <span class="ident">path</span>.<span class="ident">file_type</span>(<span class="ident">out</span>).<span class="ident">unwrap</span>().<span class="ident">is_symlink</span>()
+        <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">path</span>.<span class="ident">must_dereference</span>
     {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">target</span>) <span class="op">=</span> <span class="ident">path</span>.<span class="ident">p_buf</span>.<span class="ident">read_link</span>() {
             <span class="ident">name</span>.<span class="ident">push_str</span>(<span class="string">&quot; -&gt; &quot;</span>);
