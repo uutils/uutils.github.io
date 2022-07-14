@@ -2845,11 +2845,6 @@
 <span id="2840">2840</span>
 <span id="2841">2841</span>
 <span id="2842">2842</span>
-<span id="2843">2843</span>
-<span id="2844">2844</span>
-<span id="2845">2845</span>
-<span id="2846">2846</span>
-<span id="2847">2847</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jeremiah Peschka &lt;jeremiah.peschka@gmail.com&gt;</span>
@@ -2861,9 +2856,6 @@
 
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-<span class="attribute">#[<span class="ident">macro_use</span>]</span>
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">lazy_static</span>;
 
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">glob::Pattern</span>;
@@ -5138,6 +5130,8 @@
 <span class="comment">// Currently getpwuid is `linux` target only. If it&#39;s broken out into</span>
 <span class="comment">// a posix-compliant attribute this can be updated...</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
+<span class="kw">use</span> <span class="ident">once_cell::sync::Lazy</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::sync::Mutex</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">uucore::entries</span>;
@@ -5146,9 +5140,7 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">fn</span> <span class="ident">cached_uid2usr</span>(<span class="ident">uid</span>: <span class="ident">u32</span>) -&gt; <span class="ident">String</span> {
-    <span class="macro">lazy_static!</span> {
-        <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">UID_CACHE</span>: <span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Mutex::new</span>(<span class="ident">HashMap::new</span>());
-    }
+    <span class="kw">static</span> <span class="ident">UID_CACHE</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Mutex::new</span>(<span class="ident">HashMap::new</span>()));
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">uid_cache</span> <span class="op">=</span> <span class="ident">UID_CACHE</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
     <span class="ident">uid_cache</span>
@@ -5168,9 +5160,7 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">unix</span>, <span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;redox&quot;</span>)))]</span>
 <span class="kw">fn</span> <span class="ident">cached_gid2grp</span>(<span class="ident">gid</span>: <span class="ident">u32</span>) -&gt; <span class="ident">String</span> {
-    <span class="macro">lazy_static!</span> {
-        <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">GID_CACHE</span>: <span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Mutex::new</span>(<span class="ident">HashMap::new</span>());
-    }
+    <span class="kw">static</span> <span class="ident">GID_CACHE</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Mutex::new</span>(<span class="ident">HashMap::new</span>()));
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">gid_cache</span> <span class="op">=</span> <span class="ident">GID_CACHE</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
     <span class="ident">gid_cache</span>
