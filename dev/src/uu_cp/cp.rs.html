@@ -1681,17 +1681,6 @@
 <span id="1676">1676</span>
 <span id="1677">1677</span>
 <span id="1678">1678</span>
-<span id="1679">1679</span>
-<span id="1680">1680</span>
-<span id="1681">1681</span>
-<span id="1682">1682</span>
-<span id="1683">1683</span>
-<span id="1684">1684</span>
-<span id="1685">1685</span>
-<span id="1686">1686</span>
-<span id="1687">1687</span>
-<span id="1688">1688</span>
-<span id="1689">1689</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::missing_safety_doc</span>)]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::extra_unused_lifetimes</span>)]</span>
 
@@ -1712,7 +1701,7 @@
 
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
-<span class="kw">use</span> <span class="ident">uucore::fs::FileInformation</span>;
+<span class="kw">use</span> <span class="ident">uucore::fs</span>::{<span class="ident">paths_refer_to_same_file</span>, <span class="ident">FileInformation</span>};
 
 <span class="kw">use</span> <span class="ident">std::borrow::Cow</span>;
 
@@ -3349,17 +3338,6 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">localize_to_target</span>(<span class="ident">root</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="ident">CopyResult</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">local_to_root</span> <span class="op">=</span> <span class="ident">source</span>.<span class="ident">strip_prefix</span>(<span class="kw-2">&amp;</span><span class="ident">root</span>)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(<span class="ident">target</span>.<span class="ident">join</span>(<span class="kw-2">&amp;</span><span class="ident">local_to_root</span>))
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">paths_refer_to_same_file</span>(<span class="ident">p1</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">p2</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">dereference</span>: <span class="ident">bool</span>) -&gt; <span class="ident">bool</span> {
-    <span class="comment">// We have to take symlinks and relative paths into account.</span>
-    <span class="kw">let</span> <span class="ident">res1</span> <span class="op">=</span> <span class="ident">FileInformation::from_path</span>(<span class="ident">p1</span>, <span class="ident">dereference</span>);
-    <span class="kw">let</span> <span class="ident">res2</span> <span class="op">=</span> <span class="ident">FileInformation::from_path</span>(<span class="ident">p2</span>, <span class="ident">dereference</span>);
-
-    <span class="kw">match</span> (<span class="ident">res1</span>, <span class="ident">res2</span>) {
-        (<span class="prelude-val">Ok</span>(<span class="ident">info1</span>), <span class="prelude-val">Ok</span>(<span class="ident">info2</span>)) =&gt; <span class="ident">info1</span> <span class="op">==</span> <span class="ident">info2</span>,
-        <span class="kw">_</span> =&gt; <span class="bool-val">false</span>,
-    }
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">path_has_prefix</span>(<span class="ident">p1</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">p2</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {

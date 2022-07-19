@@ -536,9 +536,6 @@
 <span id="531">531</span>
 <span id="532">532</span>
 <span id="533">533</span>
-<span id="534">534</span>
-<span id="535">535</span>
-<span id="536">536</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Joseph Crail &lt;jbcrail@gmail.com&gt;</span>
@@ -555,7 +552,7 @@
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UError</span>, <span class="ident">UResult</span>};
 <span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
-<span class="kw">use</span> <span class="ident">uucore::fs::is_symlink</span>;
+<span class="kw">use</span> <span class="ident">uucore::fs</span>::{<span class="ident">is_symlink</span>, <span class="ident">paths_refer_to_same_file</span>};
 
 <span class="kw">use</span> <span class="ident">std::borrow::Cow</span>;
 <span class="kw">use</span> <span class="ident">std::error::Error</span>;
@@ -976,13 +973,7 @@
         };
         <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">backup</span> <span class="op">==</span> <span class="ident">BackupMode::ExistingBackup</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">settings</span>.<span class="ident">symbolic</span> {
             <span class="comment">// when ln --backup f f, it should detect that it is the same file</span>
-            <span class="kw">let</span> <span class="ident">dst_abs</span> <span class="op">=</span> <span class="ident">canonicalize</span>(<span class="ident">dst</span>, <span class="ident">MissingHandling::Normal</span>, <span class="ident">ResolveMode::Logical</span>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">source_abs</span> <span class="op">=</span> <span class="ident">canonicalize</span>(
-                <span class="ident">source</span>.<span class="ident">clone</span>(),
-                <span class="ident">MissingHandling::Normal</span>,
-                <span class="ident">ResolveMode::Logical</span>,
-            )<span class="question-mark">?</span>;
-            <span class="kw">if</span> <span class="ident">dst_abs</span> <span class="op">==</span> <span class="ident">source_abs</span> {
+            <span class="kw">if</span> <span class="ident">paths_refer_to_same_file</span>(<span class="ident">src</span>, <span class="ident">dst</span>, <span class="bool-val">true</span>) {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">LnError::SameFile</span>().<span class="ident">into</span>());
             }
         }
@@ -1001,6 +992,9 @@
                 <span class="comment">// In case of error, don&#39;t do anything</span>
             }
             <span class="ident">OverwriteMode::Force</span> =&gt; {
+                <span class="kw">if</span> <span class="op">!</span><span class="ident">is_symlink</span>(<span class="ident">dst</span>) <span class="op">&amp;&amp;</span> <span class="ident">paths_refer_to_same_file</span>(<span class="ident">src</span>, <span class="ident">dst</span>, <span class="bool-val">true</span>) {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">LnError::SameFile</span>().<span class="ident">into</span>());
+                }
                 <span class="kw">if</span> <span class="ident">fs::remove_file</span>(<span class="ident">dst</span>).<span class="ident">is_ok</span>() {};
                 <span class="comment">// In case of error, don&#39;t do anything</span>
             }
