@@ -839,7 +839,6 @@
 <span id="834">834</span>
 <span id="835">835</span>
 <span id="836">836</span>
-<span id="837">837</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Ben Eills &lt;ben@beneills.com&gt;</span>
@@ -915,7 +914,7 @@
 <span class="kw">impl</span> <span class="ident">UError</span> <span class="kw">for</span> <span class="ident">InstallError</span> {
     <span class="kw">fn</span> <span class="ident">code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">i32</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">InstallError::Unimplemented</span>(<span class="kw">_</span>) =&gt; <span class="number">2</span>,
+            <span class="ident"><span class="self">Self</span>::Unimplemented</span>(<span class="kw">_</span>) =&gt; <span class="number">2</span>,
             <span class="kw">_</span> =&gt; <span class="number">1</span>,
         }
     }
@@ -929,41 +928,40 @@
 
 <span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">InstallError</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">std::fmt::Result</span> {
-        <span class="kw">use</span> <span class="ident">InstallError</span> <span class="kw">as</span> <span class="ident">IE</span>;
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">IE::Unimplemented</span>(<span class="ident">opt</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Unimplemented feature: {}&quot;</span>, <span class="ident">opt</span>),
-            <span class="ident">IE::DirNeedsArg</span>() =&gt; {
+            <span class="ident"><span class="self">Self</span>::Unimplemented</span>(<span class="ident">opt</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Unimplemented feature: {}&quot;</span>, <span class="ident">opt</span>),
+            <span class="ident"><span class="self">Self</span>::DirNeedsArg</span>() =&gt; {
                 <span class="macro">write!</span>(
                     <span class="ident">f</span>,
                     <span class="string">&quot;{} with -d requires at least one argument.&quot;</span>,
                     <span class="ident">uucore::util_name</span>()
                 )
             }
-            <span class="ident">IE::CreateDirFailed</span>(<span class="ident">dir</span>, <span class="ident">e</span>) =&gt; {
+            <span class="ident"><span class="self">Self</span>::CreateDirFailed</span>(<span class="ident">dir</span>, <span class="ident">e</span>) =&gt; {
                 <span class="ident">Display::fmt</span>(<span class="kw-2">&amp;</span><span class="macro">uio_error!</span>(<span class="ident">e</span>, <span class="string">&quot;failed to create {}&quot;</span>, <span class="ident">dir</span>.<span class="ident">quote</span>()), <span class="ident">f</span>)
             }
-            <span class="ident">IE::ChmodFailed</span>(<span class="ident">file</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;failed to chmod {}&quot;</span>, <span class="ident">file</span>.<span class="ident">quote</span>()),
-            <span class="ident">IE::InvalidTarget</span>(<span class="ident">target</span>) =&gt; <span class="macro">write!</span>(
+            <span class="ident"><span class="self">Self</span>::ChmodFailed</span>(<span class="ident">file</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;failed to chmod {}&quot;</span>, <span class="ident">file</span>.<span class="ident">quote</span>()),
+            <span class="ident"><span class="self">Self</span>::InvalidTarget</span>(<span class="ident">target</span>) =&gt; <span class="macro">write!</span>(
                 <span class="ident">f</span>,
                 <span class="string">&quot;invalid target {}: No such file or directory&quot;</span>,
                 <span class="ident">target</span>.<span class="ident">quote</span>()
             ),
-            <span class="ident">IE::TargetDirIsntDir</span>(<span class="ident">target</span>) =&gt; {
+            <span class="ident"><span class="self">Self</span>::TargetDirIsntDir</span>(<span class="ident">target</span>) =&gt; {
                 <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;target {} is not a directory&quot;</span>, <span class="ident">target</span>.<span class="ident">quote</span>())
             }
-            <span class="ident">IE::BackupFailed</span>(<span class="ident">from</span>, <span class="ident">to</span>, <span class="ident">e</span>) =&gt; <span class="ident">Display::fmt</span>(
+            <span class="ident"><span class="self">Self</span>::BackupFailed</span>(<span class="ident">from</span>, <span class="ident">to</span>, <span class="ident">e</span>) =&gt; <span class="ident">Display::fmt</span>(
                 <span class="kw-2">&amp;</span><span class="macro">uio_error!</span>(<span class="ident">e</span>, <span class="string">&quot;cannot backup {} to {}&quot;</span>, <span class="ident">from</span>.<span class="ident">quote</span>(), <span class="ident">to</span>.<span class="ident">quote</span>()),
                 <span class="ident">f</span>,
             ),
-            <span class="ident">IE::InstallFailed</span>(<span class="ident">from</span>, <span class="ident">to</span>, <span class="ident">e</span>) =&gt; <span class="ident">Display::fmt</span>(
+            <span class="ident"><span class="self">Self</span>::InstallFailed</span>(<span class="ident">from</span>, <span class="ident">to</span>, <span class="ident">e</span>) =&gt; <span class="ident">Display::fmt</span>(
                 <span class="kw-2">&amp;</span><span class="macro">uio_error!</span>(<span class="ident">e</span>, <span class="string">&quot;cannot install {} to {}&quot;</span>, <span class="ident">from</span>.<span class="ident">quote</span>(), <span class="ident">to</span>.<span class="ident">quote</span>()),
                 <span class="ident">f</span>,
             ),
-            <span class="ident">IE::StripProgramFailed</span>(<span class="ident">msg</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;strip program failed: {}&quot;</span>, <span class="ident">msg</span>),
-            <span class="ident">IE::MetadataFailed</span>(<span class="ident">e</span>) =&gt; <span class="ident">Display::fmt</span>(<span class="kw-2">&amp;</span><span class="macro">uio_error!</span>(<span class="ident">e</span>, <span class="string">&quot;&quot;</span>), <span class="ident">f</span>),
-            <span class="ident">IE::NoSuchUser</span>(<span class="ident">user</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;no such user: {}&quot;</span>, <span class="ident">user</span>.<span class="ident">maybe_quote</span>()),
-            <span class="ident">IE::NoSuchGroup</span>(<span class="ident">group</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;no such group: {}&quot;</span>, <span class="ident">group</span>.<span class="ident">maybe_quote</span>()),
-            <span class="ident">IE::OmittingDirectory</span>(<span class="ident">dir</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;omitting directory {}&quot;</span>, <span class="ident">dir</span>.<span class="ident">quote</span>()),
+            <span class="ident"><span class="self">Self</span>::StripProgramFailed</span>(<span class="ident">msg</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;strip program failed: {}&quot;</span>, <span class="ident">msg</span>),
+            <span class="ident"><span class="self">Self</span>::MetadataFailed</span>(<span class="ident">e</span>) =&gt; <span class="ident">Display::fmt</span>(<span class="kw-2">&amp;</span><span class="macro">uio_error!</span>(<span class="ident">e</span>, <span class="string">&quot;&quot;</span>), <span class="ident">f</span>),
+            <span class="ident"><span class="self">Self</span>::NoSuchUser</span>(<span class="ident">user</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;no such user: {}&quot;</span>, <span class="ident">user</span>.<span class="ident">maybe_quote</span>()),
+            <span class="ident"><span class="self">Self</span>::NoSuchGroup</span>(<span class="ident">group</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;no such group: {}&quot;</span>, <span class="ident">group</span>.<span class="ident">maybe_quote</span>()),
+            <span class="ident"><span class="self">Self</span>::OmittingDirectory</span>(<span class="ident">dir</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;omitting directory {}&quot;</span>, <span class="ident">dir</span>.<span class="ident">quote</span>()),
         }
     }
 }
@@ -1678,5 +1676,5 @@
     <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_install" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0 (a8314ef7d 2022-06-27)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_install" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.1 (e092d0b6b 2022-07-16)" ></div>
 </body></html>
