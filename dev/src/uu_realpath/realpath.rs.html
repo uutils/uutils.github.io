@@ -289,29 +289,6 @@
 <span id="284">284</span>
 <span id="285">285</span>
 <span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
-<span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) 2014 Vsevolod Velichko &lt;torkvemada@sorokdva.net&gt;</span>
@@ -325,12 +302,12 @@
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
-<span class="kw">use</span> <span class="ident">std::path::Component</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{
     <span class="ident">io</span>::{<span class="ident">stdout</span>, <span class="ident">Write</span>},
     <span class="ident">path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>},
 };
 <span class="kw">use</span> <span class="ident">uucore::error::UClapError</span>;
+<span class="kw">use</span> <span class="ident">uucore::fs::make_path_relative_to</span>;
 <span class="kw">use</span> <span class="ident">uucore</span>::{
     <span class="ident">display</span>::{<span class="ident">print_verbatim</span>, <span class="ident">Quotable</span>},
     <span class="ident">error</span>::{<span class="ident">FromIo</span>, <span class="ident">UResult</span>},
@@ -588,38 +565,15 @@
 ) -&gt; <span class="ident">PathBuf</span> {
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">base</span>) <span class="op">=</span> <span class="ident">relative_base</span> {
         <span class="kw">if</span> <span class="ident">path</span>.<span class="ident">starts_with</span>(<span class="ident">base</span>) {
-            <span class="ident">make_path_relative_to</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="ident">relative_to</span>.<span class="ident">unwrap_or</span>(<span class="ident">base</span>))
+            <span class="ident">make_path_relative_to</span>(<span class="ident">path</span>, <span class="ident">relative_to</span>.<span class="ident">unwrap_or</span>(<span class="ident">base</span>))
         } <span class="kw">else</span> {
             <span class="ident">path</span>
         }
     } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">to</span>) <span class="op">=</span> <span class="ident">relative_to</span> {
-        <span class="ident">make_path_relative_to</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="ident">to</span>)
+        <span class="ident">make_path_relative_to</span>(<span class="ident">path</span>, <span class="ident">to</span>)
     } <span class="kw">else</span> {
         <span class="ident">path</span>
     }
-}
-
-<span class="doccomment">/// Converts absolute `path` to be relative to absolute `to` path.</span>
-<span class="kw">fn</span> <span class="ident">make_path_relative_to</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">to</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="ident">PathBuf</span> {
-    <span class="kw">let</span> <span class="ident">common_prefix_size</span> <span class="op">=</span> <span class="ident">path</span>
-        .<span class="ident">components</span>()
-        .<span class="ident">zip</span>(<span class="ident">to</span>.<span class="ident">components</span>())
-        .<span class="ident">take_while</span>(<span class="op">|</span>(<span class="ident">first</span>, <span class="ident">second</span>)<span class="op">|</span> <span class="ident">first</span> <span class="op">==</span> <span class="ident">second</span>)
-        .<span class="ident">count</span>();
-    <span class="kw">let</span> <span class="ident">path_suffix</span> <span class="op">=</span> <span class="ident">path</span>
-        .<span class="ident">components</span>()
-        .<span class="ident">skip</span>(<span class="ident">common_prefix_size</span>)
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">as_os_str</span>());
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">components</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">to</span>
-        .<span class="ident">components</span>()
-        .<span class="ident">skip</span>(<span class="ident">common_prefix_size</span>)
-        .<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Component::ParentDir</span>.<span class="ident">as_os_str</span>())
-        .<span class="ident">chain</span>(<span class="ident">path_suffix</span>)
-        .<span class="ident">collect</span>();
-    <span class="kw">if</span> <span class="ident">components</span>.<span class="ident">is_empty</span>() {
-        <span class="ident">components</span>.<span class="ident">push</span>(<span class="ident">Component::CurDir</span>.<span class="ident">as_os_str</span>());
-    }
-    <span class="ident">components</span>.<span class="ident">iter</span>().<span class="ident">collect</span>()
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_realpath" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.1 (e092d0b6b 2022-07-16)" ></div>
