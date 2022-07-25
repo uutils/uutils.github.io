@@ -338,6 +338,15 @@
 <span id="333">333</span>
 <span id="334">334</span>
 <span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::options</span>::{<span class="ident">NumfmtOptions</span>, <span class="ident">RoundMethod</span>, <span class="ident">TransformOptions</span>};
@@ -485,7 +494,16 @@
     <span class="kw">let</span> (<span class="ident">i</span>, <span class="ident">suffix</span>) <span class="op">=</span> <span class="ident">parse_suffix</span>(<span class="ident">s</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">i</span> <span class="op">*</span> (<span class="ident">opts</span>.<span class="ident">from_unit</span> <span class="kw">as</span> <span class="ident">f64</span>);
 
-    <span class="ident">remove_suffix</span>(<span class="ident">i</span>, <span class="ident">suffix</span>, <span class="kw-2">&amp;</span><span class="ident">opts</span>.<span class="ident">from</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="kw">if</span> <span class="ident">n</span> <span class="op">&lt;</span> <span class="number">0.0</span> { <span class="op">-</span><span class="ident">n</span>.<span class="ident">abs</span>().<span class="ident">ceil</span>() } <span class="kw">else</span> { <span class="ident">n</span>.<span class="ident">ceil</span>() })
+    <span class="ident">remove_suffix</span>(<span class="ident">i</span>, <span class="ident">suffix</span>, <span class="kw-2">&amp;</span><span class="ident">opts</span>.<span class="ident">from</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> {
+        <span class="comment">// GNU numfmt doesn&#39;t round values if no --from argument is provided by the user</span>
+        <span class="kw">if</span> <span class="ident">opts</span>.<span class="ident">from</span> <span class="op">==</span> <span class="ident">Unit::None</span> {
+            <span class="ident">n</span>
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">n</span> <span class="op">&lt;</span> <span class="number">0.0</span> {
+            <span class="op">-</span><span class="ident">n</span>.<span class="ident">abs</span>().<span class="ident">ceil</span>()
+        } <span class="kw">else</span> {
+            <span class="ident">n</span>.<span class="ident">ceil</span>()
+        }
+    })
 }
 
 <span class="doccomment">/// Divide numerator by denominator, with rounding.</span>
