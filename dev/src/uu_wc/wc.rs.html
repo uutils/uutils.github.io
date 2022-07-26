@@ -625,6 +625,17 @@
 <span id="620">620</span>
 <span id="621">621</span>
 <span id="622">622</span>
+<span id="623">623</span>
+<span id="624">624</span>
+<span id="625">625</span>
+<span id="626">626</span>
+<span id="627">627</span>
+<span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
+<span id="632">632</span>
+<span id="633">633</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Boden Garman &lt;bpgarman@gmail.com&gt;</span>
@@ -640,7 +651,7 @@
 <span class="kw">mod</span> <span class="ident">count_fast</span>;
 <span class="kw">mod</span> <span class="ident">countable</span>;
 <span class="kw">mod</span> <span class="ident">word_count</span>;
-<span class="kw">use</span> <span class="ident">count_fast</span>::{<span class="ident">count_bytes_and_lines_fast</span>, <span class="ident">count_bytes_fast</span>, <span class="ident">count_chars_fast</span>};
+<span class="kw">use</span> <span class="ident">count_fast</span>::{<span class="ident">count_bytes_chars_and_lines_fast</span>, <span class="ident">count_bytes_fast</span>};
 <span class="kw">use</span> <span class="ident">countable::WordCountable</span>;
 <span class="kw">use</span> <span class="ident">unicode_width::UnicodeWidthChar</span>;
 <span class="kw">use</span> <span class="ident">utf8</span>::{<span class="ident">BufReadDecoder</span>, <span class="ident">BufReadDecoderError</span>};
@@ -942,7 +953,7 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
     ) {
         <span class="comment">// Specialize scanning loop to improve the performance.</span>
         (<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; <span class="macro">unreachable!</span>(),
-        (<span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; <span class="ident">count_chars_fast</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>),
+
         (<span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
             <span class="comment">// Fast path when only show_bytes is true.</span>
             <span class="kw">let</span> (<span class="ident">bytes</span>, <span class="ident">error</span>) <span class="op">=</span> <span class="ident">count_bytes_fast</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>);
@@ -954,10 +965,27 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
                 <span class="ident">error</span>,
             )
         }
-        (<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) <span class="op">|</span> (<span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
-            <span class="comment">// Fast path when only (show_bytes || show_lines) is true.</span>
-            <span class="ident">count_bytes_and_lines_fast</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>)
+
+        <span class="comment">// Fast paths that can be computed without Unicode decoding.</span>
+        (<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
+            <span class="ident">count_bytes_chars_and_lines_fast</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>)
         }
+        (<span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
+            <span class="ident">count_bytes_chars_and_lines_fast</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>)
+        }
+        (<span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
+            <span class="ident">count_bytes_chars_and_lines_fast</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>)
+        }
+        (<span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
+            <span class="ident">count_bytes_chars_and_lines_fast</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>)
+        }
+        (<span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
+            <span class="ident">count_bytes_chars_and_lines_fast</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>)
+        }
+        (<span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
+            <span class="ident">count_bytes_chars_and_lines_fast</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>)
+        }
+
         (<span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>) =&gt; {
             <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
         }
@@ -976,9 +1004,6 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
         (<span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>) =&gt; {
             <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
         }
-        (<span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
-            <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
-        }
         (<span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>) =&gt; {
             <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
         }
@@ -987,9 +1012,6 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
         }
         (<span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>) =&gt; {
             <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
-        }
-        (<span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
-            <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
         }
         (<span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>) =&gt; {
             <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
