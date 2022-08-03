@@ -1006,25 +1006,25 @@
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">map</span>(<span class="ident">ToString::to_string</span>).<span class="ident">collect</span>())
         .<span class="ident">unwrap_or_default</span>();
 
-    <span class="kw">let</span> <span class="ident">preserve_root</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::preserve_root::PRESERVE</span>);
+    <span class="kw">let</span> <span class="ident">preserve_root</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::preserve_root::PRESERVE</span>);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dereference</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::dereference::DEREFERENCE</span>) {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dereference</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::dereference::DEREFERENCE</span>) {
         <span class="prelude-val">Some</span>(<span class="bool-val">true</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::dereference::NO_DEREFERENCE</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::dereference::NO_DEREFERENCE</span>) {
         <span class="prelude-val">Some</span>(<span class="bool-val">false</span>)
     } <span class="kw">else</span> {
         <span class="prelude-val">None</span>
     };
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">traverse_symlinks</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::traverse::TRAVERSE</span>) {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">traverse_symlinks</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::traverse::TRAVERSE</span>) {
         <span class="ident">TraverseSymlinks::First</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::traverse::EVERY</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::traverse::EVERY</span>) {
         <span class="ident">TraverseSymlinks::All</span>
     } <span class="kw">else</span> {
         <span class="ident">TraverseSymlinks::None</span>
     };
 
-    <span class="kw">let</span> <span class="ident">recursive</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::RECURSIVE</span>);
+    <span class="kw">let</span> <span class="ident">recursive</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::RECURSIVE</span>);
     <span class="kw">if</span> <span class="ident">recursive</span> {
         <span class="kw">if</span> <span class="ident">traverse_symlinks</span> <span class="op">==</span> <span class="ident">TraverseSymlinks::None</span> {
             <span class="kw">if</span> <span class="ident">dereference</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {
@@ -1036,13 +1036,13 @@
         <span class="ident">traverse_symlinks</span> <span class="op">=</span> <span class="ident">TraverseSymlinks::None</span>;
     }
 
-    <span class="kw">let</span> <span class="ident">verbosity_level</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::verbosity::CHANGES</span>) {
+    <span class="kw">let</span> <span class="ident">verbosity_level</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::verbosity::CHANGES</span>) {
         <span class="ident">VerbosityLevel::Changes</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::verbosity::SILENT</span>)
-        <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::verbosity::QUIET</span>)
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::verbosity::SILENT</span>)
+        <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::verbosity::QUIET</span>)
     {
         <span class="ident">VerbosityLevel::Silent</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::verbosity::VERBOSE</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::verbosity::VERBOSE</span>) {
         <span class="ident">VerbosityLevel::Verbose</span>
     } <span class="kw">else</span> {
         <span class="ident">VerbosityLevel::Normal</span>

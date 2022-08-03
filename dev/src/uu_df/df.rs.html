@@ -1051,9 +1051,9 @@ of 1000).&quot;</span>;
         }
 
         <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
-            <span class="ident">show_local_fs</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_LOCAL</span>),
-            <span class="ident">show_all_fs</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_ALL</span>),
-            <span class="ident">sync</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_SYNC</span>),
+            <span class="ident">show_local_fs</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_LOCAL</span>),
+            <span class="ident">show_all_fs</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_ALL</span>),
+            <span class="ident">sync</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_SYNC</span>),
             <span class="ident">block_size</span>: <span class="ident">read_block_size</span>(<span class="ident">matches</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">e</span> {
                 <span class="ident">ParseSizeError::InvalidSuffix</span>(<span class="ident">s</span>) =&gt; <span class="ident">OptionsError::InvalidSuffix</span>(<span class="ident">s</span>),
                 <span class="ident">ParseSizeError::SizeTooBig</span>(<span class="kw">_</span>) =&gt; <span class="ident">OptionsError::BlockSizeTooLarge</span>(
@@ -1062,13 +1062,13 @@ of 1000).&quot;</span>;
                 <span class="ident">ParseSizeError::ParseFailure</span>(<span class="ident">s</span>) =&gt; <span class="ident">OptionsError::InvalidBlockSize</span>(<span class="ident">s</span>),
             })<span class="question-mark">?</span>,
             <span class="ident">header_mode</span>: {
-                <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_BINARY</span>)
-                    <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_DECIMAL</span>)
+                <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_HUMAN_READABLE_BINARY</span>)
+                    <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_HUMAN_READABLE_DECIMAL</span>)
                 {
                     <span class="ident">HeaderMode::HumanReadable</span>
-                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_PORTABILITY</span>) {
+                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_PORTABILITY</span>) {
                     <span class="ident">HeaderMode::PosixPortability</span>
-                <span class="comment">// is_present() doesn&#39;t work here, it always returns true because OPT_OUTPUT has</span>
+                <span class="comment">// contains_id() doesn&#39;t work here, it always returns true because OPT_OUTPUT has</span>
                 <span class="comment">// default values and hence is always present</span>
                 } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">occurrences_of</span>(<span class="ident">OPT_OUTPUT</span>) <span class="op">&gt;</span> <span class="number">0</span> {
                     <span class="ident">HeaderMode::Output</span>
@@ -1077,9 +1077,9 @@ of 1000).&quot;</span>;
                 }
             },
             <span class="ident">human_readable</span>: {
-                <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_BINARY</span>) {
+                <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_HUMAN_READABLE_BINARY</span>) {
                     <span class="prelude-val">Some</span>(<span class="ident">HumanReadable::Binary</span>)
-                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_HUMAN_READABLE_DECIMAL</span>) {
+                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_HUMAN_READABLE_DECIMAL</span>) {
                     <span class="prelude-val">Some</span>(<span class="ident">HumanReadable::Decimal</span>)
                 } <span class="kw">else</span> {
                     <span class="prelude-val">None</span>
@@ -1087,7 +1087,7 @@ of 1000).&quot;</span>;
             },
             <span class="ident">include</span>,
             <span class="ident">exclude</span>,
-            <span class="ident">show_total</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_TOTAL</span>),
+            <span class="ident">show_total</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_TOTAL</span>),
             <span class="ident">columns</span>: <span class="ident">Column::from_matches</span>(<span class="ident">matches</span>).<span class="ident">map_err</span>(<span class="ident">OptionsError::ColumnError</span>)<span class="question-mark">?</span>,
         })
     }
@@ -1304,7 +1304,7 @@ of 1000).&quot;</span>;
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
     {
-        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">OPT_INODES</span>) {
+        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_INODES</span>) {
             <span class="macro">println!</span>(<span class="string">&quot;{}: doesn&#39;t support -i option&quot;</span>, <span class="ident">uucore::util_name</span>());
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
         }

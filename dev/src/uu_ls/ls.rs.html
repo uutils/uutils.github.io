@@ -3320,7 +3320,7 @@
 <span class="kw">impl</span> <span class="ident">Config</span> {
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::cognitive_complexity</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">clap::ArgMatches</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::CONTEXT</span>);
+        <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::CONTEXT</span>);
         <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">format</span>, <span class="ident">opt</span>) <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">format_</span>) <span class="op">=</span> <span class="ident">options</span>.<span class="ident">value_of</span>(<span class="ident">options::FORMAT</span>) {
             (
                 <span class="kw">match</span> <span class="ident">format_</span> {
@@ -3334,13 +3334,13 @@
                 },
                 <span class="prelude-val">Some</span>(<span class="ident">options::FORMAT</span>),
             )
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::format::LONG</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::format::LONG</span>) {
             (<span class="ident">Format::Long</span>, <span class="prelude-val">Some</span>(<span class="ident">options::format::LONG</span>))
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::format::ACROSS</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::format::ACROSS</span>) {
             (<span class="ident">Format::Across</span>, <span class="prelude-val">Some</span>(<span class="ident">options::format::ACROSS</span>))
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::format::COMMAS</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::format::COMMAS</span>) {
             (<span class="ident">Format::Commas</span>, <span class="prelude-val">Some</span>(<span class="ident">options::format::COMMAS</span>))
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::format::COLUMNS</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::format::COLUMNS</span>) {
             (<span class="ident">Format::Columns</span>, <span class="prelude-val">Some</span>(<span class="ident">options::format::COLUMNS</span>))
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">atty::is</span>(<span class="ident">atty::Stream::Stdout</span>) {
             (<span class="ident">Format::Columns</span>, <span class="prelude-val">None</span>)
@@ -3386,9 +3386,9 @@
             }
         }
 
-        <span class="kw">let</span> <span class="ident">files</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::files::ALL</span>) {
+        <span class="kw">let</span> <span class="ident">files</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::files::ALL</span>) {
             <span class="ident">Files::All</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::files::ALMOST_ALL</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::files::ALMOST_ALL</span>) {
             <span class="ident">Files::AlmostAll</span>
         } <span class="kw">else</span> {
             <span class="ident">Files::Normal</span>
@@ -3405,15 +3405,15 @@
                 <span class="comment">// below should never happen as clap already restricts the values.</span>
                 <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Invalid field for --sort&quot;</span>),
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::sort::TIME</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::sort::TIME</span>) {
             <span class="ident">Sort::Time</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::sort::SIZE</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::sort::SIZE</span>) {
             <span class="ident">Sort::Size</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::sort::NONE</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::sort::NONE</span>) {
             <span class="ident">Sort::None</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::sort::VERSION</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::sort::VERSION</span>) {
             <span class="ident">Sort::Version</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::sort::EXTENSION</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::sort::EXTENSION</span>) {
             <span class="ident">Sort::Extension</span>
         } <span class="kw">else</span> {
             <span class="ident">Sort::Name</span>
@@ -3427,16 +3427,16 @@
                 <span class="comment">// below should never happen as clap already restricts the values.</span>
                 <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Invalid field for --time&quot;</span>),
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::time::ACCESS</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::time::ACCESS</span>) {
             <span class="ident">Time::Access</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::time::CHANGE</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::time::CHANGE</span>) {
             <span class="ident">Time::Change</span>
         } <span class="kw">else</span> {
             <span class="ident">Time::Modification</span>
         };
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">needs_color</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">options</span>.<span class="ident">value_of</span>(<span class="ident">options::COLOR</span>) {
-            <span class="prelude-val">None</span> =&gt; <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::COLOR</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::COLOR</span>),
             <span class="prelude-val">Some</span>(<span class="ident">val</span>) =&gt; <span class="kw">match</span> <span class="ident">val</span> {
                 <span class="string">&quot;&quot;</span> <span class="op">|</span> <span class="string">&quot;always&quot;</span> <span class="op">|</span> <span class="string">&quot;yes&quot;</span> <span class="op">|</span> <span class="string">&quot;force&quot;</span> =&gt; <span class="bool-val">true</span>,
                 <span class="string">&quot;auto&quot;</span> <span class="op">|</span> <span class="string">&quot;tty&quot;</span> <span class="op">|</span> <span class="string">&quot;if-tty&quot;</span> =&gt; <span class="ident">atty::is</span>(<span class="ident">atty::Stream::Stdout</span>),
@@ -3450,14 +3450,14 @@
                 .<span class="ident">value_of</span>(<span class="ident">options::size::BLOCK_SIZE</span>)
                 .<span class="ident">unwrap</span>()
                 .<span class="ident">eq</span>(<span class="string">&quot;si&quot;</span>)
-            <span class="op">|</span><span class="op">|</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::size::SI</span>);
+            <span class="op">|</span><span class="op">|</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::size::SI</span>);
         <span class="kw">let</span> <span class="ident">opt_hr</span> <span class="op">=</span> (<span class="ident">cmd_line_bs</span>.<span class="ident">is_some</span>()
             <span class="op">&amp;&amp;</span> <span class="ident">options</span>
                 .<span class="ident">value_of</span>(<span class="ident">options::size::BLOCK_SIZE</span>)
                 .<span class="ident">unwrap</span>()
                 .<span class="ident">eq</span>(<span class="string">&quot;human-readable&quot;</span>))
-            <span class="op">|</span><span class="op">|</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::size::HUMAN_READABLE</span>);
-        <span class="kw">let</span> <span class="ident">opt_kb</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::size::KIBIBYTES</span>);
+            <span class="op">|</span><span class="op">|</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::size::HUMAN_READABLE</span>);
+        <span class="kw">let</span> <span class="ident">opt_kb</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::size::KIBIBYTES</span>);
 
         <span class="kw">let</span> <span class="ident">bs_env_var</span> <span class="op">=</span> <span class="ident">std::env::var_os</span>(<span class="string">&quot;BLOCK_SIZE&quot;</span>);
         <span class="kw">let</span> <span class="ident">ls_bs_env_var</span> <span class="op">=</span> <span class="ident">std::env::var_os</span>(<span class="string">&quot;LS_BLOCK_SIZE&quot;</span>);
@@ -3506,12 +3506,12 @@
         };
 
         <span class="kw">let</span> <span class="ident">long</span> <span class="op">=</span> {
-            <span class="kw">let</span> <span class="ident">author</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::AUTHOR</span>);
-            <span class="kw">let</span> <span class="ident">group</span> <span class="op">=</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::NO_GROUP</span>)
-                <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::format::LONG_NO_GROUP</span>);
-            <span class="kw">let</span> <span class="ident">owner</span> <span class="op">=</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::format::LONG_NO_OWNER</span>);
+            <span class="kw">let</span> <span class="ident">author</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::AUTHOR</span>);
+            <span class="kw">let</span> <span class="ident">group</span> <span class="op">=</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_GROUP</span>)
+                <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::format::LONG_NO_GROUP</span>);
+            <span class="kw">let</span> <span class="ident">owner</span> <span class="op">=</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::format::LONG_NO_OWNER</span>);
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-            <span class="kw">let</span> <span class="ident">numeric_uid_gid</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::format::LONG_NUMERIC_UID_GID</span>);
+            <span class="kw">let</span> <span class="ident">numeric_uid_gid</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::format::LONG_NUMERIC_UID_GID</span>);
             <span class="ident">LongFormat</span> {
                 <span class="ident">author</span>,
                 <span class="ident">group</span>,
@@ -3555,9 +3555,9 @@
         };
 
         <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::needless_bool</span>)]</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">show_control</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::HIDE_CONTROL_CHARS</span>) {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">show_control</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::HIDE_CONTROL_CHARS</span>) {
             <span class="bool-val">false</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::SHOW_CONTROL_CHARS</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::SHOW_CONTROL_CHARS</span>) {
             <span class="bool-val">true</span>
         } <span class="kw">else</span> {
             <span class="op">!</span><span class="ident">atty::is</span>(<span class="ident">atty::Stream::Stdout</span>)
@@ -3598,13 +3598,13 @@
                 },
                 <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Should have been caught by Clap&quot;</span>),
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::quoting::LITERAL</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::quoting::LITERAL</span>) {
             <span class="ident">QuotingStyle::Literal</span> { <span class="ident">show_control</span> }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::quoting::ESCAPE</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::quoting::ESCAPE</span>) {
             <span class="ident">QuotingStyle::C</span> {
                 <span class="ident">quotes</span>: <span class="ident">quoting_style::Quotes::None</span>,
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::quoting::C</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::quoting::C</span>) {
             <span class="ident">QuotingStyle::C</span> {
                 <span class="ident">quotes</span>: <span class="ident">quoting_style::Quotes::Double</span>,
             }
@@ -3638,9 +3638,9 @@
                 }
                 <span class="kw-2">&amp;</span><span class="kw">_</span> =&gt; <span class="ident">IndicatorStyle::None</span>,
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::indicator_style::SLASH</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::indicator_style::SLASH</span>) {
             <span class="ident">IndicatorStyle::Slash</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::indicator_style::FILE_TYPE</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::indicator_style::FILE_TYPE</span>) {
             <span class="ident">IndicatorStyle::FileType</span>
         } <span class="kw">else</span> {
             <span class="ident">IndicatorStyle::None</span>
@@ -3649,7 +3649,7 @@
         <span class="kw">let</span> <span class="ident">time_style</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">field</span>) <span class="op">=</span> <span class="ident">options</span>.<span class="ident">value_of</span>(<span class="ident">options::TIME_STYLE</span>) {
             <span class="comment">//If both FULL_TIME and TIME_STYLE are present</span>
             <span class="comment">//The one added last is dominant</span>
-            <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::FULL_TIME</span>)
+            <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::FULL_TIME</span>)
                 <span class="op">&amp;&amp;</span> <span class="ident">options</span>.<span class="ident">indices_of</span>(<span class="ident">options::FULL_TIME</span>).<span class="ident">unwrap</span>().<span class="ident">last</span>()
                     <span class="op">&gt;</span> <span class="ident">options</span>.<span class="ident">indices_of</span>(<span class="ident">options::TIME_STYLE</span>).<span class="ident">unwrap</span>().<span class="ident">last</span>()
             {
@@ -3665,7 +3665,7 @@
                     <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Invalid field for --time-style&quot;</span>),
                 }
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::FULL_TIME</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::FULL_TIME</span>) {
             <span class="ident">TimeStyle::FullIso</span>
         } <span class="kw">else</span> {
             <span class="ident">TimeStyle::Locale</span>
@@ -3673,7 +3673,7 @@
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ignore_patterns</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Pattern</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
 
-        <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::IGNORE_BACKUPS</span>) {
+        <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::IGNORE_BACKUPS</span>) {
             <span class="ident">ignore_patterns</span>.<span class="ident">push</span>(<span class="ident">Pattern::new</span>(<span class="string">&quot;*~&quot;</span>).<span class="ident">unwrap</span>());
             <span class="ident">ignore_patterns</span>.<span class="ident">push</span>(<span class="ident">Pattern::new</span>(<span class="string">&quot;.*~&quot;</span>).<span class="ident">unwrap</span>());
         }
@@ -3772,13 +3772,13 @@
             <span class="prelude-val">None</span>
         };
 
-        <span class="kw">let</span> <span class="ident">dereference</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::dereference::ALL</span>) {
+        <span class="kw">let</span> <span class="ident">dereference</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::dereference::ALL</span>) {
             <span class="ident">Dereference::All</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::dereference::ARGS</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::dereference::ARGS</span>) {
             <span class="ident">Dereference::Args</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::dereference::DIR_ARGS</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::dereference::DIR_ARGS</span>) {
             <span class="ident">Dereference::DirArgs</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::DIRECTORY</span>)
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::DIRECTORY</span>)
             <span class="op">|</span><span class="op">|</span> <span class="ident">indicator_style</span> <span class="op">==</span> <span class="ident">IndicatorStyle::Classify</span>
             <span class="op">|</span><span class="op">|</span> <span class="ident">format</span> <span class="op">==</span> <span class="ident">Format::Long</span>
         {
@@ -3791,18 +3791,18 @@
             <span class="ident">format</span>,
             <span class="ident">files</span>,
             <span class="ident">sort</span>,
-            <span class="ident">recursive</span>: <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::RECURSIVE</span>),
-            <span class="ident">reverse</span>: <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::REVERSE</span>),
+            <span class="ident">recursive</span>: <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::RECURSIVE</span>),
+            <span class="ident">reverse</span>: <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::REVERSE</span>),
             <span class="ident">dereference</span>,
             <span class="ident">ignore_patterns</span>,
             <span class="ident">size_format</span>,
-            <span class="ident">directory</span>: <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::DIRECTORY</span>),
+            <span class="ident">directory</span>: <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::DIRECTORY</span>),
             <span class="ident">time</span>,
             <span class="ident">color</span>,
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-            <span class="ident">inode</span>: <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::INODE</span>),
+            <span class="ident">inode</span>: <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::INODE</span>),
             <span class="ident">long</span>,
-            <span class="ident">alloc_size</span>: <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::size::ALLOCATION_SIZE</span>),
+            <span class="ident">alloc_size</span>: <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::size::ALLOCATION_SIZE</span>),
             <span class="ident">block_size</span>,
             <span class="ident">width</span>,
             <span class="ident">quoting_style</span>,
@@ -3819,8 +3819,8 @@
                     <span class="bool-val">false</span>
                 }
             },
-            <span class="ident">group_directories_first</span>: <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::GROUP_DIRECTORIES_FIRST</span>),
-            <span class="ident">eol</span>: <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">is_present</span>(<span class="ident">options::ZERO</span>) {
+            <span class="ident">group_directories_first</span>: <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::GROUP_DIRECTORIES_FIRST</span>),
+            <span class="ident">eol</span>: <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::ZERO</span>) {
                 <span class="string">&#39;\0&#39;</span>
             } <span class="kw">else</span> {
                 <span class="string">&#39;\n&#39;</span>

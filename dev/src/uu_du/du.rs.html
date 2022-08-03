@@ -1268,9 +1268,9 @@ are supported:
 }
 
 <span class="kw">fn</span> <span class="ident">choose_size</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>, <span class="ident">stat</span>: <span class="kw-2">&amp;</span><span class="ident">Stat</span>) -&gt; <span class="ident">u64</span> {
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::INODES</span>) {
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::INODES</span>) {
         <span class="ident">stat</span>.<span class="ident">inodes</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::APPARENT_SIZE</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::BYTES</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::APPARENT_SIZE</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::BYTES</span>) {
         <span class="ident">stat</span>.<span class="ident">size</span>
     } <span class="kw">else</span> {
         <span class="comment">// The st_blocks field indicates the number of blocks allocated to the file, 512-byte units.</span>
@@ -1475,7 +1475,7 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
 <span class="comment">// Given the --exclude-from and/or --exclude arguments, returns the globset lists</span>
 <span class="comment">// to ignore the files</span>
 <span class="kw">fn</span> <span class="ident">get_glob_ignore</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Pattern</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">excludes_from</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::EXCLUDE_FROM</span>) {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">excludes_from</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::EXCLUDE_FROM</span>) {
         <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="ident">options::EXCLUDE_FROM</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">all_files</span>) =&gt; {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">exclusion</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>();
@@ -1493,7 +1493,7 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
         <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>()
     };
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">excludes</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::EXCLUDE</span>) {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">excludes</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::EXCLUDE</span>) {
         <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="ident">options::EXCLUDE</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">v</span>) =&gt; {
                 <span class="comment">// Read the various arguments</span>
@@ -1511,7 +1511,7 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
         <span class="comment">// Create the `Vec` of excludes</span>
         <span class="kw">for</span> <span class="ident">f</span> <span class="kw">in</span> <span class="ident">excludes</span> {
-            <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::VERBOSE</span>) {
+            <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::VERBOSE</span>) {
                 <span class="macro">println!</span>(<span class="string">&quot;adding {:?} to the exclude list &quot;</span>, <span class="kw-2">&amp;</span><span class="ident">f</span>);
             }
             <span class="kw">match</span> <span class="ident">Pattern::new</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>) {
@@ -1534,19 +1534,19 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
 
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
-    <span class="kw">let</span> <span class="ident">summarize</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::SUMMARIZE</span>);
+    <span class="kw">let</span> <span class="ident">summarize</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::SUMMARIZE</span>);
 
     <span class="kw">let</span> <span class="ident">max_depth</span> <span class="op">=</span> <span class="ident">parse_depth</span>(<span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::MAX_DEPTH</span>), <span class="ident">summarize</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">Options</span> {
-        <span class="ident">all</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::ALL</span>),
+        <span class="ident">all</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ALL</span>),
         <span class="ident">max_depth</span>,
-        <span class="ident">total</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::TOTAL</span>),
-        <span class="ident">separate_dirs</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::SEPARATE_DIRS</span>),
-        <span class="ident">one_file_system</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::ONE_FILE_SYSTEM</span>),
-        <span class="ident">dereference</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::DEREFERENCE</span>),
-        <span class="ident">inodes</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::INODES</span>),
-        <span class="ident">verbose</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::VERBOSE</span>),
+        <span class="ident">total</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::TOTAL</span>),
+        <span class="ident">separate_dirs</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::SEPARATE_DIRS</span>),
+        <span class="ident">one_file_system</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ONE_FILE_SYSTEM</span>),
+        <span class="ident">dereference</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::DEREFERENCE</span>),
+        <span class="ident">inodes</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::INODES</span>),
+        <span class="ident">verbose</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::VERBOSE</span>),
     };
 
     <span class="kw">let</span> <span class="ident">files</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::FILE</span>) {
@@ -1555,7 +1555,7 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
     };
 
     <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">inodes</span>
-        <span class="op">&amp;&amp;</span> (<span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::APPARENT_SIZE</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::BYTES</span>))
+        <span class="op">&amp;&amp;</span> (<span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::APPARENT_SIZE</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::BYTES</span>))
     {
         <span class="macro">show_warning!</span>(<span class="string">&quot;options --apparent-size and -b are ineffective with --inodes&quot;</span>);
     }
@@ -1567,19 +1567,19 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
             .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">format_error_message</span>(<span class="kw-2">&amp;</span><span class="ident">e</span>, <span class="ident">s</span>, <span class="ident">options::THRESHOLD</span>)))
     });
 
-    <span class="kw">let</span> <span class="ident">multiplier</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::SI</span>) {
+    <span class="kw">let</span> <span class="ident">multiplier</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::SI</span>) {
         <span class="number">1000</span>
     } <span class="kw">else</span> {
         <span class="number">1024</span>
     };
     <span class="kw">let</span> <span class="ident">convert_size_fn</span> <span class="op">=</span> {
-        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::HUMAN_READABLE</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::SI</span>) {
+        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::HUMAN_READABLE</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::SI</span>) {
             <span class="ident">convert_size_human</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::BYTES</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::BYTES</span>) {
             <span class="ident">convert_size_b</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::BLOCK_SIZE_1K</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::BLOCK_SIZE_1K</span>) {
             <span class="ident">convert_size_k</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::BLOCK_SIZE_1M</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::BLOCK_SIZE_1M</span>) {
             <span class="ident">convert_size_m</span>
         } <span class="kw">else</span> {
             <span class="ident">convert_size_other</span>
@@ -1595,7 +1595,7 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
 
     <span class="kw">let</span> <span class="ident">time_format_str</span> <span class="op">=</span> <span class="ident">parse_time_style</span>(<span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;time-style&quot;</span>))<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">line_separator</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::NULL</span>) {
+    <span class="kw">let</span> <span class="ident">line_separator</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NULL</span>) {
         <span class="string">&quot;\0&quot;</span>
     } <span class="kw">else</span> {
         <span class="string">&quot;\n&quot;</span>
@@ -1637,7 +1637,7 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
                         <span class="kw">continue</span>;
                     }
 
-                    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::TIME</span>) {
+                    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::TIME</span>) {
                         <span class="kw">let</span> <span class="ident">tm</span> <span class="op">=</span> {
                             <span class="kw">let</span> <span class="ident">secs</span> <span class="op">=</span> {
                                 <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::TIME</span>) {

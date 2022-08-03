@@ -1087,11 +1087,11 @@
 <span class="kw">fn</span> <span class="ident">parse_command_line</span>(<span class="ident">config</span>: <span class="ident">clap::Command</span>, <span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Options</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">config</span>.<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">verbose</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::VERBOSE</span>);
+    <span class="kw">let</span> <span class="ident">verbose</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::VERBOSE</span>);
 
-    <span class="kw">let</span> (<span class="ident">recursive_mode</span>, <span class="ident">affect_symlink_referent</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::RECURSIVE</span>) {
-        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::sym_links::FOLLOW_DIR_SYM_LINKS</span>) {
-            <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::dereference::NO_DEREFERENCE</span>) {
+    <span class="kw">let</span> (<span class="ident">recursive_mode</span>, <span class="ident">affect_symlink_referent</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::RECURSIVE</span>) {
+        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::sym_links::FOLLOW_DIR_SYM_LINKS</span>) {
+            <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::dereference::NO_DEREFERENCE</span>) {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::ArgumentsMismatch</span>(<span class="macro">format!</span>(
                     <span class="string">&quot;&#39;--{}&#39; with &#39;--{}&#39; require &#39;-P&#39;&quot;</span>,
                     <span class="ident">options::RECURSIVE</span>,
@@ -1100,8 +1100,8 @@
             }
 
             (<span class="ident">RecursiveMode::RecursiveAndFollowAllDirSymLinks</span>, <span class="bool-val">true</span>)
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::sym_links::FOLLOW_ARG_DIR_SYM_LINK</span>) {
-            <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::dereference::NO_DEREFERENCE</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::sym_links::FOLLOW_ARG_DIR_SYM_LINK</span>) {
+            <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::dereference::NO_DEREFERENCE</span>) {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::ArgumentsMismatch</span>(<span class="macro">format!</span>(
                     <span class="string">&quot;&#39;--{}&#39; with &#39;--{}&#39; require &#39;-P&#39;&quot;</span>,
                     <span class="ident">options::RECURSIVE</span>,
@@ -1111,7 +1111,7 @@
 
             (<span class="ident">RecursiveMode::RecursiveAndFollowArgDirSymLinks</span>, <span class="bool-val">true</span>)
         } <span class="kw">else</span> {
-            <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::dereference::DEREFERENCE</span>) {
+            <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::dereference::DEREFERENCE</span>) {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::ArgumentsMismatch</span>(<span class="macro">format!</span>(
                     <span class="string">&quot;&#39;--{}&#39; with &#39;--{}&#39; require either &#39;-H&#39; or &#39;-L&#39;&quot;</span>,
                     <span class="ident">options::RECURSIVE</span>,
@@ -1122,12 +1122,12 @@
             (<span class="ident">RecursiveMode::RecursiveButDoNotFollowSymLinks</span>, <span class="bool-val">false</span>)
         }
     } <span class="kw">else</span> {
-        <span class="kw">let</span> <span class="ident">no_dereference</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::dereference::NO_DEREFERENCE</span>);
+        <span class="kw">let</span> <span class="ident">no_dereference</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::dereference::NO_DEREFERENCE</span>);
         (<span class="ident">RecursiveMode::NotRecursive</span>, <span class="op">!</span><span class="ident">no_dereference</span>)
     };
 
     <span class="comment">// By default, do not preserve root.</span>
-    <span class="kw">let</span> <span class="ident">preserve_root</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::preserve_root::PRESERVE_ROOT</span>);
+    <span class="kw">let</span> <span class="ident">preserve_root</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::preserve_root::PRESERVE_ROOT</span>);
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">files</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">values_of_os</span>(<span class="string">&quot;FILE&quot;</span>).<span class="ident">unwrap_or_default</span>();
 
@@ -1135,10 +1135,10 @@
         <span class="ident">CommandLineMode::ReferenceBased</span> {
             <span class="ident">reference</span>: <span class="ident">PathBuf::from</span>(<span class="ident">path</span>),
         }
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::USER</span>)
-        <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::ROLE</span>)
-        <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::TYPE</span>)
-        <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::RANGE</span>)
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::USER</span>)
+        <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ROLE</span>)
+        <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::TYPE</span>)
+        <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::RANGE</span>)
     {
         <span class="ident">CommandLineMode::Custom</span> {
             <span class="ident">user</span>: <span class="ident">matches</span>.<span class="ident">value_of_os</span>(<span class="ident">options::USER</span>).<span class="ident">map</span>(<span class="ident">Into::into</span>),

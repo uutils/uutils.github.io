@@ -1672,12 +1672,12 @@ Lines are not truncated under single column output.&quot;</span>;
         }
     };
 
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::VERSION</span>) {
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::VERSION</span>) {
         <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">command</span>.<span class="ident">render_long_version</span>());
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
     }
 
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::HELP</span>) {
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::HELP</span>) {
         <span class="ident">command</span>.<span class="ident">print_help</span>()<span class="question-mark">?</span>;
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
     }
@@ -1691,7 +1691,7 @@ Lines are not truncated under single column output.&quot;</span>;
         <span class="ident">files</span>.<span class="ident">insert</span>(<span class="number">0</span>, <span class="ident">FILE_STDIN</span>);
     }
 
-    <span class="kw">let</span> <span class="ident">file_groups</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::MERGE</span>) {
+    <span class="kw">let</span> <span class="ident">file_groups</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::MERGE</span>) {
         <span class="macro">vec!</span>[<span class="ident">files</span>]
     } <span class="kw">else</span> {
         <span class="ident">files</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="macro">vec!</span>[<span class="ident">i</span>]).<span class="ident">collect</span>()
@@ -1755,7 +1755,7 @@ Lines are not truncated under single column output.&quot;</span>;
 }
 
 <span class="kw">fn</span> <span class="ident">print_error</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>, <span class="ident">err</span>: <span class="kw-2">&amp;</span><span class="ident">PrError</span>) {
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::NO_FILE_WARNINGS</span>) {
+    <span class="kw">if</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_FILE_WARNINGS</span>) {
         <span class="macro">eprintln!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>);
     }
 }
@@ -1779,21 +1779,21 @@ Lines are not truncated under single column output.&quot;</span>;
     <span class="ident">paths</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>],
     <span class="ident">free_args</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">OutputOptions</span>, <span class="ident">PrError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">form_feed_used</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::FORM_FEED</span>);
+    <span class="kw">let</span> <span class="ident">form_feed_used</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::FORM_FEED</span>);
 
-    <span class="kw">let</span> <span class="ident">is_merge_mode</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::MERGE</span>);
+    <span class="kw">let</span> <span class="ident">is_merge_mode</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::MERGE</span>);
 
-    <span class="kw">if</span> <span class="ident">is_merge_mode</span> <span class="op">&amp;&amp;</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::COLUMN</span>) {
+    <span class="kw">if</span> <span class="ident">is_merge_mode</span> <span class="op">&amp;&amp;</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::COLUMN</span>) {
         <span class="kw">let</span> <span class="ident">err_msg</span> <span class="op">=</span> <span class="ident">String::from</span>(<span class="string">&quot;cannot specify number of columns when printing in parallel&quot;</span>);
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">PrError::EncounteredErrors</span>(<span class="ident">err_msg</span>));
     }
 
-    <span class="kw">if</span> <span class="ident">is_merge_mode</span> <span class="op">&amp;&amp;</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::ACROSS</span>) {
+    <span class="kw">if</span> <span class="ident">is_merge_mode</span> <span class="op">&amp;&amp;</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ACROSS</span>) {
         <span class="kw">let</span> <span class="ident">err_msg</span> <span class="op">=</span> <span class="ident">String::from</span>(<span class="string">&quot;cannot specify both printing across and printing in parallel&quot;</span>);
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">PrError::EncounteredErrors</span>(<span class="ident">err_msg</span>));
     }
 
-    <span class="kw">let</span> <span class="ident">merge_files_print</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::MERGE</span>) {
+    <span class="kw">let</span> <span class="ident">merge_files_print</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::MERGE</span>) {
         <span class="prelude-val">Some</span>(<span class="ident">paths</span>.<span class="ident">len</span>())
     } <span class="kw">else</span> {
         <span class="prelude-val">None</span>
@@ -1837,14 +1837,14 @@ Lines are not truncated under single column output.&quot;</span>;
             }
         })
         .<span class="ident">or_else</span>(<span class="op">|</span><span class="op">|</span> {
-            <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::NUMBER_LINES</span>) {
+            <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NUMBER_LINES</span>) {
                 <span class="prelude-val">Some</span>(<span class="ident">NumberingMode::default</span>())
             } <span class="kw">else</span> {
                 <span class="prelude-val">None</span>
             }
         });
 
-    <span class="kw">let</span> <span class="ident">double_space</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::DOUBLE_SPACE</span>);
+    <span class="kw">let</span> <span class="ident">double_space</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::DOUBLE_SPACE</span>);
 
     <span class="kw">let</span> <span class="ident">content_line_separator</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">double_space</span> {
         <span class="string">&quot;\n&quot;</span>.<span class="ident">repeat</span>(<span class="number">2</span>)
@@ -1948,7 +1948,7 @@ Lines are not truncated under single column output.&quot;</span>;
     <span class="kw">let</span> <span class="ident">page_length_le_ht</span> <span class="op">=</span> <span class="ident">page_length</span> <span class="op">&lt;</span> (<span class="ident">HEADER_LINES_PER_PAGE</span> <span class="op">+</span> <span class="ident">TRAILER_LINES_PER_PAGE</span>);
 
     <span class="kw">let</span> <span class="ident">display_header_and_trailer</span> <span class="op">=</span>
-        <span class="op">!</span>(<span class="ident">page_length_le_ht</span>) <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::OMIT_HEADER</span>);
+        <span class="op">!</span>(<span class="ident">page_length_le_ht</span>) <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OMIT_HEADER</span>);
 
     <span class="kw">let</span> <span class="ident">content_lines_per_page</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">page_length_le_ht</span> {
         <span class="ident">page_length</span>
@@ -1956,14 +1956,14 @@ Lines are not truncated under single column output.&quot;</span>;
         <span class="ident">page_length</span> <span class="op">-</span> (<span class="ident">HEADER_LINES_PER_PAGE</span> <span class="op">+</span> <span class="ident">TRAILER_LINES_PER_PAGE</span>)
     };
 
-    <span class="kw">let</span> <span class="ident">page_separator_char</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::FORM_FEED</span>) {
+    <span class="kw">let</span> <span class="ident">page_separator_char</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::FORM_FEED</span>) {
         <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">FF</span>];
         <span class="ident">String::from_utf8</span>(<span class="ident">bytes</span>).<span class="ident">unwrap</span>()
     } <span class="kw">else</span> {
         <span class="string">&quot;\n&quot;</span>.<span class="ident">to_string</span>()
     };
 
-    <span class="kw">let</span> <span class="ident">across_mode</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::ACROSS</span>);
+    <span class="kw">let</span> <span class="ident">across_mode</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ACROSS</span>);
 
     <span class="kw">let</span> <span class="ident">column_separator</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::COLUMN_STRING_SEPARATOR</span>) {
         <span class="prelude-val">Some</span>(<span class="ident">x</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">x</span>),
@@ -1972,8 +1972,8 @@ Lines are not truncated under single column output.&quot;</span>;
     .<span class="ident">map</span>(<span class="ident">ToString::to_string</span>)
     .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">DEFAULT_COLUMN_SEPARATOR</span>.<span class="ident">to_string</span>());
 
-    <span class="kw">let</span> <span class="ident">default_column_width</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::COLUMN_WIDTH</span>)
-        <span class="op">&amp;&amp;</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::COLUMN_CHAR_SEPARATOR</span>)
+    <span class="kw">let</span> <span class="ident">default_column_width</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::COLUMN_WIDTH</span>)
+        <span class="op">&amp;&amp;</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::COLUMN_CHAR_SEPARATOR</span>)
     {
         <span class="ident">DEFAULT_COLUMN_WIDTH_WITH_S_OPTION</span>
     } <span class="kw">else</span> {
@@ -1983,7 +1983,7 @@ Lines are not truncated under single column output.&quot;</span>;
     <span class="kw">let</span> <span class="ident">column_width</span> <span class="op">=</span>
         <span class="ident">parse_usize</span>(<span class="ident">matches</span>, <span class="ident">options::COLUMN_WIDTH</span>).<span class="ident">unwrap_or</span>(<span class="prelude-val">Ok</span>(<span class="ident">default_column_width</span>))<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">page_width</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::JOIN_LINES</span>) {
+    <span class="kw">let</span> <span class="ident">page_width</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::JOIN_LINES</span>) {
         <span class="prelude-val">None</span>
     } <span class="kw">else</span> {
         <span class="kw">match</span> <span class="ident">parse_usize</span>(<span class="ident">matches</span>, <span class="ident">options::PAGE_WIDTH</span>) {
@@ -2019,7 +2019,7 @@ Lines are not truncated under single column output.&quot;</span>;
     });
 
     <span class="kw">let</span> <span class="ident">offset_spaces</span> <span class="op">=</span> <span class="string">&quot; &quot;</span>.<span class="ident">repeat</span>(<span class="ident">parse_usize</span>(<span class="ident">matches</span>, <span class="ident">options::INDENT</span>).<span class="ident">unwrap_or</span>(<span class="prelude-val">Ok</span>(<span class="number">0</span>))<span class="question-mark">?</span>);
-    <span class="kw">let</span> <span class="ident">join_lines</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::JOIN_LINES</span>);
+    <span class="kw">let</span> <span class="ident">join_lines</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::JOIN_LINES</span>);
 
     <span class="kw">let</span> <span class="ident">col_sep_for_printing</span> <span class="op">=</span> <span class="ident">column_mode_options</span>
         .<span class="ident">as_ref</span>()

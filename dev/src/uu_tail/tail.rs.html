@@ -1821,7 +1821,7 @@
             ..<span class="ident">Default::default</span>()
         };
 
-        <span class="ident">settings</span>.<span class="ident">follow</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::FOLLOW_RETRY</span>) {
+        <span class="ident">settings</span>.<span class="ident">follow</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::FOLLOW_RETRY</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">FollowMode::Name</span>)
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">occurrences_of</span>(<span class="ident">options::FOLLOW</span>) <span class="op">==</span> <span class="number">0</span> {
             <span class="prelude-val">None</span>
@@ -1843,7 +1843,7 @@
             }
         }
 
-        <span class="ident">settings</span>.<span class="ident">use_polling</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::USE_POLLING</span>);
+        <span class="ident">settings</span>.<span class="ident">use_polling</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::USE_POLLING</span>);
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::MAX_UNCHANGED_STATS</span>) {
             <span class="ident">settings</span>.<span class="ident">max_unchanged_stats</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>() {
@@ -1932,28 +1932,28 @@
         }
 
         <span class="ident">settings</span>.<span class="ident">retry</span> <span class="op">=</span>
-            <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::RETRY</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::FOLLOW_RETRY</span>);
+            <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::RETRY</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::FOLLOW_RETRY</span>);
 
         <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">retry</span> <span class="op">&amp;&amp;</span> <span class="ident">settings</span>.<span class="ident">follow</span>.<span class="ident">is_none</span>() {
             <span class="macro">show_warning!</span>(<span class="string">&quot;--retry ignored; --retry is useful only when following&quot;</span>);
         }
 
-        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::ZERO_TERM</span>) {
+        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ZERO_TERM</span>) {
             <span class="kw">if</span> <span class="kw">let</span> <span class="ident">FilterMode::Lines</span>(<span class="ident">count</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">settings</span>.<span class="ident">mode</span> {
                 <span class="ident">settings</span>.<span class="ident">mode</span> <span class="op">=</span> <span class="ident">FilterMode::Lines</span>(<span class="ident">count</span>, <span class="number">0</span>);
             }
         }
 
-        <span class="ident">settings</span>.<span class="ident">stdin_is_pipe_or_fifo</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::PRESUME_INPUT_PIPE</span>);
+        <span class="ident">settings</span>.<span class="ident">stdin_is_pipe_or_fifo</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::PRESUME_INPUT_PIPE</span>);
 
         <span class="ident">settings</span>.<span class="ident">paths</span> <span class="op">=</span> <span class="ident">matches</span>
             .<span class="ident">values_of</span>(<span class="ident">options::ARG_FILES</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">map</span>(<span class="ident">PathBuf::from</span>).<span class="ident">collect</span>())
             .<span class="ident">unwrap_or_default</span>();
 
-        <span class="ident">settings</span>.<span class="ident">verbose</span> <span class="op">=</span> (<span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::verbosity::VERBOSE</span>)
+        <span class="ident">settings</span>.<span class="ident">verbose</span> <span class="op">=</span> (<span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::verbosity::VERBOSE</span>)
             <span class="op">|</span><span class="op">|</span> <span class="ident">settings</span>.<span class="ident">paths</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span>)
-            <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::verbosity::QUIET</span>);
+            <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::verbosity::QUIET</span>);
 
         <span class="prelude-val">Ok</span>(<span class="ident">settings</span>)
     }

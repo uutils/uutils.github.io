@@ -1031,7 +1031,7 @@
     <span class="kw">let</span> <span class="ident">delimiter_is_equal</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="string">&quot;-d=&quot;</span>.<span class="ident">to_string</span>()); <span class="comment">// special case</span>
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
-    <span class="kw">let</span> <span class="ident">complement</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::COMPLEMENT</span>);
+    <span class="kw">let</span> <span class="ident">complement</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::COMPLEMENT</span>);
 
     <span class="kw">let</span> <span class="ident">mode_parse</span> <span class="op">=</span> <span class="kw">match</span> (
         <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::BYTES</span>),
@@ -1048,7 +1048,7 @@
                             .<span class="ident">unwrap_or_default</span>()
                             .<span class="ident">to_owned</span>(),
                     ),
-                    <span class="ident">zero_terminated</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::ZERO_TERMINATED</span>),
+                    <span class="ident">zero_terminated</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ZERO_TERMINATED</span>),
                 },
             )
         }),
@@ -1062,7 +1062,7 @@
                             .<span class="ident">unwrap_or_default</span>()
                             .<span class="ident">to_owned</span>(),
                     ),
-                    <span class="ident">zero_terminated</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::ZERO_TERMINATED</span>),
+                    <span class="ident">zero_terminated</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ZERO_TERMINATED</span>),
                 },
             )
         }),
@@ -1079,8 +1079,8 @@
                     <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
                 };
 
-                <span class="kw">let</span> <span class="ident">only_delimited</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::ONLY_DELIMITED</span>);
-                <span class="kw">let</span> <span class="ident">zero_terminated</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::ZERO_TERMINATED</span>);
+                <span class="kw">let</span> <span class="ident">only_delimited</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ONLY_DELIMITED</span>);
+                <span class="kw">let</span> <span class="ident">zero_terminated</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ZERO_TERMINATED</span>);
 
                 <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::DELIMITER</span>) {
                     <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">delim</span>) =&gt; {
@@ -1135,12 +1135,12 @@
         <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="ident">mode_parse</span>,
         <span class="prelude-val">Ok</span>(<span class="ident">mode</span>) =&gt; <span class="kw">match</span> <span class="ident">mode</span> {
             <span class="ident">Mode::Bytes</span>(<span class="kw">_</span>, <span class="kw">_</span>) <span class="op">|</span> <span class="ident">Mode::Characters</span>(<span class="kw">_</span>, <span class="kw">_</span>)
-                <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::DELIMITER</span>) =&gt;
+                <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::DELIMITER</span>) =&gt;
             {
                 <span class="prelude-val">Err</span>(<span class="string">&quot;invalid input: The &#39;--delimiter&#39; (&#39;-d&#39;) option only usable if printing a sequence of fields&quot;</span>.<span class="ident">into</span>())
             }
             <span class="ident">Mode::Bytes</span>(<span class="kw">_</span>, <span class="kw">_</span>) <span class="op">|</span> <span class="ident">Mode::Characters</span>(<span class="kw">_</span>, <span class="kw">_</span>)
-                <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::ONLY_DELIMITED</span>) =&gt;
+                <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ONLY_DELIMITED</span>) =&gt;
             {
                 <span class="prelude-val">Err</span>(<span class="string">&quot;invalid input: The &#39;--only-delimited&#39; (&#39;-s&#39;) option only usable if printing a sequence of fields&quot;</span>.<span class="ident">into</span>())
             }
