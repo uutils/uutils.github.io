@@ -957,33 +957,6 @@
 <span id="952">952</span>
 <span id="953">953</span>
 <span id="954">954</span>
-<span id="955">955</span>
-<span id="956">956</span>
-<span id="957">957</span>
-<span id="958">958</span>
-<span id="959">959</span>
-<span id="960">960</span>
-<span id="961">961</span>
-<span id="962">962</span>
-<span id="963">963</span>
-<span id="964">964</span>
-<span id="965">965</span>
-<span id="966">966</span>
-<span id="967">967</span>
-<span id="968">968</span>
-<span id="969">969</span>
-<span id="970">970</span>
-<span id="971">971</span>
-<span id="972">972</span>
-<span id="973">973</span>
-<span id="974">974</span>
-<span id="975">975</span>
-<span id="976">976</span>
-<span id="977">977</span>
-<span id="978">978</span>
-<span id="979">979</span>
-<span id="980">980</span>
-<span id="981">981</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Derek Chiang &lt;derekchiang93@gmail.com&gt;</span>
@@ -1023,6 +996,7 @@
 <span class="kw">use</span> <span class="ident">uucore::error::FromIo</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UError</span>, <span class="ident">UResult</span>};
 <span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
+<span class="kw">use</span> <span class="ident">uucore::parse_glob</span>;
 <span class="kw">use</span> <span class="ident">uucore::parse_size</span>::{<span class="ident">parse_size</span>, <span class="ident">ParseSizeError</span>};
 <span class="kw">use</span> <span class="ident">uucore::InvalidEncodingHandling</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
@@ -1474,55 +1448,28 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
 
 <span class="comment">// Given the --exclude-from and/or --exclude arguments, returns the globset lists</span>
 <span class="comment">// to ignore the files</span>
-<span class="kw">fn</span> <span class="ident">get_glob_ignore</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Pattern</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">excludes_from</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::EXCLUDE_FROM</span>) {
-        <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="ident">options::EXCLUDE_FROM</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">all_files</span>) =&gt; {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">exclusion</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>();
-                <span class="comment">// Read the exclude lists from all the files</span>
-                <span class="comment">// and add them into a vector of string</span>
-                <span class="kw">let</span> <span class="ident">files</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">all_files</span>.<span class="ident">clone</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">to_owned</span>()).<span class="ident">collect</span>();
-                <span class="kw">for</span> <span class="ident">f</span> <span class="kw">in</span> <span class="ident">files</span> {
-                    <span class="ident">exclusion</span>.<span class="ident">extend</span>(<span class="ident">file_as_vec</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>));
-                }
-                <span class="ident">exclusion</span>
-            }
-            <span class="prelude-val">None</span> =&gt; <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>(),
-        }
-    } <span class="kw">else</span> {
-        <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>()
-    };
+<span class="kw">fn</span> <span class="ident">build_exclude_patterns</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Pattern</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">exclude_from_iterator</span> <span class="op">=</span> <span class="ident">matches</span>
+        .<span class="ident">values_of</span>(<span class="ident">options::EXCLUDE_FROM</span>)
+        .<span class="ident">unwrap_or_default</span>()
+        .<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="ident">file_as_vec</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>));
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">excludes</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::EXCLUDE</span>) {
-        <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="ident">options::EXCLUDE</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">v</span>) =&gt; {
-                <span class="comment">// Read the various arguments</span>
-                <span class="ident">v</span>.<span class="ident">clone</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">to_owned</span>()).<span class="ident">collect</span>()
-            }
-            <span class="prelude-val">None</span> =&gt; <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>(),
-        }
-    } <span class="kw">else</span> {
-        <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>()
-    };
+    <span class="kw">let</span> <span class="ident">excludes_iterator</span> <span class="op">=</span> <span class="ident">matches</span>
+        .<span class="ident">values_of</span>(<span class="ident">options::EXCLUDE</span>)
+        .<span class="ident">unwrap_or_default</span>()
+        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">to_owned</span>());
 
-    <span class="comment">// Merge the two lines</span>
-    <span class="ident">excludes</span>.<span class="ident">append</span>(<span class="kw-2">&amp;mut</span> <span class="ident">excludes_from</span>);
-    <span class="kw">if</span> <span class="op">!</span><span class="kw-2">&amp;</span><span class="ident">excludes</span>.<span class="ident">is_empty</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-        <span class="comment">// Create the `Vec` of excludes</span>
-        <span class="kw">for</span> <span class="ident">f</span> <span class="kw">in</span> <span class="ident">excludes</span> {
-            <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::VERBOSE</span>) {
-                <span class="macro">println!</span>(<span class="string">&quot;adding {:?} to the exclude list &quot;</span>, <span class="kw-2">&amp;</span><span class="ident">f</span>);
-            }
-            <span class="kw">match</span> <span class="ident">Pattern::new</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>) {
-                <span class="prelude-val">Ok</span>(<span class="ident">glob</span>) =&gt; <span class="ident">builder</span>.<span class="ident">push</span>(<span class="ident">glob</span>),
-                <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DuError::InvalidGlob</span>(<span class="ident">err</span>.<span class="ident">to_string</span>()).<span class="ident">into</span>()),
-            };
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">exclude_patterns</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+    <span class="kw">for</span> <span class="ident">f</span> <span class="kw">in</span> <span class="ident">excludes_iterator</span>.<span class="ident">chain</span>(<span class="ident">exclude_from_iterator</span>) {
+        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::VERBOSE</span>) {
+            <span class="macro">println!</span>(<span class="string">&quot;adding {:?} to the exclude list &quot;</span>, <span class="kw-2">&amp;</span><span class="ident">f</span>);
         }
-        <span class="prelude-val">Ok</span>(<span class="ident">builder</span>)
-    } <span class="kw">else</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">Vec::new</span>())
+        <span class="kw">match</span> <span class="ident">parse_glob::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>) {
+            <span class="prelude-val">Ok</span>(<span class="ident">glob</span>) =&gt; <span class="ident">exclude_patterns</span>.<span class="ident">push</span>(<span class="ident">glob</span>),
+            <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DuError::InvalidGlob</span>(<span class="ident">err</span>.<span class="ident">to_string</span>()).<span class="ident">into</span>()),
+        }
     }
+    <span class="prelude-val">Ok</span>(<span class="ident">exclude_patterns</span>)
 }
 
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
@@ -1601,85 +1548,84 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
         <span class="string">&quot;\n&quot;</span>
     };
 
-    <span class="kw">let</span> <span class="ident">excludes</span> <span class="op">=</span> <span class="ident">get_glob_ignore</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">excludes</span> <span class="op">=</span> <span class="ident">build_exclude_patterns</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">grand_total</span> <span class="op">=</span> <span class="number">0</span>;
     <span class="lifetime">&#39;loop_file</span>: <span class="kw">for</span> <span class="ident">path_string</span> <span class="kw">in</span> <span class="ident">files</span> {
         <span class="comment">// Skip if we don&#39;t want to ignore anything</span>
         <span class="kw">if</span> <span class="op">!</span><span class="kw-2">&amp;</span><span class="ident">excludes</span>.<span class="ident">is_empty</span>() {
             <span class="kw">for</span> <span class="ident">pattern</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">excludes</span> {
-                {
-                    <span class="kw">if</span> <span class="ident">pattern</span>.<span class="ident">matches</span>(<span class="ident">path_string</span>) {
-                        <span class="comment">// if the directory is ignored, leave early</span>
-                        <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">verbose</span> {
-                            <span class="macro">println!</span>(<span class="string">&quot;{} ignored&quot;</span>, <span class="ident">path_string</span>.<span class="ident">quote</span>());
-                        }
-                        <span class="kw">continue</span> <span class="lifetime">&#39;loop_file</span>;
+                <span class="kw">if</span> <span class="ident">pattern</span>.<span class="ident">matches</span>(<span class="ident">path_string</span>) {
+                    <span class="comment">// if the directory is ignored, leave early</span>
+                    <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">verbose</span> {
+                        <span class="macro">println!</span>(<span class="string">&quot;{} ignored&quot;</span>, <span class="ident">path_string</span>.<span class="ident">quote</span>());
                     }
+                    <span class="kw">continue</span> <span class="lifetime">&#39;loop_file</span>;
                 }
             }
         }
 
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">PathBuf::from</span>(<span class="kw-2">&amp;</span><span class="ident">path_string</span>);
-        <span class="kw">match</span> <span class="ident">Stat::new</span>(<span class="ident">path</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">stat</span>) =&gt; {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">inodes</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">FileInfo</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashSet::new</span>();
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">inode</span>) <span class="op">=</span> <span class="ident">stat</span>.<span class="ident">inode</span> {
-                    <span class="ident">inodes</span>.<span class="ident">insert</span>(<span class="ident">inode</span>);
+        <span class="comment">// Check existence of path provided in argument</span>
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">stat</span>) <span class="op">=</span> <span class="ident">Stat::new</span>(<span class="ident">path</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>) {
+            <span class="comment">// Kick off the computation of disk usage from the initial path</span>
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">inodes</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">FileInfo</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashSet::new</span>();
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">inode</span>) <span class="op">=</span> <span class="ident">stat</span>.<span class="ident">inode</span> {
+                <span class="ident">inodes</span>.<span class="ident">insert</span>(<span class="ident">inode</span>);
+            }
+            <span class="kw">let</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">du</span>(<span class="ident">stat</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>, <span class="number">0</span>, <span class="kw-2">&amp;mut</span> <span class="ident">inodes</span>, <span class="kw-2">&amp;</span><span class="ident">excludes</span>);
+
+            <span class="comment">// Sum up all the returned `Stat`s and display results</span>
+            <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">len</span>) <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">size_hint</span>();
+            <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">len</span>.<span class="ident">unwrap</span>();
+            <span class="kw">for</span> (<span class="ident">index</span>, <span class="ident">stat</span>) <span class="kw">in</span> <span class="ident">iter</span>.<span class="ident">enumerate</span>() {
+                <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">choose_size</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>, <span class="kw-2">&amp;</span><span class="ident">stat</span>);
+
+                <span class="kw">if</span> <span class="ident">threshold</span>.<span class="ident">map_or</span>(<span class="bool-val">false</span>, <span class="op">|</span><span class="ident">threshold</span><span class="op">|</span> <span class="ident">threshold</span>.<span class="ident">should_exclude</span>(<span class="ident">size</span>)) {
+                    <span class="kw">continue</span>;
                 }
-                <span class="kw">let</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">du</span>(<span class="ident">stat</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>, <span class="number">0</span>, <span class="kw-2">&amp;mut</span> <span class="ident">inodes</span>, <span class="kw-2">&amp;</span><span class="ident">excludes</span>);
-                <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">len</span>) <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">size_hint</span>();
-                <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">len</span>.<span class="ident">unwrap</span>();
-                <span class="kw">for</span> (<span class="ident">index</span>, <span class="ident">stat</span>) <span class="kw">in</span> <span class="ident">iter</span>.<span class="ident">enumerate</span>() {
-                    <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">choose_size</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>, <span class="kw-2">&amp;</span><span class="ident">stat</span>);
 
-                    <span class="kw">if</span> <span class="ident">threshold</span>.<span class="ident">map_or</span>(<span class="bool-val">false</span>, <span class="op">|</span><span class="ident">threshold</span><span class="op">|</span> <span class="ident">threshold</span>.<span class="ident">should_exclude</span>(<span class="ident">size</span>)) {
-                        <span class="kw">continue</span>;
-                    }
-
-                    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::TIME</span>) {
-                        <span class="kw">let</span> <span class="ident">tm</span> <span class="op">=</span> {
-                            <span class="kw">let</span> <span class="ident">secs</span> <span class="op">=</span> {
-                                <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::TIME</span>) {
-                                    <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="kw">match</span> <span class="ident">s</span> {
-                                        <span class="string">&quot;ctime&quot;</span> <span class="op">|</span> <span class="string">&quot;status&quot;</span> =&gt; <span class="ident">stat</span>.<span class="ident">modified</span>,
-                                        <span class="string">&quot;access&quot;</span> <span class="op">|</span> <span class="string">&quot;atime&quot;</span> <span class="op">|</span> <span class="string">&quot;use&quot;</span> =&gt; <span class="ident">stat</span>.<span class="ident">accessed</span>,
-                                        <span class="string">&quot;birth&quot;</span> <span class="op">|</span> <span class="string">&quot;creation&quot;</span> =&gt; <span class="ident">stat</span>
-                                            .<span class="ident">created</span>
-                                            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">DuError::InvalidTimeArg</span>(<span class="ident">s</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>,
-                                        <span class="comment">// below should never happen as clap already restricts the values.</span>
-                                        <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Invalid field for --time&quot;</span>),
-                                    },
-                                    <span class="prelude-val">None</span> =&gt; <span class="ident">stat</span>.<span class="ident">modified</span>,
-                                }
-                            };
-                            <span class="ident">DateTime</span>::<span class="op">&lt;</span><span class="ident">Local</span><span class="op">&gt;</span><span class="ident">::from</span>(<span class="ident">UNIX_EPOCH</span> <span class="op">+</span> <span class="ident">Duration::from_secs</span>(<span class="ident">secs</span>))
+                <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="ident">options::TIME</span>) {
+                    <span class="kw">let</span> <span class="ident">tm</span> <span class="op">=</span> {
+                        <span class="kw">let</span> <span class="ident">secs</span> <span class="op">=</span> {
+                            <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::TIME</span>) {
+                                <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="kw">match</span> <span class="ident">s</span> {
+                                    <span class="string">&quot;ctime&quot;</span> <span class="op">|</span> <span class="string">&quot;status&quot;</span> =&gt; <span class="ident">stat</span>.<span class="ident">modified</span>,
+                                    <span class="string">&quot;access&quot;</span> <span class="op">|</span> <span class="string">&quot;atime&quot;</span> <span class="op">|</span> <span class="string">&quot;use&quot;</span> =&gt; <span class="ident">stat</span>.<span class="ident">accessed</span>,
+                                    <span class="string">&quot;birth&quot;</span> <span class="op">|</span> <span class="string">&quot;creation&quot;</span> =&gt; <span class="ident">stat</span>
+                                        .<span class="ident">created</span>
+                                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">DuError::InvalidTimeArg</span>(<span class="ident">s</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>,
+                                    <span class="comment">// below should never happen as clap already restricts the values.</span>
+                                    <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Invalid field for --time&quot;</span>),
+                                },
+                                <span class="prelude-val">None</span> =&gt; <span class="ident">stat</span>.<span class="ident">modified</span>,
+                            }
                         };
-                        <span class="kw">if</span> <span class="op">!</span><span class="ident">summarize</span> <span class="op">|</span><span class="op">|</span> <span class="ident">index</span> <span class="op">==</span> <span class="ident">len</span> <span class="op">-</span> <span class="number">1</span> {
-                            <span class="kw">let</span> <span class="ident">time_str</span> <span class="op">=</span> <span class="ident">tm</span>.<span class="ident">format</span>(<span class="ident">time_format_str</span>).<span class="ident">to_string</span>();
-                            <span class="macro">print!</span>(<span class="string">&quot;{}\t{}\t&quot;</span>, <span class="ident">convert_size</span>(<span class="ident">size</span>), <span class="ident">time_str</span>);
-                            <span class="ident">print_verbatim</span>(<span class="ident">stat</span>.<span class="ident">path</span>).<span class="ident">unwrap</span>();
-                            <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">line_separator</span>);
-                        }
-                    } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">summarize</span> <span class="op">|</span><span class="op">|</span> <span class="ident">index</span> <span class="op">==</span> <span class="ident">len</span> <span class="op">-</span> <span class="number">1</span> {
-                        <span class="macro">print!</span>(<span class="string">&quot;{}\t&quot;</span>, <span class="ident">convert_size</span>(<span class="ident">size</span>));
+                        <span class="ident">DateTime</span>::<span class="op">&lt;</span><span class="ident">Local</span><span class="op">&gt;</span><span class="ident">::from</span>(<span class="ident">UNIX_EPOCH</span> <span class="op">+</span> <span class="ident">Duration::from_secs</span>(<span class="ident">secs</span>))
+                    };
+                    <span class="kw">if</span> <span class="op">!</span><span class="ident">summarize</span> <span class="op">|</span><span class="op">|</span> <span class="ident">index</span> <span class="op">==</span> <span class="ident">len</span> <span class="op">-</span> <span class="number">1</span> {
+                        <span class="kw">let</span> <span class="ident">time_str</span> <span class="op">=</span> <span class="ident">tm</span>.<span class="ident">format</span>(<span class="ident">time_format_str</span>).<span class="ident">to_string</span>();
+                        <span class="macro">print!</span>(<span class="string">&quot;{}\t{}\t&quot;</span>, <span class="ident">convert_size</span>(<span class="ident">size</span>), <span class="ident">time_str</span>);
                         <span class="ident">print_verbatim</span>(<span class="ident">stat</span>.<span class="ident">path</span>).<span class="ident">unwrap</span>();
                         <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">line_separator</span>);
                     }
-                    <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">total</span> <span class="op">&amp;&amp;</span> <span class="ident">index</span> <span class="op">==</span> (<span class="ident">len</span> <span class="op">-</span> <span class="number">1</span>) {
-                        <span class="comment">// The last element will be the total size of the the path under</span>
-                        <span class="comment">// path_string.  We add it to the grand total.</span>
-                        <span class="ident">grand_total</span> <span class="op">+</span><span class="op">=</span> <span class="ident">size</span>;
-                    }
+                } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">summarize</span> <span class="op">|</span><span class="op">|</span> <span class="ident">index</span> <span class="op">==</span> <span class="ident">len</span> <span class="op">-</span> <span class="number">1</span> {
+                    <span class="macro">print!</span>(<span class="string">&quot;{}\t&quot;</span>, <span class="ident">convert_size</span>(<span class="ident">size</span>));
+                    <span class="ident">print_verbatim</span>(<span class="ident">stat</span>.<span class="ident">path</span>).<span class="ident">unwrap</span>();
+                    <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">line_separator</span>);
+                }
+                <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">total</span> <span class="op">&amp;&amp;</span> <span class="ident">index</span> <span class="op">==</span> (<span class="ident">len</span> <span class="op">-</span> <span class="number">1</span>) {
+                    <span class="comment">// The last element will be the total size of the the path under</span>
+                    <span class="comment">// path_string.  We add it to the grand total.</span>
+                    <span class="ident">grand_total</span> <span class="op">+</span><span class="op">=</span> <span class="ident">size</span>;
                 }
             }
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
-                <span class="macro">show_error!</span>(
-                    <span class="string">&quot;{}: {}&quot;</span>,
-                    <span class="ident">path_string</span>.<span class="ident">maybe_quote</span>(),
-                    <span class="string">&quot;No such file or directory&quot;</span>
-                );
-            }
+        } <span class="kw">else</span> {
+            <span class="macro">show_error!</span>(
+                <span class="string">&quot;{}: {}&quot;</span>,
+                <span class="ident">path_string</span>.<span class="ident">maybe_quote</span>(),
+                <span class="string">&quot;No such file or directory&quot;</span>
+            );
         }
     }
 

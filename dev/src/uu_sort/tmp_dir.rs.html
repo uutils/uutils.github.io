@@ -88,6 +88,12 @@
 <span id="83">83</span>
 <span id="84">84</span>
 <span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std</span>::{
     <span class="ident">fs::File</span>,
     <span class="ident">path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>},
@@ -135,7 +141,8 @@
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">temp_dir</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">path</span>().<span class="ident">to_owned</span>();
         <span class="kw">let</span> <span class="ident">lock</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">lock</span>.<span class="ident">clone</span>();
         <span class="ident">ctrlc::set_handler</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
-            <span class="comment">// Take the lock so that `next_file_path` returns no new file path.</span>
+            <span class="comment">// Take the lock so that `next_file_path` returns no new file path,</span>
+            <span class="comment">// and the program doesn&#39;t terminate before the handler has finished</span>
             <span class="kw">let</span> <span class="ident">_lock</span> <span class="op">=</span> <span class="ident">lock</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">remove_tmp_dir</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>) {
                 <span class="macro">show_error!</span>(<span class="string">&quot;failed to delete temporary directory: {}&quot;</span>, <span class="ident">e</span>);
@@ -158,6 +165,11 @@
             <span class="ident">File::create</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">error</span><span class="op">|</span> <span class="ident">SortError::OpenTmpFileFailed</span> { <span class="ident">error</span> })<span class="question-mark">?</span>,
             <span class="ident">path</span>,
         ))
+    }
+
+    <span class="doccomment">/// Function just waits if signal handler was called</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wait_if_signal</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+        <span class="kw">let</span> <span class="ident">_lock</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">lock</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
     }
 }
 
