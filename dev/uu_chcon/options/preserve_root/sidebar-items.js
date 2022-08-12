@@ -1,1 +1,1 @@
-initSidebarItems({"static":[["NO_PRESERVE_ROOT",""],["PRESERVE_ROOT",""]]});
+window.SIDEBAR_ITEMS = {"static":[["NO_PRESERVE_ROOT",""],["PRESERVE_ROOT",""]]};

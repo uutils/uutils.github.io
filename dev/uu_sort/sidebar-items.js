@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["GeneralF64ParseResult",""]],"fn":[["uu_app",""],["uumain",""]],"struct":[["GlobalSettings",""],["Line",""],["Output",""]]});
+window.SIDEBAR_ITEMS = {"enum":[["GeneralF64ParseResult",""]],"fn":[["uu_app",""],["uumain",""]],"struct":[["GlobalSettings",""],["Line",""],["Output",""]]};

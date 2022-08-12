@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["base_app",""],["get_input",""],["handle_input",""],["parse_base_cmd_args",""]],"mod":[["options",""]],"static":[["BASE_CMD_PARSE_ERROR",""]],"struct":[["Config",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["base_app",""],["get_input",""],["handle_input",""],["parse_base_cmd_args",""]],"mod":[["options",""]],"static":[["BASE_CMD_PARSE_ERROR",""]],"struct":[["Config",""]]};

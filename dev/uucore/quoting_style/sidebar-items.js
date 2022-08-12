@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Quotes",""],["QuotingStyle",""]],"fn":[["escape_name",""]]});
+window.SIDEBAR_ITEMS = {"enum":[["Quotes",""],["QuotingStyle",""]],"fn":[["escape_name",""]]};

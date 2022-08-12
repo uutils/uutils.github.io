@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["getlogin",""],["uu_app",""],["uumain",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["getlogin",""],["uu_app",""],["uumain",""]]};

@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["NO_PRESERVE",""],["PRESERVE",""]]});
+window.SIDEBAR_ITEMS = {"constant":[["NO_PRESERVE",""],["PRESERVE",""]]};

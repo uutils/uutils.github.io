@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["uu_app_b3sum",""],["uu_app_bits",""],["uu_app_common",""],["uu_app_custom",""],["uumain",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["uu_app_b3sum",""],["uu_app_bits",""],["uu_app_common",""],["uu_app_custom",""],["uumain",""]]};

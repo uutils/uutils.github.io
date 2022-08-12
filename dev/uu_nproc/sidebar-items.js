@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["_SC_NPROCESSORS_CONF",""]],"fn":[["uu_app",""],["uumain",""]]});
+window.SIDEBAR_ITEMS = {"constant":[["_SC_NPROCESSORS_CONF",""]],"fn":[["uu_app",""],["uumain",""]]};

@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Format",""]],"fn":[["list",""],["uu_app",""],["uumain",""]],"mod":[["options",""]],"struct":[["Config",""]]});
+window.SIDEBAR_ITEMS = {"enum":[["Format",""]],"fn":[["list",""],["uu_app",""],["uumain",""]],"mod":[["options",""]],"struct":[["Config",""]]};

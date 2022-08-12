@@ -1,1 +1,1 @@
-initSidebarItems({"static":[["ALL",""],["HWPLATFORM",""],["KERNELNAME",""],["KERNELRELEASE",""],["KERNELVERSION",""],["MACHINE",""],["NODENAME",""],["OS",""],["PROCESSOR",""]]});
+window.SIDEBAR_ITEMS = {"static":[["ALL",""],["HWPLATFORM",""],["KERNELNAME",""],["KERNELRELEASE",""],["KERNELVERSION",""],["MACHINE",""],["NODENAME",""],["OS",""],["PROCESSOR",""]]};

@@ -1,1 +1,1 @@
-initSidebarItems({"static":[["DEREFERENCE",""],["FILE_SYSTEM",""],["FORMAT",""],["PRINTF",""],["TERSE",""]]});
+window.SIDEBAR_ITEMS = {"static":[["DEREFERENCE",""],["FILE_SYSTEM",""],["FORMAT",""],["PRINTF",""],["TERSE",""]]};

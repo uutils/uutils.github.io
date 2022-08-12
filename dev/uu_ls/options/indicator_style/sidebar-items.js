@@ -1,1 +1,1 @@
-initSidebarItems({"static":[["CLASSIFY",""],["FILE_TYPE",""],["SLASH",""]]});
+window.SIDEBAR_ITEMS = {"static":[["CLASSIFY",""],["FILE_TYPE",""],["SLASH",""]]};

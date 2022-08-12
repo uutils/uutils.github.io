@@ -1,1 +1,1 @@
-initSidebarItems({"static":[["ALL_REPEATED",""],["CHECK_CHARS",""],["COUNT",""],["GROUP",""],["IGNORE_CASE",""],["REPEATED",""],["SKIP_CHARS",""],["SKIP_FIELDS",""],["UNIQUE",""],["ZERO_TERMINATED",""]]});
+window.SIDEBAR_ITEMS = {"static":[["ALL_REPEATED",""],["CHECK_CHARS",""],["COUNT",""],["GROUP",""],["IGNORE_CASE",""],["REPEATED",""],["SKIP_CHARS",""],["SKIP_FIELDS",""],["UNIQUE",""],["ZERO_TERMINATED",""]]};

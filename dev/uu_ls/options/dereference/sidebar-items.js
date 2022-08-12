@@ -1,1 +1,1 @@
-initSidebarItems({"static":[["ALL",""],["ARGS",""],["DIR_ARGS",""]]});
+window.SIDEBAR_ITEMS = {"static":[["ALL",""],["ARGS",""],["DIR_ARGS",""]]};

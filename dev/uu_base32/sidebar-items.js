@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["uu_app",""],["uumain",""]],"mod":[["base_common",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["uu_app",""],["uumain",""]],"mod":[["base_common",""]]};

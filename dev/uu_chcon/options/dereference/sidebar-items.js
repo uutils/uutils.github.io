@@ -1,1 +1,1 @@
-initSidebarItems({"static":[["DEREFERENCE",""],["NO_DEREFERENCE",""]]});
+window.SIDEBAR_ITEMS = {"static":[["DEREFERENCE",""],["NO_DEREFERENCE",""]]};

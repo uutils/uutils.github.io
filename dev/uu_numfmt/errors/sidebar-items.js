@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["NumfmtError",""]]});
+window.SIDEBAR_ITEMS = {"enum":[["NumfmtError",""]]};

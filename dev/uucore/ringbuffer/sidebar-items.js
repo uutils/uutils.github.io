@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["RingBuffer","A fixed-size ring buffer backed by a `VecDeque`."]]});
+window.SIDEBAR_ITEMS = {"struct":[["RingBuffer","A fixed-size ring buffer backed by a `VecDeque`."]]};

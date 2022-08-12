@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["uu_app",""],["uumain",""]],"mod":[["entries","Get password/group file entry"]],"struct":[["Group",""],["Passwd",""]],"trait":[["Locate","Fetch desired entry."]]});
+window.SIDEBAR_ITEMS = {"fn":[["uu_app",""],["uumain",""]],"mod":[["entries","Get password/group file entry"]],"struct":[["Group",""],["Passwd",""]],"trait":[["Locate","Fetch desired entry."]]};

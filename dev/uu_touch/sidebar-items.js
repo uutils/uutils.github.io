@@ -1,1 +1,1 @@
-initSidebarItems({"externcrate":[["filetime",""]],"fn":[["uu_app",""],["uumain",""]],"mod":[["options",""]]});
+window.SIDEBAR_ITEMS = {"externcrate":[["filetime",""]],"fn":[["uu_app",""],["uumain",""]],"mod":[["options",""]]};

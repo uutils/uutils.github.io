@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["ParseSizeError",""]],"fn":[["parse_size","Parse a size string into a number of bytes."]]});
+window.SIDEBAR_ITEMS = {"enum":[["ParseSizeError",""]],"fn":[["parse_size","Parse a size string into a number of bytes."]]};

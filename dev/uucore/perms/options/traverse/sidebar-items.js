@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["EVERY",""],["NO_TRAVERSE",""],["TRAVERSE",""]]});
+window.SIDEBAR_ITEMS = {"constant":[["EVERY",""],["NO_TRAVERSE",""],["TRAVERSE",""]]};

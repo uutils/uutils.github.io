@@ -1,1 +1,1 @@
-initSidebarItems({"static":[["FILES",""]]});
+window.SIDEBAR_ITEMS = {"static":[["FILES",""]]};

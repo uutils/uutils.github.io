@@ -1,1 +1,1 @@
-initSidebarItems({"static":[["ADJUSTMENT",""],["COMMAND",""]]});
+window.SIDEBAR_ITEMS = {"static":[["ADJUSTMENT",""],["COMMAND",""]]};

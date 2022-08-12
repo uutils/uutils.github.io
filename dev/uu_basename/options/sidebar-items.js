@@ -1,1 +1,1 @@
-initSidebarItems({"static":[["MULTIPLE",""],["NAME",""],["SUFFIX",""],["ZERO",""]]});
+window.SIDEBAR_ITEMS = {"static":[["MULTIPLE",""],["NAME",""],["SUFFIX",""],["ZERO",""]]};

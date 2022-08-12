@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["gcd",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["gcd",""]]};

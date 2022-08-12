@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["lines","Returns an iterator over the lines, including line ending characters."]],"struct":[["Lines","An iterator over the lines of an instance of `BufRead`."]]});
+window.SIDEBAR_ITEMS = {"fn":[["lines","Returns an iterator over the lines, including line ending characters."]],"struct":[["Lines","An iterator over the lines of an instance of `BufRead`."]]};

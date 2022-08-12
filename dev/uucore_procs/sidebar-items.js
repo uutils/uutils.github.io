@@ -1,1 +1,1 @@
-initSidebarItems({"attr":[["main",""]]});
+window.SIDEBAR_ITEMS = {"attr":[["main",""]]};

@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["gethostid",""],["uu_app",""],["uumain",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["gethostid",""],["uu_app",""],["uumain",""]]};

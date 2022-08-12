@@ -1,1 +1,1 @@
-initSidebarItems({"static":[["DATA",""],["FILE_SYSTEM",""]]});
+window.SIDEBAR_ITEMS = {"static":[["DATA",""],["FILE_SYSTEM",""]]};
