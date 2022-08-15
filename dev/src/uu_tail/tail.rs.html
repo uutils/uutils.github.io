@@ -1714,6 +1714,9 @@
 <span id="1708">1708</span>
 <span id="1709">1709</span>
 <span id="1710">1710</span>
+<span id="1711">1711</span>
+<span id="1712">1712</span>
+<span id="1713">1713</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Morten Olsen Lysgaard &lt;morten@lysgaard.no&gt;</span>
@@ -1727,7 +1730,7 @@
 <span class="comment">// spell-checker:ignore (libs) kqueue</span>
 <span class="comment">// spell-checker:ignore (acronyms)</span>
 <span class="comment">// spell-checker:ignore (env/flags)</span>
-<span class="comment">// spell-checker:ignore (jargon) tailable untailable</span>
+<span class="comment">// spell-checker:ignore (jargon) tailable untailable stdlib</span>
 <span class="comment">// spell-checker:ignore (names)</span>
 <span class="comment">// spell-checker:ignore (shell/tools)</span>
 <span class="comment">// spell-checker:ignore (misc)</span>
@@ -3238,13 +3241,16 @@
             .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
     }
 }
-
+<span class="attribute">#[<span class="ident">inline</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stdin_is_bad_fd</span>() -&gt; <span class="ident">bool</span> {
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
+    <span class="comment">// FIXME : Rust&#39;s stdlib is reopening fds as /dev/null</span>
+    <span class="comment">// see also: https://github.com/uutils/coreutils/issues/2873</span>
+    <span class="comment">// (gnu/tests/tail-2/follow-stdin.sh fails because of this)</span>
+    <span class="comment">//#[cfg(unix)]</span>
     {
-        <span class="ident">platform::stdin_is_bad_fd</span>()
+        <span class="comment">//platform::stdin_is_bad_fd()</span>
     }
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">unix</span>))]</span>
+    <span class="comment">//#[cfg(not(unix))]</span>
     <span class="bool-val">false</span>
 }
 
