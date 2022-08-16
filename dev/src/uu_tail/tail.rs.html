@@ -1715,8 +1715,6 @@
 <span id="1709">1709</span>
 <span id="1710">1710</span>
 <span id="1711">1711</span>
-<span id="1712">1712</span>
-<span id="1713">1713</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Morten Olsen Lysgaard &lt;morten@lysgaard.no&gt;</span>
@@ -2572,21 +2570,20 @@
     */</span>
 
     <span class="kw">let</span> <span class="ident">watcher</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Watcher</span><span class="op">&gt;</span>;
-    <span class="kw">let</span> <span class="ident">watcher_config</span> <span class="op">=</span> <span class="ident">notify::poll::PollWatcherConfig</span> {
-        <span class="ident">poll_interval</span>: <span class="ident">settings</span>.<span class="ident">sleep_sec</span>,
+    <span class="kw">let</span> <span class="ident">watcher_config</span> <span class="op">=</span> <span class="ident">notify::Config::default</span>()
+        .<span class="ident">with_poll_interval</span>(<span class="ident">settings</span>.<span class="ident">sleep_sec</span>)
         <span class="comment">/*
         NOTE: By enabling compare_contents, performance will be significantly impacted
         as all files will need to be read and hashed at each `poll_interval`.
         However, this is necessary to pass: &quot;gnu/tests/tail-2/F-vs-rename.sh&quot;
         */</span>
-        <span class="ident">compare_contents</span>: <span class="bool-val">true</span>,
-    };
+        .<span class="ident">with_compare_contents</span>(<span class="bool-val">true</span>);
     <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">use_polling</span> <span class="op">|</span><span class="op">|</span> <span class="ident">RecommendedWatcher::kind</span>() <span class="op">==</span> <span class="ident">WatcherKind::PollWatcher</span> {
         <span class="ident">settings</span>.<span class="ident">use_polling</span> <span class="op">=</span> <span class="bool-val">true</span>; <span class="comment">// We have to use polling because there&#39;s no supported backend</span>
-        <span class="ident">watcher</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">notify::PollWatcher::with_config</span>(<span class="ident">tx</span>, <span class="ident">watcher_config</span>).<span class="ident">unwrap</span>());
+        <span class="ident">watcher</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">notify::PollWatcher::new</span>(<span class="ident">tx</span>, <span class="ident">watcher_config</span>).<span class="ident">unwrap</span>());
     } <span class="kw">else</span> {
         <span class="kw">let</span> <span class="ident">tx_clone</span> <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">clone</span>();
-        <span class="kw">match</span> <span class="ident">notify::RecommendedWatcher::new</span>(<span class="ident">tx</span>) {
+        <span class="kw">match</span> <span class="ident">notify::RecommendedWatcher::new</span>(<span class="ident">tx</span>, <span class="ident">notify::Config::default</span>()) {
             <span class="prelude-val">Ok</span>(<span class="ident">w</span>) =&gt; <span class="ident">watcher</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">w</span>),
             <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">to_string</span>().<span class="ident">starts_with</span>(<span class="string">&quot;Too many open files&quot;</span>) =&gt; {
                 <span class="comment">/*
@@ -2601,8 +2598,7 @@
                 );
                 <span class="ident">set_exit_code</span>(<span class="number">1</span>);
                 <span class="ident">settings</span>.<span class="ident">use_polling</span> <span class="op">=</span> <span class="bool-val">true</span>;
-                <span class="ident">watcher</span> <span class="op">=</span>
-                    <span class="ident">Box::new</span>(<span class="ident">notify::PollWatcher::with_config</span>(<span class="ident">tx_clone</span>, <span class="ident">watcher_config</span>).<span class="ident">unwrap</span>());
+                <span class="ident">watcher</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">notify::PollWatcher::new</span>(<span class="ident">tx_clone</span>, <span class="ident">watcher_config</span>).<span class="ident">unwrap</span>());
             }
             <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="ident">e</span>.<span class="ident">to_string</span>())),
         };
