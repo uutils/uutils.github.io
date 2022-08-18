@@ -186,8 +186,6 @@
 <span id="180">180</span>
 <span id="181">181</span>
 <span id="182">182</span>
-<span id="183">183</span>
-<span id="184">184</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jordy Dickinson &lt;jordy.dickinson@gmail.com&gt;</span>
@@ -202,7 +200,7 @@
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::encoding</span>::{<span class="ident">wrap_print</span>, <span class="ident">Data</span>, <span class="ident">Format</span>};
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>, <span class="ident">UUsageError</span>};
-<span class="kw">use</span> <span class="ident">uucore</span>::{<span class="ident">format_usage</span>, <span class="ident">InvalidEncodingHandling</span>};
+<span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">BufReader</span>, <span class="ident">Stdin</span>};
@@ -277,9 +275,7 @@
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_base_cmd_args</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>, <span class="ident">about</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">usage</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">Config</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">command</span> <span class="op">=</span> <span class="ident">base_app</span>(<span class="ident">about</span>, <span class="ident">usage</span>);
-    <span class="kw">let</span> <span class="ident">arg_list</span> <span class="op">=</span> <span class="ident">args</span>
-        .<span class="ident">collect_str</span>(<span class="ident">InvalidEncodingHandling::ConvertLossy</span>)
-        .<span class="ident">accept_any</span>();
+    <span class="kw">let</span> <span class="ident">arg_list</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">collect_lossy</span>();
     <span class="ident">Config::from</span>(<span class="kw-2">&amp;</span><span class="ident">command</span>.<span class="ident">try_get_matches_from</span>(<span class="ident">arg_list</span>)<span class="question-mark">?</span>)
 }
 

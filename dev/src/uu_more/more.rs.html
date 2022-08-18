@@ -505,6 +505,20 @@
 <span id="499">499</span>
 <span id="500">500</span>
 <span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Martin Kysel &lt;code@martinkysel.com&gt;</span>
@@ -525,6 +539,7 @@
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">nix</span>;
 
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">crossterm::event::KeyEventKind</span>;
 <span class="kw">use</span> <span class="ident">crossterm</span>::{
     <span class="ident">event</span>::{<span class="self">self</span>, <span class="ident">Event</span>, <span class="ident">KeyCode</span>, <span class="ident">KeyEvent</span>, <span class="ident">KeyModifiers</span>},
     <span class="ident">execute</span>, <span class="ident">queue</span>,
@@ -737,12 +752,20 @@
         <span class="kw">if</span> <span class="ident">event::poll</span>(<span class="ident">Duration::from_millis</span>(<span class="number">10</span>)).<span class="ident">unwrap</span>() {
             <span class="kw">match</span> <span class="ident">event::read</span>().<span class="ident">unwrap</span>() {
                 <span class="ident">Event::Key</span>(<span class="ident">KeyEvent</span> {
+                    <span class="ident">kind</span>: <span class="ident">KeyEventKind::Release</span>,
+                    ..
+                }) =&gt; <span class="kw">continue</span>,
+                <span class="ident">Event::Key</span>(<span class="ident">KeyEvent</span> {
                     <span class="ident">code</span>: <span class="ident">KeyCode::Char</span>(<span class="string">&#39;q&#39;</span>),
                     <span class="ident">modifiers</span>: <span class="ident">KeyModifiers::NONE</span>,
+                    <span class="ident">kind</span>: <span class="ident">KeyEventKind::Press</span>,
+                    ..
                 })
                 <span class="op">|</span> <span class="ident">Event::Key</span>(<span class="ident">KeyEvent</span> {
                     <span class="ident">code</span>: <span class="ident">KeyCode::Char</span>(<span class="string">&#39;c&#39;</span>),
                     <span class="ident">modifiers</span>: <span class="ident">KeyModifiers::CONTROL</span>,
+                    <span class="ident">kind</span>: <span class="ident">KeyEventKind::Press</span>,
+                    ..
                 }) =&gt; {
                     <span class="ident">reset_term</span>(<span class="ident">stdout</span>);
                     <span class="ident">std::process::exit</span>(<span class="number">0</span>);
@@ -750,10 +773,12 @@
                 <span class="ident">Event::Key</span>(<span class="ident">KeyEvent</span> {
                     <span class="ident">code</span>: <span class="ident">KeyCode::Down</span>,
                     <span class="ident">modifiers</span>: <span class="ident">KeyModifiers::NONE</span>,
+                    ..
                 })
                 <span class="op">|</span> <span class="ident">Event::Key</span>(<span class="ident">KeyEvent</span> {
                     <span class="ident">code</span>: <span class="ident">KeyCode::Char</span>(<span class="string">&#39; &#39;</span>),
                     <span class="ident">modifiers</span>: <span class="ident">KeyModifiers::NONE</span>,
+                    ..
                 }) =&gt; {
                     <span class="kw">if</span> <span class="ident">pager</span>.<span class="ident">should_close</span>() {
                         <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
@@ -764,12 +789,14 @@
                 <span class="ident">Event::Key</span>(<span class="ident">KeyEvent</span> {
                     <span class="ident">code</span>: <span class="ident">KeyCode::Up</span>,
                     <span class="ident">modifiers</span>: <span class="ident">KeyModifiers::NONE</span>,
+                    ..
                 }) =&gt; {
                     <span class="ident">pager</span>.<span class="ident">page_up</span>();
                 }
                 <span class="ident">Event::Key</span>(<span class="ident">KeyEvent</span> {
                     <span class="ident">code</span>: <span class="ident">KeyCode::Char</span>(<span class="string">&#39;j&#39;</span>),
                     <span class="ident">modifiers</span>: <span class="ident">KeyModifiers::NONE</span>,
+                    ..
                 }) =&gt; {
                     <span class="kw">if</span> <span class="ident">pager</span>.<span class="ident">should_close</span>() {
                         <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
@@ -780,6 +807,7 @@
                 <span class="ident">Event::Key</span>(<span class="ident">KeyEvent</span> {
                     <span class="ident">code</span>: <span class="ident">KeyCode::Char</span>(<span class="string">&#39;k&#39;</span>),
                     <span class="ident">modifiers</span>: <span class="ident">KeyModifiers::NONE</span>,
+                    ..
                 }) =&gt; {
                     <span class="ident">pager</span>.<span class="ident">prev_line</span>();
                 }
