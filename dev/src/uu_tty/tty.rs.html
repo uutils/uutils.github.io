@@ -80,9 +80,6 @@
 <span id="74">74</span>
 <span id="75">75</span>
 <span id="76">76</span>
-<span id="77">77</span>
-<span id="78">78</span>
-<span id="79">79</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Jordi Boggiano &lt;j.boggiano@seld.be&gt;</span>
@@ -95,9 +92,9 @@
 <span class="comment">// spell-checker:ignore (ToDO) ttyname filedesc</span>
 
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
-<span class="kw">use</span> <span class="ident">std::ffi::CStr</span>;
 <span class="kw">use</span> <span class="ident">std::io::Write</span>;
-<span class="kw">use</span> <span class="ident">uucore::error::UResult</span>;
+<span class="kw">use</span> <span class="ident">std::os::unix::io::AsRawFd</span>;
+<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">set_exit_code</span>, <span class="ident">UResult</span>};
 <span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Print the file name of the terminal connected to standard input.&quot;</span>;
@@ -109,42 +106,39 @@
 
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">collect_lossy</span>();
-
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
     <span class="kw">let</span> <span class="ident">silent</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::SILENT</span>);
 
-    <span class="comment">// Call libc function ttyname</span>
-    <span class="kw">let</span> <span class="ident">tty</span> <span class="op">=</span> <span class="kw">unsafe</span> {
-        <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="ident">libc::ttyname</span>(<span class="ident">libc::STDIN_FILENO</span>);
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">ptr</span>.<span class="ident">is_null</span>() {
-            <span class="ident">String::from_utf8_lossy</span>(<span class="ident">CStr::from_ptr</span>(<span class="ident">ptr</span>).<span class="ident">to_bytes</span>()).<span class="ident">to_string</span>()
+    <span class="comment">// If silent, we don&#39;t need the name, only whether or not stdin is a tty.</span>
+    <span class="kw">if</span> <span class="ident">silent</span> {
+        <span class="kw">return</span> <span class="kw">if</span> <span class="ident">atty::is</span>(<span class="ident">atty::Stream::Stdin</span>) {
+            <span class="prelude-val">Ok</span>(())
         } <span class="kw">else</span> {
-            <span class="string">&quot;&quot;</span>.<span class="ident">to_owned</span>()
-        }
+            <span class="prelude-val">Err</span>(<span class="number">1</span>.<span class="ident">into</span>())
+        };
     };
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stdout</span> <span class="op">=</span> <span class="ident">std::io::stdout</span>();
 
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">silent</span> {
-        <span class="kw">let</span> <span class="ident">write_result</span> <span class="op">=</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">tty</span>.<span class="ident">chars</span>().<span class="ident">all</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">is_whitespace</span>()) {
-            <span class="macro">writeln!</span>(<span class="ident">stdout</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">tty</span>)
-        } <span class="kw">else</span> {
-            <span class="macro">writeln!</span>(<span class="ident">stdout</span>, <span class="string">&quot;not a tty&quot;</span>)
-        };
-        <span class="kw">if</span> <span class="ident">write_result</span>.<span class="ident">is_err</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">stdout</span>.<span class="ident">flush</span>().<span class="ident">is_err</span>() {
-            <span class="comment">// Don&#39;t return to prevent a panic later when another flush is attempted</span>
-            <span class="comment">// because the `uucore_procs::main` macro inserts a flush after execution for every utility.</span>
-            <span class="ident">std::process::exit</span>(<span class="number">3</span>);
-        }
-    }
+    <span class="comment">// Get the ttyname via nix</span>
+    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">nix::unistd::ttyname</span>(<span class="ident">std::io::stdin</span>().<span class="ident">as_raw_fd</span>());
 
-    <span class="kw">if</span> <span class="ident">atty::is</span>(<span class="ident">atty::Stream::Stdin</span>) {
-        <span class="prelude-val">Ok</span>(())
-    } <span class="kw">else</span> {
-        <span class="prelude-val">Err</span>(<span class="ident">libc::EXIT_FAILURE</span>.<span class="ident">into</span>())
-    }
+    <span class="kw">let</span> <span class="ident">write_result</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">name</span> {
+        <span class="prelude-val">Ok</span>(<span class="ident">name</span>) =&gt; <span class="macro">writeln!</span>(<span class="ident">stdout</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">name</span>.<span class="ident">display</span>()),
+        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
+            <span class="ident">set_exit_code</span>(<span class="number">1</span>);
+            <span class="macro">writeln!</span>(<span class="ident">stdout</span>, <span class="string">&quot;not a tty&quot;</span>)
+        }
+    };
+
+    <span class="kw">if</span> <span class="ident">write_result</span>.<span class="ident">is_err</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">stdout</span>.<span class="ident">flush</span>().<span class="ident">is_err</span>() {
+        <span class="comment">// Don&#39;t return to prevent a panic later when another flush is attempted</span>
+        <span class="comment">// because the `uucore_procs::main` macro inserts a flush after execution for every utility.</span>
+        <span class="ident">std::process::exit</span>(<span class="number">3</span>);
+    };
+
+    <span class="prelude-val">Ok</span>(())
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {

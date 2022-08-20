@@ -1781,6 +1781,8 @@
 <span id="1775">1775</span>
 <span id="1776">1776</span>
 <span id="1777">1777</span>
+<span id="1778">1778</span>
+<span id="1779">1779</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::missing_safety_doc</span>)]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::extra_unused_lifetimes</span>)]</span>
 
@@ -1829,7 +1831,7 @@
 <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
 <span class="kw">use</span> <span class="ident">std::string::ToString</span>;
 <span class="kw">use</span> <span class="ident">uucore::backup_control</span>::{<span class="self">self</span>, <span class="ident">BackupMode</span>};
-<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">set_exit_code</span>, <span class="ident">ExitCode</span>, <span class="ident">UClapError</span>, <span class="ident">UError</span>, <span class="ident">UResult</span>};
+<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">set_exit_code</span>, <span class="ident">UClapError</span>, <span class="ident">UError</span>, <span class="ident">UResult</span>, <span class="ident">UUsageError</span>};
 <span class="kw">use</span> <span class="ident">uucore::fs</span>::{<span class="ident">canonicalize</span>, <span class="ident">is_symlink</span>, <span class="ident">MissingHandling</span>, <span class="ident">ResolveMode</span>};
 <span class="kw">use</span> <span class="ident">walkdir::WalkDir</span>;
 
@@ -2281,8 +2283,10 @@
         <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">Options::from_matches</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>)<span class="question-mark">?</span>;
 
         <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">overwrite</span> <span class="op">==</span> <span class="ident">OverwriteMode::NoClobber</span> <span class="op">&amp;&amp;</span> <span class="ident">options</span>.<span class="ident">backup</span> <span class="op">!</span><span class="op">=</span> <span class="ident">BackupMode::NoBackup</span> {
-            <span class="macro">show_usage_error!</span>(<span class="string">&quot;options --backup and --no-clobber are mutually exclusive&quot;</span>);
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ExitCode</span>(<span class="ident">EXIT_ERR</span>).<span class="ident">into</span>());
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">UUsageError::new</span>(
+                <span class="ident">EXIT_ERR</span>,
+                <span class="string">&quot;options --backup and --no-clobber are mutually exclusive&quot;</span>,
+            ));
         }
 
         <span class="kw">let</span> <span class="ident">paths</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">matches</span>
