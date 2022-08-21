@@ -462,47 +462,12 @@
 <span id="456">456</span>
 <span id="457">457</span>
 <span id="458">458</span>
-<span id="459">459</span>
-<span id="460">460</span>
-<span id="461">461</span>
-<span id="462">462</span>
-<span id="463">463</span>
-<span id="464">464</span>
-<span id="465">465</span>
-<span id="466">466</span>
-<span id="467">467</span>
-<span id="468">468</span>
-<span id="469">469</span>
-<span id="470">470</span>
-<span id="471">471</span>
-<span id="472">472</span>
-<span id="473">473</span>
-<span id="474">474</span>
-<span id="475">475</span>
-<span id="476">476</span>
-<span id="477">477</span>
-<span id="478">478</span>
-<span id="479">479</span>
-<span id="480">480</span>
-<span id="481">481</span>
-<span id="482">482</span>
-<span id="483">483</span>
-<span id="484">484</span>
-<span id="485">485</span>
-<span id="486">486</span>
-<span id="487">487</span>
-<span id="488">488</span>
-<span id="489">489</span>
-<span id="490">490</span>
-<span id="491">491</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Yury Krivopalov &lt;ykrivopalov@yandex.ru&gt;</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
 <span class="comment">//  * file that was distributed with this source code.</span>
-
-<span class="comment">// spell-checker:ignore N&#39;th M&#39;th</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::errors</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::format::format_and_print</span>;
@@ -515,47 +480,16 @@
 <span class="kw">use</span> <span class="ident">uucore::error::UResult</span>;
 <span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 <span class="kw">use</span> <span class="ident">uucore::ranges::Range</span>;
+<span class="kw">use</span> <span class="ident">uucore</span>::{<span class="ident">help_section</span>, <span class="ident">help_usage</span>};
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">errors</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">format</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">options</span>;
 <span class="kw">mod</span> <span class="ident">units</span>;
 
-<span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Convert numbers from/to human-readable strings&quot;</span>;
-<span class="kw">static</span> <span class="ident">LONG_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;UNIT options:
-   none   no auto-scaling is done; suffixes will trigger an error
-
-   auto   accept optional single/two letter suffix:
-
-          1K = 1000, 1Ki = 1024, 1M = 1000000, 1Mi = 1048576,
-
-   si     accept optional single letter suffix:
-
-          1K = 1000, 1M = 1000000, ...
-
-   iec    accept optional single letter suffix:
-
-          1K = 1024, 1M = 1048576, ...
-
-   iec-i  accept optional two-letter suffix:
-
-          1Ki = 1024, 1Mi = 1048576, ...
-
-FIELDS supports cut(1) style field ranges:
-  N    N&#39;th field, counted from 1
-  N-   from N&#39;th field, to end of line
-  N-M  from N&#39;th to M&#39;th field (inclusive)
-  -M   from first to M&#39;th field (inclusive)
-  -    all fields
-Multiple fields/ranges can be separated with commas
-
-FORMAT must be suitable for printing one floating-point argument &#39;%f&#39;.
-Optional quote (%&#39;f) will enable --grouping (if supported by current locale).
-Optional width value (%10f) will pad output. Optional zero (%010f) width
-will zero pad the number. Optional negative values (%-10f) will left align.
-Optional precision (%.1f) will override the input determined precision.
-&quot;</span>;
-<span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;{} [OPTION]... [NUMBER]...&quot;</span>;
+<span class="kw">const</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="macro">help_section!</span>(<span class="string">&quot;about&quot;</span>, <span class="string">&quot;numfmt.md&quot;</span>);
+<span class="kw">const</span> <span class="ident">LONG_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="macro">help_section!</span>(<span class="string">&quot;long help&quot;</span>, <span class="string">&quot;numfmt.md&quot;</span>);
+<span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="macro">help_usage!</span>(<span class="string">&quot;numfmt.md&quot;</span>);
 
 <span class="kw">fn</span> <span class="ident">handle_args</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">NumfmtOptions</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">for</span> <span class="ident">l</span> <span class="kw">in</span> <span class="ident">args</span> {
