@@ -402,7 +402,7 @@
 <span class="kw">mod</span> <span class="ident">test</span> {
     <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">complement</span>, <span class="ident">Range</span>};
 
-    <span class="kw">fn</span> <span class="ident">m</span>(<span class="ident">a</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Range</span><span class="op">&gt;</span>, <span class="ident">b</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Range</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">m</span>(<span class="ident">a</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Range</span><span class="op">&gt;</span>, <span class="ident">b</span>: <span class="kw-2">&amp;</span>[<span class="ident">Range</span>]) {
         <span class="macro">assert_eq!</span>(<span class="ident">Range::merge</span>(<span class="ident">a</span>), <span class="ident">b</span>);
     }
 
@@ -413,18 +413,18 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">merging</span>() {
         <span class="comment">// Single element</span>
-        <span class="ident">m</span>(<span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">1</span>, <span class="number">2</span>)], <span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">1</span>, <span class="number">2</span>)]);
+        <span class="ident">m</span>(<span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">1</span>, <span class="number">2</span>)], <span class="kw-2">&amp;</span>[<span class="ident">r</span>(<span class="number">1</span>, <span class="number">2</span>)]);
 
         <span class="comment">// Disjoint in wrong order</span>
-        <span class="ident">m</span>(<span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">4</span>, <span class="number">5</span>), <span class="ident">r</span>(<span class="number">1</span>, <span class="number">2</span>)], <span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">1</span>, <span class="number">2</span>), <span class="ident">r</span>(<span class="number">4</span>, <span class="number">5</span>)]);
+        <span class="ident">m</span>(<span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">4</span>, <span class="number">5</span>), <span class="ident">r</span>(<span class="number">1</span>, <span class="number">2</span>)], <span class="kw-2">&amp;</span>[<span class="ident">r</span>(<span class="number">1</span>, <span class="number">2</span>), <span class="ident">r</span>(<span class="number">4</span>, <span class="number">5</span>)]);
 
         <span class="comment">// Two elements must be merged</span>
-        <span class="ident">m</span>(<span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">1</span>, <span class="number">3</span>), <span class="ident">r</span>(<span class="number">2</span>, <span class="number">4</span>), <span class="ident">r</span>(<span class="number">6</span>, <span class="number">7</span>)], <span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">1</span>, <span class="number">4</span>), <span class="ident">r</span>(<span class="number">6</span>, <span class="number">7</span>)]);
+        <span class="ident">m</span>(<span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">1</span>, <span class="number">3</span>), <span class="ident">r</span>(<span class="number">2</span>, <span class="number">4</span>), <span class="ident">r</span>(<span class="number">6</span>, <span class="number">7</span>)], <span class="kw-2">&amp;</span>[<span class="ident">r</span>(<span class="number">1</span>, <span class="number">4</span>), <span class="ident">r</span>(<span class="number">6</span>, <span class="number">7</span>)]);
 
         <span class="comment">// Two merges and a duplicate</span>
         <span class="ident">m</span>(
             <span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">1</span>, <span class="number">3</span>), <span class="ident">r</span>(<span class="number">6</span>, <span class="number">7</span>), <span class="ident">r</span>(<span class="number">2</span>, <span class="number">4</span>), <span class="ident">r</span>(<span class="number">6</span>, <span class="number">7</span>)],
-            <span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">1</span>, <span class="number">4</span>), <span class="ident">r</span>(<span class="number">6</span>, <span class="number">7</span>)],
+            <span class="kw-2">&amp;</span>[<span class="ident">r</span>(<span class="number">1</span>, <span class="number">4</span>), <span class="ident">r</span>(<span class="number">6</span>, <span class="number">7</span>)],
         );
 
         <span class="comment">// One giant</span>
@@ -436,19 +436,19 @@
                 <span class="ident">r</span>(<span class="number">130</span>, <span class="number">140</span>),
                 <span class="ident">r</span>(<span class="number">150</span>, <span class="number">160</span>),
             ],
-            <span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">10</span>, <span class="number">20</span>), <span class="ident">r</span>(<span class="number">100</span>, <span class="number">200</span>)],
+            <span class="kw-2">&amp;</span>[<span class="ident">r</span>(<span class="number">10</span>, <span class="number">20</span>), <span class="ident">r</span>(<span class="number">100</span>, <span class="number">200</span>)],
         );
 
         <span class="comment">// Last one joins the previous two</span>
-        <span class="ident">m</span>(<span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">10</span>, <span class="number">20</span>), <span class="ident">r</span>(<span class="number">30</span>, <span class="number">40</span>), <span class="ident">r</span>(<span class="number">20</span>, <span class="number">30</span>)], <span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">10</span>, <span class="number">40</span>)]);
+        <span class="ident">m</span>(<span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">10</span>, <span class="number">20</span>), <span class="ident">r</span>(<span class="number">30</span>, <span class="number">40</span>), <span class="ident">r</span>(<span class="number">20</span>, <span class="number">30</span>)], <span class="kw-2">&amp;</span>[<span class="ident">r</span>(<span class="number">10</span>, <span class="number">40</span>)]);
 
         <span class="ident">m</span>(
             <span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">10</span>, <span class="number">20</span>), <span class="ident">r</span>(<span class="number">30</span>, <span class="number">40</span>), <span class="ident">r</span>(<span class="number">50</span>, <span class="number">60</span>), <span class="ident">r</span>(<span class="number">20</span>, <span class="number">30</span>)],
-            <span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">10</span>, <span class="number">40</span>), <span class="ident">r</span>(<span class="number">50</span>, <span class="number">60</span>)],
+            <span class="kw-2">&amp;</span>[<span class="ident">r</span>(<span class="number">10</span>, <span class="number">40</span>), <span class="ident">r</span>(<span class="number">50</span>, <span class="number">60</span>)],
         );
 
         <span class="comment">// Merge adjacent ranges</span>
-        <span class="ident">m</span>(<span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">1</span>, <span class="number">3</span>), <span class="ident">r</span>(<span class="number">4</span>, <span class="number">6</span>)], <span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">1</span>, <span class="number">6</span>)])
+        <span class="ident">m</span>(<span class="macro">vec!</span>[<span class="ident">r</span>(<span class="number">1</span>, <span class="number">3</span>), <span class="ident">r</span>(<span class="number">4</span>, <span class="number">6</span>)], <span class="kw-2">&amp;</span>[<span class="ident">r</span>(<span class="number">1</span>, <span class="number">6</span>)]);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
