@@ -461,7 +461,6 @@
 <span id="455">455</span>
 <span id="456">456</span>
 <span id="457">457</span>
-<span id="458">458</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Yury Krivopalov &lt;ykrivopalov@yandex.ru&gt;</span>
@@ -473,7 +472,7 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::format::format_and_print</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::options</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::units</span>::{<span class="prelude-ty">Result</span>, <span class="ident">Unit</span>};
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>, <span class="ident">ValueSource</span>};
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">BufRead</span>, <span class="ident">Write</span>};
 <span class="kw">use</span> <span class="ident">units</span>::{<span class="ident">IEC_BASES</span>, <span class="ident">SI_BASES</span>};
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
@@ -607,20 +606,19 @@
         <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="number">0</span>),
     }<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">occurrences_of</span>(<span class="ident">options::HEADER</span>) {
-        <span class="number">0</span> =&gt; <span class="prelude-val">Ok</span>(<span class="number">0</span>),
-        <span class="kw">_</span> =&gt; {
-            <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">value_of</span>(<span class="ident">options::HEADER</span>).<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">args</span>.<span class="ident">value_source</span>(<span class="ident">options::HEADER</span>) <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">ValueSource::CommandLine</span>) {
+        <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">value_of</span>(<span class="ident">options::HEADER</span>).<span class="ident">unwrap</span>();
 
-            <span class="ident">value</span>
-                .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>()
-                .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">value</span>)
-                .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">n</span> {
-                    <span class="number">0</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">value</span>),
-                    <span class="kw">_</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">n</span>),
-                })
-                .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">value</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;invalid header value {}&quot;</span>, <span class="ident">value</span>.<span class="ident">quote</span>()))
-        }
+        <span class="ident">value</span>
+            .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>()
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">value</span>)
+            .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">n</span> {
+                <span class="number">0</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">value</span>),
+                <span class="kw">_</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">n</span>),
+            })
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">value</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;invalid header value {}&quot;</span>, <span class="ident">value</span>.<span class="ident">quote</span>()))
+    } <span class="kw">else</span> {
+        <span class="prelude-val">Ok</span>(<span class="number">0</span>)
     }<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">fields</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">value_of</span>(<span class="ident">options::FIELD</span>).<span class="ident">unwrap</span>() {
