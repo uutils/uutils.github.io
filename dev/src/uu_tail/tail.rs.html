@@ -1722,6 +1722,8 @@
 <span id="1716">1716</span>
 <span id="1717">1717</span>
 <span id="1718">1718</span>
+<span id="1719">1719</span>
+<span id="1720">1720</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Morten Olsen Lysgaard &lt;morten@lysgaard.no&gt;</span>
@@ -3135,7 +3137,9 @@
             <span class="ident">file</span>.<span class="ident">seek</span>(<span class="ident">SeekFrom::Start</span>(<span class="ident">i</span> <span class="kw">as</span> <span class="ident">u64</span>)).<span class="ident">unwrap</span>();
         }
         (<span class="ident">FilterMode::Bytes</span>(<span class="ident">count</span>), <span class="bool-val">false</span>) =&gt; {
-            <span class="ident">file</span>.<span class="ident">seek</span>(<span class="ident">SeekFrom::End</span>(<span class="op">-</span>(<span class="kw-2">*</span><span class="ident">count</span> <span class="kw">as</span> <span class="ident">i64</span>))).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">file</span>.<span class="ident">seek</span>(<span class="ident">SeekFrom::End</span>(<span class="number">0</span>)).<span class="ident">unwrap</span>();
+            <span class="ident">file</span>.<span class="ident">seek</span>(<span class="ident">SeekFrom::End</span>(<span class="op">-</span>((<span class="kw-2">*</span><span class="ident">count</span>).<span class="ident">min</span>(<span class="ident">len</span>) <span class="kw">as</span> <span class="ident">i64</span>)))
+                .<span class="ident">unwrap</span>();
         }
         (<span class="ident">FilterMode::Bytes</span>(<span class="ident">count</span>), <span class="bool-val">true</span>) =&gt; {
             <span class="comment">// GNU `tail` seems to index bytes and lines starting at 1, not</span>
