@@ -457,6 +457,37 @@
 <span id="451">451</span>
 <span id="452">452</span>
 <span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Alex Lyon &lt;arcterus@mail.com&gt;</span>
@@ -473,6 +504,8 @@
 <span class="kw">use</span> <span class="ident">remove_dir_all::remove_dir_all</span>;
 <span class="kw">use</span> <span class="ident">std::collections::VecDeque</span>;
 <span class="kw">use</span> <span class="ident">std::fs</span>;
+<span class="kw">use</span> <span class="ident">std::fs::File</span>;
+<span class="kw">use</span> <span class="ident">std::io::ErrorKind</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stderr</span>, <span class="ident">stdin</span>, <span class="ident">BufRead</span>, <span class="ident">Write</span>};
 <span class="kw">use</span> <span class="ident">std::ops::BitOr</span>;
 <span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>};
@@ -486,6 +519,7 @@
     <span class="ident">Never</span>,
     <span class="ident">Once</span>,
     <span class="ident">Always</span>,
+    <span class="ident">PromptProtected</span>,
 }
 
 <span class="kw">struct</span> <span class="ident">Options</span> {
@@ -571,7 +605,7 @@
                         }
                     }
                 } <span class="kw">else</span> {
-                    <span class="ident">InteractiveMode::Never</span>
+                    <span class="ident">InteractiveMode::PromptProtected</span>
                 }
             },
             <span class="ident">one_fs</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_ONE_FILE_SYSTEM</span>),
@@ -843,7 +877,7 @@
     } <span class="kw">else</span> {
         <span class="bool-val">true</span>
     };
-    <span class="kw">if</span> <span class="ident">response</span> {
+    <span class="kw">if</span> <span class="ident">response</span> <span class="op">&amp;&amp;</span> <span class="ident">prompt_write_protected</span>(<span class="ident">path</span>, <span class="bool-val">false</span>, <span class="ident">options</span>) {
         <span class="kw">match</span> <span class="ident">fs::remove_file</span>(<span class="ident">path</span>) {
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; {
                 <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">verbose</span> {
@@ -863,6 +897,34 @@
     }
 
     <span class="bool-val">false</span>
+}
+
+<span class="kw">fn</span> <span class="ident">prompt_write_protected</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">is_dir</span>: <span class="ident">bool</span>, <span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">Options</span>) -&gt; <span class="ident">bool</span> {
+    <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">interactive</span> <span class="op">==</span> <span class="ident">InteractiveMode::Never</span> {
+        <span class="kw">return</span> <span class="bool-val">true</span>;
+    }
+    <span class="kw">match</span> <span class="ident">File::open</span>(<span class="ident">path</span>) {
+        <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="bool-val">true</span>,
+        <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
+            <span class="kw">if</span> <span class="ident">err</span>.<span class="ident">kind</span>() <span class="op">==</span> <span class="ident">ErrorKind::PermissionDenied</span> {
+                <span class="kw">if</span> <span class="ident">is_dir</span> {
+                    <span class="ident">prompt</span>(<span class="kw-2">&amp;</span>(<span class="macro">format!</span>(<span class="string">&quot;rm: remove write-protected directory {}? &quot;</span>, <span class="ident">path</span>.<span class="ident">quote</span>())))
+                } <span class="kw">else</span> {
+                    <span class="kw">if</span> <span class="ident">fs::metadata</span>(<span class="ident">path</span>).<span class="ident">unwrap</span>().<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> {
+                        <span class="kw">return</span> <span class="ident">prompt</span>(
+                            <span class="kw-2">&amp;</span>(<span class="macro">format!</span>(
+                                <span class="string">&quot;rm: remove write-protected regular empty file {}? &quot;</span>,
+                                <span class="ident">path</span>.<span class="ident">quote</span>()
+                            )),
+                        );
+                    }
+                    <span class="ident">prompt</span>(<span class="kw-2">&amp;</span>(<span class="macro">format!</span>(<span class="string">&quot;rm: remove write-protected regular file {}? &quot;</span>, <span class="ident">path</span>.<span class="ident">quote</span>())))
+                }
+            } <span class="kw">else</span> {
+                <span class="bool-val">true</span>
+            }
+        }
+    }
 }
 
 <span class="kw">fn</span> <span class="ident">prompt_file</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">is_dir</span>: <span class="ident">bool</span>) -&gt; <span class="ident">bool</span> {
