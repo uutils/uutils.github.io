@@ -87,6 +87,11 @@
 <span id="81">81</span>
 <span id="82">82</span>
 <span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Iterating over a file by chunks, starting at the end of the file.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Use [`ReverseChunks::new`] to create a new iterator over chunks of</span>
@@ -119,7 +124,12 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">ReverseChunks</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">File</span>) -&gt; <span class="ident">ReverseChunks</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">file</span>.<span class="ident">seek</span>(<span class="ident">SeekFrom::End</span>(<span class="number">0</span>)).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">current</span> <span class="op">=</span> <span class="kw">if</span> <span class="macro">cfg!</span>(<span class="ident">unix</span>) {
+            <span class="ident">file</span>.<span class="ident">seek</span>(<span class="ident">SeekFrom::Current</span>(<span class="number">0</span>)).<span class="ident">unwrap</span>()
+        } <span class="kw">else</span> {
+            <span class="number">0</span>
+        };
+        <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">file</span>.<span class="ident">seek</span>(<span class="ident">SeekFrom::End</span>(<span class="number">0</span>)).<span class="ident">unwrap</span>() <span class="op">-</span> <span class="ident">current</span>;
         <span class="kw">let</span> <span class="ident">max_blocks_to_read</span> <span class="op">=</span> (<span class="ident">size</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">/</span> <span class="ident">BLOCK_SIZE</span> <span class="kw">as</span> <span class="ident">f64</span>).<span class="ident">ceil</span>() <span class="kw">as</span> <span class="ident">usize</span>;
         <span class="kw">let</span> <span class="ident">block_idx</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="ident">ReverseChunks</span> {
