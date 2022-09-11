@@ -1275,6 +1275,14 @@
 <span id="1269">1269</span>
 <span id="1270">1270</span>
 <span id="1271">1271</span>
+<span id="1272">1272</span>
+<span id="1273">1273</span>
+<span id="1274">1274</span>
+<span id="1275">1275</span>
+<span id="1276">1276</span>
+<span id="1277">1277</span>
+<span id="1278">1278</span>
+<span id="1279">1279</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// For the full copyright and license information, please view the LICENSE file</span>
@@ -1286,8 +1294,6 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">quick_error</span>;
 
-<span class="kw">use</span> <span class="ident">chrono::offset::Local</span>;
-<span class="kw">use</span> <span class="ident">chrono::DateTime</span>;
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">AppSettings</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">itertools::Itertools</span>;
 <span class="kw">use</span> <span class="ident">quick_error::ResultExt</span>;
@@ -1297,6 +1303,8 @@
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">stdout</span>, <span class="ident">BufRead</span>, <span class="ident">BufReader</span>, <span class="ident">Lines</span>, <span class="ident">Read</span>, <span class="ident">Write</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::os::unix::fs::FileTypeExt</span>;
+<span class="kw">use</span> <span class="ident">time::macros::format_description</span>;
+<span class="kw">use</span> <span class="ident">time::OffsetDateTime</span>;
 
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">set_exit_code</span>, <span class="ident">UResult</span>};
@@ -1339,6 +1347,8 @@ Lines are not truncated under single column output.&quot;</span>;
 <span class="kw">const</span> <span class="ident">DEFAULT_COLUMN_WIDTH_WITH_S_OPTION</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">512</span>;
 <span class="kw">const</span> <span class="ident">DEFAULT_COLUMN_SEPARATOR</span>: <span class="kw-2">&amp;</span><span class="ident">char</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">TAB</span>;
 <span class="kw">const</span> <span class="ident">FF</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x0C_u8</span>;
+<span class="kw">const</span> <span class="ident">DATE_TIME_FORMAT</span>: <span class="kw-2">&amp;</span>[<span class="ident">time::format_description::FormatItem</span>] <span class="op">=</span>
+    <span class="macro">format_description!</span>(<span class="string">&quot;[month repr:short] [day] [hour]:[minute] [year]&quot;</span>);
 
 <span class="kw">mod</span> <span class="ident">options</span> {
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">HEADER</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;header&quot;</span>;
@@ -1852,8 +1862,10 @@ Lines are not truncated under single column output.&quot;</span>;
     <span class="kw">let</span> <span class="ident">line_separator</span> <span class="op">=</span> <span class="string">&quot;\n&quot;</span>.<span class="ident">to_string</span>();
 
     <span class="kw">let</span> <span class="ident">last_modified_time</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">is_merge_mode</span> <span class="op">|</span><span class="op">|</span> <span class="ident">paths</span>[<span class="number">0</span>].<span class="ident">eq</span>(<span class="ident">FILE_STDIN</span>) {
-        <span class="kw">let</span> <span class="ident">date_time</span> <span class="op">=</span> <span class="ident">Local::now</span>();
-        <span class="ident">date_time</span>.<span class="ident">format</span>(<span class="string">&quot;%b %d %H:%M %Y&quot;</span>).<span class="ident">to_string</span>()
+        <span class="comment">// let date_time = Local::now();</span>
+        <span class="comment">// date_time.format(&quot;%b %d %H:%M %Y&quot;).to_string()</span>
+        <span class="kw">let</span> <span class="ident">date_time</span> <span class="op">=</span> <span class="ident">OffsetDateTime::now_local</span>().<span class="ident">unwrap</span>();
+        <span class="ident">date_time</span>.<span class="ident">format</span>(<span class="kw-2">&amp;</span><span class="ident">DATE_TIME_FORMAT</span>).<span class="ident">unwrap</span>()
     } <span class="kw">else</span> {
         <span class="ident">file_last_modified_time</span>(<span class="ident">paths</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>())
     };
@@ -2495,8 +2507,12 @@ Lines are not truncated under single column output.&quot;</span>;
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> {
             <span class="ident">i</span>.<span class="ident">modified</span>()
                 .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> {
-                    <span class="kw">let</span> <span class="ident">date_time</span>: <span class="ident">DateTime</span><span class="op">&lt;</span><span class="ident">Local</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">into</span>();
-                    <span class="ident">date_time</span>.<span class="ident">format</span>(<span class="string">&quot;%b %d %H:%M %Y&quot;</span>).<span class="ident">to_string</span>()
+                    <span class="kw">let</span> <span class="ident">date_time</span>: <span class="ident">OffsetDateTime</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">into</span>();
+                    <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="ident">OffsetDateTime::now_local</span>().<span class="ident">unwrap</span>().<span class="ident">offset</span>();
+                    <span class="ident">date_time</span>
+                        .<span class="ident">to_offset</span>(<span class="ident">offset</span>)
+                        .<span class="ident">format</span>(<span class="kw-2">&amp;</span><span class="ident">DATE_TIME_FORMAT</span>)
+                        .<span class="ident">unwrap</span>()
                 })
                 .<span class="ident">unwrap_or_default</span>()
         })
