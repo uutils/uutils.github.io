@@ -2968,6 +2968,21 @@
 <span id="2962">2962</span>
 <span id="2963">2963</span>
 <span id="2964">2964</span>
+<span id="2965">2965</span>
+<span id="2966">2966</span>
+<span id="2967">2967</span>
+<span id="2968">2968</span>
+<span id="2969">2969</span>
+<span id="2970">2970</span>
+<span id="2971">2971</span>
+<span id="2972">2972</span>
+<span id="2973">2973</span>
+<span id="2974">2974</span>
+<span id="2975">2975</span>
+<span id="2976">2976</span>
+<span id="2977">2977</span>
+<span id="2978">2978</span>
+<span id="2979">2979</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jeremiah Peschka &lt;jeremiah.peschka@gmail.com&gt;</span>
@@ -3123,7 +3138,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
 <span class="kw">enum</span> <span class="ident">LsError</span> {
     <span class="ident">InvalidLineWidth</span>(<span class="ident">String</span>),
     <span class="ident">IOError</span>(<span class="ident">std::io::Error</span>),
-    <span class="ident">IOErrorContext</span>(<span class="ident">std::io::Error</span>, <span class="ident">PathBuf</span>),
+    <span class="ident">IOErrorContext</span>(<span class="ident">std::io::Error</span>, <span class="ident">PathBuf</span>, <span class="ident">bool</span>),
     <span class="ident">BlockSizeParseError</span>(<span class="ident">String</span>),
     <span class="ident">AlreadyListedError</span>(<span class="ident">PathBuf</span>),
 }
@@ -3133,7 +3148,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident"><span class="self">Self</span>::InvalidLineWidth</span>(<span class="kw">_</span>) =&gt; <span class="number">2</span>,
             <span class="ident"><span class="self">Self</span>::IOError</span>(<span class="kw">_</span>) =&gt; <span class="number">1</span>,
-            <span class="ident"><span class="self">Self</span>::IOErrorContext</span>(<span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="number">1</span>,
+            <span class="ident"><span class="self">Self</span>::IOErrorContext</span>(<span class="kw">_</span>, <span class="kw">_</span>, <span class="bool-val">false</span>) =&gt; <span class="number">1</span>,
+            <span class="ident"><span class="self">Self</span>::IOErrorContext</span>(<span class="kw">_</span>, <span class="kw">_</span>, <span class="bool-val">true</span>) =&gt; <span class="number">2</span>,
             <span class="ident"><span class="self">Self</span>::BlockSizeParseError</span>(<span class="kw">_</span>) =&gt; <span class="number">1</span>,
             <span class="ident"><span class="self">Self</span>::AlreadyListedError</span>(<span class="kw">_</span>) =&gt; <span class="number">2</span>,
         }
@@ -3150,7 +3166,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             }
             <span class="ident"><span class="self">Self</span>::InvalidLineWidth</span>(<span class="ident">s</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;invalid line width: {}&quot;</span>, <span class="ident">s</span>.<span class="ident">quote</span>()),
             <span class="ident"><span class="self">Self</span>::IOError</span>(<span class="ident">e</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;general io error: {}&quot;</span>, <span class="ident">e</span>),
-            <span class="ident"><span class="self">Self</span>::IOErrorContext</span>(<span class="ident">e</span>, <span class="ident">p</span>) =&gt; {
+            <span class="ident"><span class="self">Self</span>::IOErrorContext</span>(<span class="ident">e</span>, <span class="ident">p</span>, <span class="kw">_</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">error_kind</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">kind</span>();
                 <span class="kw">let</span> <span class="ident">errno</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">raw_os_error</span>().<span class="ident">unwrap_or</span>(<span class="number">1i32</span>);
 
@@ -4536,6 +4552,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
     <span class="ident">p_buf</span>: <span class="ident">PathBuf</span>,
     <span class="ident">must_dereference</span>: <span class="ident">bool</span>,
     <span class="ident">security_context</span>: <span class="ident">String</span>,
+    <span class="ident">command_line</span>: <span class="ident">bool</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">PathData</span> {
@@ -4619,6 +4636,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             <span class="ident">p_buf</span>,
             <span class="ident">must_dereference</span>,
             <span class="ident">security_context</span>,
+            <span class="ident">command_line</span>,
         }
     }
 
@@ -4647,7 +4665,11 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                                 <span class="kw">return</span> <span class="ident">dir_entry</span>.<span class="ident">metadata</span>().<span class="ident">ok</span>();
                             }
                         }
-                        <span class="macro">show!</span>(<span class="ident">LsError::IOErrorContext</span>(<span class="ident">err</span>, <span class="self">self</span>.<span class="ident">p_buf</span>.<span class="ident">clone</span>(),));
+                        <span class="macro">show!</span>(<span class="ident">LsError::IOErrorContext</span>(
+                            <span class="ident">err</span>,
+                            <span class="self">self</span>.<span class="ident">p_buf</span>.<span class="ident">clone</span>(),
+                            <span class="self">self</span>.<span class="ident">command_line</span>
+                        ));
                         <span class="prelude-val">None</span>
                     }
                     <span class="prelude-val">Ok</span>(<span class="ident">md</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">md</span>),
@@ -4709,7 +4731,11 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
                 <span class="comment">// flush stdout buffer before the error to preserve formatting and order</span>
                 <span class="ident">out</span>.<span class="ident">flush</span>()<span class="question-mark">?</span>;
-                <span class="macro">show!</span>(<span class="ident">LsError::IOErrorContext</span>(<span class="ident">err</span>, <span class="ident">path_data</span>.<span class="ident">p_buf</span>.<span class="ident">clone</span>()));
+                <span class="macro">show!</span>(<span class="ident">LsError::IOErrorContext</span>(
+                    <span class="ident">err</span>,
+                    <span class="ident">path_data</span>.<span class="ident">p_buf</span>.<span class="ident">clone</span>(),
+                    <span class="ident">path_data</span>.<span class="ident">command_line</span>
+                ));
                 <span class="kw">continue</span>;
             }
             <span class="prelude-val">Ok</span>(<span class="ident">rd</span>) =&gt; <span class="ident">rd</span>,
@@ -4886,7 +4912,11 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             <span class="kw">match</span> <span class="ident">fs::read_dir</span>(<span class="kw-2">&amp;</span><span class="ident">e</span>.<span class="ident">p_buf</span>) {
                 <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
                     <span class="ident">out</span>.<span class="ident">flush</span>()<span class="question-mark">?</span>;
-                    <span class="macro">show!</span>(<span class="ident">LsError::IOErrorContext</span>(<span class="ident">err</span>, <span class="ident">e</span>.<span class="ident">p_buf</span>.<span class="ident">clone</span>()));
+                    <span class="macro">show!</span>(<span class="ident">LsError::IOErrorContext</span>(
+                        <span class="ident">err</span>,
+                        <span class="ident">e</span>.<span class="ident">p_buf</span>.<span class="ident">clone</span>(),
+                        <span class="ident">e</span>.<span class="ident">command_line</span>
+                    ));
                     <span class="kw">continue</span>;
                 }
                 <span class="prelude-val">Ok</span>(<span class="ident">rd</span>) =&gt; {

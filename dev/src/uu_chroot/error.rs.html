@@ -85,6 +85,12 @@
 <span id="79">79</span>
 <span id="80">80</span>
 <span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -104,6 +110,9 @@
 
     <span class="doccomment">/// Failed to execute the specified command.</span>
     <span class="ident">CommandFailed</span>(<span class="ident">String</span>, <span class="ident">Error</span>),
+
+    <span class="doccomment">/// Failed to find the specified command.</span>
+    <span class="ident">CommandNotFound</span>(<span class="ident">String</span>, <span class="ident">Error</span>),
 
     <span class="doccomment">/// The given user and group specification was invalid.</span>
     <span class="ident">InvalidUserspec</span>(<span class="ident">String</span>),
@@ -130,12 +139,15 @@
 <span class="kw">impl</span> <span class="ident">std::error::Error</span> <span class="kw">for</span> <span class="ident">ChrootError</span> {}
 
 <span class="kw">impl</span> <span class="ident">UError</span> <span class="kw">for</span> <span class="ident">ChrootError</span> {
-    <span class="comment">// TODO: Exit status:</span>
     <span class="comment">// 125 if chroot itself fails</span>
     <span class="comment">// 126 if command is found but cannot be invoked</span>
     <span class="comment">// 127 if command cannot be found</span>
     <span class="kw">fn</span> <span class="ident">code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">i32</span> {
-        <span class="number">1</span>
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident"><span class="self">Self</span>::CommandFailed</span>(<span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="number">126</span>,
+            <span class="ident"><span class="self">Self</span>::CommandNotFound</span>(<span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="number">127</span>,
+            <span class="kw">_</span> =&gt; <span class="number">125</span>,
+        }
     }
 }
 
@@ -143,7 +155,7 @@
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::fmt::Formatter</span>) -&gt; <span class="ident">std::fmt::Result</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident"><span class="self">Self</span>::CannotEnter</span>(<span class="ident">s</span>, <span class="ident">e</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;cannot chroot to {}: {}&quot;</span>, <span class="ident">s</span>.<span class="ident">quote</span>(), <span class="ident">e</span>,),
-            <span class="ident"><span class="self">Self</span>::CommandFailed</span>(<span class="ident">s</span>, <span class="ident">e</span>) =&gt; {
+            <span class="ident"><span class="self">Self</span>::CommandFailed</span>(<span class="ident">s</span>, <span class="ident">e</span>) <span class="op">|</span> <span class="ident"><span class="self">Self</span>::CommandNotFound</span>(<span class="ident">s</span>, <span class="ident">e</span>) =&gt; {
                 <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;failed to run command {}: {}&quot;</span>, <span class="ident">s</span>.<span class="ident">to_string</span>().<span class="ident">quote</span>(), <span class="ident">e</span>,)
             }
             <span class="ident"><span class="self">Self</span>::InvalidUserspec</span>(<span class="ident">s</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;invalid userspec: {}&quot;</span>, <span class="ident">s</span>.<span class="ident">quote</span>(),),

@@ -249,6 +249,13 @@
 <span id="243">243</span>
 <span id="244">244</span>
 <span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Vsevolod Velichko &lt;torkvemada@sorokdva.net&gt;</span>
@@ -331,7 +338,14 @@
         .<span class="ident">status</span>()
     {
         <span class="prelude-val">Ok</span>(<span class="ident">status</span>) =&gt; <span class="ident">status</span>,
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ChrootError::CommandFailed</span>(<span class="ident">command</span>[<span class="number">0</span>].<span class="ident">to_string</span>(), <span class="ident">e</span>).<span class="ident">into</span>()),
+        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="kw">if</span> <span class="ident">e</span>.<span class="ident">kind</span>() <span class="op">==</span> <span class="ident">std::io::ErrorKind::NotFound</span> {
+                <span class="ident">ChrootError::CommandNotFound</span>(<span class="ident">command</span>[<span class="number">0</span>].<span class="ident">to_string</span>(), <span class="ident">e</span>)
+            } <span class="kw">else</span> {
+                <span class="ident">ChrootError::CommandFailed</span>(<span class="ident">command</span>[<span class="number">0</span>].<span class="ident">to_string</span>(), <span class="ident">e</span>)
+            }
+            .<span class="ident">into</span>())
+        }
     };
 
     <span class="kw">let</span> <span class="ident">code</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">pstatus</span>.<span class="ident">success</span>() {
