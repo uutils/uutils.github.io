@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["FilterMode",""],["FollowMode",""],["Signum",""]],"fn":[["arg_iterate",""],["parse_args",""],["stdin_is_pipe_or_fifo",""],["uu_app",""]],"mod":[["options",""]],"struct":[["Settings",""]]};

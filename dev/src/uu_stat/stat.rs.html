@@ -1057,6 +1057,38 @@
 <span id="1051">1051</span>
 <span id="1052">1052</span>
 <span id="1053">1053</span>
+<span id="1054">1054</span>
+<span id="1055">1055</span>
+<span id="1056">1056</span>
+<span id="1057">1057</span>
+<span id="1058">1058</span>
+<span id="1059">1059</span>
+<span id="1060">1060</span>
+<span id="1061">1061</span>
+<span id="1062">1062</span>
+<span id="1063">1063</span>
+<span id="1064">1064</span>
+<span id="1065">1065</span>
+<span id="1066">1066</span>
+<span id="1067">1067</span>
+<span id="1068">1068</span>
+<span id="1069">1069</span>
+<span id="1070">1070</span>
+<span id="1071">1071</span>
+<span id="1072">1072</span>
+<span id="1073">1073</span>
+<span id="1074">1074</span>
+<span id="1075">1075</span>
+<span id="1076">1076</span>
+<span id="1077">1077</span>
+<span id="1078">1078</span>
+<span id="1079">1079</span>
+<span id="1080">1080</span>
+<span id="1081">1081</span>
+<span id="1082">1082</span>
+<span id="1083">1083</span>
+<span id="1084">1084</span>
+<span id="1085">1085</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;</span>
@@ -1085,69 +1117,6 @@
 <span class="kw">use</span> <span class="ident">std::path::Path</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">cmp</span>, <span class="ident">fs</span>, <span class="ident">iter</span>};
 
-<span class="macro">macro_rules!</span> <span class="ident">check_bound</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>: <span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bound</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">beg</span>: <span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">end</span>: <span class="ident">expr</span>) =&gt; {
-        <span class="kw">if</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">end</span> <span class="op">&gt;</span><span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bound</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(
-                <span class="number">1</span>,
-                <span class="macro">format!</span>(<span class="string">&quot;{}: invalid directive&quot;</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">beg</span>..<span class="macro-nonterminal">$</span><span class="macro-nonterminal">end</span>].<span class="ident">quote</span>()),
-            ));
-        }
-    };
-}
-<span class="macro">macro_rules!</span> <span class="ident">fill_string</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>: <span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">c</span>: <span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">cnt</span>: <span class="ident">expr</span>) =&gt; {
-        <span class="ident">iter::repeat</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">c</span>)
-            .<span class="ident">take</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">cnt</span>)
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>.<span class="ident">push</span>(<span class="ident">c</span>))
-            .<span class="ident">all</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="bool-val">true</span>)
-    };
-}
-<span class="macro">macro_rules!</span> <span class="ident">extend_digits</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>: <span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">min</span>: <span class="ident">expr</span>) =&gt; {
-        <span class="kw">if</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">min</span> <span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>.<span class="ident">len</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pad</span> <span class="op">=</span> <span class="ident">String::with_capacity</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">min</span>);
-            <span class="macro">fill_string!</span>(<span class="ident">pad</span>, <span class="string">&#39;0&#39;</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">min</span> <span class="op">-</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>.<span class="ident">len</span>());
-            <span class="ident">pad</span>.<span class="ident">push_str</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>);
-            <span class="ident">pad</span>.<span class="ident">into</span>()
-        } <span class="kw">else</span> {
-            <span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>.<span class="ident">into</span>()
-        }
-    };
-}
-<span class="macro">macro_rules!</span> <span class="ident">pad_and_print</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">result</span>: <span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>: <span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">left</span>: <span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">width</span>: <span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">padding</span>: <span class="ident">expr</span>) =&gt; {
-        <span class="kw">if</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">width</span> {
-            <span class="kw">if</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">left</span> {
-                <span class="macro-nonterminal">$</span><span class="macro-nonterminal">result</span>.<span class="ident">push_str</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>.<span class="ident">as_ref</span>());
-                <span class="macro">fill_string!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">result</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">padding</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">width</span> <span class="op">-</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>.<span class="ident">len</span>());
-            } <span class="kw">else</span> {
-                <span class="macro">fill_string!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">result</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">padding</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">width</span> <span class="op">-</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>.<span class="ident">len</span>());
-                <span class="macro-nonterminal">$</span><span class="macro-nonterminal">result</span>.<span class="ident">push_str</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>.<span class="ident">as_ref</span>());
-            }
-        } <span class="kw">else</span> {
-            <span class="macro-nonterminal">$</span><span class="macro-nonterminal">result</span>.<span class="ident">push_str</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>.<span class="ident">as_ref</span>());
-        }
-        <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">result</span>);
-    };
-}
-<span class="macro">macro_rules!</span> <span class="ident">print_adjusted</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>: <span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">left</span>: <span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">width</span>: <span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">padding</span>: <span class="ident">expr</span>) =&gt; {
-        <span class="kw">let</span> <span class="ident">field_width</span> <span class="op">=</span> <span class="ident">cmp::max</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">width</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>.<span class="ident">len</span>());
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">String::with_capacity</span>(<span class="ident">field_width</span>);
-        <span class="macro">pad_and_print!</span>(<span class="ident">result</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">left</span>, <span class="ident">field_width</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">padding</span>);
-    };
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>: <span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">left</span>: <span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">need_prefix</span>: <span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prefix</span>: <span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">width</span>: <span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">padding</span>: <span class="ident">expr</span>) =&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">field_width</span> <span class="op">=</span> <span class="ident">cmp::max</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">width</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>.<span class="ident">len</span>());
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">String::with_capacity</span>(<span class="ident">field_width</span> <span class="op">+</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prefix</span>.<span class="ident">len</span>());
-        <span class="kw">if</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">need_prefix</span> {
-            <span class="ident">result</span>.<span class="ident">push_str</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">prefix</span>);
-            <span class="ident">field_width</span> <span class="op">-</span><span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prefix</span>.<span class="ident">len</span>();
-        }
-        <span class="macro">pad_and_print!</span>(<span class="ident">result</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">left</span>, <span class="ident">field_width</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">padding</span>);
-    };
-}
-
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Display file or file system status.&quot;</span>;
 <span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;{} [OPTION]... FILE...&quot;</span>;
 
@@ -1169,6 +1138,87 @@
 <span class="comment">// unused at present</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">F_GROUP</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">5</span>;
 
+<span class="doccomment">/// checks if the string is within the specified bound,</span>
+<span class="doccomment">/// if it gets out of bound, error out by printing sub-string from index `beg` to`end`,</span>
+<span class="doccomment">/// where `beg` &amp; `end` is the beginning and end index of sub-string, respectively</span>
+<span class="doccomment">///</span>
+<span class="kw">fn</span> <span class="ident">check_bound</span>(<span class="ident">slice</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">bound</span>: <span class="ident">usize</span>, <span class="ident">beg</span>: <span class="ident">usize</span>, <span class="ident">end</span>: <span class="ident">usize</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">if</span> <span class="ident">end</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">bound</span> {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(
+            <span class="number">1</span>,
+            <span class="macro">format!</span>(<span class="string">&quot;{}: invalid directive&quot;</span>, <span class="ident">slice</span>[<span class="ident">beg</span>..<span class="ident">end</span>].<span class="ident">quote</span>()),
+        ));
+    }
+    <span class="prelude-val">Ok</span>(())
+}
+
+<span class="doccomment">/// pads the string with zeroes if supplied min is greater</span>
+<span class="doccomment">/// then the length of the string, else returns the original string</span>
+<span class="doccomment">///</span>
+<span class="kw">fn</span> <span class="ident">extend_digits</span>(<span class="ident">string</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">min</span>: <span class="ident">usize</span>) -&gt; <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="kw">if</span> <span class="ident">min</span> <span class="op">&gt;</span> <span class="ident">string</span>.<span class="ident">len</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pad</span> <span class="op">=</span> <span class="ident">String::with_capacity</span>(<span class="ident">min</span>);
+        <span class="ident">iter::repeat</span>(<span class="string">&#39;0&#39;</span>)
+            .<span class="ident">take</span>(<span class="ident">min</span> <span class="op">-</span> <span class="ident">string</span>.<span class="ident">len</span>())
+            .<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">pad</span>.<span class="ident">push</span>(<span class="string">&#39;0&#39;</span>))
+            .<span class="ident">all</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="bool-val">true</span>);
+        <span class="ident">pad</span>.<span class="ident">push_str</span>(<span class="ident">string</span>);
+        <span class="ident">pad</span>.<span class="ident">into</span>()
+    } <span class="kw">else</span> {
+        <span class="ident">string</span>.<span class="ident">into</span>()
+    }
+}
+
+<span class="kw">enum</span> <span class="ident">Padding</span> {
+    <span class="ident">Zero</span>,
+    <span class="ident">Space</span>,
+}
+
+<span class="doccomment">/// pads the string with zeroes or spaces and prints it</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Example</span>
+<span class="doccomment">/// ```ignore</span>
+<span class="doccomment">/// uu_stat::pad_and_print(&quot;1&quot;, false, 5, Padding::Zero) == &quot;00001&quot;;</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// currently only supports &#39;0&#39; &amp; &#39; &#39; as the padding character</span>
+<span class="doccomment">/// because the format specification of print! does not support general</span>
+<span class="doccomment">/// fill characters</span>
+<span class="doccomment">///</span>
+<span class="kw">fn</span> <span class="ident">pad_and_print</span>(<span class="ident">result</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">left</span>: <span class="ident">bool</span>, <span class="ident">width</span>: <span class="ident">usize</span>, <span class="ident">padding</span>: <span class="ident">Padding</span>) {
+    <span class="kw">match</span> (<span class="ident">left</span>, <span class="ident">padding</span>) {
+        (<span class="bool-val">false</span>, <span class="ident">Padding::Zero</span>) =&gt; <span class="macro">print!</span>(<span class="string">&quot;{result:0&gt;width$}&quot;</span>),
+        (<span class="bool-val">false</span>, <span class="ident">Padding::Space</span>) =&gt; <span class="macro">print!</span>(<span class="string">&quot;{result:&gt;width$}&quot;</span>),
+        (<span class="bool-val">true</span>, <span class="ident">Padding::Zero</span>) =&gt; <span class="macro">print!</span>(<span class="string">&quot;{result:0&lt;width$}&quot;</span>),
+        (<span class="bool-val">true</span>, <span class="ident">Padding::Space</span>) =&gt; <span class="macro">print!</span>(<span class="string">&quot;{result:&lt;width$}&quot;</span>),
+    };
+}
+
+<span class="doccomment">/// prints the adjusted string after padding</span>
+<span class="doccomment">/// `left` flag specifies the type of alignment of the string</span>
+<span class="doccomment">/// `width` is the supplied padding width of the string needed</span>
+<span class="doccomment">/// `prefix` &amp; `need_prefix` are Optional, which adjusts the `field_width` accordingly, where</span>
+<span class="doccomment">/// `field_width` is the max of supplied `width` and size of string</span>
+<span class="doccomment">/// `padding`, specifies type of padding, which is &#39;0&#39; or &#39; &#39; in this case.</span>
+<span class="kw">fn</span> <span class="ident">print_adjusted</span>(
+    <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
+    <span class="ident">left</span>: <span class="ident">bool</span>,
+    <span class="ident">need_prefix</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
+    <span class="ident">prefix</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
+    <span class="ident">width</span>: <span class="ident">usize</span>,
+    <span class="ident">padding</span>: <span class="ident">Padding</span>,
+) {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">field_width</span> <span class="op">=</span> <span class="ident">cmp::max</span>(<span class="ident">width</span>, <span class="ident">s</span>.<span class="ident">len</span>());
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">p</span>) <span class="op">=</span> <span class="ident">prefix</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">prefix_flag</span>) <span class="op">=</span> <span class="ident">need_prefix</span> {
+            <span class="kw">if</span> <span class="ident">prefix_flag</span> {
+                <span class="ident">field_width</span> <span class="op">-</span><span class="op">=</span> <span class="ident">p</span>.<span class="ident">len</span>();
+            }
+        }
+        <span class="ident">pad_and_print</span>(<span class="ident">s</span>, <span class="ident">left</span>, <span class="ident">field_width</span>, <span class="ident">padding</span>);
+    } <span class="kw">else</span> {
+        <span class="ident">pad_and_print</span>(<span class="ident">s</span>, <span class="ident">left</span>, <span class="ident">field_width</span>, <span class="ident">padding</span>);
+    }
+}
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">OutputType</span> {
     <span class="ident">Str</span>,
@@ -1326,10 +1376,10 @@
     }
 
     <span class="kw">let</span> <span class="ident">left_align</span> <span class="op">=</span> <span class="macro">has!</span>(<span class="ident">flag</span>, <span class="ident">F_LEFT</span>);
-    <span class="kw">let</span> <span class="ident">padding_char</span> <span class="op">=</span> <span class="kw">if</span> <span class="macro">has!</span>(<span class="ident">flag</span>, <span class="ident">F_ZERO</span>) <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">left_align</span> <span class="op">&amp;&amp;</span> <span class="ident">precision</span> <span class="op">==</span> <span class="op">-</span><span class="number">1</span> {
-        <span class="string">&#39;0&#39;</span>
+    <span class="kw">let</span> <span class="ident">padding_char</span>: <span class="ident">Padding</span> <span class="op">=</span> <span class="kw">if</span> <span class="macro">has!</span>(<span class="ident">flag</span>, <span class="ident">F_ZERO</span>) <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">left_align</span> <span class="op">&amp;&amp;</span> <span class="ident">precision</span> <span class="op">==</span> <span class="op">-</span><span class="number">1</span> {
+        <span class="ident">Padding::Zero</span>
     } <span class="kw">else</span> {
-        <span class="string">&#39; &#39;</span>
+        <span class="ident">Padding::Space</span>
     };
 
     <span class="kw">let</span> <span class="ident">has_sign</span> <span class="op">=</span> <span class="macro">has!</span>(<span class="ident">flag</span>, <span class="ident">F_SIGN</span>) <span class="op">|</span><span class="op">|</span> <span class="macro">has!</span>(<span class="ident">flag</span>, <span class="ident">F_SPACE</span>);
@@ -1356,7 +1406,7 @@
             } <span class="kw">else</span> {
                 <span class="ident">arg</span>
             };
-            <span class="macro">print_adjusted!</span>(<span class="ident">s</span>, <span class="ident">left_align</span>, <span class="ident">width</span>, <span class="string">&#39; &#39;</span>);
+            <span class="ident">print_adjusted</span>(<span class="ident">s</span>, <span class="ident">left_align</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="ident">width</span>, <span class="ident">Padding::Space</span>);
         }
         <span class="ident">OutputType::Integer</span> =&gt; {
             <span class="kw">let</span> <span class="ident">arg</span> <span class="op">=</span> <span class="kw">if</span> <span class="macro">has!</span>(<span class="ident">flag</span>, <span class="ident">F_GROUP</span>) {
@@ -1365,8 +1415,15 @@
                 <span class="ident">Cow::Borrowed</span>(<span class="ident">arg</span>)
             };
             <span class="kw">let</span> <span class="ident">min_digits</span> <span class="op">=</span> <span class="ident">cmp::max</span>(<span class="ident">precision</span>, <span class="ident">arg</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">i32</span>) <span class="kw">as</span> <span class="ident">usize</span>;
-            <span class="kw">let</span> <span class="ident">extended</span>: <span class="ident">Cow</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">extend_digits!</span>(<span class="ident">arg</span>.<span class="ident">as_ref</span>(), <span class="ident">min_digits</span>);
-            <span class="macro">print_adjusted!</span>(<span class="ident">extended</span>, <span class="ident">left_align</span>, <span class="ident">has_sign</span>, <span class="ident">prefix</span>, <span class="ident">width</span>, <span class="ident">padding_char</span>);
+            <span class="kw">let</span> <span class="ident">extended</span>: <span class="ident">Cow</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">extend_digits</span>(<span class="ident">arg</span>.<span class="ident">as_ref</span>(), <span class="ident">min_digits</span>);
+            <span class="ident">print_adjusted</span>(
+                <span class="ident">extended</span>.<span class="ident">as_ref</span>(),
+                <span class="ident">left_align</span>,
+                <span class="prelude-val">Some</span>(<span class="ident">has_sign</span>),
+                <span class="prelude-val">Some</span>(<span class="ident">prefix</span>),
+                <span class="ident">width</span>,
+                <span class="ident">padding_char</span>,
+            );
         }
         <span class="ident">OutputType::Unsigned</span> =&gt; {
             <span class="kw">let</span> <span class="ident">arg</span> <span class="op">=</span> <span class="kw">if</span> <span class="macro">has!</span>(<span class="ident">flag</span>, <span class="ident">F_GROUP</span>) {
@@ -1375,31 +1432,38 @@
                 <span class="ident">Cow::Borrowed</span>(<span class="ident">arg</span>)
             };
             <span class="kw">let</span> <span class="ident">min_digits</span> <span class="op">=</span> <span class="ident">cmp::max</span>(<span class="ident">precision</span>, <span class="ident">arg</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">i32</span>) <span class="kw">as</span> <span class="ident">usize</span>;
-            <span class="kw">let</span> <span class="ident">extended</span>: <span class="ident">Cow</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">extend_digits!</span>(<span class="ident">arg</span>.<span class="ident">as_ref</span>(), <span class="ident">min_digits</span>);
-            <span class="macro">print_adjusted!</span>(<span class="ident">extended</span>, <span class="ident">left_align</span>, <span class="ident">width</span>, <span class="ident">padding_char</span>);
+            <span class="kw">let</span> <span class="ident">extended</span>: <span class="ident">Cow</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">extend_digits</span>(<span class="ident">arg</span>.<span class="ident">as_ref</span>(), <span class="ident">min_digits</span>);
+            <span class="ident">print_adjusted</span>(
+                <span class="ident">extended</span>.<span class="ident">as_ref</span>(),
+                <span class="ident">left_align</span>,
+                <span class="prelude-val">None</span>,
+                <span class="prelude-val">None</span>,
+                <span class="ident">width</span>,
+                <span class="ident">padding_char</span>,
+            );
         }
         <span class="ident">OutputType::UnsignedOct</span> =&gt; {
             <span class="kw">let</span> <span class="ident">min_digits</span> <span class="op">=</span> <span class="ident">cmp::max</span>(<span class="ident">precision</span>, <span class="ident">arg</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">i32</span>) <span class="kw">as</span> <span class="ident">usize</span>;
-            <span class="kw">let</span> <span class="ident">extended</span>: <span class="ident">Cow</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">extend_digits!</span>(<span class="ident">arg</span>, <span class="ident">min_digits</span>);
-            <span class="macro">print_adjusted!</span>(
-                <span class="ident">extended</span>,
+            <span class="kw">let</span> <span class="ident">extended</span>: <span class="ident">Cow</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">extend_digits</span>(<span class="ident">arg</span>, <span class="ident">min_digits</span>);
+            <span class="ident">print_adjusted</span>(
+                <span class="ident">extended</span>.<span class="ident">as_ref</span>(),
                 <span class="ident">left_align</span>,
-                <span class="ident">should_alter</span>,
-                <span class="ident">prefix</span>,
+                <span class="prelude-val">Some</span>(<span class="ident">should_alter</span>),
+                <span class="prelude-val">Some</span>(<span class="ident">prefix</span>),
                 <span class="ident">width</span>,
-                <span class="ident">padding_char</span>
+                <span class="ident">padding_char</span>,
             );
         }
         <span class="ident">OutputType::UnsignedHex</span> =&gt; {
             <span class="kw">let</span> <span class="ident">min_digits</span> <span class="op">=</span> <span class="ident">cmp::max</span>(<span class="ident">precision</span>, <span class="ident">arg</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">i32</span>) <span class="kw">as</span> <span class="ident">usize</span>;
-            <span class="kw">let</span> <span class="ident">extended</span>: <span class="ident">Cow</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">extend_digits!</span>(<span class="ident">arg</span>, <span class="ident">min_digits</span>);
-            <span class="macro">print_adjusted!</span>(
-                <span class="ident">extended</span>,
+            <span class="kw">let</span> <span class="ident">extended</span>: <span class="ident">Cow</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">extend_digits</span>(<span class="ident">arg</span>, <span class="ident">min_digits</span>);
+            <span class="ident">print_adjusted</span>(
+                <span class="ident">extended</span>.<span class="ident">as_ref</span>(),
                 <span class="ident">left_align</span>,
-                <span class="ident">should_alter</span>,
-                <span class="ident">prefix</span>,
+                <span class="prelude-val">Some</span>(<span class="ident">should_alter</span>),
+                <span class="prelude-val">Some</span>(<span class="ident">prefix</span>),
                 <span class="ident">width</span>,
-                <span class="ident">padding_char</span>
+                <span class="ident">padding_char</span>,
             );
         }
         <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(),
@@ -1443,7 +1507,7 @@
                         }
                         <span class="ident">i</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                     }
-                    <span class="macro">check_bound!</span>(<span class="ident">format_str</span>, <span class="ident">bound</span>, <span class="ident">old</span>, <span class="ident">i</span>);
+                    <span class="ident">check_bound</span>(<span class="ident">format_str</span>, <span class="ident">bound</span>, <span class="ident">old</span>, <span class="ident">i</span>)<span class="question-mark">?</span>;
 
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">width</span> <span class="op">=</span> <span class="number">0_usize</span>;
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">precision</span> <span class="op">=</span> <span class="op">-</span><span class="number">1_i32</span>;
@@ -1453,11 +1517,11 @@
                         <span class="ident">width</span> <span class="op">=</span> <span class="ident">field_width</span>;
                         <span class="ident">j</span> <span class="op">+</span><span class="op">=</span> <span class="ident">offset</span>;
                     }
-                    <span class="macro">check_bound!</span>(<span class="ident">format_str</span>, <span class="ident">bound</span>, <span class="ident">old</span>, <span class="ident">j</span>);
+                    <span class="ident">check_bound</span>(<span class="ident">format_str</span>, <span class="ident">bound</span>, <span class="ident">old</span>, <span class="ident">j</span>)<span class="question-mark">?</span>;
 
                     <span class="kw">if</span> <span class="ident">chars</span>[<span class="ident">j</span>] <span class="op">==</span> <span class="string">&#39;.&#39;</span> {
                         <span class="ident">j</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                        <span class="macro">check_bound!</span>(<span class="ident">format_str</span>, <span class="ident">bound</span>, <span class="ident">old</span>, <span class="ident">j</span>);
+                        <span class="ident">check_bound</span>(<span class="ident">format_str</span>, <span class="ident">bound</span>, <span class="ident">old</span>, <span class="ident">j</span>)<span class="question-mark">?</span>;
 
                         <span class="kw">match</span> <span class="ident">format_str</span>[<span class="ident">j</span>..].<span class="ident">scan_num</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>() {
                             <span class="prelude-val">Some</span>((<span class="ident">value</span>, <span class="ident">offset</span>)) =&gt; {
@@ -1468,7 +1532,7 @@
                             }
                             <span class="prelude-val">None</span> =&gt; <span class="ident">precision</span> <span class="op">=</span> <span class="number">0</span>,
                         }
-                        <span class="macro">check_bound!</span>(<span class="ident">format_str</span>, <span class="ident">bound</span>, <span class="ident">old</span>, <span class="ident">j</span>);
+                        <span class="ident">check_bound</span>(<span class="ident">format_str</span>, <span class="ident">bound</span>, <span class="ident">old</span>, <span class="ident">j</span>)<span class="question-mark">?</span>;
                     }
 
                     <span class="ident">i</span> <span class="op">=</span> <span class="ident">j</span>;

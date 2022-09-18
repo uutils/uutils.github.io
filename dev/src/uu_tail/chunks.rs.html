@@ -702,6 +702,10 @@
 <span id="696">696</span>
 <span id="697">697</span>
 <span id="698">698</span>
+<span id="699">699</span>
+<span id="700">700</span>
+<span id="701">701</span>
+<span id="702">702</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -714,7 +718,7 @@
 <span class="comment">// spell-checker:ignore (ToDO) filehandle BUFSIZ</span>
 <span class="kw">use</span> <span class="ident">std::collections::VecDeque</span>;
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">BufReader</span>, <span class="ident">Read</span>, <span class="ident">Seek</span>, <span class="ident">SeekFrom</span>, <span class="ident">Write</span>};
+<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">BufRead</span>, <span class="ident">Read</span>, <span class="ident">Seek</span>, <span class="ident">SeekFrom</span>, <span class="ident">Write</span>};
 <span class="kw">use</span> <span class="ident">uucore::error::UResult</span>;
 
 <span class="doccomment">/// When reading files in reverse in `bounded_tail`, this is the size of each</span>
@@ -912,7 +916,7 @@
     <span class="doccomment">/// that number of bytes. If EOF is reached (so 0 bytes are read), then returns</span>
     <span class="doccomment">/// [`UResult&lt;None&gt;`] or else the result with [`Some(bytes)`] where bytes is the number of bytes</span>
     <span class="doccomment">/// read from the source.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fill</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">filehandle</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufReader</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Read</span><span class="op">&gt;</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fill</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">filehandle</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <span class="ident">BufRead</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">num_bytes</span> <span class="op">=</span> <span class="ident">filehandle</span>.<span class="ident">read</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">buffer</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="ident">bytes</span> <span class="op">=</span> <span class="ident">num_bytes</span>;
         <span class="kw">if</span> <span class="ident">num_bytes</span> <span class="op">==</span> <span class="number">0</span> {
@@ -987,7 +991,7 @@
     <span class="doccomment">/// let mut chunks = BytesChunkBuffer::new(num_print);</span>
     <span class="doccomment">/// chunks.fill(&amp;mut reader).unwrap();</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fill</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">reader</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufReader</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Read</span><span class="op">&gt;</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fill</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">reader</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <span class="ident">BufRead</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">chunk</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">BytesChunk::new</span>());
 
         <span class="comment">// fill chunks with all bytes from reader and reuse already instantiated chunks if possible</span>
@@ -1026,6 +1030,10 @@
             <span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="ident">chunk</span>.<span class="ident">get_buffer</span>())<span class="question-mark">?</span>;
         }
         <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">has_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
+        <span class="op">!</span><span class="self">self</span>.<span class="ident">chunks</span>.<span class="ident">is_empty</span>()
     }
 }
 
@@ -1156,7 +1164,7 @@
     <span class="doccomment">/// that number of bytes. This function works like the [`BytesChunk::fill`] function besides</span>
     <span class="doccomment">/// that this function also counts and stores the number of lines encountered while reading from</span>
     <span class="doccomment">/// the `filehandle`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fill</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">filehandle</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufReader</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Read</span><span class="op">&gt;</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fill</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">filehandle</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <span class="ident">BufRead</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">chunk</span>.<span class="ident">fill</span>(<span class="ident">filehandle</span>)<span class="question-mark">?</span> {
             <span class="prelude-val">None</span> =&gt; {
                 <span class="self">self</span>.<span class="ident">lines</span> <span class="op">=</span> <span class="number">0</span>;
@@ -1260,7 +1268,7 @@
     <span class="doccomment">/// in sum exactly `self.num_print` lines stored in all chunks. The method returns an iterator</span>
     <span class="doccomment">/// over these chunks. If there are no chunks, for example because the piped stdin contained no</span>
     <span class="doccomment">/// lines, or `num_print = 0` then `iterator.next` will return None.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fill</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">reader</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufReader</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Read</span><span class="op">&gt;</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fill</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">reader</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <span class="ident">BufRead</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">chunk</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">LinesChunk::new</span>(<span class="self">self</span>.<span class="ident">delimiter</span>));
 
         <span class="kw">while</span> (<span class="ident">chunk</span>.<span class="ident">fill</span>(<span class="ident">reader</span>)<span class="question-mark">?</span>).<span class="ident">is_some</span>() {
