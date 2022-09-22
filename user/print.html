@@ -1463,6 +1463,10 @@ chown [OPTION]... --reference=RFILE FILE...
 <dd>
 <p>Colon-separated user and group to switch to. Same as -u USER -g GROUP. Userspec has higher preference than -u and/or -g</p>
 </dd>
+<dt><code>--skip-chdir</code></dt>
+<dd>
+<p>Use this option to not change the working directory to / after changing the root directory to newroot, i.e., inside the chroot.</p>
+</dd>
 <dt></dt>
 <dd>
 </dd>
@@ -2000,9 +2004,9 @@ date [OPTION]... [MMDDhhmm[[CC]YY][.ss]]
 <div class="version">v0.0.15
 </div>
 </div>
-<pre><code>dd [OPTIONS]
+<pre><code>dd [operands]...
 </code></pre>
-<p>copy, and optionally convert, a file system resource</p>
+<p>Copy, and optionally convert, a file system resource</p>
 <h2 id="options-19"><a class="header" href="#options-19">Options</a></h2>
 <dl><dt><code>--help</code>, <code>-h</code></dt>
 <dd>
@@ -2012,65 +2016,8 @@ date [OPTION]... [MMDDhhmm[[CC]YY][.ss]]
 <dd>
 <p>Print version information</p>
 </dd>
-<dt><code>--if=&lt;FILE&gt;</code></dt>
+<dt></dt>
 <dd>
-<p>(alternatively if=FILE) specifies the file used for input. When not specified, stdin is used instead</p>
-</dd>
-<dt><code>--of=&lt;FILE&gt;</code></dt>
-<dd>
-<p>(alternatively of=FILE) specifies the file used for output. When not specified, stdout is used instead</p>
-</dd>
-<dt><code>--ibs=&lt;N&gt;</code></dt>
-<dd>
-<p>(alternatively ibs=N) specifies the size of buffer used for reads (default: 512). Multiplier strings permitted.</p>
-</dd>
-<dt><code>--obs=&lt;N&gt;</code></dt>
-<dd>
-<p>(alternatively obs=N) specifies the size of buffer used for writes (default: 512). Multiplier strings permitted.</p>
-</dd>
-<dt><code>--bs=&lt;N&gt;</code></dt>
-<dd>
-<p>(alternatively bs=N) specifies ibs=N and obs=N (default: 512). If ibs or obs are also specified, bs=N takes precedence. Multiplier strings permitted.</p>
-</dd>
-<dt><code>--cbs=&lt;N&gt;</code></dt>
-<dd>
-<p>(alternatively cbs=BYTES) specifies the 'conversion block size' in bytes. Applies to the conv=block, and conv=unblock operations. Multiplier strings permitted.</p>
-</dd>
-<dt><code>--skip=&lt;N&gt;</code></dt>
-<dd>
-<p>(alternatively skip=N) causes N ibs-sized records of input to be skipped before beginning copy/convert operations. See iflag=count_bytes if skipping N bytes is preferred. Multiplier strings permitted.</p>
-</dd>
-<dt><code>--seek=&lt;N&gt;</code></dt>
-<dd>
-<p>(alternatively seek=N) seeks N obs-sized records into output before beginning copy/convert operations. See oflag=seek_bytes if seeking N bytes is preferred. Multiplier strings permitted.</p>
-</dd>
-<dt><code>--iseek=&lt;N&gt;</code></dt>
-<dd>
-<p>(alternatively iseek=N) seeks N obs-sized records into input before beginning copy/convert operations. See iflag=seek_bytes if seeking N bytes is preferred. Multiplier strings permitted.</p>
-</dd>
-<dt><code>--oseek=&lt;N&gt;</code></dt>
-<dd>
-<p>(alternatively oseek=N) seeks N obs-sized records into output before beginning copy/convert operations. See oflag=seek_bytes if seeking N bytes is preferred. Multiplier strings permitted.</p>
-</dd>
-<dt><code>--count=&lt;N&gt;</code></dt>
-<dd>
-<p>(alternatively count=N) stop reading input after N ibs-sized read operations rather than proceeding until EOF. See iflag=count_bytes if stopping after N bytes is preferred. Multiplier strings permitted.</p>
-</dd>
-<dt><code>--status=&lt;LEVEL&gt;</code></dt>
-<dd>
-<p>(alternatively status=LEVEL) controls whether volume and performance stats are written to stderr.<br /><br />When unspecified, dd will print stats upon completion. An example is below.<br />	6+0 records in<br />	16+0 records out<br />	8192 bytes (8.2 kB, 8.0 KiB) copied, 0.00057009 s, 14.4 MB/s<br />The first two lines are the 'volume' stats and the final line is the 'performance' stats.<br />The volume stats indicate the number of complete and partial ibs-sized reads, or obs-sized writes that took place during the copy. The format of the volume stats is <complete>+<partial>. If records have been truncated (see conv=block), the volume stats will contain the number of truncated records.<br /><br />Permissible LEVEL values are:<br />	 progress: Print periodic performance stats as the copy proceeds.<br />	 noxfer: Print final volume stats, but not performance stats.<br />	 none: Do not print any stats.<br /><br />Printing performance stats is also triggered by the INFO signal (where supported), or the USR1 signal. Setting the POSIXLY_CORRECT environment variable to any value (including an empty value) will cause the USR1 signal to be ignored.<br /><br /></p>
-</dd>
-<dt><code>--conv=&lt;CONV&gt;</code></dt>
-<dd>
-<p>(alternatively conv=CONV[,CONV]) specifies a comma-separated list of conversion options or (for legacy reasons) file flags. Conversion options and file flags may be intermixed.<br /><br />Conversion options:<br />	 One of {ascii, ebcdic, ibm} will perform an encoding conversion.<br />		 'ascii' converts from EBCDIC to ASCII. This is the inverse of the 'ebcdic' option.<br />		 'ebcdic' converts from ASCII to EBCDIC. This is the inverse of the 'ascii' option.<br />		 'ibm' converts from ASCII to EBCDIC, applying the conventions for '[', ']' and '~' specified in POSIX.<br /><br />	 One of {ucase, lcase} will perform a case conversion. Works in conjunction with option {ascii, ebcdic, ibm} to infer input encoding. If no other conversion option is specified, input is assumed to be ascii.<br />		 'ucase' converts from lower-case to upper-case<br />		 'lcase' converts from upper-case to lower-case.<br /><br />	 One of {block, unblock}. Convert between lines terminated by newline characters, and fixed-width lines padded by spaces (without any newlines). Both the 'block' and 'unblock' options require cbs=BYTES be specified.<br />		 'block' for each newline less than the size indicated by cbs=BYTES, remove the newline and pad with spaces up to cbs. Lines longer than cbs are truncated.<br />		 'unblock' for each block of input of the size indicated by cbs=BYTES, remove right-trailing spaces and replace with a newline character.<br /><br />	 'sparse' attempts to seek the output when an obs-sized block consists of only zeros.<br />	 'swab' swaps each adjacent pair of bytes. If an odd number of bytes is present, the final byte is omitted.<br />	 'sync' pad each ibs-sided block with zeros. If 'block' or 'unblock' is specified, pad with spaces instead.<br /><br />Conversion Flags:<br />	 One of {excl, nocreat}<br />		 'excl' the output file must be created. Fail if the output file is already present.<br />		 'nocreat' the output file will not be created. Fail if the output file in not already present.<br />	 'notrunc' the output file will not be truncated. If this option is not present, output will be truncated when opened.<br />	 'noerror' all read errors will be ignored. If this option is not present, dd will only ignore Error::Interrupted.<br />	 'fdatasync' data will be written before finishing.<br />	 'fsync' data and metadata will be written before finishing.<br /><br /></p>
-</dd>
-<dt><code>--iflag=&lt;FLAG&gt;</code></dt>
-<dd>
-<p>(alternatively iflag=FLAG[,FLAG]) a comma separated list of input flags which specify how the input source is treated. FLAG may be any of the input-flags or general-flags specified below.<br /><br />Input-Flags<br />	 'count_bytes' a value to count=N will be interpreted as bytes.<br />	 'skip_bytes' a value to skip=N will be interpreted as bytes.<br />	 'fullblock' wait for ibs bytes from each read. zero-length reads are still considered EOF.<br /><br />General-Flags<br />	 'direct' use direct I/O for data.<br />	 'directory' fail unless the given input (if used as an iflag) or output (if used as an oflag) is a directory.<br />	 'dsync' use synchronized I/O for data.<br />	 'sync' use synchronized I/O for data and metadata.<br />	 'nonblock' use non-blocking I/O.<br />	 'noatime' do not update access time.<br />	 'nocache' request that OS drop cache.<br />	 'noctty' do not assign a controlling tty.<br />	 'nofollow' do not follow system links.<br /><br /></p>
-</dd>
-<dt><code>--oflag=&lt;FLAG&gt;</code></dt>
-<dd>
-<p>(alternatively oflag=FLAG[,FLAG]) a comma separated list of output flags which specify how the output source is treated. FLAG may be any of the output-flags or general-flags specified below.<br /><br />Output-Flags<br />	 'append' open file in append mode. Consider setting conv=notrunc as well.<br />	 'seek_bytes' a value to seek=N will be interpreted as bytes.<br /><br />General-Flags<br />	 'direct' use direct I/O for data.<br />	 'directory' fail unless the given input (if used as an iflag) or output (if used as an oflag) is a directory.<br />	 'dsync' use synchronized I/O for data.<br />	 'sync' use synchronized I/O for data and metadata.<br />	 'nonblock' use non-blocking I/O.<br />	 'noatime' do not update access time.<br />	 'nocache' request that OS drop cache.<br />	 'noctty' do not assign a controlling tty.<br />	 'nofollow' do not follow system links.<br /><br /></p>
 </dd>
 </dl>
 <h2 id="examples-17"><a class="header" href="#examples-17">Examples</a></h2>
