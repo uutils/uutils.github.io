@@ -97,30 +97,6 @@
 <span id="91">91</span>
 <span id="92">92</span>
 <span id="93">93</span>
-<span id="94">94</span>
-<span id="95">95</span>
-<span id="96">96</span>
-<span id="97">97</span>
-<span id="98">98</span>
-<span id="99">99</span>
-<span id="100">100</span>
-<span id="101">101</span>
-<span id="102">102</span>
-<span id="103">103</span>
-<span id="104">104</span>
-<span id="105">105</span>
-<span id="106">106</span>
-<span id="107">107</span>
-<span id="108">108</span>
-<span id="109">109</span>
-<span id="110">110</span>
-<span id="111">111</span>
-<span id="112">112</span>
-<span id="113">113</span>
-<span id="114">114</span>
-<span id="115">115</span>
-<span id="116">116</span>
-<span id="117">117</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Tyler Steele &lt;tyler.steele@protonmail.com&gt;</span>
@@ -140,20 +116,20 @@
 <span class="doccomment">/// certain order. The variants of this enumeration give the different</span>
 <span class="doccomment">/// ways of combining those three operations.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="ident">ConversionMode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">ConvertOnly</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ConversionTable</span>),
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="ident">ConversionMode</span> {
+    <span class="ident">ConvertOnly</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">ConversionTable</span>),
     <span class="ident">BlockOnly</span>(<span class="ident">Cbs</span>, <span class="ident">bool</span>),
     <span class="ident">UnblockOnly</span>(<span class="ident">Cbs</span>),
-    <span class="ident">BlockThenConvert</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ConversionTable</span>, <span class="ident">Cbs</span>, <span class="ident">bool</span>),
-    <span class="ident">ConvertThenBlock</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ConversionTable</span>, <span class="ident">Cbs</span>, <span class="ident">bool</span>),
-    <span class="ident">UnblockThenConvert</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ConversionTable</span>, <span class="ident">Cbs</span>),
-    <span class="ident">ConvertThenUnblock</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ConversionTable</span>, <span class="ident">Cbs</span>),
+    <span class="ident">BlockThenConvert</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">ConversionTable</span>, <span class="ident">Cbs</span>, <span class="ident">bool</span>),
+    <span class="ident">ConvertThenBlock</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">ConversionTable</span>, <span class="ident">Cbs</span>, <span class="ident">bool</span>),
+    <span class="ident">UnblockThenConvert</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">ConversionTable</span>, <span class="ident">Cbs</span>),
+    <span class="ident">ConvertThenUnblock</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">ConversionTable</span>, <span class="ident">Cbs</span>),
 }
 
 <span class="doccomment">/// Stores all Conv Flags that apply to the input</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">IConvFlags</span> {
-    <span class="kw">pub</span> <span class="ident">mode</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ConversionMode</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">mode</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ConversionMode</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">swab</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span> <span class="ident">sync</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">noerror</span>: <span class="ident">bool</span>,
@@ -211,32 +187,8 @@
     <span class="kw">pub</span> <span class="ident">seek_bytes</span>: <span class="ident">bool</span>,
 }
 
-<span class="doccomment">/// The value of count=N</span>
-<span class="doccomment">/// Defaults to Reads(N)</span>
-<span class="doccomment">/// if iflag=count_bytes</span>
-<span class="doccomment">/// then becomes Bytes(N)</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">CountType</span> {
-    <span class="ident">Reads</span>(<span class="ident">u64</span>),
-    <span class="ident">Bytes</span>(<span class="ident">u64</span>),
-}
-
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">options</span> {
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">INFILE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;if&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">OUTFILE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;of&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IBS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;ibs&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">OBS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;obs&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">BS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;bs&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">CBS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;cbs&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">COUNT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;count&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SKIP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;skip&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SEEK</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;seek&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ISEEK</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;iseek&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">OSEEK</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;oseek&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">STATUS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;status&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">CONV</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;conv&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFLAG</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;iflag&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">OFLAG</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;oflag&quot;</span>;
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">OPERANDS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;operands&quot;</span>;
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_dd" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
