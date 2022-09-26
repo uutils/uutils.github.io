@@ -1859,6 +1859,24 @@
 <span id="1859">1859</span>
 <span id="1860">1860</span>
 <span id="1861">1861</span>
+<span id="1862">1862</span>
+<span id="1863">1863</span>
+<span id="1864">1864</span>
+<span id="1865">1865</span>
+<span id="1866">1866</span>
+<span id="1867">1867</span>
+<span id="1868">1868</span>
+<span id="1869">1869</span>
+<span id="1870">1870</span>
+<span id="1871">1871</span>
+<span id="1872">1872</span>
+<span id="1873">1873</span>
+<span id="1874">1874</span>
+<span id="1875">1875</span>
+<span id="1876">1876</span>
+<span id="1877">1877</span>
+<span id="1878">1878</span>
+<span id="1879">1879</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::missing_safety_doc</span>)]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::extra_unused_lifetimes</span>)]</span>
 
@@ -1908,7 +1926,7 @@
 <span class="kw">use</span> <span class="ident">std::string::ToString</span>;
 <span class="kw">use</span> <span class="ident">uucore::backup_control</span>::{<span class="self">self</span>, <span class="ident">BackupMode</span>};
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">set_exit_code</span>, <span class="ident">UClapError</span>, <span class="ident">UError</span>, <span class="ident">UResult</span>, <span class="ident">UUsageError</span>};
-<span class="kw">use</span> <span class="ident">uucore::fs</span>::{<span class="ident">canonicalize</span>, <span class="ident">is_symlink</span>, <span class="ident">MissingHandling</span>, <span class="ident">ResolveMode</span>};
+<span class="kw">use</span> <span class="ident">uucore::fs</span>::{<span class="ident">canonicalize</span>, <span class="ident">MissingHandling</span>, <span class="ident">ResolveMode</span>};
 <span class="kw">use</span> <span class="ident">walkdir::WalkDir</span>;
 
 <span class="macro">quick_error!</span> {
@@ -2068,6 +2086,7 @@
     <span class="ident">attributes_only</span>: <span class="ident">bool</span>,
     <span class="ident">backup</span>: <span class="ident">BackupMode</span>,
     <span class="ident">copy_contents</span>: <span class="ident">bool</span>,
+    <span class="ident">cli_dereference</span>: <span class="ident">bool</span>,
     <span class="ident">copy_mode</span>: <span class="ident">CopyMode</span>,
     <span class="ident">dereference</span>: <span class="ident">bool</span>,
     <span class="ident">no_target_dir</span>: <span class="ident">bool</span>,
@@ -2358,6 +2377,11 @@
                 .<span class="ident">help</span>(<span class="string">&quot;always follow symbolic links in SOURCE&quot;</span>),
         )
         .<span class="ident">arg</span>(
+            <span class="ident">Arg::new</span>(<span class="ident">options::CLI_SYMBOLIC_LINKS</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;H&#39;</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;follow command-line symbolic links in SOURCE&quot;</span>),
+        )
+        .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ARCHIVE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;a&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::ARCHIVE</span>)
@@ -2403,11 +2427,6 @@
                     <span class="string">&quot;NotImplemented: set SELinux security context of destination file to \
                     default type&quot;</span>,
                 ),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::CLI_SYMBOLIC_LINKS</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;H&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;NotImplemented: follow command-line symbolic links in SOURCE&quot;</span>),
         )
         <span class="comment">// END TODO</span>
         .<span class="ident">arg</span>(
@@ -2621,6 +2640,7 @@
         <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="self">Self</span> {
             <span class="ident">attributes_only</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ATTRIBUTES_ONLY</span>),
             <span class="ident">copy_contents</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::COPY_CONTENTS</span>),
+            <span class="ident">cli_dereference</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::CLI_SYMBOLIC_LINKS</span>),
             <span class="ident">copy_mode</span>: <span class="ident">CopyMode::from_matches</span>(<span class="ident">matches</span>),
             <span class="comment">// No dereference is set with -p, -d and --archive</span>
             <span class="ident">dereference</span>: <span class="op">!</span>(<span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_DEREFERENCE</span>)
@@ -2683,6 +2703,10 @@
         };
 
         <span class="prelude-val">Ok</span>(<span class="ident">options</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">dereference</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">in_command_line</span>: <span class="ident">bool</span>) -&gt; <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">dereference</span> <span class="op">|</span><span class="op">|</span> (<span class="ident">in_command_line</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">cli_dereference</span>)
     }
 }
 
@@ -2878,11 +2902,11 @@
     <span class="kw">let</span> <span class="ident">source_path</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>);
     <span class="kw">if</span> <span class="ident">source_path</span>.<span class="ident">is_dir</span>() {
         <span class="comment">// Copy as directory</span>
-        <span class="ident">copy_directory</span>(<span class="ident">source</span>, <span class="ident">target</span>, <span class="ident">options</span>, <span class="ident">symlinked_files</span>)
+        <span class="ident">copy_directory</span>(<span class="ident">source</span>, <span class="ident">target</span>, <span class="ident">options</span>, <span class="ident">symlinked_files</span>, <span class="bool-val">true</span>)
     } <span class="kw">else</span> {
         <span class="comment">// Copy as file</span>
         <span class="kw">let</span> <span class="ident">dest</span> <span class="op">=</span> <span class="ident">construct_dest_path</span>(<span class="ident">source_path</span>, <span class="ident">target</span>, <span class="ident">target_type</span>, <span class="ident">options</span>)<span class="question-mark">?</span>;
-        <span class="ident">copy_file</span>(<span class="ident">source_path</span>, <span class="ident">dest</span>.<span class="ident">as_path</span>(), <span class="ident">options</span>, <span class="ident">symlinked_files</span>)
+        <span class="ident">copy_file</span>(<span class="ident">source_path</span>, <span class="ident">dest</span>.<span class="ident">as_path</span>(), <span class="ident">options</span>, <span class="ident">symlinked_files</span>, <span class="bool-val">true</span>)
     }
 }
 
@@ -2917,14 +2941,21 @@
     <span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="ident">TargetSlice</span>,
     <span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">Options</span>,
     <span class="ident">symlinked_files</span>: <span class="kw-2">&amp;mut</span> <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">FileInformation</span><span class="op">&gt;</span>,
+    <span class="ident">source_in_command_line</span>: <span class="ident">bool</span>,
 ) -&gt; <span class="ident">CopyResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">recursive</span> {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;omitting directory {}&quot;</span>, <span class="ident">root</span>.<span class="ident">quote</span>()).<span class="ident">into</span>());
     }
 
     <span class="comment">// if no-dereference is enabled and this is a symlink, copy it as a file</span>
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">dereference</span> <span class="op">&amp;&amp;</span> <span class="ident">is_symlink</span>(<span class="ident">root</span>) {
-        <span class="kw">return</span> <span class="ident">copy_file</span>(<span class="ident">root</span>, <span class="ident">target</span>, <span class="ident">options</span>, <span class="ident">symlinked_files</span>);
+    <span class="kw">if</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">dereference</span>(<span class="ident">source_in_command_line</span>) <span class="op">&amp;&amp;</span> <span class="ident">root</span>.<span class="ident">is_symlink</span>() {
+        <span class="kw">return</span> <span class="ident">copy_file</span>(
+            <span class="ident">root</span>,
+            <span class="ident">target</span>,
+            <span class="ident">options</span>,
+            <span class="ident">symlinked_files</span>,
+            <span class="ident">source_in_command_line</span>,
+        );
     }
 
     <span class="comment">// check if root is a prefix of target</span>
@@ -2989,7 +3020,7 @@
         };
 
         <span class="kw">let</span> <span class="ident">local_to_target</span> <span class="op">=</span> <span class="ident">target</span>.<span class="ident">join</span>(<span class="kw-2">&amp;</span><span class="ident">local_to_root_parent</span>);
-        <span class="kw">if</span> <span class="ident">is_symlink</span>(<span class="ident">p</span>.<span class="ident">path</span>()) <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">dereference</span> {
+        <span class="kw">if</span> <span class="ident">p</span>.<span class="ident">path</span>().<span class="ident">is_symlink</span>() <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">dereference</span> {
             <span class="ident">copy_link</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="kw-2">&amp;</span><span class="ident">local_to_target</span>, <span class="ident">symlinked_files</span>)<span class="question-mark">?</span>;
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">path</span>.<span class="ident">is_dir</span>() <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">local_to_target</span>.<span class="ident">exists</span>() {
             <span class="kw">if</span> <span class="ident">target</span>.<span class="ident">is_file</span>() {
@@ -3008,10 +3039,11 @@
                         <span class="ident">local_to_target</span>.<span class="ident">as_path</span>(),
                         <span class="ident">options</span>,
                         <span class="ident">symlinked_files</span>,
+                        <span class="bool-val">false</span>,
                     ) {
                         <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
                         <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
-                            <span class="kw">if</span> <span class="ident">is_symlink</span>(<span class="ident">source</span>) {
+                            <span class="kw">if</span> <span class="ident">source</span>.<span class="ident">is_symlink</span>() {
                                 <span class="comment">// silent the error with a symlink</span>
                                 <span class="comment">// In case we do --archive, we might copy the symlink</span>
                                 <span class="comment">// before the file itself</span>
@@ -3028,6 +3060,7 @@
                     <span class="ident">local_to_target</span>.<span class="ident">as_path</span>(),
                     <span class="ident">options</span>,
                     <span class="ident">symlinked_files</span>,
+                    <span class="bool-val">false</span>,
                 )<span class="question-mark">?</span>;
             }
         }
@@ -3065,7 +3098,7 @@
             <span class="comment">// permissions of a symbolic link. In that case, we just</span>
             <span class="comment">// do nothing, since every symbolic link has the same</span>
             <span class="comment">// permissions.</span>
-            <span class="kw">if</span> <span class="op">!</span><span class="ident">is_symlink</span>(<span class="ident">dest</span>) {
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">dest</span>.<span class="ident">is_symlink</span>() {
                 <span class="ident">fs::set_permissions</span>(<span class="ident">dest</span>, <span class="ident">source_metadata</span>.<span class="ident">permissions</span>()).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
                 <span class="comment">// FIXME: Implement this for windows as well</span>
                 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;feat_acl&quot;</span>)]</span>
@@ -3100,7 +3133,7 @@
         <span class="ident">Attribute::Timestamps</span> =&gt; {
             <span class="kw">let</span> <span class="ident">atime</span> <span class="op">=</span> <span class="ident">FileTime::from_last_access_time</span>(<span class="kw-2">&amp;</span><span class="ident">source_metadata</span>);
             <span class="kw">let</span> <span class="ident">mtime</span> <span class="op">=</span> <span class="ident">FileTime::from_last_modification_time</span>(<span class="kw-2">&amp;</span><span class="ident">source_metadata</span>);
-            <span class="kw">if</span> <span class="ident">is_symlink</span>(<span class="ident">dest</span>) {
+            <span class="kw">if</span> <span class="ident">dest</span>.<span class="ident">is_symlink</span>() {
                 <span class="ident">filetime::set_symlink_file_times</span>(<span class="ident">dest</span>, <span class="ident">atime</span>, <span class="ident">mtime</span>)<span class="question-mark">?</span>;
             } <span class="kw">else</span> {
                 <span class="ident">filetime::set_file_times</span>(<span class="ident">dest</span>, <span class="ident">atime</span>, <span class="ident">mtime</span>)<span class="question-mark">?</span>;
@@ -3177,8 +3210,14 @@
     <span class="prelude-val">Ok</span>(<span class="ident">backup_path</span>.<span class="ident">into</span>())
 }
 
-<span class="kw">fn</span> <span class="ident">handle_existing_dest</span>(<span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">dest</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">Options</span>) -&gt; <span class="ident">CopyResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">dereference_to_compare</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">dereference</span> <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">is_symlink</span>(<span class="ident">source</span>);
+<span class="kw">fn</span> <span class="ident">handle_existing_dest</span>(
+    <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
+    <span class="ident">dest</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
+    <span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">Options</span>,
+    <span class="ident">source_in_command_line</span>: <span class="ident">bool</span>,
+) -&gt; <span class="ident">CopyResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">dereference_to_compare</span> <span class="op">=</span>
+        <span class="ident">options</span>.<span class="ident">dereference</span>(<span class="ident">source_in_command_line</span>) <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">source</span>.<span class="ident">is_symlink</span>();
     <span class="kw">if</span> <span class="ident">paths_refer_to_same_file</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">dereference_to_compare</span>) {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;{}: same file&quot;</span>, <span class="ident">context_for</span>(<span class="ident">source</span>, <span class="ident">dest</span>)).<span class="ident">into</span>());
     }
@@ -3230,13 +3269,14 @@
     <span class="ident">dest</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
     <span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">Options</span>,
     <span class="ident">symlinked_files</span>: <span class="kw-2">&amp;mut</span> <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">FileInformation</span><span class="op">&gt;</span>,
+    <span class="ident">source_in_command_line</span>: <span class="ident">bool</span>,
 ) -&gt; <span class="ident">CopyResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="ident">dest</span>.<span class="ident">exists</span>() {
-        <span class="ident">handle_existing_dest</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">options</span>)<span class="question-mark">?</span>;
+        <span class="ident">handle_existing_dest</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">options</span>, <span class="ident">source_in_command_line</span>)<span class="question-mark">?</span>;
     }
 
     <span class="comment">// Fail if dest is a dangling symlink or a symlink this program created previously</span>
-    <span class="kw">if</span> <span class="ident">is_symlink</span>(<span class="ident">dest</span>) {
+    <span class="kw">if</span> <span class="ident">dest</span>.<span class="ident">is_symlink</span>() {
         <span class="kw">if</span> <span class="ident">FileInformation::from_path</span>(<span class="ident">dest</span>, <span class="bool-val">false</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">info</span><span class="op">|</span> <span class="ident">symlinked_files</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">info</span>))
             .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
@@ -3247,7 +3287,7 @@
                 <span class="ident">dest</span>.<span class="ident">display</span>()
             )));
         }
-        <span class="kw">let</span> <span class="ident">copy_contents</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">dereference</span> <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">is_symlink</span>(<span class="ident">source</span>);
+        <span class="kw">let</span> <span class="ident">copy_contents</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">dereference</span>(<span class="ident">source_in_command_line</span>) <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">source</span>.<span class="ident">is_symlink</span>();
         <span class="kw">if</span> <span class="ident">copy_contents</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">dest</span>.<span class="ident">exists</span>() {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::Error</span>(<span class="macro">format!</span>(
                 <span class="string">&quot;not writing through dangling symlink &#39;{}&#39;&quot;</span>,
@@ -3264,14 +3304,15 @@
     <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">context_for</span>(<span class="ident">source</span>, <span class="ident">dest</span>);
     <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">context</span>.<span class="ident">as_str</span>();
 
-    <span class="comment">// canonicalize dest and source so that later steps can work with the paths directly</span>
-    <span class="kw">let</span> <span class="ident">source</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">dereference</span> {
-        <span class="ident">canonicalize</span>(<span class="ident">source</span>, <span class="ident">MissingHandling::Missing</span>, <span class="ident">ResolveMode::Physical</span>).<span class="ident">unwrap</span>()
-    } <span class="kw">else</span> {
-        <span class="ident">source</span>.<span class="ident">to_owned</span>()
+    <span class="kw">let</span> <span class="ident">source_metadata</span> <span class="op">=</span> {
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">dereference</span>(<span class="ident">source_in_command_line</span>) {
+            <span class="ident">fs::metadata</span>(<span class="ident">source</span>)
+        } <span class="kw">else</span> {
+            <span class="ident">fs::symlink_metadata</span>(<span class="ident">source</span>)
+        };
+        <span class="ident">result</span>.<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>
     };
-
-    <span class="kw">let</span> <span class="ident">source_file_type</span> <span class="op">=</span> <span class="ident">fs::symlink_metadata</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>.<span class="ident">file_type</span>();
+    <span class="kw">let</span> <span class="ident">source_file_type</span> <span class="op">=</span> <span class="ident">source_metadata</span>.<span class="ident">file_type</span>();
     <span class="kw">let</span> <span class="ident">source_is_symlink</span> <span class="op">=</span> <span class="ident">source_file_type</span>.<span class="ident">is_symlink</span>();
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
@@ -3279,21 +3320,11 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">unix</span>))]</span>
     <span class="kw">let</span> <span class="ident">source_is_fifo</span> <span class="op">=</span> <span class="bool-val">false</span>;
 
-    <span class="kw">let</span> <span class="ident">dest_already_exists_as_symlink</span> <span class="op">=</span> <span class="ident">is_symlink</span>(<span class="ident">dest</span>);
-
-    <span class="kw">let</span> <span class="ident">dest</span> <span class="op">=</span> <span class="kw">if</span> <span class="op">!</span>(<span class="ident">source_is_symlink</span> <span class="op">&amp;&amp;</span> <span class="ident">dest_already_exists_as_symlink</span>) {
-        <span class="ident">canonicalize</span>(<span class="ident">dest</span>, <span class="ident">MissingHandling::Missing</span>, <span class="ident">ResolveMode::Physical</span>).<span class="ident">unwrap</span>()
-    } <span class="kw">else</span> {
-        <span class="comment">// Don&#39;t canonicalize a symlink copied over another symlink, because</span>
-        <span class="comment">// then we&#39;ll end up overwriting the destination&#39;s target.</span>
-        <span class="ident">dest</span>.<span class="ident">to_path_buf</span>()
-    };
-
     <span class="kw">let</span> <span class="ident">dest_permissions</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">dest</span>.<span class="ident">exists</span>() {
         <span class="ident">dest</span>.<span class="ident">symlink_metadata</span>().<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>.<span class="ident">permissions</span>()
     } <span class="kw">else</span> {
         <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_mut</span>)]</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">permissions</span> <span class="op">=</span> <span class="ident">source</span>.<span class="ident">symlink_metadata</span>().<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>.<span class="ident">permissions</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">permissions</span> <span class="op">=</span> <span class="ident">source_metadata</span>.<span class="ident">permissions</span>();
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
         {
             <span class="kw">use</span> <span class="ident">uucore::mode::get_umask</span>;
@@ -3316,19 +3347,25 @@
         <span class="ident">CopyMode::Link</span> =&gt; {
             <span class="kw">if</span> <span class="ident">dest</span>.<span class="ident">exists</span>() {
                 <span class="kw">let</span> <span class="ident">backup_path</span> <span class="op">=</span>
-                    <span class="ident">backup_control::get_backup_path</span>(<span class="ident">options</span>.<span class="ident">backup</span>, <span class="kw-2">&amp;</span><span class="ident">dest</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>.<span class="ident">backup_suffix</span>);
+                    <span class="ident">backup_control::get_backup_path</span>(<span class="ident">options</span>.<span class="ident">backup</span>, <span class="ident">dest</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>.<span class="ident">backup_suffix</span>);
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">backup_path</span>) <span class="op">=</span> <span class="ident">backup_path</span> {
-                    <span class="ident">backup_dest</span>(<span class="kw-2">&amp;</span><span class="ident">dest</span>, <span class="kw-2">&amp;</span><span class="ident">backup_path</span>)<span class="question-mark">?</span>;
-                    <span class="ident">fs::remove_file</span>(<span class="kw-2">&amp;</span><span class="ident">dest</span>)<span class="question-mark">?</span>;
+                    <span class="ident">backup_dest</span>(<span class="ident">dest</span>, <span class="kw-2">&amp;</span><span class="ident">backup_path</span>)<span class="question-mark">?</span>;
+                    <span class="ident">fs::remove_file</span>(<span class="ident">dest</span>)<span class="question-mark">?</span>;
                 }
             }
-
-            <span class="ident">fs::hard_link</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>, <span class="kw-2">&amp;</span><span class="ident">dest</span>).<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
+            <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">dereference</span>(<span class="ident">source_in_command_line</span>) <span class="op">&amp;&amp;</span> <span class="ident">source</span>.<span class="ident">is_symlink</span>() {
+                <span class="kw">let</span> <span class="ident">resolved</span> <span class="op">=</span>
+                    <span class="ident">canonicalize</span>(<span class="ident">source</span>, <span class="ident">MissingHandling::Missing</span>, <span class="ident">ResolveMode::Physical</span>).<span class="ident">unwrap</span>();
+                <span class="ident">fs::hard_link</span>(<span class="ident">resolved</span>, <span class="ident">dest</span>)
+            } <span class="kw">else</span> {
+                <span class="ident">fs::hard_link</span>(<span class="ident">source</span>, <span class="ident">dest</span>)
+            }
+            .<span class="ident">context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
         }
         <span class="ident">CopyMode::Copy</span> =&gt; {
             <span class="ident">copy_helper</span>(
-                <span class="kw-2">&amp;</span><span class="ident">source</span>,
-                <span class="kw-2">&amp;</span><span class="ident">dest</span>,
+                <span class="ident">source</span>,
+                <span class="ident">dest</span>,
                 <span class="ident">options</span>,
                 <span class="ident">context</span>,
                 <span class="ident">source_is_symlink</span>,
@@ -3337,21 +3374,20 @@
             )<span class="question-mark">?</span>;
         }
         <span class="ident">CopyMode::SymLink</span> =&gt; {
-            <span class="ident">symlink_file</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>, <span class="kw-2">&amp;</span><span class="ident">dest</span>, <span class="ident">context</span>, <span class="ident">symlinked_files</span>)<span class="question-mark">?</span>;
+            <span class="ident">symlink_file</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">context</span>, <span class="ident">symlinked_files</span>)<span class="question-mark">?</span>;
         }
         <span class="ident">CopyMode::Update</span> =&gt; {
             <span class="kw">if</span> <span class="ident">dest</span>.<span class="ident">exists</span>() {
-                <span class="kw">let</span> <span class="ident">src_metadata</span> <span class="op">=</span> <span class="ident">fs::symlink_metadata</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">dest_metadata</span> <span class="op">=</span> <span class="ident">fs::symlink_metadata</span>(<span class="kw-2">&amp;</span><span class="ident">dest</span>)<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">dest_metadata</span> <span class="op">=</span> <span class="ident">fs::symlink_metadata</span>(<span class="ident">dest</span>)<span class="question-mark">?</span>;
 
-                <span class="kw">let</span> <span class="ident">src_time</span> <span class="op">=</span> <span class="ident">src_metadata</span>.<span class="ident">modified</span>()<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">src_time</span> <span class="op">=</span> <span class="ident">source_metadata</span>.<span class="ident">modified</span>()<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">dest_time</span> <span class="op">=</span> <span class="ident">dest_metadata</span>.<span class="ident">modified</span>()<span class="question-mark">?</span>;
                 <span class="kw">if</span> <span class="ident">src_time</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">dest_time</span> {
                     <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
                 } <span class="kw">else</span> {
                     <span class="ident">copy_helper</span>(
-                        <span class="kw-2">&amp;</span><span class="ident">source</span>,
-                        <span class="kw-2">&amp;</span><span class="ident">dest</span>,
+                        <span class="ident">source</span>,
+                        <span class="ident">dest</span>,
                         <span class="ident">options</span>,
                         <span class="ident">context</span>,
                         <span class="ident">source_is_symlink</span>,
@@ -3361,8 +3397,8 @@
                 }
             } <span class="kw">else</span> {
                 <span class="ident">copy_helper</span>(
-                    <span class="kw-2">&amp;</span><span class="ident">source</span>,
-                    <span class="kw-2">&amp;</span><span class="ident">dest</span>,
+                    <span class="ident">source</span>,
+                    <span class="ident">dest</span>,
                     <span class="ident">options</span>,
                     <span class="ident">context</span>,
                     <span class="ident">source_is_symlink</span>,
@@ -3382,17 +3418,17 @@
     };
 
     <span class="comment">// TODO: implement something similar to gnu&#39;s lchown</span>
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">is_symlink</span>(<span class="kw-2">&amp;</span><span class="ident">dest</span>) {
+    <span class="kw">if</span> <span class="op">!</span><span class="ident">dest</span>.<span class="ident">is_symlink</span>() {
         <span class="comment">// Here, to match GNU semantics, we quietly ignore an error</span>
         <span class="comment">// if a user does not have the correct ownership to modify</span>
         <span class="comment">// the permissions of a file.</span>
         <span class="comment">//</span>
         <span class="comment">// FWIW, the OS will throw an error later, on the write op, if</span>
         <span class="comment">// the user does not have permission to write to the file.</span>
-        <span class="ident">fs::set_permissions</span>(<span class="kw-2">&amp;</span><span class="ident">dest</span>, <span class="ident">dest_permissions</span>).<span class="ident">ok</span>();
+        <span class="ident">fs::set_permissions</span>(<span class="ident">dest</span>, <span class="ident">dest_permissions</span>).<span class="ident">ok</span>();
     }
     <span class="kw">for</span> <span class="ident">attribute</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">options</span>.<span class="ident">preserve_attributes</span> {
-        <span class="ident">copy_attribute</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>, <span class="kw-2">&amp;</span><span class="ident">dest</span>, <span class="ident">attribute</span>)<span class="question-mark">?</span>;
+        <span class="ident">copy_attribute</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">attribute</span>)<span class="question-mark">?</span>;
     }
     <span class="prelude-val">Ok</span>(())
 }
@@ -3491,7 +3527,7 @@
     } <span class="kw">else</span> {
         <span class="comment">// we always need to remove the file to be able to create a symlink,</span>
         <span class="comment">// even if it is writeable.</span>
-        <span class="kw">if</span> <span class="ident">is_symlink</span>(<span class="ident">dest</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">dest</span>.<span class="ident">is_file</span>() {
+        <span class="kw">if</span> <span class="ident">dest</span>.<span class="ident">is_symlink</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">dest</span>.<span class="ident">is_file</span>() {
             <span class="ident">fs::remove_file</span>(<span class="ident">dest</span>)<span class="question-mark">?</span>;
         }
         <span class="ident">dest</span>.<span class="ident">into</span>()

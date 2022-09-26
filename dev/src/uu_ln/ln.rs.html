@@ -515,7 +515,7 @@
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UError</span>, <span class="ident">UResult</span>};
 <span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
-<span class="kw">use</span> <span class="ident">uucore::fs</span>::{<span class="ident">is_symlink</span>, <span class="ident">make_path_relative_to</span>, <span class="ident">paths_refer_to_same_file</span>};
+<span class="kw">use</span> <span class="ident">uucore::fs</span>::{<span class="ident">make_path_relative_to</span>, <span class="ident">paths_refer_to_same_file</span>};
 
 <span class="kw">use</span> <span class="ident">std::borrow::Cow</span>;
 <span class="kw">use</span> <span class="ident">std::error::Error</span>;
@@ -819,7 +819,7 @@
             <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">no_dereference</span> <span class="op">&amp;&amp;</span> <span class="macro">matches!</span>(<span class="ident">settings</span>.<span class="ident">overwrite</span>, <span class="ident">OverwriteMode::Force</span>) {
                 <span class="comment">// In that case, we don&#39;t want to do link resolution</span>
                 <span class="comment">// We need to clean the target</span>
-                <span class="kw">if</span> <span class="ident">is_symlink</span>(<span class="ident">target_dir</span>) {
+                <span class="kw">if</span> <span class="ident">target_dir</span>.<span class="ident">is_symlink</span>() {
                     <span class="kw">if</span> <span class="ident">target_dir</span>.<span class="ident">is_file</span>() {
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">fs::remove_file</span>(<span class="ident">target_dir</span>) {
                             <span class="macro">show_error!</span>(<span class="string">&quot;Could not update {}: {}&quot;</span>, <span class="ident">target_dir</span>.<span class="ident">quote</span>(), <span class="ident">e</span>);
@@ -888,7 +888,7 @@
         <span class="ident">src</span>.<span class="ident">into</span>()
     };
 
-    <span class="kw">if</span> <span class="ident">is_symlink</span>(<span class="ident">dst</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">dst</span>.<span class="ident">exists</span>() {
+    <span class="kw">if</span> <span class="ident">dst</span>.<span class="ident">is_symlink</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">dst</span>.<span class="ident">exists</span>() {
         <span class="ident">backup_path</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">settings</span>.<span class="ident">backup</span> {
             <span class="ident">BackupMode::NoBackup</span> =&gt; <span class="prelude-val">None</span>,
             <span class="ident">BackupMode::SimpleBackup</span> =&gt; <span class="prelude-val">Some</span>(<span class="ident">simple_backup_path</span>(<span class="ident">dst</span>, <span class="kw-2">&amp;</span><span class="ident">settings</span>.<span class="ident">suffix</span>)),
@@ -916,7 +916,7 @@
                 <span class="comment">// In case of error, don&#39;t do anything</span>
             }
             <span class="ident">OverwriteMode::Force</span> =&gt; {
-                <span class="kw">if</span> <span class="op">!</span><span class="ident">is_symlink</span>(<span class="ident">dst</span>) <span class="op">&amp;&amp;</span> <span class="ident">paths_refer_to_same_file</span>(<span class="ident">src</span>, <span class="ident">dst</span>, <span class="bool-val">true</span>) {
+                <span class="kw">if</span> <span class="op">!</span><span class="ident">dst</span>.<span class="ident">is_symlink</span>() <span class="op">&amp;&amp;</span> <span class="ident">paths_refer_to_same_file</span>(<span class="ident">src</span>, <span class="ident">dst</span>, <span class="bool-val">true</span>) {
                     <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">LnError::SameFile</span>(<span class="ident">src</span>.<span class="ident">to_owned</span>(), <span class="ident">dst</span>.<span class="ident">to_owned</span>()).<span class="ident">into</span>());
                 }
                 <span class="kw">if</span> <span class="ident">fs::remove_file</span>(<span class="ident">dst</span>).<span class="ident">is_ok</span>() {};
@@ -928,7 +928,7 @@
     <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">symbolic</span> {
         <span class="ident">symlink</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>, <span class="ident">dst</span>)<span class="question-mark">?</span>;
     } <span class="kw">else</span> {
-        <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">logical</span> <span class="op">&amp;&amp;</span> <span class="ident">is_symlink</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>) {
+        <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">logical</span> <span class="op">&amp;&amp;</span> <span class="ident">source</span>.<span class="ident">is_symlink</span>() {
             <span class="comment">// if we want to have an hard link,</span>
             <span class="comment">// source is a symlink and -L is passed</span>
             <span class="comment">// we want to resolve the symlink to create the hardlink</span>

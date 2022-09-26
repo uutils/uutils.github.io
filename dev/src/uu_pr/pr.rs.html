@@ -1256,27 +1256,6 @@
 <span id="1256">1256</span>
 <span id="1257">1257</span>
 <span id="1258">1258</span>
-<span id="1259">1259</span>
-<span id="1260">1260</span>
-<span id="1261">1261</span>
-<span id="1262">1262</span>
-<span id="1263">1263</span>
-<span id="1264">1264</span>
-<span id="1265">1265</span>
-<span id="1266">1266</span>
-<span id="1267">1267</span>
-<span id="1268">1268</span>
-<span id="1269">1269</span>
-<span id="1270">1270</span>
-<span id="1271">1271</span>
-<span id="1272">1272</span>
-<span id="1273">1273</span>
-<span id="1274">1274</span>
-<span id="1275">1275</span>
-<span id="1276">1276</span>
-<span id="1277">1277</span>
-<span id="1278">1278</span>
-<span id="1279">1279</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// For the full copyright and license information, please view the LICENSE file</span>
@@ -1288,7 +1267,7 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">quick_error</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">AppSettings</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">itertools::Itertools</span>;
 <span class="kw">use</span> <span class="ident">quick_error::ResultExt</span>;
 <span class="kw">use</span> <span class="ident">regex::Regex</span>;
@@ -1301,9 +1280,8 @@
 <span class="kw">use</span> <span class="ident">time::OffsetDateTime</span>;
 
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
-<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">set_exit_code</span>, <span class="ident">UResult</span>};
+<span class="kw">use</span> <span class="ident">uucore::error::UResult</span>;
 
-<span class="kw">const</span> <span class="ident">VERSION</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_VERSION&quot;</span>);
 <span class="kw">const</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span>
     <span class="string">&quot;Write content of given file or standard input to standard output with pagination filter&quot;</span>;
 <span class="kw">const</span> <span class="ident">AFTER_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span>
@@ -1364,7 +1342,6 @@ Lines are not truncated under single column output.&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">INDENT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;indent&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">JOIN_LINES</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;join-lines&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;help&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VERSION</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;version&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FILES</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;files&quot;</span>;
 }
 
@@ -1475,13 +1452,11 @@ Lines are not truncated under single column output.&quot;</span>;
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
-        .<span class="ident">version</span>(<span class="ident">VERSION</span>)
+        .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
         .<span class="ident">after_help</span>(<span class="ident">AFTER_HELP</span>)
         .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
         .<span class="ident">args_override_self</span>(<span class="bool-val">true</span>)
-        .<span class="ident">setting</span>(<span class="ident">AppSettings::NoAutoHelp</span>)
-        .<span class="ident">setting</span>(<span class="ident">AppSettings::NoAutoVersion</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::PAGES</span>)
                 .<span class="ident">long</span>(<span class="ident">options::PAGES</span>)
@@ -1641,13 +1616,7 @@ Lines are not truncated under single column output.&quot;</span>;
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::HELP</span>)
                 .<span class="ident">long</span>(<span class="ident">options::HELP</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Show this help message&quot;</span>)
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::VERSION</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;V&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::VERSION</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Show version information&quot;</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;Print help information&quot;</span>)
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FILES</span>)
@@ -1668,20 +1637,9 @@ Lines are not truncated under single column output.&quot;</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">m</span>) =&gt; <span class="ident">m</span>,
         <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
             <span class="ident">e</span>.<span class="ident">print</span>()<span class="question-mark">?</span>;
-            <span class="ident">set_exit_code</span>(<span class="number">1</span>);
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
         }
     };
-
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::VERSION</span>) {
-        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">command</span>.<span class="ident">render_long_version</span>());
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
-    }
-
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::HELP</span>) {
-        <span class="ident">command</span>.<span class="ident">print_help</span>()<span class="question-mark">?</span>;
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
-    }
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">files</span> <span class="op">=</span> <span class="ident">matches</span>
         .<span class="ident">get_many</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::FILES</span>)
