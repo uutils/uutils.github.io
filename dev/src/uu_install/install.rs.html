@@ -834,6 +834,17 @@
 <span id="834">834</span>
 <span id="835">835</span>
 <span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Ben Eills &lt;ben@beneills.com&gt;</span>
@@ -1193,7 +1204,7 @@
     <span class="kw">let</span> <span class="ident">considering_dir</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="ident">MainFunction::Directory</span> <span class="op">==</span> <span class="ident">main_function</span>;
 
     <span class="kw">let</span> <span class="ident">specified_mode</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_MODE</span>) {
-        <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_MODE</span>).<span class="ident">ok_or</span>(<span class="number">1</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_MODE</span>).<span class="ident">ok_or</span>(<span class="number">1</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Some</span>(<span class="ident">mode::parse</span>(<span class="ident">x</span>, <span class="ident">considering_dir</span>, <span class="ident">get_umask</span>()).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> {
             <span class="macro">show_error!</span>(<span class="string">&quot;Invalid mode string: {}&quot;</span>, <span class="ident">err</span>);
             <span class="number">1</span>
@@ -1203,7 +1214,9 @@
     };
 
     <span class="kw">let</span> <span class="ident">backup_mode</span> <span class="op">=</span> <span class="ident">backup_control::determine_backup_mode</span>(<span class="ident">matches</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">target_dir</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_TARGET_DIRECTORY</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> <span class="ident">d</span>.<span class="ident">to_owned</span>());
+    <span class="kw">let</span> <span class="ident">target_dir</span> <span class="op">=</span> <span class="ident">matches</span>
+        .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_TARGET_DIRECTORY</span>)
+        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> <span class="ident">d</span>.<span class="ident">to_owned</span>());
 
     <span class="kw">let</span> <span class="ident">preserve_timestamps</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_PRESERVE_TIMESTAMPS</span>);
     <span class="kw">let</span> <span class="ident">compare</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_COMPARE</span>);
@@ -1221,15 +1234,24 @@
         <span class="ident">specified_mode</span>,
         <span class="ident">backup_mode</span>,
         <span class="ident">suffix</span>: <span class="ident">backup_control::determine_backup_suffix</span>(<span class="ident">matches</span>),
-        <span class="ident">owner</span>: <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_OWNER</span>).<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>).<span class="ident">to_string</span>(),
-        <span class="ident">group</span>: <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_GROUP</span>).<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>).<span class="ident">to_string</span>(),
+        <span class="ident">owner</span>: <span class="ident">matches</span>
+            .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_OWNER</span>)
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>())
+            .<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>)
+            .<span class="ident">to_string</span>(),
+        <span class="ident">group</span>: <span class="ident">matches</span>
+            .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_GROUP</span>)
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>())
+            .<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>)
+            .<span class="ident">to_string</span>(),
         <span class="ident">verbose</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_VERBOSE</span>),
         <span class="ident">preserve_timestamps</span>,
         <span class="ident">compare</span>,
         <span class="ident">strip</span>,
         <span class="ident">strip_program</span>: <span class="ident">String::from</span>(
             <span class="ident">matches</span>
-                .<span class="ident">value_of</span>(<span class="ident">OPT_STRIP_PROGRAM</span>)
+                .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_STRIP_PROGRAM</span>)
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>())
                 .<span class="ident">unwrap_or</span>(<span class="ident">DEFAULT_STRIP_PROGRAM</span>),
         ),
         <span class="ident">create_leading</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_CREATE_LEADING</span>),

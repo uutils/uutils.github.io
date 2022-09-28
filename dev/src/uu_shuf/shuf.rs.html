@@ -341,6 +341,14 @@
 <span id="341">341</span>
 <span id="342">342</span>
 <span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Alex Lyon &lt;arcterus@mail.com&gt;</span>
@@ -405,7 +413,7 @@
 
     <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">args</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_many</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::ECHO</span>) {
         <span class="ident">Mode::Echo</span>(<span class="ident">args</span>.<span class="ident">map</span>(<span class="ident">String::from</span>).<span class="ident">collect</span>())
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">range</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::INPUT_RANGE</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">range</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::INPUT_RANGE</span>) {
         <span class="kw">match</span> <span class="ident">parse_range</span>(<span class="ident">range</span>) {
             <span class="prelude-val">Ok</span>(<span class="ident">m</span>) =&gt; <span class="ident">Mode::InputRange</span>(<span class="ident">m</span>),
             <span class="prelude-val">Err</span>(<span class="ident">msg</span>) =&gt; {
@@ -413,7 +421,13 @@
             }
         }
     } <span class="kw">else</span> {
-        <span class="ident">Mode::Default</span>(<span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::FILE</span>).<span class="ident">unwrap_or</span>(<span class="string">&quot;-&quot;</span>).<span class="ident">to_string</span>())
+        <span class="ident">Mode::Default</span>(
+            <span class="ident">matches</span>
+                .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::FILE</span>)
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>())
+                .<span class="ident">unwrap_or</span>(<span class="string">&quot;-&quot;</span>)
+                .<span class="ident">to_string</span>(),
+        )
     };
 
     <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">Options</span> {
@@ -428,8 +442,10 @@
                 <span class="prelude-val">Err</span>(<span class="ident">msg</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="ident">msg</span>)),
             }
         },
-        <span class="ident">output</span>: <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::OUTPUT</span>).<span class="ident">map</span>(<span class="ident">String::from</span>),
-        <span class="ident">random_source</span>: <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::RANDOM_SOURCE</span>).<span class="ident">map</span>(<span class="ident">String::from</span>),
+        <span class="ident">output</span>: <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::OUTPUT</span>).<span class="ident">map</span>(<span class="ident">String::from</span>),
+        <span class="ident">random_source</span>: <span class="ident">matches</span>
+            .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::RANDOM_SOURCE</span>)
+            .<span class="ident">map</span>(<span class="ident">String::from</span>),
         <span class="ident">repeat</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::REPEAT</span>),
         <span class="ident">sep</span>: <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ZERO_TERMINATED</span>) {
             <span class="number">0x00_u8</span>

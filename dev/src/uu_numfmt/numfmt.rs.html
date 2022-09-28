@@ -455,6 +455,10 @@
 <span id="455">455</span>
 <span id="456">456</span>
 <span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Yury Krivopalov &lt;ykrivopalov@yandex.ru&gt;</span>
@@ -576,10 +580,10 @@
 }
 
 <span class="kw">fn</span> <span class="ident">parse_options</span>(<span class="ident">args</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">NumfmtOptions</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">from</span> <span class="op">=</span> <span class="ident">parse_unit</span>(<span class="ident">args</span>.<span class="ident">value_of</span>(<span class="ident">options::FROM</span>).<span class="ident">unwrap</span>())<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">to</span> <span class="op">=</span> <span class="ident">parse_unit</span>(<span class="ident">args</span>.<span class="ident">value_of</span>(<span class="ident">options::TO</span>).<span class="ident">unwrap</span>())<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">from_unit</span> <span class="op">=</span> <span class="ident">parse_unit_size</span>(<span class="ident">args</span>.<span class="ident">value_of</span>(<span class="ident">options::FROM_UNIT</span>).<span class="ident">unwrap</span>())<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">to_unit</span> <span class="op">=</span> <span class="ident">parse_unit_size</span>(<span class="ident">args</span>.<span class="ident">value_of</span>(<span class="ident">options::TO_UNIT</span>).<span class="ident">unwrap</span>())<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">from</span> <span class="op">=</span> <span class="ident">parse_unit</span>(<span class="ident">args</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::FROM</span>).<span class="ident">unwrap</span>())<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">to</span> <span class="op">=</span> <span class="ident">parse_unit</span>(<span class="ident">args</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::TO</span>).<span class="ident">unwrap</span>())<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">from_unit</span> <span class="op">=</span> <span class="ident">parse_unit_size</span>(<span class="ident">args</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::FROM_UNIT</span>).<span class="ident">unwrap</span>())<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">to_unit</span> <span class="op">=</span> <span class="ident">parse_unit_size</span>(<span class="ident">args</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::TO_UNIT</span>).<span class="ident">unwrap</span>())<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">transform</span> <span class="op">=</span> <span class="ident">TransformOptions</span> {
         <span class="ident">from</span>,
@@ -588,7 +592,7 @@
         <span class="ident">to_unit</span>,
     };
 
-    <span class="kw">let</span> <span class="ident">padding</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">value_of</span>(<span class="ident">options::PADDING</span>) {
+    <span class="kw">let</span> <span class="ident">padding</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::PADDING</span>) {
         <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>
             .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span>()
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">s</span>)
@@ -601,7 +605,7 @@
     }<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">args</span>.<span class="ident">value_source</span>(<span class="ident">options::HEADER</span>) <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">ValueSource::CommandLine</span>) {
-        <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">value_of</span>(<span class="ident">options::HEADER</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::HEADER</span>).<span class="ident">unwrap</span>();
 
         <span class="ident">value</span>
             .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>()
@@ -615,7 +619,7 @@
         <span class="prelude-val">Ok</span>(<span class="number">0</span>)
     }<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">fields</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">value_of</span>(<span class="ident">options::FIELD</span>).<span class="ident">unwrap</span>() {
+    <span class="kw">let</span> <span class="ident">fields</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::FIELD</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>() {
         <span class="string">&quot;-&quot;</span> =&gt; <span class="macro">vec!</span>[<span class="ident">Range</span> {
             <span class="ident">low</span>: <span class="number">1</span>,
             <span class="ident">high</span>: <span class="ident">std::usize::MAX</span>,
@@ -623,7 +627,7 @@
         <span class="ident">v</span> =&gt; <span class="ident">Range::from_list</span>(<span class="ident">v</span>)<span class="question-mark">?</span>,
     };
 
-    <span class="kw">let</span> <span class="ident">format</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">value_of</span>(<span class="ident">options::FORMAT</span>) {
+    <span class="kw">let</span> <span class="ident">format</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::FORMAT</span>) {
         <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>,
         <span class="prelude-val">None</span> =&gt; <span class="ident">FormatOptions::default</span>(),
     };
@@ -632,16 +636,18 @@
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;grouping cannot be combined with --to&quot;</span>.<span class="ident">to_string</span>());
     }
 
-    <span class="kw">let</span> <span class="ident">delimiter</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">value_of</span>(<span class="ident">options::DELIMITER</span>).<span class="ident">map_or</span>(<span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>), <span class="op">|</span><span class="ident">arg</span><span class="op">|</span> {
-        <span class="kw">if</span> <span class="ident">arg</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> {
-            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">arg</span>.<span class="ident">to_string</span>()))
-        } <span class="kw">else</span> {
-            <span class="prelude-val">Err</span>(<span class="string">&quot;the delimiter must be a single character&quot;</span>.<span class="ident">to_string</span>())
-        }
-    })<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">delimiter</span> <span class="op">=</span> <span class="ident">args</span>
+        .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::DELIMITER</span>)
+        .<span class="ident">map_or</span>(<span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>), <span class="op">|</span><span class="ident">arg</span><span class="op">|</span> {
+            <span class="kw">if</span> <span class="ident">arg</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> {
+                <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">arg</span>.<span class="ident">to_string</span>()))
+            } <span class="kw">else</span> {
+                <span class="prelude-val">Err</span>(<span class="string">&quot;the delimiter must be a single character&quot;</span>.<span class="ident">to_string</span>())
+            }
+        })<span class="question-mark">?</span>;
 
     <span class="comment">// unwrap is fine because the argument has a default value</span>
-    <span class="kw">let</span> <span class="ident">round</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">value_of</span>(<span class="ident">options::ROUND</span>).<span class="ident">unwrap</span>() {
+    <span class="kw">let</span> <span class="ident">round</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::ROUND</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>() {
         <span class="string">&quot;up&quot;</span> =&gt; <span class="ident">RoundMethod::Up</span>,
         <span class="string">&quot;down&quot;</span> =&gt; <span class="ident">RoundMethod::Down</span>,
         <span class="string">&quot;from-zero&quot;</span> =&gt; <span class="ident">RoundMethod::FromZero</span>,
@@ -650,7 +656,9 @@
         <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Should be restricted by clap&quot;</span>),
     };
 
-    <span class="kw">let</span> <span class="ident">suffix</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">value_of</span>(<span class="ident">options::SUFFIX</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_owned</span>());
+    <span class="kw">let</span> <span class="ident">suffix</span> <span class="op">=</span> <span class="ident">args</span>
+        .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::SUFFIX</span>)
+        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_owned</span>());
 
     <span class="prelude-val">Ok</span>(<span class="ident">NumfmtOptions</span> {
         <span class="ident">transform</span>,

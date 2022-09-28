@@ -429,6 +429,9 @@
 <span id="429">429</span>
 <span id="430">430</span>
 <span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Anthony Deschamps &lt;anthony.j.deschamps@gmail.com&gt;</span>
@@ -577,7 +580,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">format</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">form</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_FORMAT</span>) {
+    <span class="kw">let</span> <span class="ident">format</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">form</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_FORMAT</span>) {
         <span class="kw">if</span> <span class="op">!</span><span class="ident">form</span>.<span class="ident">starts_with</span>(<span class="string">&#39;+&#39;</span>) {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(
                 <span class="number">1</span>,
@@ -593,21 +596,24 @@
         <span class="ident">Format::Iso8601</span>(<span class="ident">fmt</span>)
     } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_RFC_EMAIL</span>) {
         <span class="ident">Format::Rfc5322</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">fmt</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_RFC_3339</span>).<span class="ident">map</span>(<span class="ident">Into::into</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">fmt</span>) <span class="op">=</span> <span class="ident">matches</span>
+        .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_RFC_3339</span>)
+        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>().<span class="ident">into</span>())
+    {
         <span class="ident">Format::Rfc3339</span>(<span class="ident">fmt</span>)
     } <span class="kw">else</span> {
         <span class="ident">Format::Default</span>
     };
 
-    <span class="kw">let</span> <span class="ident">date_source</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">date</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_DATE</span>) {
+    <span class="kw">let</span> <span class="ident">date_source</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">date</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_DATE</span>) {
         <span class="ident">DateSource::Custom</span>(<span class="ident">date</span>.<span class="ident">into</span>())
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">file</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_FILE</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">file</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_FILE</span>) {
         <span class="ident">DateSource::File</span>(<span class="ident">file</span>.<span class="ident">into</span>())
     } <span class="kw">else</span> {
         <span class="ident">DateSource::Now</span>
     };
 
-    <span class="kw">let</span> <span class="ident">set_to</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_SET</span>).<span class="ident">map</span>(<span class="ident">parse_date</span>) {
+    <span class="kw">let</span> <span class="ident">set_to</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_SET</span>).<span class="ident">map</span>(<span class="ident">parse_date</span>) {
         <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
         <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>((<span class="ident">input</span>, <span class="ident">_err</span>))) =&gt; {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(

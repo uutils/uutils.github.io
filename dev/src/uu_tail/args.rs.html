@@ -471,6 +471,7 @@
 <span id="471">471</span>
 <span id="472">472</span>
 <span id="473">473</span>
+<span id="474">474</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -536,7 +537,7 @@
 <span class="kw">impl</span> <span class="ident">FilterMode</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">zero_term</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ZERO_TERM</span>);
-        <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">arg</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::BYTES</span>) {
+        <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">arg</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::BYTES</span>) {
             <span class="kw">match</span> <span class="ident">parse_num</span>(<span class="ident">arg</span>) {
                 <span class="prelude-val">Ok</span>(<span class="ident">signum</span>) =&gt; <span class="ident"><span class="self">Self</span>::Bytes</span>(<span class="ident">signum</span>),
                 <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
@@ -546,7 +547,7 @@
                     ))
                 }
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">arg</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::LINES</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">arg</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::LINES</span>) {
             <span class="kw">match</span> <span class="ident">parse_num</span>(<span class="ident">arg</span>) {
                 <span class="prelude-val">Ok</span>(<span class="ident">signum</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">delimiter</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">zero_term</span> { <span class="number">0</span> } <span class="kw">else</span> { <span class="string">b&#39;\n&#39;</span> };
@@ -611,7 +612,8 @@
             <span class="prelude-val">Some</span>(<span class="ident">FollowMode::Name</span>)
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">value_source</span>(<span class="ident">options::FOLLOW</span>) <span class="op">!</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ValueSource::CommandLine</span>) {
             <span class="prelude-val">None</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::FOLLOW</span>) <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="string">&quot;name&quot;</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::FOLLOW</span>) <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">String::from</span>(<span class="string">&quot;name&quot;</span>)).<span class="ident">as_ref</span>()
+        {
             <span class="prelude-val">Some</span>(<span class="ident">FollowMode::Name</span>)
         } <span class="kw">else</span> {
             <span class="prelude-val">Some</span>(<span class="ident">FollowMode::Descriptor</span>)
@@ -624,7 +626,7 @@
             <span class="macro">show_warning!</span>(<span class="string">&quot;--retry ignored; --retry is useful only when following&quot;</span>);
         }
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::SLEEP_INT</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::SLEEP_INT</span>) {
             <span class="ident">settings</span>.<span class="ident">sleep_sec</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>() {
                 <span class="prelude-val">Ok</span>(<span class="ident">s</span>) =&gt; <span class="ident">Duration::from_secs_f32</span>(<span class="ident">s</span>),
                 <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
@@ -638,7 +640,7 @@
 
         <span class="ident">settings</span>.<span class="ident">use_polling</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::USE_POLLING</span>);
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::MAX_UNCHANGED_STATS</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::MAX_UNCHANGED_STATS</span>) {
             <span class="ident">settings</span>.<span class="ident">max_unchanged_stats</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>() {
                 <span class="prelude-val">Ok</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>,
                 <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
@@ -653,7 +655,7 @@
             }
         }
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">pid_str</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::PID</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">pid_str</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::PID</span>) {
             <span class="kw">match</span> <span class="ident">pid_str</span>.<span class="ident">parse</span>() {
                 <span class="prelude-val">Ok</span>(<span class="ident">pid</span>) =&gt; {
                     <span class="comment">// NOTE: on unix platform::Pid is i32, on windows platform::Pid is u32</span>

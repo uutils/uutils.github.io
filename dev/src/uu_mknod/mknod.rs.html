@@ -220,6 +220,11 @@
 <span id="220">220</span>
 <span id="221">221</span>
 <span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;</span>
@@ -312,12 +317,14 @@ for details about the options it supports.
 
     <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="ident">get_mode</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="ident">e</span>))<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">file_name</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;name&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;Missing argument &#39;NAME&#39;&quot;</span>);
+    <span class="kw">let</span> <span class="ident">file_name</span> <span class="op">=</span> <span class="ident">matches</span>
+        .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="string">&quot;name&quot;</span>)
+        .<span class="ident">expect</span>(<span class="string">&quot;Missing argument &#39;NAME&#39;&quot;</span>);
 
     <span class="comment">// Only check the first character, to allow mnemonic usage like</span>
     <span class="comment">// &#39;mknod /dev/rst0 character 18 0&#39;.</span>
     <span class="kw">let</span> <span class="ident">ch</span> <span class="op">=</span> <span class="ident">matches</span>
-        .<span class="ident">value_of</span>(<span class="string">&quot;type&quot;</span>)
+        .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="string">&quot;type&quot;</span>)
         .<span class="ident">expect</span>(<span class="string">&quot;Missing argument &#39;TYPE&#39;&quot;</span>)
         .<span class="ident">chars</span>()
         .<span class="ident">next</span>()
@@ -335,7 +342,10 @@ for details about the options it supports.
             <span class="prelude-val">Ok</span>(())
         }
     } <span class="kw">else</span> {
-        <span class="kw">match</span> (<span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;major&quot;</span>), <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;minor&quot;</span>)) {
+        <span class="kw">match</span> (
+            <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="string">&quot;major&quot;</span>),
+            <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="string">&quot;minor&quot;</span>),
+        ) {
             (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="op">|</span> (<span class="kw">_</span>, <span class="prelude-val">None</span>) <span class="op">|</span> (<span class="prelude-val">None</span>, <span class="kw">_</span>) =&gt; {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">UUsageError::new</span>(
                     <span class="number">1</span>,
@@ -410,7 +420,7 @@ for details about the options it supports.
 }
 
 <span class="kw">fn</span> <span class="ident">get_mode</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">mode_t</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;mode&quot;</span>) {
+    <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="string">&quot;mode&quot;</span>) {
         <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">MODE_RW_UGO</span>),
         <span class="prelude-val">Some</span>(<span class="ident">str_mode</span>) =&gt; <span class="ident">uucore::mode::parse_mode</span>(<span class="ident">str_mode</span>)
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;invalid mode ({})&quot;</span>, <span class="ident">e</span>))

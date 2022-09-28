@@ -1877,6 +1877,11 @@
 <span id="1877">1877</span>
 <span id="1878">1878</span>
 <span id="1879">1879</span>
+<span id="1880">1880</span>
+<span id="1881">1881</span>
+<span id="1882">1882</span>
+<span id="1883">1883</span>
+<span id="1884">1884</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::missing_safety_doc</span>)]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::extra_unused_lifetimes</span>)]</span>
 
@@ -2601,7 +2606,7 @@
         <span class="comment">// Parse target directory options</span>
         <span class="kw">let</span> <span class="ident">no_target_dir</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_TARGET_DIRECTORY</span>);
         <span class="kw">let</span> <span class="ident">target_dir</span> <span class="op">=</span> <span class="ident">matches</span>
-            .<span class="ident">value_of</span>(<span class="ident">options::TARGET_DIRECTORY</span>)
+            .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::TARGET_DIRECTORY</span>)
             .<span class="ident">map</span>(<span class="ident">ToString::to_string</span>);
 
         <span class="comment">// Parse attributes to preserve</span>
@@ -2654,8 +2659,8 @@
             <span class="ident">verbose</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::VERBOSE</span>),
             <span class="ident">strip_trailing_slashes</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::STRIP_TRAILING_SLASHES</span>),
             <span class="ident">reflink_mode</span>: {
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">reflink</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::REFLINK</span>) {
-                    <span class="kw">match</span> <span class="ident">reflink</span> {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">reflink</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::REFLINK</span>) {
+                    <span class="kw">match</span> <span class="ident">reflink</span>.<span class="ident">as_str</span>() {
                         <span class="string">&quot;always&quot;</span> =&gt; <span class="ident">ReflinkMode::Always</span>,
                         <span class="string">&quot;auto&quot;</span> =&gt; <span class="ident">ReflinkMode::Auto</span>,
                         <span class="string">&quot;never&quot;</span> =&gt; <span class="ident">ReflinkMode::Never</span>,
@@ -2681,17 +2686,22 @@
                     }
                 }
             },
-            <span class="ident">sparse_mode</span>: <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::SPARSE</span>) {
-                <span class="prelude-val">Some</span>(<span class="string">&quot;always&quot;</span>) =&gt; <span class="ident">SparseMode::Always</span>,
-                <span class="prelude-val">Some</span>(<span class="string">&quot;auto&quot;</span>) =&gt; <span class="ident">SparseMode::Auto</span>,
-                <span class="prelude-val">Some</span>(<span class="string">&quot;never&quot;</span>) =&gt; <span class="ident">SparseMode::Never</span>,
-                <span class="prelude-val">Some</span>(<span class="ident">val</span>) =&gt; {
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidArgument</span>(<span class="macro">format!</span>(
-                        <span class="string">&quot;invalid argument {} for \&#39;sparse\&#39;&quot;</span>,
-                        <span class="ident">val</span>
-                    )));
+            <span class="ident">sparse_mode</span>: {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::SPARSE</span>) {
+                    <span class="kw">match</span> <span class="ident">val</span>.<span class="ident">as_str</span>() {
+                        <span class="string">&quot;always&quot;</span> =&gt; <span class="ident">SparseMode::Always</span>,
+                        <span class="string">&quot;auto&quot;</span> =&gt; <span class="ident">SparseMode::Auto</span>,
+                        <span class="string">&quot;never&quot;</span> =&gt; <span class="ident">SparseMode::Never</span>,
+                        <span class="kw">_</span> =&gt; {
+                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidArgument</span>(<span class="macro">format!</span>(
+                                <span class="string">&quot;invalid argument {} for \&#39;sparse\&#39;&quot;</span>,
+                                <span class="ident">val</span>
+                            )))
+                        }
+                    }
+                } <span class="kw">else</span> {
+                    <span class="ident">SparseMode::Auto</span>
                 }
-                <span class="prelude-val">None</span> =&gt; <span class="ident">SparseMode::Auto</span>,
             },
             <span class="ident">backup</span>: <span class="ident">backup_mode</span>,
             <span class="ident">backup_suffix</span>,

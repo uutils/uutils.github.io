@@ -879,6 +879,8 @@
 <span id="879">879</span>
 <span id="880">880</span>
 <span id="881">881</span>
+<span id="882">882</span>
+<span id="883">883</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Dorota Kapturkiewicz &lt;dokaptur@gmail.com&gt;</span>
@@ -959,7 +961,7 @@
     <span class="ident">option</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
 ) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span><span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">matches</span>
-        .<span class="ident">value_of</span>(<span class="ident">option</span>)
+        .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">option</span>)
         .<span class="ident">expect</span>(<span class="string">&quot;parsing options failed!&quot;</span>)
         .<span class="ident">to_string</span>();
     <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">File::open</span>(<span class="ident">filename</span>)<span class="question-mark">?</span>;
@@ -976,7 +978,9 @@
     <span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">clap::ArgMatches</span>,
     <span class="ident">option</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
 ) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span><span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">option</span>).<span class="ident">expect</span>(<span class="string">&quot;parsing options failed!&quot;</span>);
+    <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">matches</span>
+        .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">option</span>)
+        .<span class="ident">expect</span>(<span class="string">&quot;parsing options failed!&quot;</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">reader</span> <span class="op">=</span> <span class="ident">File::open</span>(<span class="ident">filename</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> <span class="ident">String::new</span>();
     <span class="ident">reader</span>.<span class="ident">read_to_string</span>(<span class="kw-2">&amp;mut</span> <span class="ident">buffer</span>)<span class="question-mark">?</span>;
@@ -1027,7 +1031,7 @@
         };
         <span class="comment">// Ignore empty string regex from cmd-line-args</span>
         <span class="kw">let</span> <span class="ident">arg_reg</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::WORD_REGEXP</span>) {
-            <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::WORD_REGEXP</span>) {
+            <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::WORD_REGEXP</span>) {
                 <span class="prelude-val">Some</span>(<span class="ident">v</span>) =&gt; {
                     <span class="kw">if</span> <span class="ident">v</span>.<span class="ident">is_empty</span>() {
                         <span class="prelude-val">None</span>
@@ -1125,26 +1129,26 @@
     <span class="ident">config</span>.<span class="ident">ignore_case</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::IGNORE_CASE</span>);
     <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::MACRO_NAME</span>) {
         <span class="ident">config</span>.<span class="ident">macro_name</span> <span class="op">=</span> <span class="ident">matches</span>
-            .<span class="ident">value_of</span>(<span class="ident">options::MACRO_NAME</span>)
+            .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::MACRO_NAME</span>)
             .<span class="ident">expect</span>(<span class="ident">err_msg</span>)
             .<span class="ident">to_string</span>();
     }
     <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::FLAG_TRUNCATION</span>) {
         <span class="ident">config</span>.<span class="ident">trunc_str</span> <span class="op">=</span> <span class="ident">matches</span>
-            .<span class="ident">value_of</span>(<span class="ident">options::FLAG_TRUNCATION</span>)
+            .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::FLAG_TRUNCATION</span>)
             .<span class="ident">expect</span>(<span class="ident">err_msg</span>)
             .<span class="ident">to_string</span>();
     }
     <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::WIDTH</span>) {
         <span class="ident">config</span>.<span class="ident">line_width</span> <span class="op">=</span> <span class="ident">matches</span>
-            .<span class="ident">value_of</span>(<span class="ident">options::WIDTH</span>)
+            .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::WIDTH</span>)
             .<span class="ident">expect</span>(<span class="ident">err_msg</span>)
             .<span class="ident">parse</span>()
             .<span class="ident">map_err</span>(<span class="ident">PtxError::ParseError</span>)<span class="question-mark">?</span>;
     }
     <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::GAP_SIZE</span>) {
         <span class="ident">config</span>.<span class="ident">gap_size</span> <span class="op">=</span> <span class="ident">matches</span>
-            .<span class="ident">value_of</span>(<span class="ident">options::GAP_SIZE</span>)
+            .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::GAP_SIZE</span>)
             .<span class="ident">expect</span>(<span class="ident">err_msg</span>)
             .<span class="ident">parse</span>()
             .<span class="ident">map_err</span>(<span class="ident">PtxError::ParseError</span>)<span class="question-mark">?</span>;

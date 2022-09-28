@@ -617,6 +617,8 @@
 <span id="617">617</span>
 <span id="618">618</span>
 <span id="619">619</span>
+<span id="620">620</span>
+<span id="621">621</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Rolf Morel &lt;rolfmorel@gmail.com&gt;</span>
@@ -1025,9 +1027,9 @@
     <span class="kw">let</span> <span class="ident">complement</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::COMPLEMENT</span>);
 
     <span class="kw">let</span> <span class="ident">mode_parse</span> <span class="op">=</span> <span class="kw">match</span> (
-        <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::BYTES</span>),
-        <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::CHARACTERS</span>),
-        <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::FIELDS</span>),
+        <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::BYTES</span>),
+        <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::CHARACTERS</span>),
+        <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::FIELDS</span>),
     ) {
         (<span class="prelude-val">Some</span>(<span class="ident">byte_ranges</span>), <span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="ident">list_to_ranges</span>(<span class="ident">byte_ranges</span>, <span class="ident">complement</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">ranges</span><span class="op">|</span> {
             <span class="ident">Mode::Bytes</span>(
@@ -1035,7 +1037,8 @@
                 <span class="ident">Options</span> {
                     <span class="ident">out_delim</span>: <span class="prelude-val">Some</span>(
                         <span class="ident">matches</span>
-                            .<span class="ident">value_of</span>(<span class="ident">options::OUTPUT_DELIMITER</span>)
+                            .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::OUTPUT_DELIMITER</span>)
+                            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>())
                             .<span class="ident">unwrap_or_default</span>()
                             .<span class="ident">to_owned</span>(),
                     ),
@@ -1049,7 +1052,8 @@
                 <span class="ident">Options</span> {
                     <span class="ident">out_delim</span>: <span class="prelude-val">Some</span>(
                         <span class="ident">matches</span>
-                            .<span class="ident">value_of</span>(<span class="ident">options::OUTPUT_DELIMITER</span>)
+                            .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::OUTPUT_DELIMITER</span>)
+                            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>())
                             .<span class="ident">unwrap_or_default</span>()
                             .<span class="ident">to_owned</span>(),
                     ),
@@ -1059,7 +1063,7 @@
         }),
         (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">field_ranges</span>)) =&gt; {
             <span class="ident">list_to_ranges</span>(<span class="ident">field_ranges</span>, <span class="ident">complement</span>).<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">ranges</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">out_delim</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::OUTPUT_DELIMITER</span>) {
+                <span class="kw">let</span> <span class="ident">out_delim</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::OUTPUT_DELIMITER</span>) {
                     <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; {
                         <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">is_empty</span>() {
                             <span class="prelude-val">Some</span>(<span class="string">&quot;\0&quot;</span>.<span class="ident">to_owned</span>())
@@ -1073,7 +1077,7 @@
                 <span class="kw">let</span> <span class="ident">only_delimited</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ONLY_DELIMITED</span>);
                 <span class="kw">let</span> <span class="ident">zero_terminated</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ZERO_TERMINATED</span>);
 
-                <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::DELIMITER</span>) {
+                <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::DELIMITER</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>()) {
                     <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">delim</span>) =&gt; {
                         <span class="comment">// GNU&#39;s `cut` supports `-d=` to set the delimiter to `=`.</span>
                         <span class="comment">// Clap parsing is limited in this situation, see:</span>

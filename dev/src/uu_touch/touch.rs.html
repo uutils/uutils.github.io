@@ -541,6 +541,9 @@
 <span id="541">541</span>
 <span id="542">542</span>
 <span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Nick Platt &lt;platt.nicholas@gmail.com&gt;</span>
@@ -628,9 +631,9 @@ Try &#39;touch --help&#39; for more information.&quot;##</span>,
                 <span class="op">!</span><span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_DEREF</span>),
             )<span class="question-mark">?</span>
         } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">timestamp</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">date</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::sources::DATE</span>) {
+            <span class="kw">let</span> <span class="ident">timestamp</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">date</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::sources::DATE</span>) {
                 <span class="ident">parse_date</span>(<span class="ident">date</span>)<span class="question-mark">?</span>
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">current</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::sources::CURRENT</span>) {
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">current</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::sources::CURRENT</span>) {
                 <span class="ident">parse_timestamp</span>(<span class="ident">current</span>)<span class="question-mark">?</span>
             } <span class="kw">else</span> {
                 <span class="ident">local_dt_to_filetime</span>(<span class="ident">time::OffsetDateTime::now_local</span>().<span class="ident">unwrap</span>())
@@ -686,7 +689,10 @@ Try &#39;touch --help&#39; for more information.&quot;##</span>,
             <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::TIME</span>)
         {
             <span class="kw">let</span> <span class="ident">st</span> <span class="op">=</span> <span class="ident">stat</span>(<span class="ident">path</span>, <span class="op">!</span><span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_DEREF</span>))<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">time</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">options::TIME</span>).<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>);
+            <span class="kw">let</span> <span class="ident">time</span> <span class="op">=</span> <span class="ident">matches</span>
+                .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::TIME</span>)
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>())
+                .<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>);
 
             <span class="kw">if</span> <span class="op">!</span>(<span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ACCESS</span>)
                 <span class="op">|</span><span class="op">|</span> <span class="ident">time</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="string">&quot;access&quot;</span>.<span class="ident">to_owned</span>())
