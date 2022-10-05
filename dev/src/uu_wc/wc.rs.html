@@ -633,6 +633,24 @@
 <span id="633">633</span>
 <span id="634">634</span>
 <span id="635">635</span>
+<span id="636">636</span>
+<span id="637">637</span>
+<span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
+<span id="644">644</span>
+<span id="645">645</span>
+<span id="646">646</span>
+<span id="647">647</span>
+<span id="648">648</span>
+<span id="649">649</span>
+<span id="650">650</span>
+<span id="651">651</span>
+<span id="652">652</span>
+<span id="653">653</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Boden Garman &lt;bpgarman@gmail.com&gt;</span>
@@ -952,6 +970,7 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
         <span class="comment">// Specialize scanning loop to improve the performance.</span>
         (<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; <span class="macro">unreachable!</span>(),
 
+        <span class="comment">// show_bytes</span>
         (<span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
             <span class="comment">// Fast path when only show_bytes is true.</span>
             <span class="kw">let</span> (<span class="ident">bytes</span>, <span class="ident">error</span>) <span class="op">=</span> <span class="ident">count_bytes_fast</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>);
@@ -965,58 +984,75 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
         }
 
         <span class="comment">// Fast paths that can be computed without Unicode decoding.</span>
+        <span class="comment">// show_lines</span>
         (<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
             <span class="ident">count_bytes_chars_and_lines_fast</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>)
         }
+        <span class="comment">// show_chars</span>
         (<span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
             <span class="ident">count_bytes_chars_and_lines_fast</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>)
         }
+        <span class="comment">// show_chars, show_lines</span>
         (<span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
             <span class="ident">count_bytes_chars_and_lines_fast</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>)
         }
+        <span class="comment">// show_bytes, show_lines</span>
         (<span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
             <span class="ident">count_bytes_chars_and_lines_fast</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>)
         }
+        <span class="comment">// show_bytes, show_chars</span>
         (<span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
             <span class="ident">count_bytes_chars_and_lines_fast</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>)
         }
+        <span class="comment">// show_bytes, show_chars, show_lines</span>
         (<span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
             <span class="ident">count_bytes_chars_and_lines_fast</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="ident">reader</span>)
         }
-
+        <span class="comment">// show_words</span>
         (<span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>) =&gt; {
             <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
         }
+        <span class="comment">// show_max_line_length</span>
         (<span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>) =&gt; {
             <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
         }
+        <span class="comment">// show_max_line_length, show_words</span>
         (<span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>) =&gt; {
             <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
         }
+        <span class="comment">// show_chars, show_words</span>
         (<span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>) =&gt; {
             <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
         }
+        <span class="comment">// show_chars, show_lines</span>
         (<span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>) =&gt; {
             <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
         }
+        <span class="comment">// show_lines, show_max_line_length, show_words</span>
         (<span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>) =&gt; {
             <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
         }
+        <span class="comment">// show_chars, show_words</span>
         (<span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>) =&gt; {
             <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
         }
+        <span class="comment">// show_chars, show_max_line_length</span>
         (<span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>) =&gt; {
             <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
         }
+        <span class="comment">// show_chars, show_max_line_length, show_words</span>
         (<span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>) =&gt; {
             <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
         }
+        <span class="comment">// show_chars, show_lines, show_words</span>
         (<span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>) =&gt; {
             <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
         }
+        <span class="comment">// show_chars, show_lines, show_max_line_length</span>
         (<span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>) =&gt; {
             <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
         }
+        <span class="comment">// show_chars, show_lines, show_max_line_length, show_words</span>
         (<span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>) =&gt; {
             <span class="ident">word_count_from_reader_specialized</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span><span class="op">&gt;</span>(<span class="ident">reader</span>)
         }
