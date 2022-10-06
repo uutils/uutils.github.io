@@ -2979,6 +2979,34 @@
 <span id="2979">2979</span>
 <span id="2980">2980</span>
 <span id="2981">2981</span>
+<span id="2982">2982</span>
+<span id="2983">2983</span>
+<span id="2984">2984</span>
+<span id="2985">2985</span>
+<span id="2986">2986</span>
+<span id="2987">2987</span>
+<span id="2988">2988</span>
+<span id="2989">2989</span>
+<span id="2990">2990</span>
+<span id="2991">2991</span>
+<span id="2992">2992</span>
+<span id="2993">2993</span>
+<span id="2994">2994</span>
+<span id="2995">2995</span>
+<span id="2996">2996</span>
+<span id="2997">2997</span>
+<span id="2998">2998</span>
+<span id="2999">2999</span>
+<span id="3000">3000</span>
+<span id="3001">3001</span>
+<span id="3002">3002</span>
+<span id="3003">3003</span>
+<span id="3004">3004</span>
+<span id="3005">3005</span>
+<span id="3006">3006</span>
+<span id="3007">3007</span>
+<span id="3008">3008</span>
+<span id="3009">3009</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jeremiah Peschka &lt;jeremiah.peschka@gmail.com&gt;</span>
@@ -2991,7 +3019,10 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">builder::ValueParser</span>, <span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{
+    <span class="ident">builder</span>::{<span class="ident">NonEmptyStringValueParser</span>, <span class="ident">ValueParser</span>},
+    <span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>,
+};
 <span class="kw">use</span> <span class="ident">glob::Pattern</span>;
 <span class="kw">use</span> <span class="ident">lscolors::LsColors</span>;
 <span class="kw">use</span> <span class="ident">number_prefix::NumberPrefix</span>;
@@ -3137,6 +3168,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
     <span class="ident">IOErrorContext</span>(<span class="ident">std::io::Error</span>, <span class="ident">PathBuf</span>, <span class="ident">bool</span>),
     <span class="ident">BlockSizeParseError</span>(<span class="ident">String</span>),
     <span class="ident">AlreadyListedError</span>(<span class="ident">PathBuf</span>),
+    <span class="ident">TimeStyleParseError</span>(<span class="ident">String</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>),
 }
 
 <span class="kw">impl</span> <span class="ident">UError</span> <span class="kw">for</span> <span class="ident">LsError</span> {
@@ -3148,6 +3180,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             <span class="ident"><span class="self">Self</span>::IOErrorContext</span>(<span class="kw">_</span>, <span class="kw">_</span>, <span class="bool-val">true</span>) =&gt; <span class="number">2</span>,
             <span class="ident"><span class="self">Self</span>::BlockSizeParseError</span>(<span class="kw">_</span>) =&gt; <span class="number">1</span>,
             <span class="ident"><span class="self">Self</span>::AlreadyListedError</span>(<span class="kw">_</span>) =&gt; <span class="number">2</span>,
+            <span class="ident"><span class="self">Self</span>::TimeStyleParseError</span>(<span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="number">1</span>,
         }
     }
 }
@@ -3159,6 +3192,14 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident"><span class="self">Self</span>::BlockSizeParseError</span>(<span class="ident">s</span>) =&gt; {
                 <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;invalid --block-size argument {}&quot;</span>, <span class="ident">s</span>.<span class="ident">quote</span>())
+            }
+            <span class="ident"><span class="self">Self</span>::TimeStyleParseError</span>(<span class="ident">s</span>, <span class="ident">possible_time_styles</span>) =&gt; {
+                <span class="macro">write!</span>(
+                    <span class="ident">f</span>,
+                    <span class="string">&quot;invalid --time-style argument {}\nPossible values are: {:?}\n\nFor more information try --help&quot;</span>,
+                    <span class="ident">s</span>.<span class="ident">quote</span>(),
+                    <span class="ident">possible_time_styles</span>
+                )
             }
             <span class="ident"><span class="self">Self</span>::InvalidLineWidth</span>(<span class="ident">s</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;invalid line width: {}&quot;</span>, <span class="ident">s</span>.<span class="ident">quote</span>()),
             <span class="ident"><span class="self">Self</span>::IOError</span>(<span class="ident">e</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;general io error: {}&quot;</span>, <span class="ident">e</span>),
@@ -3281,8 +3322,46 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
     <span class="ident">LongIso</span>,
     <span class="ident">Iso</span>,
     <span class="ident">Locale</span>,
+    <span class="ident">Format</span>(<span class="ident">String</span>),
 }
 
+<span class="kw">fn</span> <span class="ident">parse_time_style</span>(<span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">clap::ArgMatches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">TimeStyle</span>, <span class="ident">LsError</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">possible_time_styles</span> <span class="op">=</span> <span class="macro">vec!</span>[
+        <span class="string">&quot;full-iso&quot;</span>.<span class="ident">to_string</span>(),
+        <span class="string">&quot;long-iso&quot;</span>.<span class="ident">to_string</span>(),
+        <span class="string">&quot;iso&quot;</span>.<span class="ident">to_string</span>(),
+        <span class="string">&quot;locale&quot;</span>.<span class="ident">to_string</span>(),
+        <span class="string">&quot;+FORMAT (e.g., +%H:%M) for a &#39;date&#39;-style format&quot;</span>.<span class="ident">to_string</span>(),
+    ];
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">field</span>) <span class="op">=</span> <span class="ident">options</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::TIME_STYLE</span>) {
+        <span class="comment">//If both FULL_TIME and TIME_STYLE are present</span>
+        <span class="comment">//The one added last is dominant</span>
+        <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::FULL_TIME</span>)
+            <span class="op">&amp;&amp;</span> <span class="ident">options</span>.<span class="ident">indices_of</span>(<span class="ident">options::FULL_TIME</span>).<span class="ident">unwrap</span>().<span class="ident">last</span>()
+                <span class="op">&gt;</span> <span class="ident">options</span>.<span class="ident">indices_of</span>(<span class="ident">options::TIME_STYLE</span>).<span class="ident">unwrap</span>().<span class="ident">last</span>()
+        {
+            <span class="prelude-val">Ok</span>(<span class="ident">TimeStyle::FullIso</span>)
+        } <span class="kw">else</span> {
+            <span class="kw">match</span> <span class="ident">field</span>.<span class="ident">as_str</span>() {
+                <span class="string">&quot;full-iso&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">TimeStyle::FullIso</span>),
+                <span class="string">&quot;long-iso&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">TimeStyle::LongIso</span>),
+                <span class="string">&quot;iso&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">TimeStyle::Iso</span>),
+                <span class="string">&quot;locale&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">TimeStyle::Locale</span>),
+                <span class="kw">_</span> =&gt; <span class="kw">match</span> <span class="ident">field</span>.<span class="ident">chars</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>() {
+                    <span class="string">&#39;+&#39;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">TimeStyle::Format</span>(<span class="ident">String::from</span>(<span class="kw-2">&amp;</span><span class="ident">field</span>[<span class="number">1</span>..]))),
+                    <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">LsError::TimeStyleParseError</span>(
+                        <span class="ident">String::from</span>(<span class="ident">field</span>),
+                        <span class="ident">possible_time_styles</span>,
+                    )),
+                },
+            }
+        }
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::FULL_TIME</span>) {
+        <span class="prelude-val">Ok</span>(<span class="ident">TimeStyle::FullIso</span>)
+    } <span class="kw">else</span> {
+        <span class="prelude-val">Ok</span>(<span class="ident">TimeStyle::Locale</span>)
+    }
+}
 <span class="kw">enum</span> <span class="ident">Dereference</span> {
     <span class="prelude-val">None</span>,
     <span class="ident">DirArgs</span>,
@@ -3681,31 +3760,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
         } <span class="kw">else</span> {
             <span class="ident">IndicatorStyle::None</span>
         };
-
-        <span class="kw">let</span> <span class="ident">time_style</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">field</span>) <span class="op">=</span> <span class="ident">options</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::TIME_STYLE</span>) {
-            <span class="comment">//If both FULL_TIME and TIME_STYLE are present</span>
-            <span class="comment">//The one added last is dominant</span>
-            <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::FULL_TIME</span>)
-                <span class="op">&amp;&amp;</span> <span class="ident">options</span>.<span class="ident">indices_of</span>(<span class="ident">options::FULL_TIME</span>).<span class="ident">unwrap</span>().<span class="ident">last</span>()
-                    <span class="op">&gt;</span> <span class="ident">options</span>.<span class="ident">indices_of</span>(<span class="ident">options::TIME_STYLE</span>).<span class="ident">unwrap</span>().<span class="ident">last</span>()
-            {
-                <span class="ident">TimeStyle::FullIso</span>
-            } <span class="kw">else</span> {
-                <span class="comment">//Clap handles the env variable &quot;TIME_STYLE&quot;</span>
-                <span class="kw">match</span> <span class="ident">field</span>.<span class="ident">as_str</span>() {
-                    <span class="string">&quot;full-iso&quot;</span> =&gt; <span class="ident">TimeStyle::FullIso</span>,
-                    <span class="string">&quot;long-iso&quot;</span> =&gt; <span class="ident">TimeStyle::LongIso</span>,
-                    <span class="string">&quot;iso&quot;</span> =&gt; <span class="ident">TimeStyle::Iso</span>,
-                    <span class="string">&quot;locale&quot;</span> =&gt; <span class="ident">TimeStyle::Locale</span>,
-                    <span class="comment">// below should never happen as clap already restricts the values.</span>
-                    <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Invalid field for --time-style&quot;</span>),
-                }
-            }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::FULL_TIME</span>) {
-            <span class="ident">TimeStyle::FullIso</span>
-        } <span class="kw">else</span> {
-            <span class="ident">TimeStyle::Locale</span>
-        };
+        <span class="kw">let</span> <span class="ident">time_style</span> <span class="op">=</span> <span class="ident">parse_time_style</span>(<span class="ident">options</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ignore_patterns</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Pattern</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
 
@@ -4492,13 +4547,13 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 ]),
         )
         .<span class="ident">arg</span>(
-            <span class="comment">//This still needs support for posix-*, +FORMAT</span>
+            <span class="comment">//This still needs support for posix-*</span>
             <span class="ident">Arg::new</span>(<span class="ident">options::TIME_STYLE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::TIME_STYLE</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;time/date format with -l; see TIME_STYLE below&quot;</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;TIME_STYLE&quot;</span>)
                 .<span class="ident">env</span>(<span class="string">&quot;TIME_STYLE&quot;</span>)
-                .<span class="ident">value_parser</span>([<span class="string">&quot;full-iso&quot;</span>, <span class="string">&quot;long-iso&quot;</span>, <span class="string">&quot;iso&quot;</span>, <span class="string">&quot;locale&quot;</span>])
+                .<span class="ident">value_parser</span>(<span class="ident">NonEmptyStringValueParser::new</span>())
                 .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::TIME_STYLE</span>]),
         )
         .<span class="ident">arg</span>(
@@ -4530,7 +4585,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 .<span class="ident">value_parser</span>(<span class="ident">ValueParser::os_string</span>()),
         )
         .<span class="ident">after_help</span>(
-            <span class="string">&quot;The TIME_STYLE argument can be full-iso, long-iso, iso. \
+            <span class="string">&quot;The TIME_STYLE argument can be full-iso, long-iso, iso, locale or +FORMAT. FORMAT is interpreted like in date. \
             Also the TIME_STYLE environment variable sets the default style to use.&quot;</span>,
         )
 }
@@ -5500,7 +5555,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             <span class="comment">//According to GNU a Gregorian year has 365.2425 * 24 * 60 * 60 == 31556952 seconds on the average.</span>
             <span class="kw">let</span> <span class="ident">recent</span> <span class="op">=</span> <span class="ident">time</span> <span class="op">+</span> <span class="ident">chrono::Duration::seconds</span>(<span class="number">31_556_952</span> <span class="op">/</span> <span class="number">2</span>) <span class="op">&gt;</span> <span class="ident">chrono::Local::now</span>();
 
-            <span class="kw">match</span> <span class="ident">config</span>.<span class="ident">time_style</span> {
+            <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">time_style</span> {
                 <span class="ident">TimeStyle::FullIso</span> =&gt; <span class="ident">time</span>.<span class="ident">format</span>(<span class="string">&quot;%Y-%m-%d %H:%M:%S.%f %z&quot;</span>),
                 <span class="ident">TimeStyle::LongIso</span> =&gt; <span class="ident">time</span>.<span class="ident">format</span>(<span class="string">&quot;%Y-%m-%d %H:%M&quot;</span>),
                 <span class="ident">TimeStyle::Iso</span> =&gt; <span class="ident">time</span>.<span class="ident">format</span>(<span class="kw">if</span> <span class="ident">recent</span> { <span class="string">&quot;%m-%d %H:%M&quot;</span> } <span class="kw">else</span> { <span class="string">&quot;%Y-%m-%d &quot;</span> }),
@@ -5515,6 +5570,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
 
                     <span class="ident">time</span>.<span class="ident">format</span>(<span class="ident">fmt</span>)
                 }
+                <span class="ident">TimeStyle::Format</span>(<span class="ident">e</span>) =&gt; <span class="ident">time</span>.<span class="ident">format</span>(<span class="ident">e</span>),
             }
             .<span class="ident">to_string</span>()
         }
