@@ -1365,6 +1365,23 @@
 <span id="1365">1365</span>
 <span id="1366">1366</span>
 <span id="1367">1367</span>
+<span id="1368">1368</span>
+<span id="1369">1369</span>
+<span id="1370">1370</span>
+<span id="1371">1371</span>
+<span id="1372">1372</span>
+<span id="1373">1373</span>
+<span id="1374">1374</span>
+<span id="1375">1375</span>
+<span id="1376">1376</span>
+<span id="1377">1377</span>
+<span id="1378">1378</span>
+<span id="1379">1379</span>
+<span id="1380">1380</span>
+<span id="1381">1381</span>
+<span id="1382">1382</span>
+<span id="1383">1383</span>
+<span id="1384">1384</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Akira Hayakawa &lt;ruby.wktk@gmail.com&gt;</span>
@@ -1511,7 +1528,7 @@
                 .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;N&quot;</span>)
                 .<span class="ident">default_value</span>(<span class="ident">OPT_DEFAULT_SUFFIX_LENGTH</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;use suffixes of length N (default 2)&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;use suffixes of fixed length N. 0 implies dynamic length.&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_HEX_SUFFIXES</span>)
@@ -1767,13 +1784,23 @@
 }
 
 <span class="doccomment">/// Parse the suffix type from the command-line arguments.</span>
-<span class="kw">fn</span> <span class="ident">suffix_type_from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="ident">SuffixType</span> {
+<span class="kw">fn</span> <span class="ident">suffix_type_from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">SuffixType</span>, <span class="ident">usize</span>), <span class="ident">SettingsError</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">value_source</span>(<span class="ident">OPT_NUMERIC_SUFFIXES</span>) <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">ValueSource::CommandLine</span>) {
-        <span class="ident">SuffixType::Decimal</span>
+        <span class="kw">let</span> <span class="ident">suffix_start</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_NUMERIC_SUFFIXES</span>);
+        <span class="kw">let</span> <span class="ident">suffix_start</span> <span class="op">=</span> <span class="ident">suffix_start</span>.<span class="ident">ok_or</span>(<span class="ident">SettingsError::SuffixNotParsable</span>(<span class="ident">String::new</span>()))<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">suffix_start</span> <span class="op">=</span> <span class="ident">suffix_start</span>
+            .<span class="ident">parse</span>()
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">SettingsError::SuffixNotParsable</span>(<span class="ident">suffix_start</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>((<span class="ident">SuffixType::Decimal</span>, <span class="ident">suffix_start</span>))
     } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">value_source</span>(<span class="ident">OPT_HEX_SUFFIXES</span>) <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">ValueSource::CommandLine</span>) {
-        <span class="ident">SuffixType::Hexadecimal</span>
+        <span class="kw">let</span> <span class="ident">suffix_start</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_HEX_SUFFIXES</span>);
+        <span class="kw">let</span> <span class="ident">suffix_start</span> <span class="op">=</span> <span class="ident">suffix_start</span>.<span class="ident">ok_or</span>(<span class="ident">SettingsError::SuffixNotParsable</span>(<span class="ident">String::new</span>()))<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">suffix_start</span> <span class="op">=</span> <span class="ident">usize::from_str_radix</span>(<span class="ident">suffix_start</span>, <span class="number">16</span>)
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">SettingsError::SuffixNotParsable</span>(<span class="ident">suffix_start</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>((<span class="ident">SuffixType::Hexadecimal</span>, <span class="ident">suffix_start</span>))
     } <span class="kw">else</span> {
-        <span class="ident">SuffixType::Alphabetic</span>
+        <span class="comment">// no numeric/hex suffix</span>
+        <span class="prelude-val">Ok</span>((<span class="ident">SuffixType::Alphabetic</span>, <span class="number">0</span>))
     }
 }
 
@@ -1785,6 +1812,7 @@
     <span class="ident">prefix</span>: <span class="ident">String</span>,
     <span class="ident">suffix_type</span>: <span class="ident">SuffixType</span>,
     <span class="ident">suffix_length</span>: <span class="ident">usize</span>,
+    <span class="ident">suffix_start</span>: <span class="ident">usize</span>,
     <span class="ident">additional_suffix</span>: <span class="ident">String</span>,
     <span class="ident">input</span>: <span class="ident">String</span>,
     <span class="doccomment">/// When supplied, a shell command to output to instead of xaa, xab …</span>
@@ -1864,7 +1892,7 @@
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SettingsError::SuffixContainsSeparator</span>(<span class="ident">additional_suffix</span>));
         }
         <span class="kw">let</span> <span class="ident">strategy</span> <span class="op">=</span> <span class="ident">Strategy::from</span>(<span class="ident">matches</span>).<span class="ident">map_err</span>(<span class="ident">SettingsError::Strategy</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">suffix_type</span> <span class="op">=</span> <span class="ident">suffix_type_from</span>(<span class="ident">matches</span>);
+        <span class="kw">let</span> (<span class="ident">suffix_type</span>, <span class="ident">suffix_start</span>) <span class="op">=</span> <span class="ident">suffix_type_from</span>(<span class="ident">matches</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">suffix_length_str</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_SUFFIX_LENGTH</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">suffix_length</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident">suffix_length_str</span>
             .<span class="ident">parse</span>()
@@ -1884,6 +1912,7 @@
                 .<span class="ident">parse</span>()
                 .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">SettingsError::SuffixNotParsable</span>(<span class="ident">suffix_length_str</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>,
             <span class="ident">suffix_type</span>,
+            <span class="ident">suffix_start</span>,
             <span class="ident">additional_suffix</span>,
             <span class="ident">verbose</span>: <span class="ident">matches</span>.<span class="ident">value_source</span>(<span class="string">&quot;verbose&quot;</span>) <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">ValueSource::CommandLine</span>),
             <span class="ident">strategy</span>,
@@ -1956,7 +1985,8 @@
             <span class="kw-2">&amp;</span><span class="ident">settings</span>.<span class="ident">additional_suffix</span>,
             <span class="ident">settings</span>.<span class="ident">suffix_length</span>,
             <span class="ident">settings</span>.<span class="ident">suffix_type</span>,
-        );
+            <span class="ident">settings</span>.<span class="ident">suffix_start</span>,
+        )<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">filename_iterator</span>
             .<span class="ident">next</span>()
             .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;output file suffixes exhausted&quot;</span>))<span class="question-mark">?</span>;
@@ -2084,7 +2114,8 @@
             <span class="kw-2">&amp;</span><span class="ident">settings</span>.<span class="ident">additional_suffix</span>,
             <span class="ident">settings</span>.<span class="ident">suffix_length</span>,
             <span class="ident">settings</span>.<span class="ident">suffix_type</span>,
-        );
+            <span class="ident">settings</span>.<span class="ident">suffix_start</span>,
+        )<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">filename_iterator</span>
             .<span class="ident">next</span>()
             .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;output file suffixes exhausted&quot;</span>))<span class="question-mark">?</span>;
@@ -2192,7 +2223,8 @@
             <span class="kw-2">&amp;</span><span class="ident">settings</span>.<span class="ident">additional_suffix</span>,
             <span class="ident">settings</span>.<span class="ident">suffix_length</span>,
             <span class="ident">settings</span>.<span class="ident">suffix_type</span>,
-        );
+            <span class="ident">settings</span>.<span class="ident">suffix_start</span>,
+        )<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">filename_iterator</span>
             .<span class="ident">next</span>()
             .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;output file suffixes exhausted&quot;</span>))<span class="question-mark">?</span>;
@@ -2389,7 +2421,8 @@
         <span class="kw-2">&amp;</span><span class="ident">settings</span>.<span class="ident">additional_suffix</span>,
         <span class="ident">settings</span>.<span class="ident">suffix_length</span>,
         <span class="ident">settings</span>.<span class="ident">suffix_type</span>,
-    );
+        <span class="ident">settings</span>.<span class="ident">suffix_start</span>,
+    )<span class="question-mark">?</span>;
 
     <span class="comment">// Create one writer for each chunk. This will create each</span>
     <span class="comment">// of the underlying files (if not in `--filter` mode).</span>
@@ -2465,7 +2498,8 @@
         <span class="kw-2">&amp;</span><span class="ident">settings</span>.<span class="ident">additional_suffix</span>,
         <span class="ident">settings</span>.<span class="ident">suffix_length</span>,
         <span class="ident">settings</span>.<span class="ident">suffix_type</span>,
-    );
+        <span class="ident">settings</span>.<span class="ident">suffix_start</span>,
+    )<span class="question-mark">?</span>;
 
     <span class="comment">// Create one writer for each chunk. This will create each</span>
     <span class="comment">// of the underlying files (if not in `--filter` mode).</span>

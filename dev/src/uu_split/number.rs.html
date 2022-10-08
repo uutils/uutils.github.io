@@ -580,10 +580,6 @@
 <span id="580">580</span>
 <span id="581">581</span>
 <span id="582">582</span>
-<span id="583">583</span>
-<span id="584">584</span>
-<span id="585">585</span>
-<span id="586">586</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -686,10 +682,10 @@
     <span class="doccomment">/// differently and we only intend to use these numbers for display</span>
     <span class="doccomment">/// purposes and not for mathematical purposes.</span>
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">digits</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">digits</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::FixedWidth</span>(<span class="ident">number</span>) =&gt; <span class="kw-2">&amp;</span><span class="ident">number</span>.<span class="ident">digits</span>,
-            <span class="ident"><span class="self">Self</span>::DynamicWidth</span>(<span class="ident">number</span>) =&gt; <span class="kw-2">&amp;</span><span class="ident">number</span>.<span class="ident">digits</span>,
+            <span class="ident"><span class="self">Self</span>::FixedWidth</span>(<span class="ident">number</span>) =&gt; <span class="ident">number</span>.<span class="ident">digits</span>.<span class="ident">clone</span>(),
+            <span class="ident"><span class="self">Self</span>::DynamicWidth</span>(<span class="ident">number</span>) =&gt; <span class="ident">number</span>.<span class="ident">digits</span>(),
         }
     }
 
@@ -761,7 +757,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Displaying</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// This number is only displayable if `radix` is 10, 26, or 26. If</span>
+<span class="doccomment">/// This number is only displayable if `radix` is 10, 16, or 26. If</span>
 <span class="doccomment">/// `radix` is 10 or 16, then the digits are concatenated and</span>
 <span class="doccomment">/// displayed as a fixed-width decimal or hexadecimal number,</span>
 <span class="doccomment">/// respectively. If `radix` is 26, then each digit is translated to</span>
@@ -775,10 +771,21 @@
 
 <span class="kw">impl</span> <span class="ident">FixedWidthNumber</span> {
     <span class="doccomment">/// Instantiate a number of the given radix and width.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">radix</span>: <span class="ident">u8</span>, <span class="ident">width</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">radix</span>,
-            <span class="ident">digits</span>: <span class="macro">vec!</span>[<span class="number">0</span>; <span class="ident">width</span>],
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">radix</span>: <span class="ident">u8</span>, <span class="ident">width</span>: <span class="ident">usize</span>, <span class="kw-2">mut</span> <span class="ident">suffix_start</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Overflow</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">digits</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0_u8</span>; <span class="ident">width</span>];
+
+        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> (<span class="number">0</span>..<span class="ident">digits</span>.<span class="ident">len</span>()).<span class="ident">rev</span>() {
+            <span class="kw">let</span> <span class="ident">remainder</span> <span class="op">=</span> (<span class="ident">suffix_start</span> <span class="op">%</span> (<span class="ident">radix</span> <span class="kw">as</span> <span class="ident">usize</span>)) <span class="kw">as</span> <span class="ident">u8</span>;
+            <span class="ident">suffix_start</span> <span class="op">/</span><span class="op">=</span> <span class="ident">radix</span> <span class="kw">as</span> <span class="ident">usize</span>;
+            <span class="ident">digits</span>[<span class="ident">i</span>] <span class="op">=</span> <span class="ident">remainder</span>;
+            <span class="kw">if</span> <span class="ident">suffix_start</span> <span class="op">==</span> <span class="number">0</span> {
+                <span class="kw">break</span>;
+            }
+        }
+        <span class="kw">if</span> <span class="ident">suffix_start</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+            <span class="prelude-val">Err</span>(<span class="ident">Overflow</span>)
+        } <span class="kw">else</span> {
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">radix</span>, <span class="ident">digits</span> })
         }
     }
 
@@ -815,25 +822,12 @@
 
 <span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">FixedWidthNumber</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">radix</span> {
-            <span class="number">10</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">digits</span>: <span class="ident">String</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">digits</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> (<span class="string">b&#39;0&#39;</span> <span class="op">+</span> <span class="ident">d</span>) <span class="kw">as</span> <span class="ident">char</span>).<span class="ident">collect</span>();
-                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">digits</span>)
-            }
-            <span class="number">16</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">digits</span>: <span class="ident">String</span> <span class="op">=</span> <span class="self">self</span>
-                    .<span class="ident">digits</span>
-                    .<span class="ident">iter</span>()
-                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> (<span class="kw">if</span> <span class="kw-2">*</span><span class="ident">d</span> <span class="op">&lt;</span> <span class="number">10</span> { <span class="string">b&#39;0&#39;</span> <span class="op">+</span> <span class="ident">d</span> } <span class="kw">else</span> { <span class="string">b&#39;a&#39;</span> <span class="op">+</span> (<span class="ident">d</span> <span class="op">-</span> <span class="number">10</span>) }) <span class="kw">as</span> <span class="ident">char</span>)
-                    .<span class="ident">collect</span>();
-                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">digits</span>)
-            }
-            <span class="number">26</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">digits</span>: <span class="ident">String</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">digits</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> (<span class="string">b&#39;a&#39;</span> <span class="op">+</span> <span class="ident">d</span>) <span class="kw">as</span> <span class="ident">char</span>).<span class="ident">collect</span>();
-                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">digits</span>)
-            }
-            <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">fmt::Error</span>),
-        }
+        <span class="kw">let</span> <span class="ident">digits</span>: <span class="ident">String</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">digits</span>
+            .<span class="ident">iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> <span class="ident">map_digit</span>(<span class="self">self</span>.<span class="ident">radix</span>, <span class="kw-2">*</span><span class="ident">d</span>))
+            .<span class="ident">collect</span>();
+        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">digits</span>)
     }
 }
 
@@ -879,105 +873,74 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DynamicWidthNumber</span> {
     <span class="ident">radix</span>: <span class="ident">u8</span>,
-    <span class="ident">digits</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
+    <span class="ident">current</span>: <span class="ident">usize</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">DynamicWidthNumber</span> {
-    <span class="doccomment">/// Instantiate a number of the given radix, starting with width 2.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This associated function returns a new instance of the struct</span>
-    <span class="doccomment">/// with the given radix and a width of two digits, both 0.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">radix</span>: <span class="ident">u8</span>) -&gt; <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">radix</span>: <span class="ident">u8</span>, <span class="ident">suffix_start</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">radix</span>,
-            <span class="ident">digits</span>: <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">0</span>],
+            <span class="ident">current</span>: <span class="ident">suffix_start</span>,
         }
     }
 
-    <span class="doccomment">/// Set all digits to zero.</span>
-    <span class="kw">fn</span> <span class="ident">reset</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">digits</span>.<span class="ident">len</span>() {
-            <span class="self">self</span>.<span class="ident">digits</span>[<span class="ident">i</span>] <span class="op">=</span> <span class="number">0</span>;
-        }
-    }
-
-    <span class="doccomment">/// Increment this number.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This method adds one to this number. The first time that the</span>
-    <span class="doccomment">/// most significant digit would achieve its highest possible</span>
-    <span class="doccomment">/// value (that is, `radix - 1`), then all the digits get reset to</span>
-    <span class="doccomment">/// 0 and the number of digits increases by one.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This method never returns an error.</span>
     <span class="kw">fn</span> <span class="ident">increment</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Overflow</span><span class="op">&gt;</span> {
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> (<span class="number">0</span>..<span class="self">self</span>.<span class="ident">digits</span>.<span class="ident">len</span>()).<span class="ident">rev</span>() {
-            <span class="comment">// Increment the current digit.</span>
-            <span class="self">self</span>.<span class="ident">digits</span>[<span class="ident">i</span>] <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-
-            <span class="comment">// If the digit overflows, then set it to 0 and continue</span>
-            <span class="comment">// to the next iteration to increment the next most</span>
-            <span class="comment">// significant digit. Otherwise, terminate the loop, since</span>
-            <span class="comment">// there will be no further changes to any higher order</span>
-            <span class="comment">// digits.</span>
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">digits</span>[<span class="ident">i</span>] <span class="op">==</span> <span class="self">self</span>.<span class="ident">radix</span> {
-                <span class="self">self</span>.<span class="ident">digits</span>[<span class="ident">i</span>] <span class="op">=</span> <span class="number">0</span>;
-            } <span class="kw">else</span> {
-                <span class="kw">break</span>;
-            }
-        }
-
-        <span class="comment">// If the most significant digit is at its maximum value, then</span>
-        <span class="comment">// add another digit and reset all digits zero.</span>
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">digits</span>[<span class="number">0</span>] <span class="op">==</span> <span class="self">self</span>.<span class="ident">radix</span> <span class="op">-</span> <span class="number">1</span> {
-            <span class="self">self</span>.<span class="ident">digits</span>.<span class="ident">push</span>(<span class="number">0</span>);
-            <span class="self">self</span>.<span class="ident">reset</span>();
-        }
+        <span class="self">self</span>.<span class="ident">current</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
         <span class="prelude-val">Ok</span>(())
     }
+
+    <span class="kw">fn</span> <span class="ident">digits</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">radix</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">radix</span> <span class="kw">as</span> <span class="ident">usize</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">remaining</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">current</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sub_value</span> <span class="op">=</span> (<span class="ident">radix</span> <span class="op">-</span> <span class="number">1</span>) <span class="op">*</span> <span class="ident">radix</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">num_fill_chars</span> <span class="op">=</span> <span class="number">2</span>;
+
+        <span class="comment">// Convert the number into &quot;num_fill_chars&quot; and &quot;remaining&quot;</span>
+        <span class="kw">while</span> <span class="ident">remaining</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">sub_value</span> {
+            <span class="ident">remaining</span> <span class="op">-</span><span class="op">=</span> <span class="ident">sub_value</span>;
+            <span class="ident">sub_value</span> <span class="kw-2">*</span><span class="op">=</span> <span class="ident">radix</span>;
+            <span class="ident">num_fill_chars</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+        }
+
+        <span class="comment">// Convert the &quot;remainder&quot; to digits</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">digits</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+        <span class="kw">while</span> <span class="ident">remaining</span> <span class="op">&gt;</span> <span class="number">0</span> {
+            <span class="ident">digits</span>.<span class="ident">push</span>((<span class="ident">remaining</span> <span class="op">%</span> <span class="ident">radix</span>) <span class="kw">as</span> <span class="ident">u8</span>);
+            <span class="ident">remaining</span> <span class="op">/</span><span class="op">=</span> <span class="ident">radix</span>;
+        }
+        <span class="comment">// Left pad the vec</span>
+        <span class="ident">digits</span>.<span class="ident">resize</span>(<span class="ident">num_fill_chars</span>, <span class="number">0</span>);
+        <span class="ident">digits</span>.<span class="ident">reverse</span>();
+        <span class="ident">digits</span>
+    }
+}
+
+<span class="kw">fn</span> <span class="ident">map_digit</span>(<span class="ident">radix</span>: <span class="ident">u8</span>, <span class="ident">d</span>: <span class="ident">u8</span>) -&gt; <span class="ident">char</span> {
+    (<span class="kw">match</span> <span class="ident">radix</span> {
+        <span class="number">10</span> =&gt; <span class="string">b&#39;0&#39;</span> <span class="op">+</span> <span class="ident">d</span>,
+        <span class="number">16</span> =&gt; {
+            <span class="kw">if</span> <span class="ident">d</span> <span class="op">&lt;</span> <span class="number">10</span> {
+                <span class="string">b&#39;0&#39;</span> <span class="op">+</span> <span class="ident">d</span>
+            } <span class="kw">else</span> {
+                <span class="string">b&#39;a&#39;</span> <span class="op">+</span> (<span class="ident">d</span> <span class="op">-</span> <span class="number">10</span>)
+            }
+        }
+        <span class="number">26</span> =&gt; <span class="string">b&#39;a&#39;</span> <span class="op">+</span> <span class="ident">d</span>,
+        <span class="kw">_</span> =&gt; <span class="number">0</span>,
+    }) <span class="kw">as</span> <span class="ident">char</span>
 }
 
 <span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">DynamicWidthNumber</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">radix</span> {
-            <span class="number">10</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">num_fill_chars</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">digits</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">2</span>;
-                <span class="kw">let</span> <span class="ident">digits</span>: <span class="ident">String</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">digits</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> (<span class="string">b&#39;0&#39;</span> <span class="op">+</span> <span class="ident">d</span>) <span class="kw">as</span> <span class="ident">char</span>).<span class="ident">collect</span>();
-                <span class="macro">write!</span>(
-                    <span class="ident">f</span>,
-                    <span class="string">&quot;{empty:9&lt;num_fill_chars$}{digits}&quot;</span>,
-                    <span class="ident">empty</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>,
-                    <span class="ident">num_fill_chars</span> <span class="op">=</span> <span class="ident">num_fill_chars</span>,
-                    <span class="ident">digits</span> <span class="op">=</span> <span class="ident">digits</span>,
-                )
-            }
-            <span class="number">16</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">num_fill_chars</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">digits</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">2</span>;
-                <span class="kw">let</span> <span class="ident">digits</span>: <span class="ident">String</span> <span class="op">=</span> <span class="self">self</span>
-                    .<span class="ident">digits</span>
-                    .<span class="ident">iter</span>()
-                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> (<span class="kw">if</span> <span class="kw-2">*</span><span class="ident">d</span> <span class="op">&lt;</span> <span class="number">10</span> { <span class="string">b&#39;0&#39;</span> <span class="op">+</span> <span class="ident">d</span> } <span class="kw">else</span> { <span class="string">b&#39;a&#39;</span> <span class="op">+</span> (<span class="ident">d</span> <span class="op">-</span> <span class="number">10</span>) }) <span class="kw">as</span> <span class="ident">char</span>)
-                    .<span class="ident">collect</span>();
-                <span class="macro">write!</span>(
-                    <span class="ident">f</span>,
-                    <span class="string">&quot;{empty:f&lt;num_fill_chars$}{digits}&quot;</span>,
-                    <span class="ident">empty</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>,
-                    <span class="ident">num_fill_chars</span> <span class="op">=</span> <span class="ident">num_fill_chars</span>,
-                    <span class="ident">digits</span> <span class="op">=</span> <span class="ident">digits</span>,
-                )
-            }
-            <span class="number">26</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">num_fill_chars</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">digits</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">2</span>;
-                <span class="kw">let</span> <span class="ident">digits</span>: <span class="ident">String</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">digits</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> (<span class="string">b&#39;a&#39;</span> <span class="op">+</span> <span class="ident">d</span>) <span class="kw">as</span> <span class="ident">char</span>).<span class="ident">collect</span>();
-                <span class="macro">write!</span>(
-                    <span class="ident">f</span>,
-                    <span class="string">&quot;{empty:z&lt;num_fill_chars$}{digits}&quot;</span>,
-                    <span class="ident">empty</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>,
-                    <span class="ident">num_fill_chars</span> <span class="op">=</span> <span class="ident">num_fill_chars</span>,
-                    <span class="ident">digits</span> <span class="op">=</span> <span class="ident">digits</span>,
-                )
-            }
-            <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">fmt::Error</span>),
-        }
+        <span class="kw">let</span> <span class="ident">digits</span>: <span class="ident">String</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">digits</span>()
+            .<span class="ident">iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> <span class="ident">map_digit</span>(<span class="self">self</span>.<span class="ident">radix</span>, <span class="kw-2">*</span><span class="ident">d</span>))
+            .<span class="ident">collect</span>();
+        <span class="kw">let</span> <span class="ident">fill</span>: <span class="ident">String</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">digits</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">2</span>)
+            .<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">map_digit</span>(<span class="self">self</span>.<span class="ident">radix</span>, <span class="self">self</span>.<span class="ident">radix</span> <span class="op">-</span> <span class="number">1</span>))
+            .<span class="ident">collect</span>();
+        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{fill}{digits}&quot;</span>)
     }
 }
 
@@ -990,35 +953,36 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_dynamic_width_number_increment</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">Number::DynamicWidth</span>(<span class="ident">DynamicWidthNumber::new</span>(<span class="number">3</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">0</span>]);
+        <span class="macro">println!</span>(<span class="string">&quot;Here&quot;</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">Number::DynamicWidth</span>(<span class="ident">DynamicWidthNumber::new</span>(<span class="number">3</span>, <span class="number">0</span>));
+        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">0</span>]);
 
         <span class="ident">n</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>]);
+        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>]);
 
         <span class="ident">n</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">2</span>]);
+        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">2</span>]);
 
         <span class="ident">n</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">0</span>]);
+        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">0</span>]);
 
         <span class="ident">n</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">1</span>]);
+        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">1</span>]);
 
         <span class="ident">n</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>]);
+        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>]);
 
         <span class="ident">n</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>]);
+        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>]);
 
         <span class="ident">n</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>]);
+        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>]);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_dynamic_width_number_display_alphabetic</span>() {
         <span class="kw">fn</span> <span class="ident">num</span>(<span class="ident">n</span>: <span class="ident">usize</span>) -&gt; <span class="ident">Number</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">number</span> <span class="op">=</span> <span class="ident">Number::DynamicWidth</span>(<span class="ident">DynamicWidthNumber::new</span>(<span class="number">26</span>));
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">number</span> <span class="op">=</span> <span class="ident">Number::DynamicWidth</span>(<span class="ident">DynamicWidthNumber::new</span>(<span class="number">26</span>, <span class="number">0</span>));
             <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n</span> {
                 <span class="ident">number</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
             }
@@ -1042,7 +1006,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_dynamic_width_number_display_numeric_decimal</span>() {
         <span class="kw">fn</span> <span class="ident">num</span>(<span class="ident">n</span>: <span class="ident">usize</span>) -&gt; <span class="ident">Number</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">number</span> <span class="op">=</span> <span class="ident">Number::DynamicWidth</span>(<span class="ident">DynamicWidthNumber::new</span>(<span class="number">10</span>));
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">number</span> <span class="op">=</span> <span class="ident">Number::DynamicWidth</span>(<span class="ident">DynamicWidthNumber::new</span>(<span class="number">10</span>, <span class="number">0</span>));
             <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n</span> {
                 <span class="ident">number</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
             }
@@ -1063,7 +1027,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_dynamic_width_number_display_numeric_hexadecimal</span>() {
         <span class="kw">fn</span> <span class="ident">num</span>(<span class="ident">n</span>: <span class="ident">usize</span>) -&gt; <span class="ident">Number</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">number</span> <span class="op">=</span> <span class="ident">Number::DynamicWidth</span>(<span class="ident">DynamicWidthNumber::new</span>(<span class="number">16</span>));
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">number</span> <span class="op">=</span> <span class="ident">Number::DynamicWidth</span>(<span class="ident">DynamicWidthNumber::new</span>(<span class="number">16</span>, <span class="number">0</span>));
             <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n</span> {
                 <span class="ident">number</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
             }
@@ -1086,31 +1050,31 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_fixed_width_number_increment</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">Number::FixedWidth</span>(<span class="ident">FixedWidthNumber::new</span>(<span class="number">3</span>, <span class="number">2</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">0</span>]);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">Number::FixedWidth</span>(<span class="ident">FixedWidthNumber::new</span>(<span class="number">3</span>, <span class="number">2</span>, <span class="number">0</span>).<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">0</span>]);
         <span class="ident">n</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>]);
+        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>]);
         <span class="ident">n</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">2</span>]);
+        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">2</span>]);
         <span class="ident">n</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">0</span>]);
+        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">0</span>]);
         <span class="ident">n</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">1</span>]);
+        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">1</span>]);
         <span class="ident">n</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>]);
+        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>]);
         <span class="ident">n</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">2</span>, <span class="number">0</span>]);
+        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="macro">vec!</span>[<span class="number">2</span>, <span class="number">0</span>]);
         <span class="ident">n</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">2</span>, <span class="number">1</span>]);
+        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="macro">vec!</span>[<span class="number">2</span>, <span class="number">1</span>]);
         <span class="ident">n</span>.<span class="ident">increment</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">2</span>, <span class="number">2</span>]);
+        <span class="macro">assert_eq!</span>(<span class="ident">n</span>.<span class="ident">digits</span>(), <span class="macro">vec!</span>[<span class="number">2</span>, <span class="number">2</span>]);
         <span class="macro">assert!</span>(<span class="ident">n</span>.<span class="ident">increment</span>().<span class="ident">is_err</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_fixed_width_number_display_alphabetic</span>() {
         <span class="kw">fn</span> <span class="ident">num</span>(<span class="ident">n</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Number</span>, <span class="ident">Overflow</span><span class="op">&gt;</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">number</span> <span class="op">=</span> <span class="ident">Number::FixedWidth</span>(<span class="ident">FixedWidthNumber::new</span>(<span class="number">26</span>, <span class="number">2</span>));
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">number</span> <span class="op">=</span> <span class="ident">Number::FixedWidth</span>(<span class="ident">FixedWidthNumber::new</span>(<span class="number">26</span>, <span class="number">2</span>, <span class="number">0</span>).<span class="ident">unwrap</span>());
             <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n</span> {
                 <span class="ident">number</span>.<span class="ident">increment</span>()<span class="question-mark">?</span>;
             }
@@ -1135,7 +1099,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_fixed_width_number_display_numeric_decimal</span>() {
         <span class="kw">fn</span> <span class="ident">num</span>(<span class="ident">n</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Number</span>, <span class="ident">Overflow</span><span class="op">&gt;</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">number</span> <span class="op">=</span> <span class="ident">Number::FixedWidth</span>(<span class="ident">FixedWidthNumber::new</span>(<span class="number">10</span>, <span class="number">2</span>));
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">number</span> <span class="op">=</span> <span class="ident">Number::FixedWidth</span>(<span class="ident">FixedWidthNumber::new</span>(<span class="number">10</span>, <span class="number">2</span>, <span class="number">0</span>).<span class="ident">unwrap</span>());
             <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n</span> {
                 <span class="ident">number</span>.<span class="ident">increment</span>()<span class="question-mark">?</span>;
             }
@@ -1154,7 +1118,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_fixed_width_number_display_numeric_hexadecimal</span>() {
         <span class="kw">fn</span> <span class="ident">num</span>(<span class="ident">n</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Number</span>, <span class="ident">Overflow</span><span class="op">&gt;</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">number</span> <span class="op">=</span> <span class="ident">Number::FixedWidth</span>(<span class="ident">FixedWidthNumber::new</span>(<span class="number">16</span>, <span class="number">2</span>));
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">number</span> <span class="op">=</span> <span class="ident">Number::FixedWidth</span>(<span class="ident">FixedWidthNumber::new</span>(<span class="number">16</span>, <span class="number">2</span>, <span class="number">0</span>).<span class="ident">unwrap</span>());
             <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n</span> {
                 <span class="ident">number</span>.<span class="ident">increment</span>()<span class="question-mark">?</span>;
             }
@@ -1168,6 +1132,34 @@
         <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">num</span>(<span class="number">16</span> <span class="op">*</span> <span class="number">15</span>).<span class="ident">unwrap</span>()), <span class="string">&quot;f0&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">num</span>(<span class="number">16</span> <span class="op">*</span> <span class="number">16</span> <span class="op">-</span> <span class="number">1</span>).<span class="ident">unwrap</span>()), <span class="string">&quot;ff&quot;</span>);
         <span class="macro">assert!</span>(<span class="ident">num</span>(<span class="number">16</span> <span class="op">*</span> <span class="number">16</span>).<span class="ident">is_err</span>());
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_fixed_width_number_start_suffix</span>() {
+        <span class="kw">fn</span> <span class="ident">num</span>(<span class="ident">n</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Number</span>, <span class="ident">Overflow</span><span class="op">&gt;</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">number</span> <span class="op">=</span> <span class="ident">Number::FixedWidth</span>(<span class="ident">FixedWidthNumber::new</span>(<span class="number">16</span>, <span class="number">2</span>, <span class="number">0x14</span>)<span class="question-mark">?</span>);
+            <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n</span> {
+                <span class="ident">number</span>.<span class="ident">increment</span>()<span class="question-mark">?</span>;
+            }
+            <span class="prelude-val">Ok</span>(<span class="ident">number</span>)
+        }
+
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">num</span>(<span class="number">0</span>).<span class="ident">unwrap</span>()), <span class="string">&quot;14&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">num</span>(<span class="number">0xf</span>).<span class="ident">unwrap</span>()), <span class="string">&quot;23&quot;</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_dynamic_width_number_start_suffix</span>() {
+        <span class="kw">fn</span> <span class="ident">num</span>(<span class="ident">n</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Number</span>, <span class="ident">Overflow</span><span class="op">&gt;</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">number</span> <span class="op">=</span> <span class="ident">Number::DynamicWidth</span>(<span class="ident">DynamicWidthNumber::new</span>(<span class="number">10</span>, <span class="number">8</span>));
+            <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n</span> {
+                <span class="ident">number</span>.<span class="ident">increment</span>()<span class="question-mark">?</span>;
+            }
+            <span class="prelude-val">Ok</span>(<span class="ident">number</span>)
+        }
+
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">num</span>(<span class="number">0</span>).<span class="ident">unwrap</span>()), <span class="string">&quot;08&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">num</span>(<span class="number">8</span>).<span class="ident">unwrap</span>()), <span class="string">&quot;16&quot;</span>);
     }
 }
 </code></pre></div>
