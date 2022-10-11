@@ -1684,6 +1684,40 @@
 <span id="1684">1684</span>
 <span id="1685">1685</span>
 <span id="1686">1686</span>
+<span id="1687">1687</span>
+<span id="1688">1688</span>
+<span id="1689">1689</span>
+<span id="1690">1690</span>
+<span id="1691">1691</span>
+<span id="1692">1692</span>
+<span id="1693">1693</span>
+<span id="1694">1694</span>
+<span id="1695">1695</span>
+<span id="1696">1696</span>
+<span id="1697">1697</span>
+<span id="1698">1698</span>
+<span id="1699">1699</span>
+<span id="1700">1700</span>
+<span id="1701">1701</span>
+<span id="1702">1702</span>
+<span id="1703">1703</span>
+<span id="1704">1704</span>
+<span id="1705">1705</span>
+<span id="1706">1706</span>
+<span id="1707">1707</span>
+<span id="1708">1708</span>
+<span id="1709">1709</span>
+<span id="1710">1710</span>
+<span id="1711">1711</span>
+<span id="1712">1712</span>
+<span id="1713">1713</span>
+<span id="1714">1714</span>
+<span id="1715">1715</span>
+<span id="1716">1716</span>
+<span id="1717">1717</span>
+<span id="1718">1718</span>
+<span id="1719">1719</span>
+<span id="1720">1720</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::missing_safety_doc</span>)]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::extra_unused_lifetimes</span>)]</span>
 
@@ -1724,7 +1758,7 @@
 <span class="kw">use</span> <span class="ident">quick_error::ResultExt</span>;
 <span class="kw">use</span> <span class="ident">uucore::backup_control</span>::{<span class="self">self</span>, <span class="ident">BackupMode</span>};
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
-<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">set_exit_code</span>, <span class="ident">UClapError</span>, <span class="ident">UError</span>, <span class="ident">UResult</span>, <span class="ident">UUsageError</span>};
+<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">set_exit_code</span>, <span class="ident">UClapError</span>, <span class="ident">UError</span>, <span class="ident">UIoError</span>, <span class="ident">UResult</span>, <span class="ident">UUsageError</span>};
 <span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 <span class="kw">use</span> <span class="ident">uucore::fs</span>::{
     <span class="ident">canonicalize</span>, <span class="ident">paths_refer_to_same_file</span>, <span class="ident">FileInformation</span>, <span class="ident">MissingHandling</span>, <span class="ident">ResolveMode</span>,
@@ -2859,17 +2893,36 @@
                     }<span class="question-mark">?</span>;
                 }
             } <span class="kw">else</span> {
-                <span class="ident">copy_file</span>(
+                <span class="comment">// At this point, `path` is just a plain old file.</span>
+                <span class="comment">// Terminate this function immediately if there is any</span>
+                <span class="comment">// kind of error *except* a &quot;permission denied&quot; error.</span>
+                <span class="comment">//</span>
+                <span class="comment">// TODO What other kinds of errors, if any, should</span>
+                <span class="comment">// cause us to continue walking the directory?</span>
+                <span class="kw">match</span> <span class="ident">copy_file</span>(
                     <span class="ident">path</span>.<span class="ident">as_path</span>(),
                     <span class="ident">local_to_target</span>.<span class="ident">as_path</span>(),
                     <span class="ident">options</span>,
                     <span class="ident">symlinked_files</span>,
                     <span class="bool-val">false</span>,
-                )<span class="question-mark">?</span>;
+                ) {
+                    <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; {}
+                    <span class="prelude-val">Err</span>(<span class="ident">Error::IoErrContext</span>(<span class="ident">e</span>, <span class="kw">_</span>))
+                        <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">kind</span>() <span class="op">==</span> <span class="ident">std::io::ErrorKind::PermissionDenied</span> =&gt;
+                    {
+                        <span class="macro">show!</span>(<span class="macro">uio_error!</span>(
+                            <span class="ident">e</span>,
+                            <span class="string">&quot;cannot open {} for reading&quot;</span>,
+                            <span class="ident">p</span>.<span class="ident">path</span>().<span class="ident">quote</span>()
+                        ));
+                    }
+                    <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>),
+                }
             }
         }
     }
-
+    <span class="comment">// Copy the attributes from the root directory to the target directory.</span>
+    <span class="ident">copy_attributes</span>(<span class="ident">root</span>, <span class="ident">target</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>.<span class="ident">preserve_attributes</span>)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }
 
@@ -2890,6 +2943,14 @@
             <span class="ident"><span class="self">Self</span>::Clobber</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
         }
     }
+}
+
+<span class="doccomment">/// Copy the specified attributes from one path to another.</span>
+<span class="kw">fn</span> <span class="ident">copy_attributes</span>(<span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">dest</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">attributes</span>: <span class="kw-2">&amp;</span>[<span class="ident">Attribute</span>]) -&gt; <span class="ident">CopyResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">for</span> <span class="ident">attribute</span> <span class="kw">in</span> <span class="ident">attributes</span> {
+        <span class="ident">copy_attribute</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">attribute</span>)<span class="question-mark">?</span>;
+    }
+    <span class="prelude-val">Ok</span>(())
 }
 
 <span class="kw">fn</span> <span class="ident">copy_attribute</span>(<span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">dest</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">attribute</span>: <span class="kw-2">&amp;</span><span class="ident">Attribute</span>) -&gt; <span class="ident">CopyResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
@@ -3058,6 +3119,15 @@
     <span class="prelude-val">Ok</span>(())
 }
 
+<span class="doccomment">/// Decide whether the given path exists.</span>
+<span class="kw">fn</span> <span class="ident">file_or_link_exists</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="ident">bool</span> {
+    <span class="comment">// Using `Path.exists()` or `Path.try_exists()` is not sufficient,</span>
+    <span class="comment">// because if `path` is a symbolic link and there are too many</span>
+    <span class="comment">// levels of symbolic link, then those methods will return false</span>
+    <span class="comment">// or an OS error.</span>
+    <span class="ident">path</span>.<span class="ident">symlink_metadata</span>().<span class="ident">is_ok</span>()
+}
+
 <span class="doccomment">/// Copy the a file from `source` to `dest`. `source` will be dereferenced if</span>
 <span class="doccomment">/// `options.dereference` is set to true. `dest` will be dereferenced only if</span>
 <span class="doccomment">/// the source was not a symlink.</span>
@@ -3075,7 +3145,7 @@
     <span class="ident">symlinked_files</span>: <span class="kw-2">&amp;mut</span> <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">FileInformation</span><span class="op">&gt;</span>,
     <span class="ident">source_in_command_line</span>: <span class="ident">bool</span>,
 ) -&gt; <span class="ident">CopyResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">dest</span>.<span class="ident">exists</span>() {
+    <span class="kw">if</span> <span class="ident">file_or_link_exists</span>(<span class="ident">dest</span>) {
         <span class="ident">handle_existing_dest</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">options</span>, <span class="ident">source_in_command_line</span>)<span class="question-mark">?</span>;
     }
 
@@ -3231,9 +3301,7 @@
         <span class="comment">// the user does not have permission to write to the file.</span>
         <span class="ident">fs::set_permissions</span>(<span class="ident">dest</span>, <span class="ident">dest_permissions</span>).<span class="ident">ok</span>();
     }
-    <span class="kw">for</span> <span class="ident">attribute</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">options</span>.<span class="ident">preserve_attributes</span> {
-        <span class="ident">copy_attribute</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">attribute</span>)<span class="question-mark">?</span>;
-    }
+    <span class="ident">copy_attributes</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="kw-2">&amp;</span><span class="ident">options</span>.<span class="ident">preserve_attributes</span>)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }
 
