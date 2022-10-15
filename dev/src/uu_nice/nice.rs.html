@@ -120,7 +120,6 @@
 <span id="120">120</span>
 <span id="121">121</span>
 <span id="122">122</span>
-<span id="123">123</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Alex Lyon &lt;arcterus@mail.com&gt;</span>
@@ -138,7 +137,7 @@
 <span class="kw">use</span> <span class="ident">std::io::Error</span>;
 <span class="kw">use</span> <span class="ident">std::ptr</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">uucore</span>::{
     <span class="ident">error</span>::{<span class="ident">set_exit_code</span>, <span class="ident">UClapError</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>, <span class="ident">UUsageError</span>},
     <span class="ident">format_usage</span>,
@@ -223,7 +222,7 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
         .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
@@ -235,12 +234,11 @@
                 .<span class="ident">short</span>(<span class="string">&#39;n&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::ADJUSTMENT</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;add N to the niceness (default is 10)&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">allow_hyphen_values</span>(<span class="bool-val">true</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::COMMAND</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::CommandName</span>),
         )
 }

@@ -559,6 +559,11 @@
 <span id="559">559</span>
 <span id="560">560</span>
 <span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;</span>
@@ -573,7 +578,7 @@
 <span class="kw">use</span> <span class="ident">uucore::libc</span>::{<span class="ident">ttyname</span>, <span class="ident">STDIN_FILENO</span>, <span class="ident">S_IWGRP</span>};
 <span class="kw">use</span> <span class="ident">uucore::utmpx</span>::{<span class="self">self</span>, <span class="ident">time</span>, <span class="ident">Utmpx</span>};
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::borrow::Cow</span>;
 <span class="kw">use</span> <span class="ident">std::ffi::CStr</span>;
 <span class="kw">use</span> <span class="ident">std::fmt::Write</span>;
@@ -619,10 +624,8 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">collect_ignore</span>();
 
-    <span class="kw">let</span> <span class="ident">after_help</span> <span class="op">=</span> <span class="ident">get_long_usage</span>();
-
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>()
-        .<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="ident">after_help</span>[..])
+        .<span class="ident">after_help</span>(<span class="ident">get_long_usage</span>())
         .<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">files</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">matches</span>
@@ -631,39 +634,39 @@
         .<span class="ident">unwrap_or_default</span>();
 
     <span class="comment">// If true, attempt to canonicalize hostnames via a DNS lookup.</span>
-    <span class="kw">let</span> <span class="ident">do_lookup</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::LOOKUP</span>);
+    <span class="kw">let</span> <span class="ident">do_lookup</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::LOOKUP</span>);
 
     <span class="comment">// If true, display only a list of usernames and count of</span>
     <span class="comment">// the users logged on.</span>
     <span class="comment">// Ignored for &#39;who am i&#39;.</span>
-    <span class="kw">let</span> <span class="ident">short_list</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::COUNT</span>);
+    <span class="kw">let</span> <span class="ident">short_list</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::COUNT</span>);
 
-    <span class="kw">let</span> <span class="ident">all</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ALL</span>);
+    <span class="kw">let</span> <span class="ident">all</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ALL</span>);
 
     <span class="comment">// If true, display a line at the top describing each field.</span>
-    <span class="kw">let</span> <span class="ident">include_heading</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::HEADING</span>);
+    <span class="kw">let</span> <span class="ident">include_heading</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::HEADING</span>);
 
     <span class="comment">// If true, display a &#39;+&#39; for each user if mesg y, a &#39;-&#39; if mesg n,</span>
     <span class="comment">// or a &#39;?&#39; if their tty cannot be statted.</span>
-    <span class="kw">let</span> <span class="ident">include_mesg</span> <span class="op">=</span> <span class="ident">all</span> <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::MESG</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="string">&quot;w&quot;</span>);
+    <span class="kw">let</span> <span class="ident">include_mesg</span> <span class="op">=</span> <span class="ident">all</span> <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::MESG</span>);
 
     <span class="comment">// If true, display the last boot time.</span>
-    <span class="kw">let</span> <span class="ident">need_boottime</span> <span class="op">=</span> <span class="ident">all</span> <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::BOOT</span>);
+    <span class="kw">let</span> <span class="ident">need_boottime</span> <span class="op">=</span> <span class="ident">all</span> <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::BOOT</span>);
 
     <span class="comment">// If true, display dead processes.</span>
-    <span class="kw">let</span> <span class="ident">need_deadprocs</span> <span class="op">=</span> <span class="ident">all</span> <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::DEAD</span>);
+    <span class="kw">let</span> <span class="ident">need_deadprocs</span> <span class="op">=</span> <span class="ident">all</span> <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::DEAD</span>);
 
     <span class="comment">// If true, display processes waiting for user login.</span>
-    <span class="kw">let</span> <span class="ident">need_login</span> <span class="op">=</span> <span class="ident">all</span> <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::LOGIN</span>);
+    <span class="kw">let</span> <span class="ident">need_login</span> <span class="op">=</span> <span class="ident">all</span> <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::LOGIN</span>);
 
     <span class="comment">// If true, display processes started by init.</span>
-    <span class="kw">let</span> <span class="ident">need_initspawn</span> <span class="op">=</span> <span class="ident">all</span> <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::PROCESS</span>);
+    <span class="kw">let</span> <span class="ident">need_initspawn</span> <span class="op">=</span> <span class="ident">all</span> <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::PROCESS</span>);
 
     <span class="comment">// If true, display the last clock change.</span>
-    <span class="kw">let</span> <span class="ident">need_clockchange</span> <span class="op">=</span> <span class="ident">all</span> <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::TIME</span>);
+    <span class="kw">let</span> <span class="ident">need_clockchange</span> <span class="op">=</span> <span class="ident">all</span> <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::TIME</span>);
 
     <span class="comment">// If true, display the current runlevel.</span>
-    <span class="kw">let</span> <span class="ident">need_runlevel</span> <span class="op">=</span> <span class="ident">all</span> <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::RUNLEVEL</span>);
+    <span class="kw">let</span> <span class="ident">need_runlevel</span> <span class="op">=</span> <span class="ident">all</span> <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::RUNLEVEL</span>);
 
     <span class="kw">let</span> <span class="ident">use_defaults</span> <span class="op">=</span> <span class="op">!</span>(<span class="ident">all</span>
         <span class="op">|</span><span class="op">|</span> <span class="ident">need_boottime</span>
@@ -672,10 +675,10 @@
         <span class="op">|</span><span class="op">|</span> <span class="ident">need_initspawn</span>
         <span class="op">|</span><span class="op">|</span> <span class="ident">need_runlevel</span>
         <span class="op">|</span><span class="op">|</span> <span class="ident">need_clockchange</span>
-        <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::USERS</span>));
+        <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::USERS</span>));
 
     <span class="comment">// If true, display user processes.</span>
-    <span class="kw">let</span> <span class="ident">need_users</span> <span class="op">=</span> <span class="ident">all</span> <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::USERS</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">use_defaults</span>;
+    <span class="kw">let</span> <span class="ident">need_users</span> <span class="op">=</span> <span class="ident">all</span> <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::USERS</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">use_defaults</span>;
 
     <span class="comment">// If true, display the hours:minutes since each user has touched</span>
     <span class="comment">// the keyboard, or &quot;.&quot; if within the last minute, or &quot;old&quot; if</span>
@@ -689,7 +692,7 @@
     <span class="kw">let</span> <span class="ident">short_output</span> <span class="op">=</span> <span class="op">!</span><span class="ident">include_exit</span> <span class="op">&amp;&amp;</span> <span class="ident">use_defaults</span>;
 
     <span class="comment">// If true, display info only for the controlling tty.</span>
-    <span class="kw">let</span> <span class="ident">my_line_only</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ONLY_HOSTNAME_USER</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">files</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">2</span>;
+    <span class="kw">let</span> <span class="ident">my_line_only</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ONLY_HOSTNAME_USER</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">files</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">2</span>;
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">who</span> <span class="op">=</span> <span class="ident">Who</span> {
         <span class="ident">do_lookup</span>,
@@ -713,7 +716,7 @@
     <span class="ident">who</span>.<span class="ident">exec</span>()
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
@@ -723,96 +726,103 @@
             <span class="ident">Arg::new</span>(<span class="ident">options::ALL</span>)
                 .<span class="ident">long</span>(<span class="ident">options::ALL</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;a&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;same as -b -d --login -p -r -t -T -u&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;same as -b -d --login -p -r -t -T -u&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::BOOT</span>)
                 .<span class="ident">long</span>(<span class="ident">options::BOOT</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;b&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;time of last system boot&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;time of last system boot&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::DEAD</span>)
                 .<span class="ident">long</span>(<span class="ident">options::DEAD</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;d&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;print dead processes&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;print dead processes&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::HEADING</span>)
                 .<span class="ident">long</span>(<span class="ident">options::HEADING</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;H&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;print line of column headings&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;print line of column headings&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::LOGIN</span>)
                 .<span class="ident">long</span>(<span class="ident">options::LOGIN</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;l&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;print system login processes&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;print system login processes&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::LOOKUP</span>)
                 .<span class="ident">long</span>(<span class="ident">options::LOOKUP</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;attempt to canonicalize hostnames via DNS&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;attempt to canonicalize hostnames via DNS&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ONLY_HOSTNAME_USER</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;m&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;only hostname and user associated with stdin&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;only hostname and user associated with stdin&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::PROCESS</span>)
                 .<span class="ident">long</span>(<span class="ident">options::PROCESS</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;p&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;print active processes spawned by init&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;print active processes spawned by init&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::COUNT</span>)
                 .<span class="ident">long</span>(<span class="ident">options::COUNT</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;q&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;all login names and number of users logged on&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;all login names and number of users logged on&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::RUNLEVEL</span>)
                 .<span class="ident">long</span>(<span class="ident">options::RUNLEVEL</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;r&#39;</span>)
-                .<span class="ident">help</span>(<span class="ident">RUNLEVEL_HELP</span>),
+                .<span class="ident">help</span>(<span class="ident">RUNLEVEL_HELP</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::SHORT</span>)
                 .<span class="ident">long</span>(<span class="ident">options::SHORT</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;print only name, line, and time (default)&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;print only name, line, and time (default)&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::TIME</span>)
                 .<span class="ident">long</span>(<span class="ident">options::TIME</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;t&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;print last system clock change&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;print last system clock change&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::USERS</span>)
                 .<span class="ident">long</span>(<span class="ident">options::USERS</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;u&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;list users logged in&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;list users logged in&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::MESG</span>)
                 .<span class="ident">long</span>(<span class="ident">options::MESG</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;T&#39;</span>)
-                <span class="comment">// .visible_short_alias(&#39;w&#39;)  // TODO: requires clap &quot;3.0.0-beta.2&quot;</span>
+                .<span class="ident">visible_short_alias</span>(<span class="string">&#39;w&#39;</span>)
                 .<span class="ident">visible_aliases</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;message&quot;</span>, <span class="string">&quot;writable&quot;</span>])
-                .<span class="ident">help</span>(<span class="string">&quot;add user&#39;s message status as +, - or ?&quot;</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="string">&quot;w&quot;</span>) <span class="comment">// work around for `Arg::visible_short_alias`</span>
-                .<span class="ident">short</span>(<span class="string">&#39;w&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;same as -T&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;add user&#39;s message status as +, - or ?&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FILE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">min_values</span>(<span class="number">1</span>)
-                .<span class="ident">max_values</span>(<span class="number">2</span>)
+                .<span class="ident">num_args</span>(<span class="number">1</span>..<span class="op">=</span><span class="number">2</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>),
         )
 }

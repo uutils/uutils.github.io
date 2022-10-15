@@ -348,6 +348,18 @@
 <span id="348">348</span>
 <span id="349">349</span>
 <span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of `fmt` from the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) kwantam &lt;kwantam@gmail.com&gt;</span>
@@ -360,7 +372,7 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::cmp</span>;
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">stdout</span>, <span class="ident">Write</span>};
@@ -442,15 +454,15 @@
         <span class="ident">tabwidth</span>: <span class="number">8</span>,
     };
 
-    <span class="ident">fmt_opts</span>.<span class="ident">tagged</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_TAGGED_PARAGRAPH</span>);
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_CROWN_MARGIN</span>) {
+    <span class="ident">fmt_opts</span>.<span class="ident">tagged</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_TAGGED_PARAGRAPH</span>);
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_CROWN_MARGIN</span>) {
         <span class="ident">fmt_opts</span>.<span class="ident">crown</span> <span class="op">=</span> <span class="bool-val">true</span>;
         <span class="ident">fmt_opts</span>.<span class="ident">tagged</span> <span class="op">=</span> <span class="bool-val">false</span>;
     }
-    <span class="ident">fmt_opts</span>.<span class="ident">mail</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_PRESERVE_HEADERS</span>);
-    <span class="ident">fmt_opts</span>.<span class="ident">uniform</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_UNIFORM_SPACING</span>);
-    <span class="ident">fmt_opts</span>.<span class="ident">quick</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_QUICK</span>);
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_SPLIT_ONLY</span>) {
+    <span class="ident">fmt_opts</span>.<span class="ident">mail</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_PRESERVE_HEADERS</span>);
+    <span class="ident">fmt_opts</span>.<span class="ident">uniform</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_UNIFORM_SPACING</span>);
+    <span class="ident">fmt_opts</span>.<span class="ident">quick</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_QUICK</span>);
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_SPLIT_ONLY</span>) {
         <span class="ident">fmt_opts</span>.<span class="ident">split_only</span> <span class="op">=</span> <span class="bool-val">true</span>;
         <span class="ident">fmt_opts</span>.<span class="ident">crown</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="ident">fmt_opts</span>.<span class="ident">tagged</span> <span class="op">=</span> <span class="bool-val">false</span>;
@@ -500,7 +512,7 @@
                 ));
             }
         };
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_WIDTH</span>) {
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_WIDTH</span>) {
             <span class="ident">fmt_opts</span>.<span class="ident">width</span> <span class="op">=</span> <span class="ident">cmp::max</span>(<span class="ident">fmt_opts</span>.<span class="ident">goal</span> <span class="op">*</span> <span class="number">100</span> <span class="op">/</span> <span class="number">94</span>, <span class="ident">fmt_opts</span>.<span class="ident">goal</span> <span class="op">+</span> <span class="number">3</span>);
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">fmt_opts</span>.<span class="ident">goal</span> <span class="op">&gt;</span> <span class="ident">fmt_opts</span>.<span class="ident">width</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;GOAL cannot be greater than WIDTH.&quot;</span>));
@@ -568,7 +580,7 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
@@ -583,7 +595,8 @@
                     may have different indentations, in which \
                     case the first line&#39;s indentation is preserved, \
                     and each subsequent line&#39;s indentation matches the second line.&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_TAGGED_PARAGRAPH</span>)
@@ -592,7 +605,8 @@
                 .<span class="ident">help</span>(
                     <span class="string">&quot;Like -c, except that the first and second line of a paragraph *must* \
                     have different indentation or they are treated as separate paragraphs.&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_PRESERVE_HEADERS</span>)
@@ -601,13 +615,15 @@
                 .<span class="ident">help</span>(
                     <span class="string">&quot;Attempt to detect and preserve mail headers in the input. \
                     Be careful when combining this flag with -p.&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_SPLIT_ONLY</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;split-only&quot;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Split lines only, do not reflow.&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Split lines only, do not reflow.&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_UNIFORM_SPACING</span>)
@@ -619,7 +635,8 @@
                     Sentence breaks in the input are detected as [?!.] \
                     followed by two spaces or a newline; other punctuation \
                     is not interpreted as a sentence break.&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_PREFIX</span>)
@@ -651,7 +668,8 @@
                 .<span class="ident">help</span>(
                     <span class="string">&quot;PREFIX must match at the \
                     beginning of the line with no preceding whitespace.&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_EXACT_SKIP_PREFIX</span>)
@@ -660,7 +678,8 @@
                 .<span class="ident">help</span>(
                     <span class="string">&quot;PSKIP must match at the \
                     beginning of the line with no preceding whitespace.&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_WIDTH</span>)
@@ -676,10 +695,16 @@
                 .<span class="ident">help</span>(<span class="string">&quot;Goal width, default ~0.94*WIDTH. Must be less than WIDTH.&quot;</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;GOAL&quot;</span>),
         )
-        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">OPT_QUICK</span>).<span class="ident">short</span>(<span class="string">&#39;q&#39;</span>).<span class="ident">long</span>(<span class="string">&quot;quick&quot;</span>).<span class="ident">help</span>(
-            <span class="string">&quot;Break lines more quickly at the \
+        .<span class="ident">arg</span>(
+            <span class="ident">Arg::new</span>(<span class="ident">OPT_QUICK</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;q&#39;</span>)
+                .<span class="ident">long</span>(<span class="string">&quot;quick&quot;</span>)
+                .<span class="ident">help</span>(
+                    <span class="string">&quot;Break lines more quickly at the \
             expense of a potentially more ragged appearance.&quot;</span>,
-        ))
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
+        )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_TAB_WIDTH</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;T&#39;</span>)
@@ -693,8 +718,7 @@
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">ARG_FILES</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>),
         )
 }

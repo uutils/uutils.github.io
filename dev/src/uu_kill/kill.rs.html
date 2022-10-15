@@ -210,6 +210,8 @@
 <span id="210">210</span>
 <span id="211">211</span>
 <span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Maciej Dziardziel &lt;fiedzia@gmail.com&gt;</span>
@@ -222,7 +224,7 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">nix::sys::signal</span>::{<span class="self">self</span>, <span class="ident">Signal</span>};
 <span class="kw">use</span> <span class="ident">nix::unistd::Pid</span>;
 <span class="kw">use</span> <span class="ident">std::io::Error</span>;
@@ -255,9 +257,9 @@
 
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::TABLE</span>) {
+    <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::TABLE</span>) {
         <span class="ident">Mode::Table</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::LIST</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::LIST</span>) {
         <span class="ident">Mode::List</span>
     } <span class="kw">else</span> {
         <span class="ident">Mode::Kill</span>
@@ -292,7 +294,7 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
@@ -304,26 +306,28 @@
                 .<span class="ident">short</span>(<span class="string">&#39;l&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::LIST</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Lists signals&quot;</span>)
-                .<span class="ident">conflicts_with</span>(<span class="ident">options::TABLE</span>),
+                .<span class="ident">conflicts_with</span>(<span class="ident">options::TABLE</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::TABLE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;t&#39;</span>)
                 .<span class="ident">short_alias</span>(<span class="string">&#39;L&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::TABLE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Lists table of signals&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Lists table of signals&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::SIGNAL</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::SIGNAL</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Sends given signal&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>),
+                .<span class="ident">value_name</span>(<span class="string">&quot;signal&quot;</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;Sends given signal instead of SIGTERM&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::PIDS_OR_SIGNALS</span>)
                 .<span class="ident">hide</span>(<span class="bool-val">true</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>),
         )
 }
 

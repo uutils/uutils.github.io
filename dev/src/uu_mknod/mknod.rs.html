@@ -208,23 +208,6 @@
 <span id="208">208</span>
 <span id="209">209</span>
 <span id="210">210</span>
-<span id="211">211</span>
-<span id="212">212</span>
-<span id="213">213</span>
-<span id="214">214</span>
-<span id="215">215</span>
-<span id="216">216</span>
-<span id="217">217</span>
-<span id="218">218</span>
-<span id="219">219</span>
-<span id="220">220</span>
-<span id="221">221</span>
-<span id="222">222</span>
-<span id="223">223</span>
-<span id="224">224</span>
-<span id="225">225</span>
-<span id="226">226</span>
-<span id="227">227</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;</span>
@@ -234,11 +217,10 @@
 
 <span class="comment">// spell-checker:ignore (ToDO) parsemode makedev sysmacros perror IFBLK IFCHR IFIFO</span>
 
-<span class="kw">use</span> <span class="ident">std::ffi::CString</span>;
-
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">value_parser</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">libc</span>::{<span class="ident">dev_t</span>, <span class="ident">mode_t</span>};
 <span class="kw">use</span> <span class="ident">libc</span>::{<span class="ident">S_IFBLK</span>, <span class="ident">S_IFCHR</span>, <span class="ident">S_IFIFO</span>, <span class="ident">S_IRGRP</span>, <span class="ident">S_IROTH</span>, <span class="ident">S_IRUSR</span>, <span class="ident">S_IWGRP</span>, <span class="ident">S_IWOTH</span>, <span class="ident">S_IWUSR</span>};
+<span class="kw">use</span> <span class="ident">std::ffi::CString</span>;
 
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">set_exit_code</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>, <span class="ident">UUsageError</span>};
@@ -276,6 +258,13 @@ for details about the options it supports.
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
 <span class="kw">fn</span> <span class="ident">_mknod</span>(<span class="ident">file_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">mode</span>: <span class="ident">mode_t</span>, <span class="ident">dev</span>: <span class="ident">dev_t</span>) -&gt; <span class="ident">i32</span> {
     <span class="macro">panic!</span>(<span class="string">&quot;Unsupported for windows platform&quot;</span>)
+}
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="kw">enum</span> <span class="ident">FileType</span> {
+    <span class="ident">Block</span>,
+    <span class="ident">Character</span>,
+    <span class="ident">Fifo</span>,
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
@@ -321,16 +310,9 @@ for details about the options it supports.
         .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="string">&quot;name&quot;</span>)
         .<span class="ident">expect</span>(<span class="string">&quot;Missing argument &#39;NAME&#39;&quot;</span>);
 
-    <span class="comment">// Only check the first character, to allow mnemonic usage like</span>
-    <span class="comment">// &#39;mknod /dev/rst0 character 18 0&#39;.</span>
-    <span class="kw">let</span> <span class="ident">ch</span> <span class="op">=</span> <span class="ident">matches</span>
-        .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="string">&quot;type&quot;</span>)
-        .<span class="ident">expect</span>(<span class="string">&quot;Missing argument &#39;TYPE&#39;&quot;</span>)
-        .<span class="ident">chars</span>()
-        .<span class="ident">next</span>()
-        .<span class="ident">expect</span>(<span class="string">&quot;Failed to get the first char&quot;</span>);
+    <span class="kw">let</span> <span class="ident">file_type</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">FileType</span><span class="op">&gt;</span>(<span class="string">&quot;type&quot;</span>).<span class="ident">unwrap</span>();
 
-    <span class="kw">if</span> <span class="ident">ch</span> <span class="op">==</span> <span class="string">&#39;p&#39;</span> {
+    <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">file_type</span> <span class="op">==</span> <span class="ident">FileType::Fifo</span> {
         <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="string">&quot;major&quot;</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="string">&quot;minor&quot;</span>) {
             <span class="prelude-val">Err</span>(<span class="ident">UUsageError::new</span>(
                 <span class="number">1</span>,
@@ -343,28 +325,21 @@ for details about the options it supports.
         }
     } <span class="kw">else</span> {
         <span class="kw">match</span> (
-            <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="string">&quot;major&quot;</span>),
-            <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="string">&quot;minor&quot;</span>),
+            <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>(<span class="string">&quot;major&quot;</span>),
+            <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>(<span class="string">&quot;minor&quot;</span>),
         ) {
-            (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="op">|</span> (<span class="kw">_</span>, <span class="prelude-val">None</span>) <span class="op">|</span> (<span class="prelude-val">None</span>, <span class="kw">_</span>) =&gt; {
+            (<span class="kw">_</span>, <span class="prelude-val">None</span>) <span class="op">|</span> (<span class="prelude-val">None</span>, <span class="kw">_</span>) =&gt; {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">UUsageError::new</span>(
                     <span class="number">1</span>,
                     <span class="string">&quot;Special files require major and minor device numbers.&quot;</span>,
                 ));
             }
-            (<span class="prelude-val">Some</span>(<span class="ident">major</span>), <span class="prelude-val">Some</span>(<span class="ident">minor</span>)) =&gt; {
-                <span class="kw">let</span> <span class="ident">major</span> <span class="op">=</span> <span class="ident">major</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>().<span class="ident">expect</span>(<span class="string">&quot;validated by clap&quot;</span>);
-                <span class="kw">let</span> <span class="ident">minor</span> <span class="op">=</span> <span class="ident">minor</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>().<span class="ident">expect</span>(<span class="string">&quot;validated by clap&quot;</span>);
-
+            (<span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">major</span>), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">minor</span>)) =&gt; {
                 <span class="kw">let</span> <span class="ident">dev</span> <span class="op">=</span> <span class="ident">makedev</span>(<span class="ident">major</span>, <span class="ident">minor</span>);
-                <span class="kw">let</span> <span class="ident">exit_code</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">ch</span> <span class="op">==</span> <span class="string">&#39;b&#39;</span> {
-                    <span class="comment">// block special file</span>
-                    <span class="ident">_mknod</span>(<span class="ident">file_name</span>, <span class="ident">S_IFBLK</span> <span class="op">|</span> <span class="ident">mode</span>, <span class="ident">dev</span>)
-                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">ch</span> <span class="op">==</span> <span class="string">&#39;c&#39;</span> <span class="op">|</span><span class="op">|</span> <span class="ident">ch</span> <span class="op">==</span> <span class="string">&#39;u&#39;</span> {
-                    <span class="comment">// char special file</span>
-                    <span class="ident">_mknod</span>(<span class="ident">file_name</span>, <span class="ident">S_IFCHR</span> <span class="op">|</span> <span class="ident">mode</span>, <span class="ident">dev</span>)
-                } <span class="kw">else</span> {
-                    <span class="macro">unreachable!</span>(<span class="string">&quot;{} was validated to be only b, c or u&quot;</span>, <span class="ident">ch</span>);
+                <span class="kw">let</span> <span class="ident">exit_code</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">file_type</span> {
+                    <span class="ident">FileType::Block</span> =&gt; <span class="ident">_mknod</span>(<span class="ident">file_name</span>, <span class="ident">S_IFBLK</span> <span class="op">|</span> <span class="ident">mode</span>, <span class="ident">dev</span>),
+                    <span class="ident">FileType::Character</span> =&gt; <span class="ident">_mknod</span>(<span class="ident">file_name</span>, <span class="ident">S_IFCHR</span> <span class="op">|</span> <span class="ident">mode</span>, <span class="ident">dev</span>),
+                    <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;file_type was validated to be only block or character&quot;</span>),
                 };
                 <span class="ident">set_exit_code</span>(<span class="ident">exit_code</span>);
                 <span class="prelude-val">Ok</span>(())
@@ -373,7 +348,7 @@ for details about the options it supports.
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
@@ -392,7 +367,6 @@ for details about the options it supports.
                 .<span class="ident">value_name</span>(<span class="string">&quot;NAME&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;name of the new file&quot;</span>)
                 .<span class="ident">required</span>(<span class="bool-val">true</span>)
-                .<span class="ident">index</span>(<span class="number">1</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::AnyPath</span>),
         )
         .<span class="ident">arg</span>(
@@ -400,22 +374,19 @@ for details about the options it supports.
                 .<span class="ident">value_name</span>(<span class="string">&quot;TYPE&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;type of the new file (b, c, u or p)&quot;</span>)
                 .<span class="ident">required</span>(<span class="bool-val">true</span>)
-                .<span class="ident">validator</span>(<span class="ident">valid_type</span>)
-                .<span class="ident">index</span>(<span class="number">2</span>),
+                .<span class="ident">value_parser</span>(<span class="ident">parse_type</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="string">&quot;major&quot;</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;MAJOR&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;major file type&quot;</span>)
-                .<span class="ident">validator</span>(<span class="ident">valid_u64</span>)
-                .<span class="ident">index</span>(<span class="number">3</span>),
+                .<span class="ident">value_parser</span>(<span class="macro">value_parser!</span>(<span class="ident">u64</span>)),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="string">&quot;minor&quot;</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;MINOR&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;minor file type&quot;</span>)
-                .<span class="ident">validator</span>(<span class="ident">valid_u64</span>)
-                .<span class="ident">index</span>(<span class="number">4</span>),
+                .<span class="ident">value_parser</span>(<span class="macro">value_parser!</span>(<span class="ident">u64</span>)),
         )
 }
 
@@ -434,23 +405,18 @@ for details about the options it supports.
     }
 }
 
-<span class="kw">fn</span> <span class="ident">valid_type</span>(<span class="ident">tpe</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">String</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">parse_type</span>(<span class="ident">tpe</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">FileType</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="comment">// Only check the first character, to allow mnemonic usage like</span>
     <span class="comment">// &#39;mknod /dev/rst0 character 18 0&#39;.</span>
     <span class="ident">tpe</span>.<span class="ident">chars</span>()
         .<span class="ident">next</span>()
         .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;missing device type&quot;</span>.<span class="ident">to_string</span>())
-        .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">first_char</span><span class="op">|</span> {
-            <span class="kw">if</span> <span class="macro">vec!</span>[<span class="string">&#39;b&#39;</span>, <span class="string">&#39;c&#39;</span>, <span class="string">&#39;u&#39;</span>, <span class="string">&#39;p&#39;</span>].<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">first_char</span>) {
-                <span class="prelude-val">Ok</span>(())
-            } <span class="kw">else</span> {
-                <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;invalid device type {}&quot;</span>, <span class="ident">tpe</span>.<span class="ident">quote</span>()))
-            }
+        .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">first_char</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">first_char</span> {
+            <span class="string">&#39;b&#39;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">FileType::Block</span>),
+            <span class="string">&#39;c&#39;</span> <span class="op">|</span> <span class="string">&#39;u&#39;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">FileType::Character</span>),
+            <span class="string">&#39;p&#39;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">FileType::Fifo</span>),
+            <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;invalid device type {}&quot;</span>, <span class="ident">tpe</span>.<span class="ident">quote</span>())),
         })
-}
-
-<span class="kw">fn</span> <span class="ident">valid_u64</span>(<span class="ident">num</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="ident">num</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> ()).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">num</span>.<span class="ident">into</span>())
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_mknod" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>

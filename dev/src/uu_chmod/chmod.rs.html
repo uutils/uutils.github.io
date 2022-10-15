@@ -389,7 +389,7 @@
 
 <span class="comment">// spell-checker:ignore (ToDO) Chmoder cmode fmode fperm fref ugoa RFILE RFILE&#39;s</span>
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::fs</span>;
 <span class="kw">use</span> <span class="ident">std::os::unix::fs</span>::{<span class="ident">MetadataExt</span>, <span class="ident">PermissionsExt</span>};
 <span class="kw">use</span> <span class="ident">std::path::Path</span>;
@@ -421,8 +421,8 @@
     {} [OPTION]... OCTAL-MODE FILE...
     {} [OPTION]... --reference=RFILE FILE...&quot;</span>;
 
-<span class="kw">fn</span> <span class="ident">get_long_usage</span>() -&gt; <span class="ident">String</span> {
-    <span class="ident">String::from</span>(<span class="string">&quot;Each MODE is of the form &#39;[ugoa]*([-+=]([rwxXst]*|[ugo]))+|[-+=]?[0-7]+&#39;.&quot;</span>)
+<span class="kw">fn</span> <span class="ident">get_long_usage</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
+    <span class="string">&quot;Each MODE is of the form &#39;[ugoa]*([-+=]([rwxXst]*|[ugo]))+|[-+=]?[0-7]+&#39;.&quot;</span>
 }
 
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
@@ -435,15 +435,13 @@
 
     <span class="kw">let</span> <span class="ident">after_help</span> <span class="op">=</span> <span class="ident">get_long_usage</span>();
 
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>()
-        .<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="ident">after_help</span>[..])
-        .<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">after_help</span>(<span class="ident">after_help</span>).<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">changes</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::CHANGES</span>);
-    <span class="kw">let</span> <span class="ident">quiet</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::QUIET</span>);
-    <span class="kw">let</span> <span class="ident">verbose</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::VERBOSE</span>);
-    <span class="kw">let</span> <span class="ident">preserve_root</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::PRESERVE_ROOT</span>);
-    <span class="kw">let</span> <span class="ident">recursive</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::RECURSIVE</span>);
+    <span class="kw">let</span> <span class="ident">changes</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::CHANGES</span>);
+    <span class="kw">let</span> <span class="ident">quiet</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::QUIET</span>);
+    <span class="kw">let</span> <span class="ident">verbose</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::VERBOSE</span>);
+    <span class="kw">let</span> <span class="ident">preserve_root</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::PRESERVE_ROOT</span>);
+    <span class="kw">let</span> <span class="ident">recursive</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::RECURSIVE</span>);
     <span class="kw">let</span> <span class="ident">fmode</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::REFERENCE</span>) {
         <span class="prelude-val">Some</span>(<span class="ident">fref</span>) =&gt; <span class="kw">match</span> <span class="ident">fs::metadata</span>(<span class="ident">fref</span>) {
             <span class="prelude-val">Ok</span>(<span class="ident">meta</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">meta</span>.<span class="ident">mode</span>()),
@@ -494,7 +492,7 @@
     <span class="ident">chmoder</span>.<span class="ident">chmod</span>(<span class="kw-2">&amp;</span><span class="ident">files</span>)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
@@ -504,56 +502,58 @@
             <span class="ident">Arg::new</span>(<span class="ident">options::CHANGES</span>)
                 .<span class="ident">long</span>(<span class="ident">options::CHANGES</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;c&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;like verbose but report only when a change is made&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;like verbose but report only when a change is made&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::QUIET</span>)
                 .<span class="ident">long</span>(<span class="ident">options::QUIET</span>)
                 .<span class="ident">visible_alias</span>(<span class="string">&quot;silent&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;f&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;suppress most error messages&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;suppress most error messages&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::VERBOSE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::VERBOSE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;v&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;output a diagnostic for every file processed&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;output a diagnostic for every file processed&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::NO_PRESERVE_ROOT</span>)
                 .<span class="ident">long</span>(<span class="ident">options::NO_PRESERVE_ROOT</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;do not treat &#39;/&#39; specially (the default)&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;do not treat &#39;/&#39; specially (the default)&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::PRESERVE_ROOT</span>)
                 .<span class="ident">long</span>(<span class="ident">options::PRESERVE_ROOT</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;fail to operate recursively on &#39;/&#39;&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;fail to operate recursively on &#39;/&#39;&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::RECURSIVE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::RECURSIVE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;R&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;change files and directories recursively&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;change files and directories recursively&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::REFERENCE</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;reference&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;use RFILE&#39;s mode instead of MODE values&quot;</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::MODE</span>)
-                .<span class="ident">required_unless_present</span>(<span class="ident">options::REFERENCE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>),
-            <span class="comment">// It would be nice if clap could parse with delimiter, e.g. &quot;g-x,u+x&quot;,</span>
-            <span class="comment">// however .multiple_occurrences(true) cannot be used here because FILE already needs that.</span>
-            <span class="comment">// Only one positional argument with .multiple_occurrences(true) set is allowed per command</span>
+            <span class="ident">Arg::new</span>(<span class="ident">options::MODE</span>).<span class="ident">required_unless_present</span>(<span class="ident">options::REFERENCE</span>), <span class="comment">// It would be nice if clap could parse with delimiter, e.g. &quot;g-x,u+x&quot;,</span>
+                                                                                 <span class="comment">// however .multiple_occurrences(true) cannot be used here because FILE already needs that.</span>
+                                                                                 <span class="comment">// Only one positional argument with .multiple_occurrences(true) set is allowed per command</span>
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FILE</span>)
                 .<span class="ident">required_unless_present</span>(<span class="ident">options::MODE</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::AnyPath</span>),
         )
 }

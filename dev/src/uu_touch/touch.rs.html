@@ -559,7 +559,7 @@
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
 <span class="kw">use</span> <span class="ident">clap::builder::ValueParser</span>;
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgGroup</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">ArgGroup</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">filetime</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">std::ffi::OsString</span>;
 <span class="kw">use</span> <span class="ident">std::fs</span>::{<span class="self">self</span>, <span class="ident">File</span>};
@@ -626,10 +626,7 @@ Try &#39;touch --help&#39; for more information.&quot;##</span>,
     })<span class="question-mark">?</span>;
     <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">atime</span>, <span class="kw-2">mut</span> <span class="ident">mtime</span>) <span class="op">=</span>
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">reference</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">OsString</span><span class="op">&gt;</span>(<span class="ident">options::sources::REFERENCE</span>) {
-            <span class="ident">stat</span>(
-                <span class="ident">Path::new</span>(<span class="ident">reference</span>),
-                <span class="op">!</span><span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_DEREF</span>),
-            )<span class="question-mark">?</span>
+            <span class="ident">stat</span>(<span class="ident">Path::new</span>(<span class="ident">reference</span>), <span class="op">!</span><span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::NO_DEREF</span>))<span class="question-mark">?</span>
         } <span class="kw">else</span> {
             <span class="kw">let</span> <span class="ident">timestamp</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">date</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::sources::DATE</span>) {
                 <span class="ident">parse_date</span>(<span class="ident">date</span>)<span class="question-mark">?</span>
@@ -656,11 +653,11 @@ Try &#39;touch --help&#39; for more information.&quot;##</span>,
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>.<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;setting times of {}&quot;</span>, <span class="ident">filename</span>.<span class="ident">quote</span>())));
             }
 
-            <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_CREATE</span>) {
+            <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::NO_CREATE</span>) {
                 <span class="kw">continue</span>;
             }
 
-            <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_DEREF</span>) {
+            <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::NO_DEREF</span>) {
                 <span class="macro">show!</span>(<span class="ident">USimpleError::new</span>(
                     <span class="number">1</span>,
                     <span class="macro">format!</span>(
@@ -684,17 +681,17 @@ Try &#39;touch --help&#39; for more information.&quot;##</span>,
 
         <span class="comment">// If changing &quot;only&quot; atime or mtime, grab the existing value of the other.</span>
         <span class="comment">// Note that &quot;-a&quot; and &quot;-m&quot; may be passed together; this is not an xor.</span>
-        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ACCESS</span>)
-            <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::MODIFICATION</span>)
+        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ACCESS</span>)
+            <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::MODIFICATION</span>)
             <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::TIME</span>)
         {
-            <span class="kw">let</span> <span class="ident">st</span> <span class="op">=</span> <span class="ident">stat</span>(<span class="ident">path</span>, <span class="op">!</span><span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_DEREF</span>))<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">st</span> <span class="op">=</span> <span class="ident">stat</span>(<span class="ident">path</span>, <span class="op">!</span><span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::NO_DEREF</span>))<span class="question-mark">?</span>;
             <span class="kw">let</span> <span class="ident">time</span> <span class="op">=</span> <span class="ident">matches</span>
                 .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::TIME</span>)
                 .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>())
                 .<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>);
 
-            <span class="kw">if</span> <span class="op">!</span>(<span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ACCESS</span>)
+            <span class="kw">if</span> <span class="op">!</span>(<span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ACCESS</span>)
                 <span class="op">|</span><span class="op">|</span> <span class="ident">time</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="string">&quot;access&quot;</span>.<span class="ident">to_owned</span>())
                 <span class="op">|</span><span class="op">|</span> <span class="ident">time</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="string">&quot;atime&quot;</span>.<span class="ident">to_owned</span>())
                 <span class="op">|</span><span class="op">|</span> <span class="ident">time</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="string">&quot;use&quot;</span>.<span class="ident">to_owned</span>()))
@@ -702,7 +699,7 @@ Try &#39;touch --help&#39; for more information.&quot;##</span>,
                 <span class="ident">atime</span> <span class="op">=</span> <span class="ident">st</span>.<span class="number">0</span>;
             }
 
-            <span class="kw">if</span> <span class="op">!</span>(<span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::MODIFICATION</span>)
+            <span class="kw">if</span> <span class="op">!</span>(<span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::MODIFICATION</span>)
                 <span class="op">|</span><span class="op">|</span> <span class="ident">time</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="string">&quot;modify&quot;</span>.<span class="ident">to_owned</span>())
                 <span class="op">|</span><span class="op">|</span> <span class="ident">time</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="string">&quot;mtime&quot;</span>.<span class="ident">to_owned</span>()))
             {
@@ -710,7 +707,7 @@ Try &#39;touch --help&#39; for more information.&quot;##</span>,
             }
         }
 
-        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_DEREF</span>) {
+        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::NO_DEREF</span>) {
             <span class="ident">set_symlink_file_times</span>(<span class="ident">path</span>, <span class="ident">atime</span>, <span class="ident">mtime</span>)
         } <span class="kw">else</span> {
             <span class="ident">filetime::set_file_times</span>(<span class="ident">path</span>, <span class="ident">atime</span>, <span class="ident">mtime</span>)
@@ -721,28 +718,30 @@ Try &#39;touch --help&#39; for more information.&quot;##</span>,
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
         .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
+        .<span class="ident">disable_help_flag</span>(<span class="bool-val">true</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::HELP</span>)
                 .<span class="ident">long</span>(<span class="ident">options::HELP</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Print help information.&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Print help information.&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Help</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ACCESS</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;a&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;change only the access time&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;change only the access time&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::sources::CURRENT</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;t&#39;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;use [[CC]YY]MMDDhhmm[.ss] instead of the current time&quot;</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;STAMP&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>),
+                .<span class="ident">value_name</span>(<span class="string">&quot;STAMP&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::sources::DATE</span>)
@@ -754,13 +753,15 @@ Try &#39;touch --help&#39; for more information.&quot;##</span>,
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::MODIFICATION</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;m&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;change only the modification time&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;change only the modification time&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::NO_CREATE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;c&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::NO_CREATE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;do not create any files&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;do not create any files&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::NO_DEREF</span>)
@@ -769,7 +770,8 @@ Try &#39;touch --help&#39; for more information.&quot;##</span>,
                 .<span class="ident">help</span>(
                     <span class="string">&quot;affect each symbolic link instead of any referenced file \
                      (only for systems that can change the timestamps of a symlink)&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::sources::REFERENCE</span>)
@@ -789,14 +791,12 @@ Try &#39;touch --help&#39; for more information.&quot;##</span>,
                      equivalent to -m&quot;</span>,
                 )
                 .<span class="ident">value_name</span>(<span class="string">&quot;WORD&quot;</span>)
-                .<span class="ident">value_parser</span>([<span class="string">&quot;access&quot;</span>, <span class="string">&quot;atime&quot;</span>, <span class="string">&quot;use&quot;</span>])
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>),
+                .<span class="ident">value_parser</span>([<span class="string">&quot;access&quot;</span>, <span class="string">&quot;atime&quot;</span>, <span class="string">&quot;use&quot;</span>]),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">ARG_FILES</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">min_values</span>(<span class="number">1</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
+                .<span class="ident">num_args</span>(<span class="number">1</span>..)
                 .<span class="ident">value_parser</span>(<span class="ident">ValueParser::os_string</span>())
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::AnyPath</span>),
         )

@@ -190,7 +190,7 @@
 <span class="comment">// For the full copyright and license information, please view the LICENSE</span>
 <span class="comment">// file that was distributed with this source code.</span>
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">Write</span>};
 <span class="kw">use</span> <span class="ident">std::iter::Peekable</span>;
 <span class="kw">use</span> <span class="ident">std::str::Chars</span>;
@@ -297,8 +297,8 @@
     <span class="kw">let</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">collect_lossy</span>();
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
-    <span class="kw">let</span> <span class="ident">no_newline</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_NEWLINE</span>);
-    <span class="kw">let</span> <span class="ident">escaped</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ENABLE_BACKSLASH_ESCAPE</span>);
+    <span class="kw">let</span> <span class="ident">no_newline</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::NO_NEWLINE</span>);
+    <span class="kw">let</span> <span class="ident">escaped</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ENABLE_BACKSLASH_ESCAPE</span>);
     <span class="kw">let</span> <span class="ident">values</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">get_many</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::STRING</span>) {
         <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_string</span>()).<span class="ident">collect</span>(),
         <span class="prelude-val">None</span> =&gt; <span class="macro">vec!</span>[<span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>()],
@@ -308,7 +308,7 @@
         .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;could not write to stdout&quot;</span>.<span class="ident">to_string</span>())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">name</span>(<span class="ident">NAME</span>)
         <span class="comment">// TrailingVarArg specifies the final positional argument is a VarArg</span>
@@ -325,21 +325,21 @@
             <span class="ident">Arg::new</span>(<span class="ident">options::NO_NEWLINE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;n&#39;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;do not output the trailing newline&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">false</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ENABLE_BACKSLASH_ESCAPE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;e&#39;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;enable interpretation of backslash escapes&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">false</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::DISABLE_BACKSLASH_ESCAPE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;E&#39;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;disable interpretation of backslash escapes (default)&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">false</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
-        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::STRING</span>).<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>))
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::STRING</span>).<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>))
 }
 
 <span class="kw">fn</span> <span class="ident">execute</span>(<span class="ident">no_newline</span>: <span class="ident">bool</span>, <span class="ident">escaped</span>: <span class="ident">bool</span>, <span class="ident">free</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {

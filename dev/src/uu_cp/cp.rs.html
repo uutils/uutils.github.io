@@ -1718,6 +1718,15 @@
 <span id="1718">1718</span>
 <span id="1719">1719</span>
 <span id="1720">1720</span>
+<span id="1721">1721</span>
+<span id="1722">1722</span>
+<span id="1723">1723</span>
+<span id="1724">1724</span>
+<span id="1725">1725</span>
+<span id="1726">1726</span>
+<span id="1727">1727</span>
+<span id="1728">1728</span>
+<span id="1729">1729</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::missing_safety_doc</span>)]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::extra_unused_lifetimes</span>)]</span>
 
@@ -1751,7 +1760,7 @@
 <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
 <span class="kw">use</span> <span class="ident">std::string::ToString</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">filetime::FileTime</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">use</span> <span class="ident">libc::mkfifo</span>;
@@ -1812,6 +1821,8 @@
 
         <span class="doccomment">/// Invalid arguments to backup</span>
         <span class="ident">Backup</span>(<span class="ident">description</span>: <span class="ident">String</span>) { <span class="ident">display</span>(<span class="string">&quot;{}\nTry &#39;{} --help&#39; for more information.&quot;</span>, <span class="ident">description</span>, <span class="ident">uucore::execution_phrase</span>()) }
+
+        <span class="ident">NotADirectory</span>(<span class="ident">path</span>: <span class="ident">String</span>) { <span class="ident">display</span>(<span class="string">&quot;&#39;{}&#39; is not a directory&quot;</span>, <span class="ident">path</span>) }
     }
 }
 
@@ -1944,7 +1955,6 @@
 }
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.&quot;</span>;
-<span class="kw">static</span> <span class="ident">LONG_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>;
 <span class="kw">static</span> <span class="ident">EXIT_ERR</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">1</span>;
 
 <span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;\
@@ -1975,7 +1985,6 @@
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PRESERVE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;preserve&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PRESERVE_DEFAULT_ATTRIBUTES</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;preserve-default-attributes&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RECURSIVE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;recursive&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RECURSIVE_ALIAS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;recursive_alias&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">REFLINK</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;reflink&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">REMOVE_DESTINATION</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;remove-destination&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SPARSE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;sparse&quot;</span>;
@@ -2009,7 +2018,7 @@
     <span class="ident">Attribute::Timestamps</span>,
 ];
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="kw">const</span> <span class="ident">MODE_ARGS</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>] <span class="op">=</span> <span class="kw-2">&amp;</span>[
         <span class="ident">options::LINK</span>,
         <span class="ident">options::REFLINK</span>,
@@ -2029,13 +2038,6 @@
                 .<span class="ident">long</span>(<span class="ident">options::TARGET_DIRECTORY</span>)
                 .<span class="ident">value_name</span>(<span class="ident">options::TARGET_DIRECTORY</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::DirPath</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">validator</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> {
-                    <span class="kw">if</span> <span class="ident">Path::new</span>(<span class="ident">s</span>).<span class="ident">is_dir</span>() {
-                        <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
-                    }
-                    <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;&#39;{}&#39; is not a directory&quot;</span>, <span class="ident">s</span>))
-                })
                 .<span class="ident">help</span>(<span class="string">&quot;copy all SOURCE arguments into target-directory&quot;</span>),
         )
         .<span class="ident">arg</span>(
@@ -2043,58 +2045,62 @@
                 .<span class="ident">short</span>(<span class="string">&#39;T&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::NO_TARGET_DIRECTORY</span>)
                 .<span class="ident">conflicts_with</span>(<span class="ident">options::TARGET_DIRECTORY</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Treat DEST as a regular file and not a directory&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Treat DEST as a regular file and not a directory&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::INTERACTIVE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;i&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::INTERACTIVE</span>)
                 .<span class="ident">overrides_with</span>(<span class="ident">options::NO_CLOBBER</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;ask before overwriting files&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;ask before overwriting files&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::LINK</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;l&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::LINK</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="ident">MODE_ARGS</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;hard-link files instead of copying&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;hard-link files instead of copying&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::NO_CLOBBER</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;n&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::NO_CLOBBER</span>)
                 .<span class="ident">overrides_with</span>(<span class="ident">options::INTERACTIVE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;don&#39;t overwrite a file that already exists&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;don&#39;t overwrite a file that already exists&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::RECURSIVE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;r&#39;</span>)
+                .<span class="ident">visible_short_alias</span>(<span class="string">&#39;R&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::RECURSIVE</span>)
                 <span class="comment">// --archive sets this option</span>
-                .<span class="ident">help</span>(<span class="string">&quot;copy directories recursively&quot;</span>),
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::RECURSIVE_ALIAS</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;R&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;same as -r&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;copy directories recursively&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::STRIP_TRAILING_SLASHES</span>)
                 .<span class="ident">long</span>(<span class="ident">options::STRIP_TRAILING_SLASHES</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;remove any trailing slashes from each SOURCE argument&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;remove any trailing slashes from each SOURCE argument&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::VERBOSE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;v&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::VERBOSE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;explicitly state what is being done&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;explicitly state what is being done&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::SYMBOLIC_LINK</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::SYMBOLIC_LINK</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="ident">MODE_ARGS</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;make symbolic links instead of copying&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;make symbolic links instead of copying&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FORCE</span>)
@@ -2104,7 +2110,8 @@
                     <span class="string">&quot;if an existing destination file cannot be opened, remove it and \
                     try again (this option is ignored when the -n option is also used). \
                     Currently not implemented for Windows.&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::REMOVE_DESTINATION</span>)
@@ -2114,7 +2121,8 @@
                     <span class="string">&quot;remove each existing destination file before attempting to open it \
                     (contrast with --force). On Windows, currently only works for \
                     writeable files.&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(<span class="ident">backup_control::arguments::backup</span>())
         .<span class="ident">arg</span>(<span class="ident">backup_control::arguments::backup_no_args</span>())
@@ -2126,36 +2134,36 @@
                 .<span class="ident">help</span>(
                     <span class="string">&quot;copy only when the SOURCE file is newer than the destination file \
                     or when the destination file is missing&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::REFLINK</span>)
                 .<span class="ident">long</span>(<span class="ident">options::REFLINK</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;WHEN&quot;</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="ident">MODE_ARGS</span>)
                 .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
                 .<span class="ident">default_missing_value</span>(<span class="string">&quot;always&quot;</span>)
                 .<span class="ident">value_parser</span>([<span class="string">&quot;auto&quot;</span>, <span class="string">&quot;always&quot;</span>, <span class="string">&quot;never&quot;</span>])
-                .<span class="ident">min_values</span>(<span class="number">0</span>)
+                .<span class="ident">num_args</span>(<span class="number">0</span>..<span class="op">=</span><span class="number">1</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;control clone/CoW copies. See below&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ATTRIBUTES_ONLY</span>)
                 .<span class="ident">long</span>(<span class="ident">options::ATTRIBUTES_ONLY</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="ident">MODE_ARGS</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Don&#39;t copy the file data, just the attributes&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Don&#39;t copy the file data, just the attributes&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::PRESERVE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::PRESERVE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">use_value_delimiter</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_parser</span>(<span class="ident">clap::builder::PossibleValuesParser::new</span>(
                     <span class="ident">PRESERVABLE_ATTRIBUTES</span>,
                 ))
-                .<span class="ident">min_values</span>(<span class="number">0</span>)
+                .<span class="ident">num_args</span>(<span class="number">0</span>..)
                 .<span class="ident">value_name</span>(<span class="string">&quot;ATTR_LIST&quot;</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
                     <span class="ident">options::ARCHIVE</span>,
@@ -2174,12 +2182,12 @@
                 .<span class="ident">short</span>(<span class="string">&#39;p&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::PRESERVE_DEFAULT_ATTRIBUTES</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::PRESERVE</span>, <span class="ident">options::NO_PRESERVE</span>, <span class="ident">options::ARCHIVE</span>])
-                .<span class="ident">help</span>(<span class="string">&quot;same as --preserve=mode,ownership(unix only),timestamps&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;same as --preserve=mode,ownership(unix only),timestamps&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::NO_PRESERVE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::NO_PRESERVE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;ATTR_LIST&quot;</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
                     <span class="ident">options::PRESERVE_DEFAULT_ATTRIBUTES</span>,
@@ -2192,7 +2200,8 @@
             <span class="ident">Arg::new</span>(<span class="ident">options::PARENTS</span>)
                 .<span class="ident">long</span>(<span class="ident">options::PARENTS</span>)
                 .<span class="ident">alias</span>(<span class="ident">options::PARENT</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;use full source file name under DIRECTORY&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;use full source file name under DIRECTORY&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::NO_DEREFERENCE</span>)
@@ -2200,19 +2209,22 @@
                 .<span class="ident">long</span>(<span class="ident">options::NO_DEREFERENCE</span>)
                 .<span class="ident">overrides_with</span>(<span class="ident">options::DEREFERENCE</span>)
                 <span class="comment">// -d sets this option</span>
-                .<span class="ident">help</span>(<span class="string">&quot;never follow symbolic links in SOURCE&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;never follow symbolic links in SOURCE&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::DEREFERENCE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;L&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::DEREFERENCE</span>)
                 .<span class="ident">overrides_with</span>(<span class="ident">options::NO_DEREFERENCE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;always follow symbolic links in SOURCE&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;always follow symbolic links in SOURCE&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::CLI_SYMBOLIC_LINKS</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;H&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;follow command-line symbolic links in SOURCE&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;follow command-line symbolic links in SOURCE&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ARCHIVE</span>)
@@ -2223,23 +2235,25 @@
                     <span class="ident">options::PRESERVE</span>,
                     <span class="ident">options::NO_PRESERVE</span>,
                 ])
-                .<span class="ident">help</span>(<span class="string">&quot;Same as -dR --preserve=all&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Same as -dR --preserve=all&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::NO_DEREFERENCE_PRESERVE_LINKS</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;d&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;same as --no-dereference --preserve=links&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;same as --no-dereference --preserve=links&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ONE_FILE_SYSTEM</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;x&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::ONE_FILE_SYSTEM</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;stay on this file system&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;stay on this file system&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::SPARSE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::SPARSE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;WHEN&quot;</span>)
                 .<span class="ident">value_parser</span>([<span class="string">&quot;never&quot;</span>, <span class="string">&quot;auto&quot;</span>, <span class="string">&quot;always&quot;</span>])
                 .<span class="ident">help</span>(<span class="string">&quot;NotImplemented: control creation of sparse files. See below&quot;</span>),
@@ -2249,12 +2263,12 @@
             <span class="ident">Arg::new</span>(<span class="ident">options::COPY_CONTENTS</span>)
                 .<span class="ident">long</span>(<span class="ident">options::COPY_CONTENTS</span>)
                 .<span class="ident">overrides_with</span>(<span class="ident">options::ATTRIBUTES_ONLY</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;NotImplemented: copy contents of special files when recursive&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;NotImplemented: copy contents of special files when recursive&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::CONTEXT</span>)
                 .<span class="ident">long</span>(<span class="ident">options::CONTEXT</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;CTX&quot;</span>)
                 .<span class="ident">help</span>(
                     <span class="string">&quot;NotImplemented: set SELinux security context of destination file to \
@@ -2264,29 +2278,26 @@
         <span class="comment">// END TODO</span>
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::PATHS</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::AnyPath</span>),
         )
 }
 
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">after_help</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="macro">format!</span>(
-        <span class="string">&quot;{}\n{}&quot;</span>,
-        <span class="ident">LONG_HELP</span>,
-        <span class="ident">backup_control::BACKUP_CONTROL_LONG_HELP</span>
-    );
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">after_help</span>(<span class="ident">after_help</span>).<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>);
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>()
+        .<span class="ident">after_help</span>(<span class="ident">backup_control::BACKUP_CONTROL_LONG_HELP</span>)
+        .<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>);
 
     <span class="comment">// The error is parsed here because we do not want version or help being printed to stderr.</span>
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">matches</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">app</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">after_help</span>(<span class="ident">after_help</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">app</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">after_help</span>(<span class="ident">backup_control::BACKUP_CONTROL_LONG_HELP</span>);
 
         <span class="kw">match</span> <span class="ident">e</span>.<span class="ident">kind</span>() {
-            <span class="ident">clap::ErrorKind::DisplayHelp</span> =&gt; {
+            <span class="ident">clap::error::ErrorKind::DisplayHelp</span> =&gt; {
                 <span class="ident">app</span>.<span class="ident">print_help</span>()<span class="question-mark">?</span>;
             }
-            <span class="ident">clap::ErrorKind::DisplayVersion</span> =&gt; <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">app</span>.<span class="ident">render_version</span>()),
+            <span class="ident">clap::error::ErrorKind::DisplayVersion</span> =&gt; <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">app</span>.<span class="ident">render_version</span>()),
             <span class="kw">_</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Box::new</span>(<span class="ident">e</span>.<span class="ident">with_exit_code</span>(<span class="number">1</span>))),
         };
     } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">matches</span>) <span class="op">=</span> <span class="ident">matches</span> {
@@ -2323,9 +2334,9 @@
 
 <span class="kw">impl</span> <span class="ident">ClobberMode</span> {
     <span class="kw">fn</span> <span class="ident">from_matches</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::FORCE</span>) {
+        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::FORCE</span>) {
             <span class="ident"><span class="self">Self</span>::Force</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::REMOVE_DESTINATION</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::REMOVE_DESTINATION</span>) {
             <span class="ident"><span class="self">Self</span>::RemoveDestination</span>
         } <span class="kw">else</span> {
             <span class="ident"><span class="self">Self</span>::Standard</span>
@@ -2335,9 +2346,9 @@
 
 <span class="kw">impl</span> <span class="ident">OverwriteMode</span> {
     <span class="kw">fn</span> <span class="ident">from_matches</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::INTERACTIVE</span>) {
+        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::INTERACTIVE</span>) {
             <span class="ident"><span class="self">Self</span>::Interactive</span>(<span class="ident">ClobberMode::from_matches</span>(<span class="ident">matches</span>))
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_CLOBBER</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::NO_CLOBBER</span>) {
             <span class="ident"><span class="self">Self</span>::NoClobber</span>
         } <span class="kw">else</span> {
             <span class="ident"><span class="self">Self</span>::Clobber</span>(<span class="ident">ClobberMode::from_matches</span>(<span class="ident">matches</span>))
@@ -2347,13 +2358,13 @@
 
 <span class="kw">impl</span> <span class="ident">CopyMode</span> {
     <span class="kw">fn</span> <span class="ident">from_matches</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::LINK</span>) {
+        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::LINK</span>) {
             <span class="ident"><span class="self">Self</span>::Link</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::SYMBOLIC_LINK</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::SYMBOLIC_LINK</span>) {
             <span class="ident"><span class="self">Self</span>::SymLink</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::UPDATE</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::UPDATE</span>) {
             <span class="ident"><span class="self">Self</span>::Update</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ATTRIBUTES_ONLY</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ATTRIBUTES_ONLY</span>) {
             <span class="ident"><span class="self">Self</span>::AttrOnly</span>
         } <span class="kw">else</span> {
             <span class="ident"><span class="self">Self</span>::Copy</span>
@@ -2413,14 +2424,15 @@
         ];
 
         <span class="kw">for</span> <span class="ident">not_implemented_opt</span> <span class="kw">in</span> <span class="ident">not_implemented_opts</span> {
-            <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">not_implemented_opt</span>) {
+            <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">not_implemented_opt</span>)
+                <span class="op">&amp;&amp;</span> <span class="ident">matches</span>.<span class="ident">value_source</span>(<span class="ident">not_implemented_opt</span>)
+                    <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">clap::parser::ValueSource::CommandLine</span>)
+            {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::NotImplemented</span>(<span class="ident">not_implemented_opt</span>.<span class="ident">to_string</span>()));
             }
         }
 
-        <span class="kw">let</span> <span class="ident">recursive</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::RECURSIVE</span>)
-            <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::RECURSIVE_ALIAS</span>)
-            <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ARCHIVE</span>);
+        <span class="kw">let</span> <span class="ident">recursive</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::RECURSIVE</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ARCHIVE</span>);
 
         <span class="kw">let</span> <span class="ident">backup_mode</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">backup_control::determine_backup_mode</span>(<span class="ident">matches</span>) {
             <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::Backup</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>))),
@@ -2432,10 +2444,16 @@
         <span class="kw">let</span> <span class="ident">overwrite</span> <span class="op">=</span> <span class="ident">OverwriteMode::from_matches</span>(<span class="ident">matches</span>);
 
         <span class="comment">// Parse target directory options</span>
-        <span class="kw">let</span> <span class="ident">no_target_dir</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_TARGET_DIRECTORY</span>);
+        <span class="kw">let</span> <span class="ident">no_target_dir</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::NO_TARGET_DIRECTORY</span>);
         <span class="kw">let</span> <span class="ident">target_dir</span> <span class="op">=</span> <span class="ident">matches</span>
             .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::TARGET_DIRECTORY</span>)
             .<span class="ident">map</span>(<span class="ident">ToString::to_string</span>);
+
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">dir</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">target_dir</span> {
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">Path::new</span>(<span class="ident">dir</span>).<span class="ident">is_dir</span>() {
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::NotADirectory</span>(<span class="ident">dir</span>.<span class="ident">clone</span>()));
+            }
+        };
 
         <span class="comment">// Parse attributes to preserve</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">preserve_attributes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::PRESERVE</span>) {
@@ -2454,12 +2472,12 @@
                     <span class="ident">attributes</span>
                 }
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ARCHIVE</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ARCHIVE</span>) {
             <span class="comment">// --archive is used. Same as --preserve=all</span>
             <span class="ident">add_all_attributes</span>()
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_DEREFERENCE_PRESERVE_LINKS</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::NO_DEREFERENCE_PRESERVE_LINKS</span>) {
             <span class="macro">vec!</span>[<span class="ident">Attribute::Links</span>]
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::PRESERVE_DEFAULT_ATTRIBUTES</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::PRESERVE_DEFAULT_ATTRIBUTES</span>) {
             <span class="ident">DEFAULT_ATTRIBUTES</span>.<span class="ident">to_vec</span>()
         } <span class="kw">else</span> {
             <span class="macro">vec!</span>[]
@@ -2471,21 +2489,21 @@
         <span class="ident">preserve_attributes</span>.<span class="ident">sort_unstable</span>();
 
         <span class="kw">let</span> <span class="ident">options</span> <span class="op">=</span> <span class="self">Self</span> {
-            <span class="ident">attributes_only</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ATTRIBUTES_ONLY</span>),
-            <span class="ident">copy_contents</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::COPY_CONTENTS</span>),
-            <span class="ident">cli_dereference</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::CLI_SYMBOLIC_LINKS</span>),
+            <span class="ident">attributes_only</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ATTRIBUTES_ONLY</span>),
+            <span class="ident">copy_contents</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::COPY_CONTENTS</span>),
+            <span class="ident">cli_dereference</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::CLI_SYMBOLIC_LINKS</span>),
             <span class="ident">copy_mode</span>: <span class="ident">CopyMode::from_matches</span>(<span class="ident">matches</span>),
             <span class="comment">// No dereference is set with -p, -d and --archive</span>
-            <span class="ident">dereference</span>: <span class="op">!</span>(<span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_DEREFERENCE</span>)
-                <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_DEREFERENCE_PRESERVE_LINKS</span>)
-                <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ARCHIVE</span>)
+            <span class="ident">dereference</span>: <span class="op">!</span>(<span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::NO_DEREFERENCE</span>)
+                <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::NO_DEREFERENCE_PRESERVE_LINKS</span>)
+                <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ARCHIVE</span>)
                 <span class="op">|</span><span class="op">|</span> <span class="ident">recursive</span>)
-                <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::DEREFERENCE</span>),
-            <span class="ident">one_file_system</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ONE_FILE_SYSTEM</span>),
-            <span class="ident">parents</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::PARENTS</span>),
-            <span class="ident">update</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::UPDATE</span>),
-            <span class="ident">verbose</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::VERBOSE</span>),
-            <span class="ident">strip_trailing_slashes</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::STRIP_TRAILING_SLASHES</span>),
+                <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::DEREFERENCE</span>),
+            <span class="ident">one_file_system</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ONE_FILE_SYSTEM</span>),
+            <span class="ident">parents</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::PARENTS</span>),
+            <span class="ident">update</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::UPDATE</span>),
+            <span class="ident">verbose</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::VERBOSE</span>),
+            <span class="ident">strip_trailing_slashes</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::STRIP_TRAILING_SLASHES</span>),
             <span class="ident">reflink_mode</span>: {
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">reflink</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::REFLINK</span>) {
                     <span class="kw">match</span> <span class="ident">reflink</span>.<span class="ident">as_str</span>() {

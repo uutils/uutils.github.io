@@ -180,6 +180,13 @@
 <span id="180">180</span>
 <span id="181">181</span>
 <span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Haitao Li &lt;lihaitao@gmail.com&gt;</span>
@@ -192,7 +199,7 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::fs</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdout</span>, <span class="ident">Write</span>};
 <span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>};
@@ -218,23 +225,23 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">no_trailing_delimiter</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_NO_NEWLINE</span>);
-    <span class="kw">let</span> <span class="ident">use_zero</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_ZERO</span>);
-    <span class="kw">let</span> <span class="ident">silent</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_SILENT</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_QUIET</span>);
-    <span class="kw">let</span> <span class="ident">verbose</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_VERBOSE</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">no_trailing_delimiter</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_NO_NEWLINE</span>);
+    <span class="kw">let</span> <span class="ident">use_zero</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_ZERO</span>);
+    <span class="kw">let</span> <span class="ident">silent</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_SILENT</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_QUIET</span>);
+    <span class="kw">let</span> <span class="ident">verbose</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_VERBOSE</span>);
 
-    <span class="kw">let</span> <span class="ident">res_mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_CANONICALIZE</span>)
-        <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_CANONICALIZE_EXISTING</span>)
-        <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_CANONICALIZE_MISSING</span>)
+    <span class="kw">let</span> <span class="ident">res_mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_CANONICALIZE</span>)
+        <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_CANONICALIZE_EXISTING</span>)
+        <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_CANONICALIZE_MISSING</span>)
     {
         <span class="ident">ResolveMode::Logical</span>
     } <span class="kw">else</span> {
         <span class="ident">ResolveMode::None</span>
     };
 
-    <span class="kw">let</span> <span class="ident">can_mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_CANONICALIZE_EXISTING</span>) {
+    <span class="kw">let</span> <span class="ident">can_mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_CANONICALIZE_EXISTING</span>) {
         <span class="ident">MissingHandling::Existing</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_CANONICALIZE_MISSING</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_CANONICALIZE_MISSING</span>) {
         <span class="ident">MissingHandling::Missing</span>
     } <span class="kw">else</span> {
         <span class="ident">MissingHandling::Normal</span>
@@ -280,7 +287,7 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
@@ -293,7 +300,8 @@
                 .<span class="ident">help</span>(
                     <span class="string">&quot;canonicalize by following every symlink in every component of the \
                      given name recursively; all but the last component must exist&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_CANONICALIZE_EXISTING</span>)
@@ -302,7 +310,8 @@
                 .<span class="ident">help</span>(
                     <span class="string">&quot;canonicalize by following every symlink in every component of the \
                      given name recursively, all components must exist&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_CANONICALIZE_MISSING</span>)
@@ -311,42 +320,47 @@
                 .<span class="ident">help</span>(
                     <span class="string">&quot;canonicalize by following every symlink in every component of the \
                      given name recursively, without requirements on components existence&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_NO_NEWLINE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;n&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_NO_NEWLINE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;do not output the trailing delimiter&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;do not output the trailing delimiter&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_QUIET</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;q&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_QUIET</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;suppress most error messages&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;suppress most error messages&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_SILENT</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_SILENT</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;suppress most error messages&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;suppress most error messages&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_VERBOSE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;v&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_VERBOSE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;report error message&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;report error message&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_ZERO</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;z&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_ZERO</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;separate output with NUL rather than newline&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;separate output with NUL rather than newline&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">ARG_FILES</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::AnyPath</span>),
         )
 }

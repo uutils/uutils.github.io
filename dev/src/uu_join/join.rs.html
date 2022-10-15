@@ -997,6 +997,13 @@
 <span id="997">997</span>
 <span id="998">998</span>
 <span id="999">999</span>
+<span id="1000">1000</span>
+<span id="1001">1001</span>
+<span id="1002">1002</span>
+<span id="1003">1003</span>
+<span id="1004">1004</span>
+<span id="1005">1005</span>
+<span id="1006">1006</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Konstantin Pospelov &lt;kupospelov@gmail.com&gt;</span>
@@ -1010,7 +1017,7 @@
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
 <span class="kw">use</span> <span class="ident">clap::builder::ValueParser</span>;
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">memchr</span>::{<span class="ident">memchr3_iter</span>, <span class="ident">memchr_iter</span>};
 <span class="kw">use</span> <span class="ident">std::cmp::Ordering</span>;
 <span class="kw">use</span> <span class="ident">std::convert::From</span>;
@@ -1624,7 +1631,7 @@
         }
     }
 
-    <span class="ident">settings</span>.<span class="ident">ignore_case</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="string">&quot;i&quot;</span>);
+    <span class="ident">settings</span>.<span class="ident">ignore_case</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="string">&quot;i&quot;</span>);
     <span class="ident">settings</span>.<span class="ident">key1</span> <span class="op">=</span> <span class="ident">get_field_number</span>(<span class="ident">keys</span>, <span class="ident">key1</span>)<span class="question-mark">?</span>;
     <span class="ident">settings</span>.<span class="ident">key2</span> <span class="op">=</span> <span class="ident">get_field_number</span>(<span class="ident">keys</span>, <span class="ident">key2</span>)<span class="question-mark">?</span>;
 
@@ -1670,19 +1677,19 @@
         <span class="ident">settings</span>.<span class="ident">empty</span> <span class="op">=</span> <span class="ident">empty</span>.<span class="ident">as_bytes</span>().<span class="ident">to_vec</span>();
     }
 
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="string">&quot;nocheck-order&quot;</span>) {
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="string">&quot;nocheck-order&quot;</span>) {
         <span class="ident">settings</span>.<span class="ident">check_order</span> <span class="op">=</span> <span class="ident">CheckOrder::Disabled</span>;
     }
 
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="string">&quot;check-order&quot;</span>) {
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="string">&quot;check-order&quot;</span>) {
         <span class="ident">settings</span>.<span class="ident">check_order</span> <span class="op">=</span> <span class="ident">CheckOrder::Enabled</span>;
     }
 
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="string">&quot;header&quot;</span>) {
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="string">&quot;header&quot;</span>) {
         <span class="ident">settings</span>.<span class="ident">headers</span> <span class="op">=</span> <span class="bool-val">true</span>;
     }
 
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="string">&quot;z&quot;</span>) {
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="string">&quot;z&quot;</span>) {
         <span class="ident">settings</span>.<span class="ident">line_ending</span> <span class="op">=</span> <span class="ident">LineEnding::Nul</span>;
     }
 
@@ -1699,7 +1706,7 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">NAME</span>)
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(
@@ -1712,8 +1719,8 @@ When FILE1 or FILE2 (not both) is -, read standard input.&quot;</span>,
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="string">&quot;a&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;a&#39;</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">number_of_values</span>(<span class="number">1</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
+                .<span class="ident">num_args</span>(<span class="number">1</span>)
                 .<span class="ident">value_parser</span>([<span class="string">&quot;1&quot;</span>, <span class="string">&quot;2&quot;</span>])
                 .<span class="ident">value_name</span>(<span class="string">&quot;FILENUM&quot;</span>)
                 .<span class="ident">help</span>(
@@ -1724,8 +1731,8 @@ FILENUM is 1 or 2, corresponding to FILE1 or FILE2&quot;</span>,
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="string">&quot;v&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;v&#39;</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">number_of_values</span>(<span class="number">1</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
+                .<span class="ident">num_args</span>(<span class="number">1</span>)
                 .<span class="ident">value_parser</span>([<span class="string">&quot;1&quot;</span>, <span class="string">&quot;2&quot;</span>])
                 .<span class="ident">value_name</span>(<span class="string">&quot;FILENUM&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;like -a FILENUM, but suppress joined output lines&quot;</span>),
@@ -1733,7 +1740,6 @@ FILENUM is 1 or 2, corresponding to FILE1 or FILE2&quot;</span>,
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="string">&quot;e&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;e&#39;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;EMPTY&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;replace missing input fields with EMPTY&quot;</span>),
         )
@@ -1741,26 +1747,24 @@ FILENUM is 1 or 2, corresponding to FILE1 or FILE2&quot;</span>,
             <span class="ident">Arg::new</span>(<span class="string">&quot;i&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;i&#39;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;ignore-case&quot;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;ignore differences in case when comparing fields&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;ignore differences in case when comparing fields&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="string">&quot;j&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;j&#39;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;FIELD&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;equivalent to &#39;-1 FIELD -2 FIELD&#39;&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="string">&quot;o&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;o&#39;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;FORMAT&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;obey FORMAT while constructing output line&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="string">&quot;t&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;t&#39;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;CHAR&quot;</span>)
                 .<span class="ident">value_parser</span>(<span class="ident">ValueParser::os_string</span>())
                 .<span class="ident">help</span>(<span class="string">&quot;use CHAR as input and output field separator&quot;</span>),
@@ -1768,35 +1772,45 @@ FILENUM is 1 or 2, corresponding to FILE1 or FILE2&quot;</span>,
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="string">&quot;1&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;1&#39;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;FIELD&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;join on this FIELD of file 1&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="string">&quot;2&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;2&#39;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;FIELD&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;join on this FIELD of file 2&quot;</span>),
         )
-        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="string">&quot;check-order&quot;</span>).<span class="ident">long</span>(<span class="string">&quot;check-order&quot;</span>).<span class="ident">help</span>(
-            <span class="string">&quot;check that the input is correctly sorted, \
+        .<span class="ident">arg</span>(
+            <span class="ident">Arg::new</span>(<span class="string">&quot;check-order&quot;</span>)
+                .<span class="ident">long</span>(<span class="string">&quot;check-order&quot;</span>)
+                .<span class="ident">help</span>(
+                    <span class="string">&quot;check that the input is correctly sorted, \
              even if all input lines are pairable&quot;</span>,
-        ))
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
+        )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="string">&quot;nocheck-order&quot;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;nocheck-order&quot;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;do not check that the input is correctly sorted&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;do not check that the input is correctly sorted&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
-        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="string">&quot;header&quot;</span>).<span class="ident">long</span>(<span class="string">&quot;header&quot;</span>).<span class="ident">help</span>(
-            <span class="string">&quot;treat the first line in each file as field headers, \
+        .<span class="ident">arg</span>(
+            <span class="ident">Arg::new</span>(<span class="string">&quot;header&quot;</span>)
+                .<span class="ident">long</span>(<span class="string">&quot;header&quot;</span>)
+                .<span class="ident">help</span>(
+                    <span class="string">&quot;treat the first line in each file as field headers, \
              print them without trying to pair them&quot;</span>,
-        ))
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
+        )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="string">&quot;z&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;z&#39;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;zero-terminated&quot;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;line delimiter is NUL, not newline&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;line delimiter is NUL, not newline&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="string">&quot;file1&quot;</span>)

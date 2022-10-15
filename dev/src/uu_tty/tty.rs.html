@@ -85,7 +85,7 @@
 
 <span class="comment">// spell-checker:ignore (ToDO) ttyname filedesc</span>
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::io::Write</span>;
 <span class="kw">use</span> <span class="ident">std::os::unix::io::AsRawFd</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">set_exit_code</span>, <span class="ident">UResult</span>};
@@ -102,7 +102,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
 
-    <span class="kw">let</span> <span class="ident">silent</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::SILENT</span>);
+    <span class="kw">let</span> <span class="ident">silent</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::SILENT</span>);
 
     <span class="comment">// If silent, we don&#39;t need the name, only whether or not stdin is a tty.</span>
     <span class="kw">if</span> <span class="ident">silent</span> {
@@ -135,7 +135,7 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
@@ -147,7 +147,7 @@
                 .<span class="ident">visible_alias</span>(<span class="string">&quot;quiet&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;print nothing, only return an exit status&quot;</span>)
-                .<span class="ident">required</span>(<span class="bool-val">false</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
 }
 </code></pre></div>

@@ -606,19 +606,6 @@
 <span id="606">606</span>
 <span id="607">607</span>
 <span id="608">608</span>
-<span id="609">609</span>
-<span id="610">610</span>
-<span id="611">611</span>
-<span id="612">612</span>
-<span id="613">613</span>
-<span id="614">614</span>
-<span id="615">615</span>
-<span id="616">616</span>
-<span id="617">617</span>
-<span id="618">618</span>
-<span id="619">619</span>
-<span id="620">620</span>
-<span id="621">621</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Rolf Morel &lt;rolfmorel@gmail.com&gt;</span>
@@ -632,7 +619,7 @@
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
 <span class="kw">use</span> <span class="ident">bstr::io::BufReadExt</span>;
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">stdout</span>, <span class="ident">BufReader</span>, <span class="ident">BufWriter</span>, <span class="ident">Read</span>, <span class="ident">Write</span>};
 <span class="kw">use</span> <span class="ident">std::path::Path</span>;
@@ -1024,7 +1011,7 @@
     <span class="kw">let</span> <span class="ident">delimiter_is_equal</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="string">&quot;-d=&quot;</span>.<span class="ident">to_string</span>()); <span class="comment">// special case</span>
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">complement</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::COMPLEMENT</span>);
+    <span class="kw">let</span> <span class="ident">complement</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::COMPLEMENT</span>);
 
     <span class="kw">let</span> <span class="ident">mode_parse</span> <span class="op">=</span> <span class="kw">match</span> (
         <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::BYTES</span>),
@@ -1042,7 +1029,7 @@
                             .<span class="ident">unwrap_or_default</span>()
                             .<span class="ident">to_owned</span>(),
                     ),
-                    <span class="ident">zero_terminated</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ZERO_TERMINATED</span>),
+                    <span class="ident">zero_terminated</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ZERO_TERMINATED</span>),
                 },
             )
         }),
@@ -1057,7 +1044,7 @@
                             .<span class="ident">unwrap_or_default</span>()
                             .<span class="ident">to_owned</span>(),
                     ),
-                    <span class="ident">zero_terminated</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ZERO_TERMINATED</span>),
+                    <span class="ident">zero_terminated</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ZERO_TERMINATED</span>),
                 },
             )
         }),
@@ -1074,8 +1061,8 @@
                     <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
                 };
 
-                <span class="kw">let</span> <span class="ident">only_delimited</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ONLY_DELIMITED</span>);
-                <span class="kw">let</span> <span class="ident">zero_terminated</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ZERO_TERMINATED</span>);
+                <span class="kw">let</span> <span class="ident">only_delimited</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ONLY_DELIMITED</span>);
+                <span class="kw">let</span> <span class="ident">zero_terminated</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ZERO_TERMINATED</span>);
 
                 <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::DELIMITER</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>()) {
                     <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">delim</span>) =&gt; {
@@ -1135,7 +1122,7 @@
                 <span class="prelude-val">Err</span>(<span class="string">&quot;invalid input: The &#39;--delimiter&#39; (&#39;-d&#39;) option only usable if printing a sequence of fields&quot;</span>.<span class="ident">into</span>())
             }
             <span class="ident">Mode::Bytes</span>(<span class="kw">_</span>, <span class="kw">_</span>) <span class="op">|</span> <span class="ident">Mode::Characters</span>(<span class="kw">_</span>, <span class="kw">_</span>)
-                <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ONLY_DELIMITED</span>) =&gt;
+                <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ONLY_DELIMITED</span>) =&gt;
             {
                 <span class="prelude-val">Err</span>(<span class="string">&quot;invalid input: The &#39;--only-delimited&#39; (&#39;-s&#39;) option only usable if printing a sequence of fields&quot;</span>.<span class="ident">into</span>())
             }
@@ -1155,7 +1142,7 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">name</span>(<span class="ident">NAME</span>)
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
@@ -1167,76 +1154,63 @@
             <span class="ident">Arg::new</span>(<span class="ident">options::BYTES</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;b&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::BYTES</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;filter byte columns from the input source&quot;</span>)
                 .<span class="ident">allow_hyphen_values</span>(<span class="bool-val">true</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;LIST&quot;</span>)
-                .<span class="ident">display_order</span>(<span class="number">1</span>),
+                .<span class="ident">value_name</span>(<span class="string">&quot;LIST&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::CHARACTERS</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;c&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::CHARACTERS</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;alias for character mode&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">allow_hyphen_values</span>(<span class="bool-val">true</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;LIST&quot;</span>)
-                .<span class="ident">display_order</span>(<span class="number">2</span>),
+                .<span class="ident">value_name</span>(<span class="string">&quot;LIST&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::DELIMITER</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;d&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::DELIMITER</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;specify the delimiter character that separates fields in the input source. Defaults to Tab.&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;DELIM&quot;</span>)
-                .<span class="ident">display_order</span>(<span class="number">3</span>),
+                .<span class="ident">value_name</span>(<span class="string">&quot;DELIM&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FIELDS</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;f&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::FIELDS</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;filter field columns from the input source&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">allow_hyphen_values</span>(<span class="bool-val">true</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;LIST&quot;</span>)
-                .<span class="ident">display_order</span>(<span class="number">4</span>),
+                .<span class="ident">value_name</span>(<span class="string">&quot;LIST&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::COMPLEMENT</span>)
                 .<span class="ident">long</span>(<span class="ident">options::COMPLEMENT</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;invert the filter - instead of displaying only the filtered columns, display all but those columns&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">false</span>)
-                .<span class="ident">display_order</span>(<span class="number">5</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ONLY_DELIMITED</span>)
-            .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::ONLY_DELIMITED</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;in field mode, only print lines which contain the delimiter&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">false</span>)
-                .<span class="ident">display_order</span>(<span class="number">6</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ZERO_TERMINATED</span>)
-            .<span class="ident">short</span>(<span class="string">&#39;z&#39;</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;z&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::ZERO_TERMINATED</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;instead of filtering columns based on line, filter columns based on \\0 (NULL character)&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">false</span>)
-                .<span class="ident">display_order</span>(<span class="number">8</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OUTPUT_DELIMITER</span>)
-            .<span class="ident">long</span>(<span class="ident">options::OUTPUT_DELIMITER</span>)
+                .<span class="ident">long</span>(<span class="ident">options::OUTPUT_DELIMITER</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;in field mode, replace the delimiter in output lines with this option&#39;s argument&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;NEW_DELIM&quot;</span>)
-                .<span class="ident">display_order</span>(<span class="number">7</span>),
+                .<span class="ident">value_name</span>(<span class="string">&quot;NEW_DELIM&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FILE</span>)
             .<span class="ident">hide</span>(<span class="bool-val">true</span>)
-            .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+            .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
             .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>)
         )
 }

@@ -3010,6 +3010,46 @@
 <span id="3010">3010</span>
 <span id="3011">3011</span>
 <span id="3012">3012</span>
+<span id="3013">3013</span>
+<span id="3014">3014</span>
+<span id="3015">3015</span>
+<span id="3016">3016</span>
+<span id="3017">3017</span>
+<span id="3018">3018</span>
+<span id="3019">3019</span>
+<span id="3020">3020</span>
+<span id="3021">3021</span>
+<span id="3022">3022</span>
+<span id="3023">3023</span>
+<span id="3024">3024</span>
+<span id="3025">3025</span>
+<span id="3026">3026</span>
+<span id="3027">3027</span>
+<span id="3028">3028</span>
+<span id="3029">3029</span>
+<span id="3030">3030</span>
+<span id="3031">3031</span>
+<span id="3032">3032</span>
+<span id="3033">3033</span>
+<span id="3034">3034</span>
+<span id="3035">3035</span>
+<span id="3036">3036</span>
+<span id="3037">3037</span>
+<span id="3038">3038</span>
+<span id="3039">3039</span>
+<span id="3040">3040</span>
+<span id="3041">3041</span>
+<span id="3042">3042</span>
+<span id="3043">3043</span>
+<span id="3044">3044</span>
+<span id="3045">3045</span>
+<span id="3046">3046</span>
+<span id="3047">3047</span>
+<span id="3048">3048</span>
+<span id="3049">3049</span>
+<span id="3050">3050</span>
+<span id="3051">3051</span>
+<span id="3052">3052</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jeremiah Peschka &lt;jeremiah.peschka@gmail.com&gt;</span>
@@ -3024,7 +3064,7 @@
 
 <span class="kw">use</span> <span class="ident">clap</span>::{
     <span class="ident">builder</span>::{<span class="ident">NonEmptyStringValueParser</span>, <span class="ident">ValueParser</span>},
-    <span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>,
+    <span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>,
 };
 <span class="kw">use</span> <span class="ident">glob</span>::{<span class="ident">MatchOptions</span>, <span class="ident">Pattern</span>};
 <span class="kw">use</span> <span class="ident">lscolors::LsColors</span>;
@@ -3280,7 +3320,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Format</span> {
     <span class="ident">Columns</span>,
     <span class="ident">Long</span>,
@@ -3340,7 +3380,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">field</span>) <span class="op">=</span> <span class="ident">options</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::TIME_STYLE</span>) {
         <span class="comment">//If both FULL_TIME and TIME_STYLE are present</span>
         <span class="comment">//The one added last is dominant</span>
-        <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::FULL_TIME</span>)
+        <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::FULL_TIME</span>)
             <span class="op">&amp;&amp;</span> <span class="ident">options</span>.<span class="ident">indices_of</span>(<span class="ident">options::FULL_TIME</span>).<span class="ident">unwrap</span>().<span class="ident">last</span>()
                 <span class="op">&gt;</span> <span class="ident">options</span>.<span class="ident">indices_of</span>(<span class="ident">options::TIME_STYLE</span>).<span class="ident">unwrap</span>().<span class="ident">last</span>()
         {
@@ -3360,7 +3400,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 },
             }
         }
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::FULL_TIME</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::FULL_TIME</span>) {
         <span class="prelude-val">Ok</span>(<span class="ident">TimeStyle::FullIso</span>)
     } <span class="kw">else</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">TimeStyle::Locale</span>)
@@ -3437,7 +3477,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
 <span class="kw">impl</span> <span class="ident">Config</span> {
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::cognitive_complexity</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">clap::ArgMatches</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::CONTEXT</span>);
+        <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::CONTEXT</span>);
         <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">format</span>, <span class="ident">opt</span>) <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">format_</span>) <span class="op">=</span> <span class="ident">options</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::FORMAT</span>) {
             (
                 <span class="kw">match</span> <span class="ident">format_</span>.<span class="ident">as_str</span>() {
@@ -3451,13 +3491,13 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 },
                 <span class="prelude-val">Some</span>(<span class="ident">options::FORMAT</span>),
             )
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::format::LONG</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::format::LONG</span>) {
             (<span class="ident">Format::Long</span>, <span class="prelude-val">Some</span>(<span class="ident">options::format::LONG</span>))
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::format::ACROSS</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::format::ACROSS</span>) {
             (<span class="ident">Format::Across</span>, <span class="prelude-val">Some</span>(<span class="ident">options::format::ACROSS</span>))
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::format::COMMAS</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::format::COMMAS</span>) {
             (<span class="ident">Format::Commas</span>, <span class="prelude-val">Some</span>(<span class="ident">options::format::COMMAS</span>))
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::format::COLUMNS</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::format::COLUMNS</span>) {
             (<span class="ident">Format::Columns</span>, <span class="prelude-val">Some</span>(<span class="ident">options::format::COLUMNS</span>))
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">atty::is</span>(<span class="ident">atty::Stream::Stdout</span>) {
             (<span class="ident">Format::Columns</span>, <span class="prelude-val">None</span>)
@@ -3491,21 +3531,30 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 <span class="ident">options::FULL_TIME</span>,
             ]
             .<span class="ident">iter</span>()
-            .<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">opt</span><span class="op">|</span> <span class="ident">options</span>.<span class="ident">indices_of</span>(<span class="ident">opt</span>))
+            .<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">opt</span><span class="op">|</span> {
+                <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">value_source</span>(<span class="ident">opt</span>) <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">clap::parser::ValueSource::CommandLine</span>) {
+                    <span class="ident">options</span>.<span class="ident">indices_of</span>(<span class="ident">opt</span>)
+                } <span class="kw">else</span> {
+                    <span class="prelude-val">None</span>
+                }
+            })
             .<span class="ident">flatten</span>()
             .<span class="ident">any</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">idx</span>)
             {
                 <span class="ident">format</span> <span class="op">=</span> <span class="ident">Format::Long</span>;
             } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">indices</span>) <span class="op">=</span> <span class="ident">options</span>.<span class="ident">indices_of</span>(<span class="ident">options::format::ONE_LINE</span>) {
-                <span class="kw">if</span> <span class="ident">indices</span>.<span class="ident">any</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span> <span class="op">&gt;</span> <span class="ident">idx</span>) {
+                <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">value_source</span>(<span class="ident">options::format::ONE_LINE</span>)
+                    <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">clap::parser::ValueSource::CommandLine</span>)
+                    <span class="op">&amp;&amp;</span> <span class="ident">indices</span>.<span class="ident">any</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span> <span class="op">&gt;</span> <span class="ident">idx</span>)
+                {
                     <span class="ident">format</span> <span class="op">=</span> <span class="ident">Format::OneLine</span>;
                 }
             }
         }
 
-        <span class="kw">let</span> <span class="ident">files</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::files::ALL</span>) {
+        <span class="kw">let</span> <span class="ident">files</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::files::ALL</span>) {
             <span class="ident">Files::All</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::files::ALMOST_ALL</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::files::ALMOST_ALL</span>) {
             <span class="ident">Files::AlmostAll</span>
         } <span class="kw">else</span> {
             <span class="ident">Files::Normal</span>
@@ -3522,15 +3571,15 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 <span class="comment">// below should never happen as clap already restricts the values.</span>
                 <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Invalid field for --sort&quot;</span>),
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::sort::TIME</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::sort::TIME</span>) {
             <span class="ident">Sort::Time</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::sort::SIZE</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::sort::SIZE</span>) {
             <span class="ident">Sort::Size</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::sort::NONE</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::sort::NONE</span>) {
             <span class="ident">Sort::None</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::sort::VERSION</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::sort::VERSION</span>) {
             <span class="ident">Sort::Version</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::sort::EXTENSION</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::sort::EXTENSION</span>) {
             <span class="ident">Sort::Extension</span>
         } <span class="kw">else</span> {
             <span class="ident">Sort::Name</span>
@@ -3544,9 +3593,9 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 <span class="comment">// below should never happen as clap already restricts the values.</span>
                 <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Invalid field for --time&quot;</span>),
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::time::ACCESS</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::time::ACCESS</span>) {
             <span class="ident">Time::Access</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::time::CHANGE</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::time::CHANGE</span>) {
             <span class="ident">Time::Change</span>
         } <span class="kw">else</span> {
             <span class="ident">Time::Modification</span>
@@ -3567,14 +3616,14 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::size::BLOCK_SIZE</span>)
                 .<span class="ident">unwrap</span>()
                 .<span class="ident">eq</span>(<span class="string">&quot;si&quot;</span>)
-            <span class="op">|</span><span class="op">|</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::size::SI</span>);
+            <span class="op">|</span><span class="op">|</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::size::SI</span>);
         <span class="kw">let</span> <span class="ident">opt_hr</span> <span class="op">=</span> (<span class="ident">cmd_line_bs</span>.<span class="ident">is_some</span>()
             <span class="op">&amp;&amp;</span> <span class="ident">options</span>
                 .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::size::BLOCK_SIZE</span>)
                 .<span class="ident">unwrap</span>()
                 .<span class="ident">eq</span>(<span class="string">&quot;human-readable&quot;</span>))
-            <span class="op">|</span><span class="op">|</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::size::HUMAN_READABLE</span>);
-        <span class="kw">let</span> <span class="ident">opt_kb</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::size::KIBIBYTES</span>);
+            <span class="op">|</span><span class="op">|</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::size::HUMAN_READABLE</span>);
+        <span class="kw">let</span> <span class="ident">opt_kb</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::size::KIBIBYTES</span>);
 
         <span class="kw">let</span> <span class="ident">bs_env_var</span> <span class="op">=</span> <span class="ident">std::env::var_os</span>(<span class="string">&quot;BLOCK_SIZE&quot;</span>);
         <span class="kw">let</span> <span class="ident">ls_bs_env_var</span> <span class="op">=</span> <span class="ident">std::env::var_os</span>(<span class="string">&quot;LS_BLOCK_SIZE&quot;</span>);
@@ -3623,12 +3672,12 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
         };
 
         <span class="kw">let</span> <span class="ident">long</span> <span class="op">=</span> {
-            <span class="kw">let</span> <span class="ident">author</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::AUTHOR</span>);
-            <span class="kw">let</span> <span class="ident">group</span> <span class="op">=</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_GROUP</span>)
-                <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::format::LONG_NO_GROUP</span>);
-            <span class="kw">let</span> <span class="ident">owner</span> <span class="op">=</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::format::LONG_NO_OWNER</span>);
+            <span class="kw">let</span> <span class="ident">author</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::AUTHOR</span>);
+            <span class="kw">let</span> <span class="ident">group</span> <span class="op">=</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::NO_GROUP</span>)
+                <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::format::LONG_NO_GROUP</span>);
+            <span class="kw">let</span> <span class="ident">owner</span> <span class="op">=</span> <span class="op">!</span><span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::format::LONG_NO_OWNER</span>);
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-            <span class="kw">let</span> <span class="ident">numeric_uid_gid</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::format::LONG_NUMERIC_UID_GID</span>);
+            <span class="kw">let</span> <span class="ident">numeric_uid_gid</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::format::LONG_NUMERIC_UID_GID</span>);
             <span class="ident">LongFormat</span> {
                 <span class="ident">author</span>,
                 <span class="ident">group</span>,
@@ -3672,9 +3721,9 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
         };
 
         <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::needless_bool</span>)]</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">show_control</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::HIDE_CONTROL_CHARS</span>) {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">show_control</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::HIDE_CONTROL_CHARS</span>) {
             <span class="bool-val">false</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::SHOW_CONTROL_CHARS</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::SHOW_CONTROL_CHARS</span>) {
             <span class="bool-val">true</span>
         } <span class="kw">else</span> {
             <span class="op">!</span><span class="ident">atty::is</span>(<span class="ident">atty::Stream::Stdout</span>)
@@ -3715,13 +3764,13 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 },
                 <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Should have been caught by Clap&quot;</span>),
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::quoting::LITERAL</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::quoting::LITERAL</span>) {
             <span class="ident">QuotingStyle::Literal</span> { <span class="ident">show_control</span> }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::quoting::ESCAPE</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::quoting::ESCAPE</span>) {
             <span class="ident">QuotingStyle::C</span> {
                 <span class="ident">quotes</span>: <span class="ident">quoting_style::Quotes::None</span>,
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::quoting::C</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::quoting::C</span>) {
             <span class="ident">QuotingStyle::C</span> {
                 <span class="ident">quotes</span>: <span class="ident">quoting_style::Quotes::Double</span>,
             }
@@ -3757,9 +3806,9 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 }
                 <span class="kw-2">&amp;</span><span class="kw">_</span> =&gt; <span class="ident">IndicatorStyle::None</span>,
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::indicator_style::SLASH</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::indicator_style::SLASH</span>) {
             <span class="ident">IndicatorStyle::Slash</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::indicator_style::FILE_TYPE</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::indicator_style::FILE_TYPE</span>) {
             <span class="ident">IndicatorStyle::FileType</span>
         } <span class="kw">else</span> {
             <span class="ident">IndicatorStyle::None</span>
@@ -3768,7 +3817,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ignore_patterns</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Pattern</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
 
-        <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::IGNORE_BACKUPS</span>) {
+        <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::IGNORE_BACKUPS</span>) {
             <span class="ident">ignore_patterns</span>.<span class="ident">push</span>(<span class="ident">Pattern::new</span>(<span class="string">&quot;*~&quot;</span>).<span class="ident">unwrap</span>());
             <span class="ident">ignore_patterns</span>.<span class="ident">push</span>(<span class="ident">Pattern::new</span>(<span class="string">&quot;.*~&quot;</span>).<span class="ident">unwrap</span>());
         }
@@ -3827,7 +3876,13 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             <span class="ident">options::quoting::ESCAPE</span>,
             <span class="ident">options::quoting::LITERAL</span>,
         ];
-        <span class="kw">let</span> <span class="ident">get_last</span> <span class="op">=</span> <span class="op">|</span><span class="ident">flag</span>: <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">|</span> -&gt; <span class="ident">usize</span> { <span class="ident">options</span>.<span class="ident">index_of</span>(<span class="ident">flag</span>).<span class="ident">unwrap_or</span>(<span class="number">0</span>) };
+        <span class="kw">let</span> <span class="ident">get_last</span> <span class="op">=</span> <span class="op">|</span><span class="ident">flag</span>: <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">|</span> -&gt; <span class="ident">usize</span> {
+            <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">value_source</span>(<span class="ident">flag</span>) <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">clap::parser::ValueSource::CommandLine</span>) {
+                <span class="ident">options</span>.<span class="ident">index_of</span>(<span class="ident">flag</span>).<span class="ident">unwrap_or</span>(<span class="number">0</span>)
+            } <span class="kw">else</span> {
+                <span class="number">0</span>
+            }
+        };
         <span class="kw">if</span> <span class="ident">get_last</span>(<span class="ident">options::ZERO</span>)
             <span class="op">&gt;</span> <span class="ident">zero_formats_opts</span>
                 .<span class="ident">into_iter</span>()
@@ -3875,13 +3930,13 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             <span class="prelude-val">None</span>
         };
 
-        <span class="kw">let</span> <span class="ident">dereference</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::dereference::ALL</span>) {
+        <span class="kw">let</span> <span class="ident">dereference</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::dereference::ALL</span>) {
             <span class="ident">Dereference::All</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::dereference::ARGS</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::dereference::ARGS</span>) {
             <span class="ident">Dereference::Args</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::dereference::DIR_ARGS</span>) {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::dereference::DIR_ARGS</span>) {
             <span class="ident">Dereference::DirArgs</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::DIRECTORY</span>)
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::DIRECTORY</span>)
             <span class="op">|</span><span class="op">|</span> <span class="ident">indicator_style</span> <span class="op">==</span> <span class="ident">IndicatorStyle::Classify</span>
             <span class="op">|</span><span class="op">|</span> <span class="ident">format</span> <span class="op">==</span> <span class="ident">Format::Long</span>
         {
@@ -3894,18 +3949,18 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             <span class="ident">format</span>,
             <span class="ident">files</span>,
             <span class="ident">sort</span>,
-            <span class="ident">recursive</span>: <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::RECURSIVE</span>),
-            <span class="ident">reverse</span>: <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::REVERSE</span>),
+            <span class="ident">recursive</span>: <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::RECURSIVE</span>),
+            <span class="ident">reverse</span>: <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::REVERSE</span>),
             <span class="ident">dereference</span>,
             <span class="ident">ignore_patterns</span>,
             <span class="ident">size_format</span>,
-            <span class="ident">directory</span>: <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::DIRECTORY</span>),
+            <span class="ident">directory</span>: <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::DIRECTORY</span>),
             <span class="ident">time</span>,
             <span class="ident">color</span>,
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-            <span class="ident">inode</span>: <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::INODE</span>),
+            <span class="ident">inode</span>: <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::INODE</span>),
             <span class="ident">long</span>,
-            <span class="ident">alloc_size</span>: <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::size::ALLOCATION_SIZE</span>),
+            <span class="ident">alloc_size</span>: <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::size::ALLOCATION_SIZE</span>),
             <span class="ident">block_size</span>,
             <span class="ident">width</span>,
             <span class="ident">quoting_style</span>,
@@ -3922,8 +3977,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="bool-val">false</span>
                 }
             },
-            <span class="ident">group_directories_first</span>: <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::GROUP_DIRECTORIES_FIRST</span>),
-            <span class="ident">eol</span>: <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">contains_id</span>(<span class="ident">options::ZERO</span>) {
+            <span class="ident">group_directories_first</span>: <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::GROUP_DIRECTORIES_FIRST</span>),
+            <span class="ident">eol</span>: <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">get_flag</span>(<span class="ident">options::ZERO</span>) {
                 <span class="string">&#39;\0&#39;</span>
             } <span class="kw">else</span> {
                 <span class="string">&#39;\n&#39;</span>
@@ -3948,23 +4003,24 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
     <span class="ident">list</span>(<span class="ident">locs</span>, <span class="kw-2">&amp;</span><span class="ident">config</span>)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
         .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
+        .<span class="ident">disable_help_flag</span>(<span class="bool-val">true</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::HELP</span>)
                 .<span class="ident">long</span>(<span class="ident">options::HELP</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Print help information.&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Print help information.&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Help</span>),
         )
         <span class="comment">// Format arguments</span>
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FORMAT</span>)
                 .<span class="ident">long</span>(<span class="ident">options::FORMAT</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Set the display format.&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_parser</span>([
                     <span class="string">&quot;long&quot;</span>,
                     <span class="string">&quot;verbose&quot;</span>,
@@ -3995,7 +4051,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="ident">options::format::LONG</span>,
                     <span class="ident">options::format::ACROSS</span>,
                     <span class="ident">options::format::COLUMNS</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::format::LONG</span>)
@@ -4008,7 +4065,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="ident">options::format::LONG</span>,
                     <span class="ident">options::format::ACROSS</span>,
                     <span class="ident">options::format::COLUMNS</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::format::ACROSS</span>)
@@ -4020,7 +4078,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="ident">options::format::LONG</span>,
                     <span class="ident">options::format::ACROSS</span>,
                     <span class="ident">options::format::COLUMNS</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="comment">// silently ignored (see #3624)</span>
@@ -4028,7 +4087,6 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 .<span class="ident">short</span>(<span class="string">&#39;T&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::format::TAB_SIZE</span>)
                 .<span class="ident">env</span>(<span class="string">&quot;TABSIZE&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;COLS&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Assume tab stops at each COLS instead of 8 (unimplemented)&quot;</span>),
         )
@@ -4042,20 +4100,23 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="ident">options::format::LONG</span>,
                     <span class="ident">options::format::ACROSS</span>,
                     <span class="ident">options::format::COLUMNS</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ZERO</span>)
                 .<span class="ident">long</span>(<span class="ident">options::ZERO</span>)
                 .<span class="ident">conflicts_with</span>(<span class="ident">options::DIRED</span>)
                 .<span class="ident">overrides_with</span>(<span class="ident">options::ZERO</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;List entries separated by ASCII NUL characters.&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;List entries separated by ASCII NUL characters.&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::DIRED</span>)
                 .<span class="ident">long</span>(<span class="ident">options::DIRED</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;D&#39;</span>)
-                .<span class="ident">hide</span>(<span class="bool-val">true</span>),
+                .<span class="ident">hide</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         <span class="comment">// The next four arguments do not override with the other format</span>
         <span class="comment">// options, see the comment in Config::from for the reason.</span>
@@ -4067,7 +4128,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             <span class="ident">Arg::new</span>(<span class="ident">options::format::ONE_LINE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;1&#39;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;List one file per line.&quot;</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::format::LONG_NO_GROUP</span>)
@@ -4076,26 +4137,25 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="string">&quot;Long format without group information. \
                         Identical to --format=long with --no-group.&quot;</span>,
                 )
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::format::LONG_NO_OWNER</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;g&#39;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Long format without owner information.&quot;</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::format::LONG_NUMERIC_UID_GID</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;n&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::format::LONG_NUMERIC_UID_GID</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;-l with numeric UIDs and GIDs.&quot;</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         <span class="comment">// Quoting style</span>
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::QUOTING_STYLE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::QUOTING_STYLE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Set quoting style.&quot;</span>)
                 .<span class="ident">value_parser</span>([
                     <span class="string">&quot;literal&quot;</span>,
@@ -4123,7 +4183,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="ident">options::quoting::LITERAL</span>,
                     <span class="ident">options::quoting::ESCAPE</span>,
                     <span class="ident">options::quoting::C</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::quoting::ESCAPE</span>)
@@ -4135,7 +4196,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="ident">options::quoting::LITERAL</span>,
                     <span class="ident">options::quoting::ESCAPE</span>,
                     <span class="ident">options::quoting::C</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::quoting::C</span>)
@@ -4147,7 +4209,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="ident">options::quoting::LITERAL</span>,
                     <span class="ident">options::quoting::ESCAPE</span>,
                     <span class="ident">options::quoting::C</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         <span class="comment">// Control characters</span>
         .<span class="ident">arg</span>(
@@ -4155,13 +4218,15 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 .<span class="ident">short</span>(<span class="string">&#39;q&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::HIDE_CONTROL_CHARS</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Replace control characters with &#39;?&#39; if they are not escaped.&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::HIDE_CONTROL_CHARS</span>, <span class="ident">options::SHOW_CONTROL_CHARS</span>]),
+                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::HIDE_CONTROL_CHARS</span>, <span class="ident">options::SHOW_CONTROL_CHARS</span>])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::SHOW_CONTROL_CHARS</span>)
                 .<span class="ident">long</span>(<span class="ident">options::SHOW_CONTROL_CHARS</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Show control characters &#39;as is&#39; if they are not escaped.&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::HIDE_CONTROL_CHARS</span>, <span class="ident">options::SHOW_CONTROL_CHARS</span>]),
+                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::HIDE_CONTROL_CHARS</span>, <span class="ident">options::SHOW_CONTROL_CHARS</span>])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         <span class="comment">// Time arguments</span>
         .<span class="ident">arg</span>(
@@ -4174,7 +4239,6 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                         \tbirth time: birth, creation;&quot;</span>,
                 )
                 .<span class="ident">value_name</span>(<span class="string">&quot;field&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_parser</span>([
                     <span class="string">&quot;atime&quot;</span>, <span class="string">&quot;access&quot;</span>, <span class="string">&quot;use&quot;</span>, <span class="string">&quot;ctime&quot;</span>, <span class="string">&quot;status&quot;</span>, <span class="string">&quot;birth&quot;</span>, <span class="string">&quot;creation&quot;</span>,
                 ])
@@ -4191,7 +4255,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                         time. When explicitly sorting by time (--sort=time or -t) or when not \
                         using a long listing format, sort according to the status change time.&quot;</span>,
                 )
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::TIME</span>, <span class="ident">options::time::ACCESS</span>, <span class="ident">options::time::CHANGE</span>]),
+                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::TIME</span>, <span class="ident">options::time::ACCESS</span>, <span class="ident">options::time::CHANGE</span>])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::time::ACCESS</span>)
@@ -4202,14 +4267,14 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                         sorting by time (--sort=time or -t) or when not using a long listing \
                         format, sort according to the access time.&quot;</span>,
                 )
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::TIME</span>, <span class="ident">options::time::ACCESS</span>, <span class="ident">options::time::CHANGE</span>]),
+                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::TIME</span>, <span class="ident">options::time::ACCESS</span>, <span class="ident">options::time::CHANGE</span>])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         <span class="comment">// Hide and ignore</span>
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::HIDE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::HIDE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;PATTERN&quot;</span>)
                 .<span class="ident">help</span>(
                     <span class="string">&quot;do not list implied entries matching shell PATTERN (overridden by -a or -A)&quot;</span>,
@@ -4219,8 +4284,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             <span class="ident">Arg::new</span>(<span class="ident">options::IGNORE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;I&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::IGNORE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;PATTERN&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;do not list implied entries matching shell PATTERN&quot;</span>),
         )
@@ -4228,7 +4292,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             <span class="ident">Arg::new</span>(<span class="ident">options::IGNORE_BACKUPS</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;B&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::IGNORE_BACKUPS</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Ignore entries which end with ~.&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Ignore entries which end with ~.&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         <span class="comment">// Sort arguments</span>
         .<span class="ident">arg</span>(
@@ -4236,7 +4301,6 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 .<span class="ident">long</span>(<span class="ident">options::SORT</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Sort by &lt;field&gt;: name, none (-U), time (-t), size (-S) or extension (-X)&quot;</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;field&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_parser</span>([<span class="string">&quot;name&quot;</span>, <span class="string">&quot;none&quot;</span>, <span class="string">&quot;time&quot;</span>, <span class="string">&quot;size&quot;</span>, <span class="string">&quot;version&quot;</span>, <span class="string">&quot;extension&quot;</span>])
                 .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
@@ -4259,7 +4323,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="ident">options::sort::NONE</span>,
                     <span class="ident">options::sort::VERSION</span>,
                     <span class="ident">options::sort::EXTENSION</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::sort::TIME</span>)
@@ -4272,7 +4337,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="ident">options::sort::NONE</span>,
                     <span class="ident">options::sort::VERSION</span>,
                     <span class="ident">options::sort::EXTENSION</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::sort::VERSION</span>)
@@ -4285,7 +4351,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="ident">options::sort::NONE</span>,
                     <span class="ident">options::sort::VERSION</span>,
                     <span class="ident">options::sort::EXTENSION</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::sort::EXTENSION</span>)
@@ -4298,7 +4365,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="ident">options::sort::NONE</span>,
                     <span class="ident">options::sort::VERSION</span>,
                     <span class="ident">options::sort::EXTENSION</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::sort::NONE</span>)
@@ -4315,7 +4383,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="ident">options::sort::NONE</span>,
                     <span class="ident">options::sort::VERSION</span>,
                     <span class="ident">options::sort::EXTENSION</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         <span class="comment">// Dereferencing</span>
         .<span class="ident">arg</span>(
@@ -4330,7 +4399,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="ident">options::dereference::ALL</span>,
                     <span class="ident">options::dereference::DIR_ARGS</span>,
                     <span class="ident">options::dereference::ARGS</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::dereference::DIR_ARGS</span>)
@@ -4343,7 +4413,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="ident">options::dereference::ALL</span>,
                     <span class="ident">options::dereference::DIR_ARGS</span>,
                     <span class="ident">options::dereference::ARGS</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::dereference::ARGS</span>)
@@ -4354,40 +4425,42 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="ident">options::dereference::ALL</span>,
                     <span class="ident">options::dereference::DIR_ARGS</span>,
                     <span class="ident">options::dereference::ARGS</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         <span class="comment">// Long format options</span>
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::NO_GROUP</span>)
                 .<span class="ident">long</span>(<span class="ident">options::NO_GROUP</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;G&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Do not show group in long format.&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Do not show group in long format.&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::AUTHOR</span>).<span class="ident">long</span>(<span class="ident">options::AUTHOR</span>).<span class="ident">help</span>(
-            <span class="string">&quot;Show author in long format. \
-                On the supported platforms, the author always matches the file owner.&quot;</span>,
-        ))
+            <span class="string">&quot;Show author in long format. On the supported platforms, \
+            the author always matches the file owner.&quot;</span>,
+        ).<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>))
         <span class="comment">// Other Flags</span>
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::files::ALL</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;a&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::files::ALL</span>)
                 <span class="comment">// Overrides -A (as the order matters)</span>
-                .<span class="ident">overrides_with</span>(<span class="ident">options::files::ALMOST_ALL</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Do not ignore hidden files (files with names that start with &#39;.&#39;).&quot;</span>),
+                .<span class="ident">overrides_with_all</span>([<span class="ident">options::files::ALL</span>, <span class="ident">options::files::ALMOST_ALL</span>])
+                .<span class="ident">help</span>(<span class="string">&quot;Do not ignore hidden files (files with names that start with &#39;.&#39;).&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::files::ALMOST_ALL</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;A&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::files::ALMOST_ALL</span>)
                 <span class="comment">// Overrides -a (as the order matters)</span>
-                .<span class="ident">overrides_with</span>(<span class="ident">options::files::ALL</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                .<span class="ident">overrides_with_all</span>([<span class="ident">options::files::ALL</span>, <span class="ident">options::files::ALMOST_ALL</span>])
                 .<span class="ident">help</span>(
                     <span class="string">&quot;In a directory, do not ignore all file names that start with &#39;.&#39;, \
                     only ignore &#39;.&#39; and &#39;..&#39;.&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::DIRECTORY</span>)
@@ -4398,14 +4471,16 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     This will not follow symbolic links unless one of `--dereference-command-line \
                     (-H)`, `--dereference (-L)`, or `--dereference-command-line-symlink-to-dir` is \
                     specified.&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::size::HUMAN_READABLE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;h&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::size::HUMAN_READABLE</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Print human readable file sizes (e.g. 1K 234M 56G).&quot;</span>)
-                .<span class="ident">overrides_with</span>(<span class="ident">options::size::SI</span>),
+                .<span class="ident">overrides_with</span>(<span class="ident">options::size::SI</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::size::KIBIBYTES</span>)
@@ -4414,17 +4489,18 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 .<span class="ident">help</span>(
                     <span class="string">&quot;default to 1024-byte blocks for file system usage; used only with -s and per \
                     directory totals&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::size::SI</span>)
                 .<span class="ident">long</span>(<span class="ident">options::size::SI</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Print human readable file sizes using powers of 1000 instead of 1024.&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Print human readable file sizes using powers of 1000 instead of 1024.&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::size::BLOCK_SIZE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::size::BLOCK_SIZE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;BLOCK_SIZE&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;scale sizes by BLOCK_SIZE when printing them&quot;</span>),
@@ -4433,7 +4509,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             <span class="ident">Arg::new</span>(<span class="ident">options::INODE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;i&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::INODE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;print the index number of each file&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;print the index number of each file&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::REVERSE</span>)
@@ -4442,38 +4519,39 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 .<span class="ident">help</span>(
                     <span class="string">&quot;Reverse whatever the sorting method is e.g., list files in reverse \
             alphabetical order, youngest first, smallest first, or whatever.&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::RECURSIVE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;R&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::RECURSIVE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;List the contents of all directories recursively.&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;List the contents of all directories recursively.&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::WIDTH</span>)
                 .<span class="ident">long</span>(<span class="ident">options::WIDTH</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;w&#39;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Assume that the terminal is COLS columns wide.&quot;</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;COLS&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>),
+                .<span class="ident">value_name</span>(<span class="string">&quot;COLS&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::size::ALLOCATION_SIZE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::size::ALLOCATION_SIZE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;print the allocated size of each file, in blocks&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;print the allocated size of each file, in blocks&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::COLOR</span>)
                 .<span class="ident">long</span>(<span class="ident">options::COLOR</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Color output based on file type.&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_parser</span>([
                     <span class="string">&quot;always&quot;</span>, <span class="string">&quot;yes&quot;</span>, <span class="string">&quot;force&quot;</span>, <span class="string">&quot;auto&quot;</span>, <span class="string">&quot;tty&quot;</span>, <span class="string">&quot;if-tty&quot;</span>, <span class="string">&quot;never&quot;</span>, <span class="string">&quot;no&quot;</span>, <span class="string">&quot;none&quot;</span>,
                 ])
                 .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
-                .<span class="ident">min_values</span>(<span class="number">0</span>),
+                .<span class="ident">num_args</span>(<span class="number">0</span>..<span class="op">=</span><span class="number">1</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::INDICATOR_STYLE</span>)
@@ -4482,7 +4560,6 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="string">&quot;Append indicator with style WORD to entry names: \
                 none (default),  slash (-p), file-type (--file-type), classify (-F)&quot;</span>,
                 )
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_parser</span>([<span class="string">&quot;none&quot;</span>, <span class="string">&quot;slash&quot;</span>, <span class="string">&quot;file-type&quot;</span>, <span class="string">&quot;classify&quot;</span>])
                 .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
                     <span class="ident">options::indicator_style::FILE_TYPE</span>,
@@ -4513,14 +4590,13 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     --dereference-command-line (-H), --dereference (-L), or \
                     --dereference-command-line-symlink-to-dir options are specified.&quot;</span>,
                 )
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;when&quot;</span>)
                 .<span class="ident">value_parser</span>([
                     <span class="string">&quot;always&quot;</span>, <span class="string">&quot;yes&quot;</span>, <span class="string">&quot;force&quot;</span>, <span class="string">&quot;auto&quot;</span>, <span class="string">&quot;tty&quot;</span>, <span class="string">&quot;if-tty&quot;</span>, <span class="string">&quot;never&quot;</span>, <span class="string">&quot;no&quot;</span>, <span class="string">&quot;none&quot;</span>,
                 ])
                 .<span class="ident">default_missing_value</span>(<span class="string">&quot;always&quot;</span>)
                 .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
-                .<span class="ident">min_values</span>(<span class="number">0</span>)
+                .<span class="ident">num_args</span>(<span class="number">0</span>..<span class="op">=</span><span class="number">1</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
                     <span class="ident">options::indicator_style::FILE_TYPE</span>,
                     <span class="ident">options::indicator_style::SLASH</span>,
@@ -4537,7 +4613,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="ident">options::indicator_style::SLASH</span>,
                     <span class="ident">options::indicator_style::CLASSIFY</span>,
                     <span class="ident">options::INDICATOR_STYLE</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::indicator_style::SLASH</span>)
@@ -4548,7 +4625,8 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                     <span class="ident">options::indicator_style::SLASH</span>,
                     <span class="ident">options::indicator_style::CLASSIFY</span>,
                     <span class="ident">options::INDICATOR_STYLE</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="comment">//This still needs support for posix-*</span>
@@ -4564,13 +4642,15 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             <span class="ident">Arg::new</span>(<span class="ident">options::FULL_TIME</span>)
                 .<span class="ident">long</span>(<span class="ident">options::FULL_TIME</span>)
                 .<span class="ident">overrides_with</span>(<span class="ident">options::FULL_TIME</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;like -l --time-style=full-iso&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;like -l --time-style=full-iso&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::CONTEXT</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;Z&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::CONTEXT</span>)
-                .<span class="ident">help</span>(<span class="ident">CONTEXT_HELP_TEXT</span>),
+                .<span class="ident">help</span>(<span class="ident">CONTEXT_HELP_TEXT</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::GROUP_DIRECTORIES_FIRST</span>)
@@ -4578,13 +4658,13 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 .<span class="ident">help</span>(
                     <span class="string">&quot;group directories before files; can be augmented with \
                     a --sort option, but any use of --sort=none (-U) disables grouping&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         <span class="comment">// Positional arguments</span>
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::PATHS</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::AnyPath</span>)
                 .<span class="ident">value_parser</span>(<span class="ident">ValueParser::os_string</span>()),
         )

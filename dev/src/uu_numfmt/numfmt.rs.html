@@ -470,7 +470,7 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::format::format_and_print</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::options</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::units</span>::{<span class="prelude-ty">Result</span>, <span class="ident">Unit</span>};
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>, <span class="ident">ValueSource</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">parser::ValueSource</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">BufRead</span>, <span class="ident">Write</span>};
 <span class="kw">use</span> <span class="ident">units</span>::{<span class="ident">IEC_BASES</span>, <span class="ident">SI_BASES</span>};
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
@@ -716,7 +716,7 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
@@ -742,7 +742,6 @@
             <span class="ident">Arg::new</span>(<span class="ident">options::FORMAT</span>)
                 .<span class="ident">long</span>(<span class="ident">options::FORMAT</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;use printf style floating-point FORMAT; see FORMAT below for details&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;FORMAT&quot;</span>),
         )
         .<span class="ident">arg</span>(
@@ -791,6 +790,7 @@
                     <span class="string">&quot;print (without converting) the first N header lines; \
                      N defaults to 1 if not specified&quot;</span>,
                 )
+                .<span class="ident">num_args</span>(..<span class="op">=</span><span class="number">1</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;N&quot;</span>)
                 .<span class="ident">default_missing_value</span>(<span class="ident">options::HEADER_DEFAULT</span>)
                 .<span class="ident">hide_default_value</span>(<span class="bool-val">true</span>),
@@ -818,7 +818,7 @@
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::NUMBER</span>)
                 .<span class="ident">hide</span>(<span class="bool-val">true</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>),
         )
 }
 

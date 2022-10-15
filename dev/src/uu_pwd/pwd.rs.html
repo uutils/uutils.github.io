@@ -168,6 +168,9 @@
 <span id="168">168</span>
 <span id="169">169</span>
 <span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Derek Chiang &lt;derekchiang93@gmail.com&gt;</span>
@@ -175,6 +178,7 @@
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
 <span class="comment">//  * file that was distributed with this source code.</span>
 
+<span class="kw">use</span> <span class="ident">clap::ArgAction</span>;
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::env</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>;
@@ -295,7 +299,7 @@
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">cwd</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_LOGICAL</span>) {
+    <span class="kw">let</span> <span class="ident">cwd</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_LOGICAL</span>) {
         <span class="ident">logical_path</span>()
     } <span class="kw">else</span> {
         <span class="ident">physical_path</span>()
@@ -318,7 +322,7 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
@@ -328,14 +332,16 @@
             <span class="ident">Arg::new</span>(<span class="ident">OPT_LOGICAL</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;L&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_LOGICAL</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;use PWD from environment, even if it contains symlinks&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;use PWD from environment, even if it contains symlinks&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_PHYSICAL</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;P&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_PHYSICAL</span>)
                 .<span class="ident">overrides_with</span>(<span class="ident">OPT_LOGICAL</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;avoid all symlinks&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;avoid all symlinks&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
 }
 </code></pre></div>

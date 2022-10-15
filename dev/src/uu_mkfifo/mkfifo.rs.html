@@ -104,6 +104,7 @@
 <span id="104">104</span>
 <span id="105">105</span>
 <span id="106">106</span>
+<span id="107">107</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Michael Gehring &lt;mg@ebfe.org&gt;</span>
@@ -114,7 +115,7 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">libc::mkfifo</span>;
 <span class="kw">use</span> <span class="ident">std::ffi::CString</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
@@ -141,7 +142,7 @@
     <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::CONTEXT</span>) {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;--context is not implemented&quot;</span>));
     }
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::SE_LINUX_SECURITY_CONTEXT</span>) {
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::SE_LINUX_SECURITY_CONTEXT</span>) {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;-Z is not implemented&quot;</span>));
     }
 
@@ -174,7 +175,7 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">name</span>(<span class="ident">NAME</span>)
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
@@ -187,12 +188,13 @@
                 .<span class="ident">long</span>(<span class="ident">options::MODE</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;file permissions for the fifo&quot;</span>)
                 .<span class="ident">default_value</span>(<span class="string">&quot;0666&quot;</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;0666&quot;</span>),
+                .<span class="ident">value_name</span>(<span class="string">&quot;MODE&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::SE_LINUX_SECURITY_CONTEXT</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;Z&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;set the SELinux security context to default type&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;set the SELinux security context to default type&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::CONTEXT</span>)
@@ -206,7 +208,7 @@
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FIFO</span>)
                 .<span class="ident">hide</span>(<span class="bool-val">true</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::AnyPath</span>),
         )
 }

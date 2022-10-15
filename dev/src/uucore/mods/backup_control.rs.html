@@ -626,6 +626,9 @@
 <span id="626">626</span>
 <span id="627">627</span>
 <span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Implement GNU-style backup functionality.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! This module implements the backup functionality as described in the [GNU</span>
@@ -675,8 +678,8 @@
 <span class="doccomment">//!         .arg(backup_control::arguments::backup())</span>
 <span class="doccomment">//!         .arg(backup_control::arguments::backup_no_args())</span>
 <span class="doccomment">//!         .arg(backup_control::arguments::suffix())</span>
-<span class="doccomment">//!         .override_usage(&amp;usage[..])</span>
-<span class="doccomment">//!         .after_help(&amp;*format!(</span>
+<span class="doccomment">//!         .override_usage(usage)</span>
+<span class="doccomment">//!         .after_help(format!(</span>
 <span class="doccomment">//!             &quot;{}\n{}&quot;,</span>
 <span class="doccomment">//!             long_usage,</span>
 <span class="doccomment">//!             backup_control::BACKUP_CONTROL_LONG_HELP</span>
@@ -722,7 +725,7 @@
     <span class="string">&quot;simple&quot;</span>, <span class="string">&quot;never&quot;</span>, <span class="string">&quot;numbered&quot;</span>, <span class="string">&quot;t&quot;</span>, <span class="string">&quot;existing&quot;</span>, <span class="string">&quot;nil&quot;</span>, <span class="string">&quot;none&quot;</span>, <span class="string">&quot;off&quot;</span>,
 ];
 
-<span class="kw">pub</span> <span class="kw">static</span> <span class="ident">BACKUP_CONTROL_LONG_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">BACKUP_CONTROL_LONG_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span>
     <span class="string">&quot;The backup suffix is &#39;~&#39;, unless set with --suffix or SIMPLE_BACKUP_SUFFIX.
 The version control method may be selected via the --backup option or through
 the VERSION_CONTROL environment variable.  Here are the values:
@@ -826,6 +829,8 @@ the VERSION_CONTROL environment variable.  Here are the values:
 <span class="doccomment">/// This way the backup-specific arguments are handled uniformly across</span>
 <span class="doccomment">/// utilities and can be maintained in one central place.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">arguments</span> {
+    <span class="kw">use</span> <span class="ident">clap::ArgAction</span>;
+
     <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">clap</span>;
 
     <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">OPT_BACKUP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;backupopt_backup&quot;</span>;
@@ -833,30 +838,31 @@ the VERSION_CONTROL environment variable.  Here are the values:
     <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">OPT_SUFFIX</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;backupopt_suffix&quot;</span>;
 
     <span class="doccomment">/// &#39;--backup&#39; argument</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">backup</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">clap::Arg</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">backup</span>() -&gt; <span class="ident">clap::Arg</span> {
         <span class="ident">clap::Arg::new</span>(<span class="ident">OPT_BACKUP</span>)
             .<span class="ident">long</span>(<span class="string">&quot;backup&quot;</span>)
             .<span class="ident">help</span>(<span class="string">&quot;make a backup of each existing destination file&quot;</span>)
-            .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+            .<span class="ident">action</span>(<span class="ident">clap::ArgAction::Set</span>)
             .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
-            .<span class="ident">min_values</span>(<span class="number">0</span>)
+            .<span class="ident">num_args</span>(<span class="number">0</span>..<span class="op">=</span><span class="number">1</span>)
             .<span class="ident">value_name</span>(<span class="string">&quot;CONTROL&quot;</span>)
     }
 
     <span class="doccomment">/// &#39;-b&#39; argument</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">backup_no_args</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">clap::Arg</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">backup_no_args</span>() -&gt; <span class="ident">clap::Arg</span> {
         <span class="ident">clap::Arg::new</span>(<span class="ident">OPT_BACKUP_NO_ARG</span>)
             .<span class="ident">short</span>(<span class="string">&#39;b&#39;</span>)
             .<span class="ident">help</span>(<span class="string">&quot;like --backup but does not accept an argument&quot;</span>)
+            .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>)
     }
 
     <span class="doccomment">/// &#39;-S, --suffix&#39; argument</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">suffix</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">clap::Arg</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">suffix</span>() -&gt; <span class="ident">clap::Arg</span> {
         <span class="ident">clap::Arg::new</span>(<span class="ident">OPT_SUFFIX</span>)
             .<span class="ident">short</span>(<span class="string">&#39;S&#39;</span>)
             .<span class="ident">long</span>(<span class="string">&quot;suffix&quot;</span>)
             .<span class="ident">help</span>(<span class="string">&quot;override the usual backup suffix&quot;</span>)
-            .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+            .<span class="ident">action</span>(<span class="ident">clap::ArgAction::Set</span>)
             .<span class="ident">value_name</span>(<span class="string">&quot;SUFFIX&quot;</span>)
             .<span class="ident">allow_hyphen_values</span>(<span class="bool-val">true</span>)
     }
@@ -975,7 +981,7 @@ the VERSION_CONTROL environment variable.  Here are the values:
             <span class="comment">// Default if no argument is provided to &#39;--backup&#39;</span>
             <span class="prelude-val">Ok</span>(<span class="ident">BackupMode::ExistingBackup</span>)
         }
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">arguments::OPT_BACKUP_NO_ARG</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">arguments::OPT_BACKUP_NO_ARG</span>) {
         <span class="comment">// the short form of this option, -b does not accept any argument.</span>
         <span class="comment">// Using -b is equivalent to using --backup=existing.</span>
         <span class="prelude-val">Ok</span>(<span class="ident">BackupMode::ExistingBackup</span>)
@@ -1088,7 +1094,7 @@ the VERSION_CONTROL environment variable.  Here are the values:
     <span class="comment">// Environment variable for &quot;VERSION_CONTROL&quot;</span>
     <span class="kw">static</span> <span class="ident">ENV_VERSION_CONTROL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;VERSION_CONTROL&quot;</span>;
 
-    <span class="kw">fn</span> <span class="ident">make_app</span>() -&gt; <span class="ident">clap::Command</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">make_app</span>() -&gt; <span class="ident">clap::Command</span> {
         <span class="ident">Command::new</span>(<span class="string">&quot;command&quot;</span>)
             .<span class="ident">arg</span>(<span class="ident">arguments::backup</span>())
             .<span class="ident">arg</span>(<span class="ident">arguments::backup_no_args</span>())

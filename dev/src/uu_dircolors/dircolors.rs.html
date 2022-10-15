@@ -444,8 +444,6 @@
 <span id="444">444</span>
 <span id="445">445</span>
 <span id="446">446</span>
-<span id="447">447</span>
-<span id="448">448</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;</span>
@@ -461,7 +459,7 @@
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">BufRead</span>, <span class="ident">BufReader</span>};
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UResult</span>, <span class="ident">USimpleError</span>, <span class="ident">UUsageError</span>};
 
@@ -523,9 +521,8 @@
 
     <span class="comment">// clap provides .conflicts_with / .conflicts_with_all, but we want to</span>
     <span class="comment">// manually handle conflicts so we can match the output of GNU coreutils</span>
-    <span class="kw">if</span> (<span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::C_SHELL</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::BOURNE_SHELL</span>))
-        <span class="op">&amp;&amp;</span> (<span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::PRINT_DATABASE</span>)
-            <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::PRINT_LS_COLORS</span>))
+    <span class="kw">if</span> (<span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::C_SHELL</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::BOURNE_SHELL</span>))
+        <span class="op">&amp;&amp;</span> (<span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::PRINT_DATABASE</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::PRINT_LS_COLORS</span>))
     {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">UUsageError::new</span>(
             <span class="number">1</span>,
@@ -534,15 +531,14 @@
         ));
     }
 
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::PRINT_DATABASE</span>) <span class="op">&amp;&amp;</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::PRINT_LS_COLORS</span>)
-    {
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::PRINT_DATABASE</span>) <span class="op">&amp;&amp;</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::PRINT_LS_COLORS</span>) {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">UUsageError::new</span>(
             <span class="number">1</span>,
             <span class="string">&quot;options --print-database and --print-ls-colors are mutually exclusive&quot;</span>,
         ));
     }
 
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::PRINT_DATABASE</span>) {
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::PRINT_DATABASE</span>) {
         <span class="kw">if</span> <span class="op">!</span><span class="ident">files</span>.<span class="ident">is_empty</span>() {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">UUsageError::new</span>(
                 <span class="number">1</span>,
@@ -557,11 +553,11 @@
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
     }
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out_format</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::C_SHELL</span>) {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out_format</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::C_SHELL</span>) {
         <span class="ident">OutputFmt::CShell</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::BOURNE_SHELL</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::BOURNE_SHELL</span>) {
         <span class="ident">OutputFmt::Shell</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::PRINT_LS_COLORS</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::PRINT_LS_COLORS</span>) {
         <span class="ident">OutputFmt::Display</span>
     } <span class="kw">else</span> {
         <span class="ident">OutputFmt::Unknown</span>
@@ -616,7 +612,7 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
@@ -630,7 +626,7 @@
                 .<span class="ident">visible_alias</span>(<span class="string">&quot;bourne-shell&quot;</span>)
                 .<span class="ident">overrides_with</span>(<span class="ident">options::C_SHELL</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;output Bourne shell code to set LS_COLORS&quot;</span>)
-                .<span class="ident">display_order</span>(<span class="number">1</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::C_SHELL</span>)
@@ -639,26 +635,26 @@
                 .<span class="ident">visible_alias</span>(<span class="string">&quot;c-shell&quot;</span>)
                 .<span class="ident">overrides_with</span>(<span class="ident">options::BOURNE_SHELL</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;output C shell code to set LS_COLORS&quot;</span>)
-                .<span class="ident">display_order</span>(<span class="number">2</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::PRINT_DATABASE</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;print-database&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;p&#39;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;print the byte counts&quot;</span>)
-                .<span class="ident">display_order</span>(<span class="number">3</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::PRINT_LS_COLORS</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;print-ls-colors&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;output fully escaped colors for display&quot;</span>)
-                .<span class="ident">display_order</span>(<span class="number">4</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FILE</span>)
                 .<span class="ident">hide</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>),
         )
 }
 

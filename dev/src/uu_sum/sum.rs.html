@@ -174,6 +174,8 @@
 <span id="174">174</span>
 <span id="175">175</span>
 <span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
 </pre><pre class="rust"><code><span class="comment">// * This file is part of the uutils coreutils package.</span>
 <span class="comment">// *</span>
 <span class="comment">// * (c) T. Jameson Little &lt;t.jameson.little@gmail.com&gt;</span>
@@ -186,7 +188,7 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">Read</span>};
 <span class="kw">use</span> <span class="ident">std::path::Path</span>;
@@ -294,7 +296,7 @@
         <span class="prelude-val">None</span> =&gt; <span class="macro">vec!</span>[<span class="string">&quot;-&quot;</span>.<span class="ident">to_owned</span>()],
     };
 
-    <span class="kw">let</span> <span class="ident">sysv</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::SYSTEM_V_COMPATIBLE</span>);
+    <span class="kw">let</span> <span class="ident">sysv</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::SYSTEM_V_COMPATIBLE</span>);
 
     <span class="kw">let</span> <span class="ident">print_names</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">sysv</span> {
         <span class="ident">files</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span> <span class="op">|</span><span class="op">|</span> <span class="ident">files</span>[<span class="number">0</span>] <span class="op">!</span><span class="op">=</span> <span class="string">&quot;-&quot;</span>
@@ -325,7 +327,7 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">name</span>(<span class="ident">NAME</span>)
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
@@ -334,20 +336,22 @@
         .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FILE</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">hide</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::BSD_COMPATIBLE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;r&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;use the BSD sum algorithm, use 1K blocks (default)&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;use the BSD sum algorithm, use 1K blocks (default)&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::SYSTEM_V_COMPATIBLE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::SYSTEM_V_COMPATIBLE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;use System V sum algorithm, use 512 bytes blocks&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;use System V sum algorithm, use 512 bytes blocks&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
 }
 </code></pre></div>

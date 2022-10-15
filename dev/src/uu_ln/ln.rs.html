@@ -499,6 +499,13 @@
 <span id="499">499</span>
 <span id="500">500</span>
 <span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Joseph Crail &lt;jbcrail@gmail.com&gt;</span>
@@ -511,7 +518,7 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UError</span>, <span class="ident">UResult</span>};
 <span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
@@ -629,15 +636,14 @@
 
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">long_usage</span> <span class="op">=</span> <span class="ident">long_usage</span>();
+    <span class="comment">// clap requires a &#39;static string</span>
+    <span class="kw">let</span> <span class="ident">long_usage</span> <span class="op">=</span> <span class="macro">format!</span>(
+        <span class="string">&quot;{}\n{}&quot;</span>,
+        <span class="ident">long_usage</span>(),
+        <span class="ident">backup_control::BACKUP_CONTROL_LONG_HELP</span>
+    );
 
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>()
-        .<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="macro">format!</span>(
-            <span class="string">&quot;{}\n{}&quot;</span>,
-            <span class="ident">long_usage</span>,
-            <span class="ident">backup_control::BACKUP_CONTROL_LONG_HELP</span>
-        ))
-        .<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">after_help</span>(<span class="ident">long_usage</span>).<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
 
     <span class="comment">/* the list of files */</span>
 
@@ -647,11 +653,11 @@
         .<span class="ident">map</span>(<span class="ident">PathBuf::from</span>)
         .<span class="ident">collect</span>();
 
-    <span class="kw">let</span> <span class="ident">symbolic</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::SYMBOLIC</span>);
+    <span class="kw">let</span> <span class="ident">symbolic</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::SYMBOLIC</span>);
 
-    <span class="kw">let</span> <span class="ident">overwrite_mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::FORCE</span>) {
+    <span class="kw">let</span> <span class="ident">overwrite_mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::FORCE</span>) {
         <span class="ident">OverwriteMode::Force</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::INTERACTIVE</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::INTERACTIVE</span>) {
         <span class="ident">OverwriteMode::Interactive</span>
     } <span class="kw">else</span> {
         <span class="ident">OverwriteMode::NoClobber</span>
@@ -661,7 +667,7 @@
     <span class="kw">let</span> <span class="ident">backup_suffix</span> <span class="op">=</span> <span class="ident">backup_control::determine_backup_suffix</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>);
 
     <span class="comment">// When we have &quot;-L&quot; or &quot;-L -P&quot;, false otherwise</span>
-    <span class="kw">let</span> <span class="ident">logical</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::LOGICAL</span>);
+    <span class="kw">let</span> <span class="ident">logical</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::LOGICAL</span>);
 
     <span class="kw">let</span> <span class="ident">settings</span> <span class="op">=</span> <span class="ident">Settings</span> {
         <span class="ident">overwrite</span>: <span class="ident">overwrite_mode</span>,
@@ -669,19 +675,19 @@
         <span class="ident">suffix</span>: <span class="ident">backup_suffix</span>,
         <span class="ident">symbolic</span>,
         <span class="ident">logical</span>,
-        <span class="ident">relative</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::RELATIVE</span>),
+        <span class="ident">relative</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::RELATIVE</span>),
         <span class="ident">target_dir</span>: <span class="ident">matches</span>
             .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::TARGET_DIRECTORY</span>)
             .<span class="ident">map</span>(<span class="ident">String::from</span>),
-        <span class="ident">no_target_dir</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_TARGET_DIRECTORY</span>),
-        <span class="ident">no_dereference</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::NO_DEREFERENCE</span>),
-        <span class="ident">verbose</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::VERBOSE</span>),
+        <span class="ident">no_target_dir</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::NO_TARGET_DIRECTORY</span>),
+        <span class="ident">no_dereference</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::NO_DEREFERENCE</span>),
+        <span class="ident">verbose</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::VERBOSE</span>),
     };
 
     <span class="ident">exec</span>(<span class="kw-2">&amp;</span><span class="ident">paths</span>[..], <span class="kw-2">&amp;</span><span class="ident">settings</span>)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
@@ -699,13 +705,15 @@
             <span class="ident">Arg::new</span>(<span class="ident">options::FORCE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;f&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::FORCE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;remove existing destination files&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;remove existing destination files&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::INTERACTIVE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;i&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::INTERACTIVE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;prompt whether to remove existing destination files&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;prompt whether to remove existing destination files&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::NO_DEREFERENCE</span>)
@@ -714,21 +722,24 @@
                 .<span class="ident">help</span>(
                     <span class="string">&quot;treat LINK_NAME as a normal file if it is a \
                      symbolic link to a directory&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::LOGICAL</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;L&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::LOGICAL</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;dereference TARGETs that are symbolic links&quot;</span>)
-                .<span class="ident">overrides_with</span>(<span class="ident">options::PHYSICAL</span>),
+                .<span class="ident">overrides_with</span>(<span class="ident">options::PHYSICAL</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="comment">// Not implemented yet</span>
             <span class="ident">Arg::new</span>(<span class="ident">options::PHYSICAL</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;P&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::PHYSICAL</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;make hard links directly to symbolic links&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;make hard links directly to symbolic links&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::SYMBOLIC</span>)
@@ -736,7 +747,8 @@
                 .<span class="ident">long</span>(<span class="ident">options::SYMBOLIC</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;make symbolic links instead of hard links&quot;</span>)
                 <span class="comment">// override added for https://github.com/uutils/coreutils/issues/2359</span>
-                .<span class="ident">overrides_with</span>(<span class="ident">options::SYMBOLIC</span>),
+                .<span class="ident">overrides_with</span>(<span class="ident">options::SYMBOLIC</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(<span class="ident">backup_control::arguments::suffix</span>())
         .<span class="ident">arg</span>(
@@ -752,28 +764,30 @@
             <span class="ident">Arg::new</span>(<span class="ident">options::NO_TARGET_DIRECTORY</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;T&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::NO_TARGET_DIRECTORY</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;treat LINK_NAME as a normal file always&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;treat LINK_NAME as a normal file always&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::RELATIVE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;r&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::RELATIVE</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;create symbolic links relative to link location&quot;</span>)
-                .<span class="ident">requires</span>(<span class="ident">options::SYMBOLIC</span>),
+                .<span class="ident">requires</span>(<span class="ident">options::SYMBOLIC</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::VERBOSE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;v&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::VERBOSE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;print name of each linked file&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;print name of each linked file&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">ARG_FILES</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::AnyPath</span>)
                 .<span class="ident">required</span>(<span class="bool-val">true</span>)
-                .<span class="ident">min_values</span>(<span class="number">1</span>),
+                .<span class="ident">num_args</span>(<span class="number">1</span>..),
         )
 }
 

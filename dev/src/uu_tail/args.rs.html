@@ -472,6 +472,7 @@
 <span id="472">472</span>
 <span id="473">473</span>
 <span id="474">474</span>
+<span id="475">475</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -481,7 +482,7 @@
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::paths::Input</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">parse</span>, <span class="ident">platform</span>, <span class="ident">Quotable</span>};
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>, <span class="ident">ValueSource</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">parser::ValueSource</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::collections::VecDeque</span>;
 <span class="kw">use</span> <span class="ident">std::ffi::OsString</span>;
 <span class="kw">use</span> <span class="ident">std::time::Duration</span>;
@@ -536,7 +537,7 @@
 
 <span class="kw">impl</span> <span class="ident">FilterMode</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">zero_term</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ZERO_TERM</span>);
+        <span class="kw">let</span> <span class="ident">zero_term</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ZERO_TERM</span>);
         <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">arg</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::BYTES</span>) {
             <span class="kw">match</span> <span class="ident">parse_num</span>(<span class="ident">arg</span>) {
                 <span class="prelude-val">Ok</span>(<span class="ident">signum</span>) =&gt; <span class="ident"><span class="self">Self</span>::Bytes</span>(<span class="ident">signum</span>),
@@ -608,7 +609,7 @@
             ..<span class="ident">Default::default</span>()
         };
 
-        <span class="ident">settings</span>.<span class="ident">follow</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::FOLLOW_RETRY</span>) {
+        <span class="ident">settings</span>.<span class="ident">follow</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::FOLLOW_RETRY</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">FollowMode::Name</span>)
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">value_source</span>(<span class="ident">options::FOLLOW</span>) <span class="op">!</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ValueSource::CommandLine</span>) {
             <span class="prelude-val">None</span>
@@ -620,7 +621,7 @@
         };
 
         <span class="ident">settings</span>.<span class="ident">retry</span> <span class="op">=</span>
-            <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::RETRY</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::FOLLOW_RETRY</span>);
+            <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::RETRY</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::FOLLOW_RETRY</span>);
 
         <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">retry</span> <span class="op">&amp;&amp;</span> <span class="ident">settings</span>.<span class="ident">follow</span>.<span class="ident">is_none</span>() {
             <span class="macro">show_warning!</span>(<span class="string">&quot;--retry ignored; --retry is useful only when following&quot;</span>);
@@ -638,7 +639,7 @@
             }
         }
 
-        <span class="ident">settings</span>.<span class="ident">use_polling</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::USE_POLLING</span>);
+        <span class="ident">settings</span>.<span class="ident">use_polling</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::USE_POLLING</span>);
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::MAX_UNCHANGED_STATS</span>) {
             <span class="ident">settings</span>.<span class="ident">max_unchanged_stats</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>() {
@@ -707,12 +708,12 @@
             <span class="ident">inputs</span>.<span class="ident">push_front</span>(<span class="ident">Input::default</span>());
         }
 
-        <span class="ident">settings</span>.<span class="ident">verbose</span> <span class="op">=</span> (<span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::verbosity::VERBOSE</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">inputs</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span>)
-            <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::verbosity::QUIET</span>);
+        <span class="ident">settings</span>.<span class="ident">verbose</span> <span class="op">=</span> (<span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::verbosity::VERBOSE</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">inputs</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span>)
+            <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::verbosity::QUIET</span>);
 
         <span class="ident">settings</span>.<span class="ident">inputs</span> <span class="op">=</span> <span class="ident">inputs</span>;
 
-        <span class="ident">settings</span>.<span class="ident">presume_input_pipe</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::PRESUME_INPUT_PIPE</span>);
+        <span class="ident">settings</span>.<span class="ident">presume_input_pipe</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::PRESUME_INPUT_PIPE</span>);
 
         <span class="prelude-val">Ok</span>(<span class="ident">settings</span>)
     }
@@ -789,7 +790,7 @@
     <span class="ident">Settings::from</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">POLLING_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Disable &#39;inotify&#39; support and use polling instead&quot;</span>;
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">unix</span>, <span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)))]</span>
@@ -807,7 +808,6 @@
             <span class="ident">Arg::new</span>(<span class="ident">options::BYTES</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;c&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::BYTES</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">allow_hyphen_values</span>(<span class="bool-val">true</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::BYTES</span>, <span class="ident">options::LINES</span>])
                 .<span class="ident">help</span>(<span class="string">&quot;Number of bytes to print&quot;</span>),
@@ -817,9 +817,7 @@
                 .<span class="ident">short</span>(<span class="string">&#39;f&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::FOLLOW</span>)
                 .<span class="ident">default_value</span>(<span class="string">&quot;descriptor&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">min_values</span>(<span class="number">0</span>)
-                .<span class="ident">max_values</span>(<span class="number">1</span>)
+                .<span class="ident">num_args</span>(<span class="number">0</span>..<span class="op">=</span><span class="number">1</span>)
                 .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_parser</span>([<span class="string">&quot;descriptor&quot;</span>, <span class="string">&quot;name&quot;</span>])
                 .<span class="ident">help</span>(<span class="string">&quot;Print the file as it grows&quot;</span>),
@@ -828,7 +826,6 @@
             <span class="ident">Arg::new</span>(<span class="ident">options::LINES</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;n&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::LINES</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">allow_hyphen_values</span>(<span class="bool-val">true</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::BYTES</span>, <span class="ident">options::LINES</span>])
                 .<span class="ident">help</span>(<span class="string">&quot;Number of lines to print&quot;</span>),
@@ -836,7 +833,7 @@
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::PID</span>)
                 .<span class="ident">long</span>(<span class="ident">options::PID</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                .<span class="ident">value_name</span>(<span class="string">&quot;PID&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;With -f, terminate after process ID, PID dies&quot;</span>),
         )
         .<span class="ident">arg</span>(
@@ -845,18 +842,19 @@
                 .<span class="ident">long</span>(<span class="ident">options::verbosity::QUIET</span>)
                 .<span class="ident">visible_alias</span>(<span class="string">&quot;silent&quot;</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::verbosity::QUIET</span>, <span class="ident">options::verbosity::VERBOSE</span>])
-                .<span class="ident">help</span>(<span class="string">&quot;Never output headers giving file names&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Never output headers giving file names&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::SLEEP_INT</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                .<span class="ident">value_name</span>(<span class="string">&quot;N&quot;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::SLEEP_INT</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Number of seconds to sleep between polling the file when running with -f&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::MAX_UNCHANGED_STATS</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                .<span class="ident">value_name</span>(<span class="string">&quot;N&quot;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::MAX_UNCHANGED_STATS</span>)
                 .<span class="ident">help</span>(
                     <span class="string">&quot;Reopen a FILE which has not changed size after N (default 5) iterations \
@@ -870,44 +868,48 @@
                 .<span class="ident">short</span>(<span class="string">&#39;v&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::verbosity::VERBOSE</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::verbosity::QUIET</span>, <span class="ident">options::verbosity::VERBOSE</span>])
-                .<span class="ident">help</span>(<span class="string">&quot;Always output headers giving file names&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Always output headers giving file names&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ZERO_TERM</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;z&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::ZERO_TERM</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Line delimiter is NUL, not newline&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Line delimiter is NUL, not newline&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::USE_POLLING</span>)
                 .<span class="ident">alias</span>(<span class="ident">options::DISABLE_INOTIFY_TERM</span>) <span class="comment">// NOTE: Used by GNU&#39;s test suite</span>
                 .<span class="ident">alias</span>(<span class="string">&quot;dis&quot;</span>) <span class="comment">// NOTE: Used by GNU&#39;s test suite</span>
                 .<span class="ident">long</span>(<span class="ident">options::USE_POLLING</span>)
-                .<span class="ident">help</span>(<span class="ident">POLLING_HELP</span>),
+                .<span class="ident">help</span>(<span class="ident">POLLING_HELP</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::RETRY</span>)
                 .<span class="ident">long</span>(<span class="ident">options::RETRY</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Keep trying to open a file if it is inaccessible&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Keep trying to open a file if it is inaccessible&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FOLLOW_RETRY</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;F&#39;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Same as --follow=name --retry&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::RETRY</span>, <span class="ident">options::FOLLOW</span>]),
+                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::RETRY</span>, <span class="ident">options::FOLLOW</span>])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::PRESUME_INPUT_PIPE</span>)
-                .<span class="ident">long</span>(<span class="ident">options::PRESUME_INPUT_PIPE</span>)
+                .<span class="ident">long</span>(<span class="string">&quot;presume-input-pipe&quot;</span>)
                 .<span class="ident">alias</span>(<span class="ident">options::PRESUME_INPUT_PIPE</span>)
-                .<span class="ident">hide</span>(<span class="bool-val">true</span>),
+                .<span class="ident">hide</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
-
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ARG_FILES</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">min_values</span>(<span class="number">1</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
+                .<span class="ident">num_args</span>(<span class="number">1</span>..)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>),
         )
 }

@@ -399,6 +399,8 @@
 <span id="399">399</span>
 <span id="400">400</span>
 <span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
 </pre><pre class="rust"><code><span class="comment">// * This file is part of the uutils coreutils package.</span>
 <span class="comment">// *</span>
 <span class="comment">// * For the full copyright and license information, please view the LICENSE file</span>
@@ -408,7 +410,7 @@
 
 <span class="kw">mod</span> <span class="ident">flags</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">nix::libc</span>::{<span class="ident">c_ushort</span>, <span class="ident">TIOCGWINSZ</span>, <span class="ident">TIOCSWINSZ</span>};
 <span class="kw">use</span> <span class="ident">nix::sys::termios</span>::{
     <span class="ident">cfgetospeed</span>, <span class="ident">tcgetattr</span>, <span class="ident">tcsetattr</span>, <span class="ident">ControlFlags</span>, <span class="ident">InputFlags</span>, <span class="ident">LocalFlags</span>, <span class="ident">OutputFlags</span>, <span class="ident">Termios</span>,
@@ -501,13 +503,15 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Options</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ArgMatches</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
-            <span class="ident">all</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ALL</span>),
-            <span class="ident">save</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::SAVE</span>),
+            <span class="ident">all</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ALL</span>),
+            <span class="ident">save</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::SAVE</span>),
             <span class="ident">file</span>: <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::FILE</span>) {
                 <span class="prelude-val">Some</span>(<span class="ident">_f</span>) =&gt; <span class="macro">todo!</span>(),
                 <span class="prelude-val">None</span> =&gt; <span class="ident">stdout</span>().<span class="ident">as_raw_fd</span>(),
             },
-            <span class="ident">settings</span>: <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="ident">options::SETTINGS</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">collect</span>()),
+            <span class="ident">settings</span>: <span class="ident">matches</span>
+                .<span class="ident">get_many</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::SETTINGS</span>)
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_ref</span>()).<span class="ident">collect</span>()),
         })
     }
 }
@@ -721,7 +725,7 @@
     <span class="ident">ControlFlow::Continue</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">name</span>(<span class="ident">NAME</span>)
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
@@ -732,27 +736,27 @@
             <span class="ident">Arg::new</span>(<span class="ident">options::ALL</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;a&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::ALL</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;print all current settings in human-readable form&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;print all current settings in human-readable form&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::SAVE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;g&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::SAVE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;print all current settings in a stty-readable form&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;print all current settings in a stty-readable form&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FILE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;F&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::FILE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;DEVICE&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;open and use the specified DEVICE instead of stdin&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::SETTINGS</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">multiple_values</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;settings to change&quot;</span>),
         )
 }

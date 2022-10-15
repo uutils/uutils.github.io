@@ -2010,6 +2010,21 @@
 <span id="2010">2010</span>
 <span id="2011">2011</span>
 <span id="2012">2012</span>
+<span id="2013">2013</span>
+<span id="2014">2014</span>
+<span id="2015">2015</span>
+<span id="2016">2016</span>
+<span id="2017">2017</span>
+<span id="2018">2018</span>
+<span id="2019">2019</span>
+<span id="2020">2020</span>
+<span id="2021">2021</span>
+<span id="2022">2022</span>
+<span id="2023">2023</span>
+<span id="2024">2024</span>
+<span id="2025">2025</span>
+<span id="2026">2026</span>
+<span id="2027">2027</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Michael Yin &lt;mikeyin@mikeyin.org&gt;</span>
@@ -2038,7 +2053,7 @@
 
 <span class="kw">use</span> <span class="ident">chunks::LineData</span>;
 <span class="kw">use</span> <span class="ident">clap::builder::ValueParser</span>;
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">custom_str_cmp::custom_str_cmp</span>;
 <span class="kw">use</span> <span class="ident">ext_sort::ext_sort</span>;
 <span class="kw">use</span> <span class="ident">fnv::FnvHasher</span>;
@@ -2111,6 +2126,7 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
     }
 
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;help&quot;</span>;
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VERSION</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;version&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">DICTIONARY_ORDER</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;dictionary-order&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">MERGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;merge&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">DEBUG</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;debug&quot;</span>;
@@ -3056,8 +3072,12 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
 }
 
 <span class="doccomment">/// Creates an `Arg` that conflicts with all other sort modes.</span>
-<span class="kw">fn</span> <span class="ident">make_sort_mode_arg</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">mode</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">short</span>: <span class="ident">char</span>, <span class="ident">help</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>) -&gt; <span class="ident">Arg</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">arg</span> <span class="op">=</span> <span class="ident">Arg::new</span>(<span class="ident">mode</span>).<span class="ident">short</span>(<span class="ident">short</span>).<span class="ident">long</span>(<span class="ident">mode</span>).<span class="ident">help</span>(<span class="ident">help</span>);
+<span class="kw">fn</span> <span class="ident">make_sort_mode_arg</span>(<span class="ident">mode</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>, <span class="ident">short</span>: <span class="ident">char</span>, <span class="ident">help</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) -&gt; <span class="ident">Arg</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">arg</span> <span class="op">=</span> <span class="ident">Arg::new</span>(<span class="ident">mode</span>)
+        .<span class="ident">short</span>(<span class="ident">short</span>)
+        .<span class="ident">long</span>(<span class="ident">mode</span>)
+        .<span class="ident">help</span>(<span class="ident">help</span>)
+        .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>);
     <span class="kw">for</span> <span class="ident">possible_mode</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">options::modes::ALL_SORT_MODES</span> {
         <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">possible_mode</span> <span class="op">!</span><span class="op">=</span> <span class="ident">mode</span> {
             <span class="ident">arg</span> <span class="op">=</span> <span class="ident">arg</span>.<span class="ident">conflicts_with</span>(<span class="ident">possible_mode</span>);
@@ -3087,7 +3107,7 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
         }
     };
 
-    <span class="ident">settings</span>.<span class="ident">debug</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::DEBUG</span>);
+    <span class="ident">settings</span>.<span class="ident">debug</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::DEBUG</span>);
 
     <span class="comment">// check whether user specified a zero terminated list of files for input, otherwise read files from args</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">files</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OsString</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::FILES0_FROM</span>) {
@@ -3115,42 +3135,42 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
             .<span class="ident">unwrap_or_default</span>()
     };
 
-    <span class="ident">settings</span>.<span class="ident">mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::modes::HUMAN_NUMERIC</span>)
+    <span class="ident">settings</span>.<span class="ident">mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::modes::HUMAN_NUMERIC</span>)
         <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>
             .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::modes::SORT</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>())
             <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="string">&quot;human-numeric&quot;</span>)
     {
         <span class="ident">SortMode::HumanNumeric</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::modes::MONTH</span>)
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::modes::MONTH</span>)
         <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>
             .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::modes::SORT</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>())
             <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="string">&quot;month&quot;</span>)
     {
         <span class="ident">SortMode::Month</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::modes::GENERAL_NUMERIC</span>)
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::modes::GENERAL_NUMERIC</span>)
         <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>
             .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::modes::SORT</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>())
             <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="string">&quot;general-numeric&quot;</span>)
     {
         <span class="ident">SortMode::GeneralNumeric</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::modes::NUMERIC</span>)
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::modes::NUMERIC</span>)
         <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>
             .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::modes::SORT</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>())
             <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="string">&quot;numeric&quot;</span>)
     {
         <span class="ident">SortMode::Numeric</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::modes::VERSION</span>)
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::modes::VERSION</span>)
         <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>
             .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::modes::SORT</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>())
             <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="string">&quot;version&quot;</span>)
     {
         <span class="ident">SortMode::Version</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::modes::RANDOM</span>)
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::modes::RANDOM</span>)
         <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>
             .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::modes::SORT</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>())
@@ -3162,8 +3182,8 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
         <span class="ident">SortMode::Default</span>
     };
 
-    <span class="ident">settings</span>.<span class="ident">dictionary_order</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::DICTIONARY_ORDER</span>);
-    <span class="ident">settings</span>.<span class="ident">ignore_non_printing</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::IGNORE_NONPRINTING</span>);
+    <span class="ident">settings</span>.<span class="ident">dictionary_order</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::DICTIONARY_ORDER</span>);
+    <span class="ident">settings</span>.<span class="ident">ignore_non_printing</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::IGNORE_NONPRINTING</span>);
     <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::PARALLEL</span>) {
         <span class="comment">// &quot;0&quot; is default - threads = num of cores</span>
         <span class="ident">settings</span>.<span class="ident">threads</span> <span class="op">=</span> <span class="ident">matches</span>
@@ -3202,11 +3222,11 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
         })<span class="question-mark">?</span>;
     }
 
-    <span class="ident">settings</span>.<span class="ident">zero_terminated</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ZERO_TERMINATED</span>);
-    <span class="ident">settings</span>.<span class="ident">merge</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::MERGE</span>);
+    <span class="ident">settings</span>.<span class="ident">zero_terminated</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ZERO_TERMINATED</span>);
+    <span class="ident">settings</span>.<span class="ident">merge</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::MERGE</span>);
 
     <span class="ident">settings</span>.<span class="ident">check</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::check::CHECK</span>);
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::check::CHECK_SILENT</span>)
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::check::CHECK_SILENT</span>)
         <span class="op">|</span><span class="op">|</span> <span class="macro">matches!</span>(
             <span class="ident">matches</span>
                 .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::check::CHECK</span>)
@@ -3218,13 +3238,13 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
         <span class="ident">settings</span>.<span class="ident">check</span> <span class="op">=</span> <span class="bool-val">true</span>;
     };
 
-    <span class="ident">settings</span>.<span class="ident">ignore_case</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::IGNORE_CASE</span>);
+    <span class="ident">settings</span>.<span class="ident">ignore_case</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::IGNORE_CASE</span>);
 
-    <span class="ident">settings</span>.<span class="ident">ignore_leading_blanks</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::IGNORE_LEADING_BLANKS</span>);
+    <span class="ident">settings</span>.<span class="ident">ignore_leading_blanks</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::IGNORE_LEADING_BLANKS</span>);
 
-    <span class="ident">settings</span>.<span class="ident">reverse</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::REVERSE</span>);
-    <span class="ident">settings</span>.<span class="ident">stable</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::STABLE</span>);
-    <span class="ident">settings</span>.<span class="ident">unique</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::UNIQUE</span>);
+    <span class="ident">settings</span>.<span class="ident">reverse</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::REVERSE</span>);
+    <span class="ident">settings</span>.<span class="ident">stable</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::STABLE</span>);
+    <span class="ident">settings</span>.<span class="ident">unique</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::UNIQUE</span>);
 
     <span class="kw">if</span> <span class="ident">files</span>.<span class="ident">is_empty</span>() {
         <span class="comment">/* if no file, default to stdin */</span>
@@ -3311,22 +3331,30 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
     <span class="ident">result</span>
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
         .<span class="ident">after_help</span>(<span class="ident">LONG_HELP_KEYS</span>)
         .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
+        .<span class="ident">disable_help_flag</span>(<span class="bool-val">true</span>)
+        .<span class="ident">disable_version_flag</span>(<span class="bool-val">true</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::HELP</span>)
                 .<span class="ident">long</span>(<span class="ident">options::HELP</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Print help information.&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Print help information.&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Help</span>),
+        )
+        .<span class="ident">arg</span>(
+            <span class="ident">Arg::new</span>(<span class="ident">options::VERSION</span>)
+                .<span class="ident">long</span>(<span class="ident">options::VERSION</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;Print version information.&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Version</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::modes::SORT</span>)
                 .<span class="ident">long</span>(<span class="ident">options::modes::SORT</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_parser</span>([
                     <span class="string">&quot;general-numeric&quot;</span>,
                     <span class="string">&quot;human-numeric&quot;</span>,
@@ -3377,21 +3405,22 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
                     <span class="ident">options::modes::GENERAL_NUMERIC</span>,
                     <span class="ident">options::modes::HUMAN_NUMERIC</span>,
                     <span class="ident">options::modes::MONTH</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::MERGE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;m&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::MERGE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;merge already sorted files; do not sort&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;merge already sorted files; do not sort&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::check::CHECK</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;c&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::check::CHECK</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
-                .<span class="ident">min_values</span>(<span class="number">0</span>)
+                .<span class="ident">num_args</span>(<span class="number">0</span>..)
                 .<span class="ident">value_parser</span>([
                     <span class="ident">options::check::SILENT</span>,
                     <span class="ident">options::check::QUIET</span>,
@@ -3408,13 +3437,15 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
                 .<span class="ident">help</span>(
                     <span class="string">&quot;exit successfully if the given file is already sorted, \
                 and exit with status 1 otherwise.&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::IGNORE_CASE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;f&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::IGNORE_CASE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;fold lower case to upper case characters&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;fold lower case to upper case characters&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::IGNORE_NONPRINTING</span>)
@@ -3426,20 +3457,21 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
                     <span class="ident">options::modes::GENERAL_NUMERIC</span>,
                     <span class="ident">options::modes::HUMAN_NUMERIC</span>,
                     <span class="ident">options::modes::MONTH</span>,
-                ]),
+                ])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::IGNORE_LEADING_BLANKS</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;b&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::IGNORE_LEADING_BLANKS</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;ignore leading blanks when finding sort keys in each line&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;ignore leading blanks when finding sort keys in each line&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OUTPUT</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;o&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::OUTPUT</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;write output to FILENAME instead of stdout&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;FILENAME&quot;</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>),
         )
@@ -3447,48 +3479,49 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
             <span class="ident">Arg::new</span>(<span class="ident">options::REVERSE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;r&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::REVERSE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;reverse the output&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;reverse the output&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::STABLE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::STABLE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;stabilize sort by disabling last-resort comparison&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;stabilize sort by disabling last-resort comparison&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::UNIQUE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;u&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::UNIQUE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;output only the first of an equal run&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;output only the first of an equal run&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::KEY</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;k&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::KEY</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;sort by a key&quot;</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">number_of_values</span>(<span class="number">1</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>),
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
+                .<span class="ident">num_args</span>(<span class="number">1</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::SEPARATOR</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;t&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::SEPARATOR</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;custom separator for -k&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_parser</span>(<span class="ident">ValueParser::os_string</span>()),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ZERO_TERMINATED</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;z&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::ZERO_TERMINATED</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;line delimiter is NUL, not newline&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;line delimiter is NUL, not newline&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::PARALLEL</span>)
                 .<span class="ident">long</span>(<span class="ident">options::PARALLEL</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;change the number of threads running concurrently to NUM_THREADS&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;NUM_THREADS&quot;</span>),
         )
         .<span class="ident">arg</span>(
@@ -3496,7 +3529,6 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
                 .<span class="ident">short</span>(<span class="string">&#39;S&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::BUF_SIZE</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;sets the maximum SIZE of each segment in number of sorted items&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;SIZE&quot;</span>),
         )
         .<span class="ident">arg</span>(
@@ -3504,7 +3536,6 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
                 .<span class="ident">short</span>(<span class="string">&#39;T&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::TMP_DIR</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;use DIR for temporaries, not $TMPDIR or /tmp&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;DIR&quot;</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::DirPath</span>),
         )
@@ -3525,21 +3556,20 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
             <span class="ident">Arg::new</span>(<span class="ident">options::FILES0_FROM</span>)
                 .<span class="ident">long</span>(<span class="ident">options::FILES0_FROM</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;read input from the files specified by NUL-terminated NUL_FILES&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;NUL_FILES&quot;</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">value_parser</span>(<span class="ident">ValueParser::os_string</span>())
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::DEBUG</span>)
                 .<span class="ident">long</span>(<span class="ident">options::DEBUG</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;underline the parts of the line that are actually used for sorting&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;underline the parts of the line that are actually used for sorting&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FILES</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">value_parser</span>(<span class="ident">ValueParser::os_string</span>())
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>),
         )

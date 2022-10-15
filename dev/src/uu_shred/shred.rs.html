@@ -651,6 +651,9 @@
 <span id="651">651</span>
 <span id="652">652</span>
 <span id="653">653</span>
+<span id="654">654</span>
+<span id="655">655</span>
+<span id="656">656</span>
 </pre><pre class="rust"><code><span class="comment">// * This file is part of the uutils coreutils package.</span>
 <span class="comment">// *</span>
 <span class="comment">// * (c) Michael Rosenberg &lt;42micro@gmail.com&gt;</span>
@@ -661,7 +664,7 @@
 
 <span class="comment">// spell-checker:ignore (words) writeback wipesync</span>
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">rand::prelude::SliceRandom</span>;
 <span class="kw">use</span> <span class="ident">rand::Rng</span>;
 <span class="kw">use</span> <span class="ident">std::cell</span>::{<span class="ident">Cell</span>, <span class="ident">RefCell</span>};
@@ -949,15 +952,15 @@ for even very expensive hardware probing to recover the data.
 
     <span class="comment">// TODO: implement --random-source</span>
 
-    <span class="kw">let</span> <span class="ident">force</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::FORCE</span>);
-    <span class="kw">let</span> <span class="ident">remove</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::REMOVE</span>);
+    <span class="kw">let</span> <span class="ident">force</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::FORCE</span>);
+    <span class="kw">let</span> <span class="ident">remove</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::REMOVE</span>);
     <span class="kw">let</span> <span class="ident">size_arg</span> <span class="op">=</span> <span class="ident">matches</span>
         .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::SIZE</span>)
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_string</span>());
     <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">get_size</span>(<span class="ident">size_arg</span>);
-    <span class="kw">let</span> <span class="ident">exact</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::EXACT</span>) <span class="op">&amp;&amp;</span> <span class="ident">size</span>.<span class="ident">is_none</span>(); <span class="comment">// if -s is given, ignore -x</span>
-    <span class="kw">let</span> <span class="ident">zero</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::ZERO</span>);
-    <span class="kw">let</span> <span class="ident">verbose</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::VERBOSE</span>);
+    <span class="kw">let</span> <span class="ident">exact</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::EXACT</span>) <span class="op">&amp;&amp;</span> <span class="ident">size</span>.<span class="ident">is_none</span>(); <span class="comment">// if -s is given, ignore -x</span>
+    <span class="kw">let</span> <span class="ident">zero</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::ZERO</span>);
+    <span class="kw">let</span> <span class="ident">verbose</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::VERBOSE</span>);
 
     <span class="kw">for</span> <span class="ident">path_str</span> <span class="kw">in</span> <span class="ident">matches</span>.<span class="ident">get_many</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::FILE</span>).<span class="ident">unwrap</span>() {
         <span class="macro">show_if_err!</span>(<span class="ident">wipe_file</span>(
@@ -967,7 +970,7 @@ for even very expensive hardware probing to recover the data.
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
@@ -978,7 +981,8 @@ for even very expensive hardware probing to recover the data.
             <span class="ident">Arg::new</span>(<span class="ident">options::FORCE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::FORCE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;f&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;change permissions to allow writing if necessary&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;change permissions to allow writing if necessary&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ITERATIONS</span>)
@@ -992,7 +996,6 @@ for even very expensive hardware probing to recover the data.
             <span class="ident">Arg::new</span>(<span class="ident">options::SIZE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::SIZE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;N&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;shred this many bytes (suffixes like K, M, G accepted)&quot;</span>),
         )
@@ -1000,13 +1003,15 @@ for even very expensive hardware probing to recover the data.
             <span class="ident">Arg::new</span>(<span class="ident">options::REMOVE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;u&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::REMOVE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;truncate and remove file after overwriting;  See below&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;truncate and remove file after overwriting;  See below&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::VERBOSE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::VERBOSE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;v&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;show progress&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;show progress&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::EXACT</span>)
@@ -1015,19 +1020,20 @@ for even very expensive hardware probing to recover the data.
                 .<span class="ident">help</span>(
                     <span class="string">&quot;do not round file sizes up to the next full block;\n\
                      this is the default for non-regular files&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ZERO</span>)
                 .<span class="ident">long</span>(<span class="ident">options::ZERO</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;z&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;add a final overwrite with zeros to hide shredding&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;add a final overwrite with zeros to hide shredding&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         <span class="comment">// Positional arguments</span>
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FILE</span>)
-                .<span class="ident">hide</span>(<span class="bool-val">true</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>),
         )
 }

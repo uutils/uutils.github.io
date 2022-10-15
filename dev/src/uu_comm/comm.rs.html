@@ -185,6 +185,9 @@
 <span id="185">185</span>
 <span id="186">186</span>
 <span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Michael Gehring &lt;mg@ebfe.org&gt;</span>
@@ -202,7 +205,7 @@
 <span class="kw">use</span> <span class="ident">uucore::error::UResult</span>;
 <span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 
 <span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;compare two sorted files line by line&quot;</span>;
 <span class="kw">static</span> <span class="ident">LONG_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>;
@@ -225,10 +228,10 @@
         <span class="ident">delim</span> =&gt; <span class="ident">delim</span>,
     };
 
-    <span class="kw">if</span> <span class="ident">col</span> <span class="op">&gt;</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">opts</span>.<span class="ident">contains_id</span>(<span class="ident">options::COLUMN_1</span>) {
+    <span class="kw">if</span> <span class="ident">col</span> <span class="op">&gt;</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">opts</span>.<span class="ident">get_flag</span>(<span class="ident">options::COLUMN_1</span>) {
         <span class="ident">s</span>.<span class="ident">push_str</span>(<span class="ident">delim</span>.<span class="ident">as_ref</span>());
     }
-    <span class="kw">if</span> <span class="ident">col</span> <span class="op">&gt;</span> <span class="number">2</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">opts</span>.<span class="ident">contains_id</span>(<span class="ident">options::COLUMN_2</span>) {
+    <span class="kw">if</span> <span class="ident">col</span> <span class="op">&gt;</span> <span class="number">2</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">opts</span>.<span class="ident">get_flag</span>(<span class="ident">options::COLUMN_2</span>) {
         <span class="ident">s</span>.<span class="ident">push_str</span>(<span class="ident">delim</span>.<span class="ident">as_ref</span>());
     }
 
@@ -278,7 +281,7 @@
 
         <span class="kw">match</span> <span class="ident">ord</span> {
             <span class="ident">Ordering::Less</span> =&gt; {
-                <span class="kw">if</span> <span class="op">!</span><span class="ident">opts</span>.<span class="ident">contains_id</span>(<span class="ident">options::COLUMN_1</span>) {
+                <span class="kw">if</span> <span class="op">!</span><span class="ident">opts</span>.<span class="ident">get_flag</span>(<span class="ident">options::COLUMN_1</span>) {
                     <span class="ident">ensure_nl</span>(<span class="ident">ra</span>);
                     <span class="macro">print!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">delim</span>[<span class="number">1</span>], <span class="ident">ra</span>);
                 }
@@ -286,7 +289,7 @@
                 <span class="ident">na</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">read_line</span>(<span class="ident">ra</span>);
             }
             <span class="ident">Ordering::Greater</span> =&gt; {
-                <span class="kw">if</span> <span class="op">!</span><span class="ident">opts</span>.<span class="ident">contains_id</span>(<span class="ident">options::COLUMN_2</span>) {
+                <span class="kw">if</span> <span class="op">!</span><span class="ident">opts</span>.<span class="ident">get_flag</span>(<span class="ident">options::COLUMN_2</span>) {
                     <span class="ident">ensure_nl</span>(<span class="ident">rb</span>);
                     <span class="macro">print!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">delim</span>[<span class="number">2</span>], <span class="ident">rb</span>);
                 }
@@ -294,7 +297,7 @@
                 <span class="ident">nb</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">read_line</span>(<span class="ident">rb</span>);
             }
             <span class="ident">Ordering::Equal</span> =&gt; {
-                <span class="kw">if</span> <span class="op">!</span><span class="ident">opts</span>.<span class="ident">contains_id</span>(<span class="ident">options::COLUMN_3</span>) {
+                <span class="kw">if</span> <span class="op">!</span><span class="ident">opts</span>.<span class="ident">get_flag</span>(<span class="ident">options::COLUMN_3</span>) {
                     <span class="ident">ensure_nl</span>(<span class="ident">ra</span>);
                     <span class="macro">print!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">delim</span>[<span class="number">3</span>], <span class="ident">ra</span>);
                 }
@@ -331,7 +334,7 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
@@ -341,17 +344,20 @@
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::COLUMN_1</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;1&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;suppress column 1 (lines unique to FILE1)&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;suppress column 1 (lines unique to FILE1)&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::COLUMN_2</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;2&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;suppress column 2 (lines unique to FILE2)&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;suppress column 2 (lines unique to FILE2)&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::COLUMN_3</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;3&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;suppress column 3 (lines that appear in both files)&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;suppress column 3 (lines that appear in both files)&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::DELIMITER</span>)

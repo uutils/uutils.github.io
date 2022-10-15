@@ -394,6 +394,14 @@
 <span id="394">394</span>
 <span id="395">395</span>
 <span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;</span>
@@ -414,7 +422,7 @@
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
 <span class="kw">use</span> <span class="ident">std::os::unix::fs::MetadataExt</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::path::PathBuf</span>;
 <span class="kw">use</span> <span class="ident">uucore::format_usage</span>;
 
@@ -447,10 +455,8 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">collect_ignore</span>();
 
-    <span class="kw">let</span> <span class="ident">after_help</span> <span class="op">=</span> <span class="ident">get_long_usage</span>();
-
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>()
-        .<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="ident">after_help</span>[..])
+        .<span class="ident">after_help</span>(<span class="ident">get_long_usage</span>())
         .<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">users</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">matches</span>
@@ -464,35 +470,35 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">include_idle</span> <span class="op">=</span> <span class="bool-val">true</span>;
 
     <span class="comment">// If true, display a line at the top describing each field.</span>
-    <span class="kw">let</span> <span class="ident">include_heading</span> <span class="op">=</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OMIT_HEADINGS</span>);
+    <span class="kw">let</span> <span class="ident">include_heading</span> <span class="op">=</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::OMIT_HEADINGS</span>);
 
     <span class="comment">// if true, display the user&#39;s full name from pw_gecos.</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">include_fullname</span> <span class="op">=</span> <span class="bool-val">true</span>;
 
     <span class="comment">// if true, display the user&#39;s ~/.project file when doing long format.</span>
-    <span class="kw">let</span> <span class="ident">include_project</span> <span class="op">=</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OMIT_PROJECT_FILE</span>);
+    <span class="kw">let</span> <span class="ident">include_project</span> <span class="op">=</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::OMIT_PROJECT_FILE</span>);
 
     <span class="comment">// if true, display the user&#39;s ~/.plan file when doing long format.</span>
-    <span class="kw">let</span> <span class="ident">include_plan</span> <span class="op">=</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OMIT_PLAN_FILE</span>);
+    <span class="kw">let</span> <span class="ident">include_plan</span> <span class="op">=</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::OMIT_PLAN_FILE</span>);
 
     <span class="comment">// if true, display the user&#39;s home directory and shell</span>
     <span class="comment">// when doing long format.</span>
-    <span class="kw">let</span> <span class="ident">include_home_and_shell</span> <span class="op">=</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OMIT_HOME_DIR</span>);
+    <span class="kw">let</span> <span class="ident">include_home_and_shell</span> <span class="op">=</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::OMIT_HOME_DIR</span>);
 
     <span class="comment">// if true, use the &quot;short&quot; output format.</span>
-    <span class="kw">let</span> <span class="ident">do_short_format</span> <span class="op">=</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::LONG_FORMAT</span>);
+    <span class="kw">let</span> <span class="ident">do_short_format</span> <span class="op">=</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::LONG_FORMAT</span>);
 
     <span class="comment">/* if true, display the ut_host field. */</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">include_where</span> <span class="op">=</span> <span class="bool-val">true</span>;
 
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OMIT_NAME</span>) {
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::OMIT_NAME</span>) {
         <span class="ident">include_fullname</span> <span class="op">=</span> <span class="bool-val">false</span>;
     }
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OMIT_NAME_HOST</span>) {
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::OMIT_NAME_HOST</span>) {
         <span class="ident">include_fullname</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="ident">include_where</span> <span class="op">=</span> <span class="bool-val">false</span>;
     }
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OMIT_NAME_HOST_TIME</span>) {
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::OMIT_NAME_HOST_TIME</span>) {
         <span class="ident">include_fullname</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="ident">include_idle</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="ident">include_where</span> <span class="op">=</span> <span class="bool-val">false</span>;
@@ -520,62 +526,71 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
         .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
+        .<span class="ident">disable_help_flag</span>(<span class="bool-val">true</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::LONG_FORMAT</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;l&#39;</span>)
                 .<span class="ident">requires</span>(<span class="ident">options::USER</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;produce long format output for the specified USERs&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;produce long format output for the specified USERs&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OMIT_HOME_DIR</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;b&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;omit the user&#39;s home directory and shell in long format&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;omit the user&#39;s home directory and shell in long format&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OMIT_PROJECT_FILE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;h&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;omit the user&#39;s project file in long format&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;omit the user&#39;s project file in long format&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OMIT_PLAN_FILE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;p&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;omit the user&#39;s plan file in long format&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;omit the user&#39;s plan file in long format&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::SHORT_FORMAT</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;do short format output, this is the default&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;do short format output, this is the default&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OMIT_HEADINGS</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;f&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;omit the line of column headings in short format&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;omit the line of column headings in short format&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OMIT_NAME</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;w&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;omit the user&#39;s full name in short format&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;omit the user&#39;s full name in short format&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OMIT_NAME_HOST</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;i&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;omit the user&#39;s full name and remote host in short format&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;omit the user&#39;s full name and remote host in short format&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OMIT_NAME_HOST_TIME</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;q&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;omit the user&#39;s full name, remote host and idle time in short format&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;omit the user&#39;s full name, remote host and idle time in short format&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::USER</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::Username</span>),
         )
         .<span class="ident">arg</span>(
@@ -583,7 +598,8 @@
             <span class="comment">// since that conflicts with omit_project_file.</span>
             <span class="ident">Arg::new</span>(<span class="ident">options::HELP</span>)
                 .<span class="ident">long</span>(<span class="ident">options::HELP</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Print help information&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Print help information&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Help</span>),
         )
 }
 

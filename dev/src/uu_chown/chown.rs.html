@@ -261,6 +261,20 @@
 <span id="261">261</span>
 <span id="262">262</span>
 <span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;</span>
@@ -277,7 +291,7 @@
 
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">FromIo</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 
 <span class="kw">use</span> <span class="ident">std::fs</span>;
 <span class="kw">use</span> <span class="ident">std::os::unix::fs::MetadataExt</span>;
@@ -326,22 +340,25 @@
     )
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
         .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
+        .<span class="ident">disable_help_flag</span>(<span class="bool-val">true</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::HELP</span>)
                 .<span class="ident">long</span>(<span class="ident">options::HELP</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Print help information.&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Print help information.&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Help</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::verbosity::CHANGES</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;c&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::verbosity::CHANGES</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;like verbose but report only when a change is made&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;like verbose but report only when a change is made&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::dereference::DEREFERENCE</span>)
@@ -349,7 +366,8 @@
                 .<span class="ident">help</span>(
                     <span class="string">&quot;affect the referent of each symbolic link (this is the default), \
                     rather than the symbolic link itself&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::dereference::NO_DEREFERENCE</span>)
@@ -358,7 +376,8 @@
                 .<span class="ident">help</span>(
                     <span class="string">&quot;affect symbolic links instead of any referenced file \
                     (useful only on systems that can change the ownership of a symlink)&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::FROM</span>)
@@ -374,23 +393,27 @@
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::preserve_root::PRESERVE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::preserve_root::PRESERVE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;fail to operate recursively on &#39;/&#39;&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;fail to operate recursively on &#39;/&#39;&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::preserve_root::NO_PRESERVE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::preserve_root::NO_PRESERVE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;do not treat &#39;/&#39; specially (the default)&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;do not treat &#39;/&#39; specially (the default)&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::verbosity::QUIET</span>)
                 .<span class="ident">long</span>(<span class="ident">options::verbosity::QUIET</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;suppress most error messages&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;suppress most error messages&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::RECURSIVE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;R&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::RECURSIVE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;operate on files and directories recursively&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;operate on files and directories recursively&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::REFERENCE</span>)
@@ -398,36 +421,41 @@
                 .<span class="ident">help</span>(<span class="string">&quot;use RFILE&#39;s owner and group rather than specifying OWNER:GROUP values&quot;</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;RFILE&quot;</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>)
-                .<span class="ident">min_values</span>(<span class="number">1</span>),
+                .<span class="ident">num_args</span>(<span class="number">1</span>..),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::verbosity::SILENT</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;f&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">options::verbosity::SILENT</span>),
+                .<span class="ident">long</span>(<span class="ident">options::verbosity::SILENT</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::traverse::TRAVERSE</span>)
                 .<span class="ident">short</span>(<span class="ident">options::traverse::TRAVERSE</span>.<span class="ident">chars</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>())
                 .<span class="ident">help</span>(<span class="string">&quot;if a command line argument is a symbolic link to a directory, traverse it&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::traverse::EVERY</span>, <span class="ident">options::traverse::NO_TRAVERSE</span>]),
+                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::traverse::EVERY</span>, <span class="ident">options::traverse::NO_TRAVERSE</span>])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::traverse::EVERY</span>)
                 .<span class="ident">short</span>(<span class="ident">options::traverse::EVERY</span>.<span class="ident">chars</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>())
                 .<span class="ident">help</span>(<span class="string">&quot;traverse every symbolic link to a directory encountered&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::traverse::TRAVERSE</span>, <span class="ident">options::traverse::NO_TRAVERSE</span>]),
+                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::traverse::TRAVERSE</span>, <span class="ident">options::traverse::NO_TRAVERSE</span>])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::traverse::NO_TRAVERSE</span>)
                 .<span class="ident">short</span>(<span class="ident">options::traverse::NO_TRAVERSE</span>.<span class="ident">chars</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>())
                 .<span class="ident">help</span>(<span class="string">&quot;do not traverse any symbolic links (default)&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::traverse::TRAVERSE</span>, <span class="ident">options::traverse::EVERY</span>]),
+                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::traverse::TRAVERSE</span>, <span class="ident">options::traverse::EVERY</span>])
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::verbosity::VERBOSE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::verbosity::VERBOSE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;v&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;output a diagnostic for every file processed&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;output a diagnostic for every file processed&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
 }
 

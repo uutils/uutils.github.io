@@ -288,6 +288,13 @@
 <span id="288">288</span>
 <span id="289">289</span>
 <span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) 2014 Vsevolod Velichko &lt;torkvemada@sorokdva.net&gt;</span>
@@ -300,7 +307,9 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">builder::NonEmptyStringValueParser</span>, <span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{
+    <span class="ident">builder::NonEmptyStringValueParser</span>, <span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>,
+};
 <span class="kw">use</span> <span class="ident">std</span>::{
     <span class="ident">io</span>::{<span class="ident">stdout</span>, <span class="ident">Write</span>},
     <span class="ident">path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>},
@@ -341,13 +350,13 @@
         .<span class="ident">map</span>(<span class="ident">PathBuf::from</span>)
         .<span class="ident">collect</span>();
 
-    <span class="kw">let</span> <span class="ident">strip</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_STRIP</span>);
-    <span class="kw">let</span> <span class="ident">zero</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_ZERO</span>);
-    <span class="kw">let</span> <span class="ident">quiet</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_QUIET</span>);
-    <span class="kw">let</span> <span class="ident">logical</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_LOGICAL</span>);
-    <span class="kw">let</span> <span class="ident">can_mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_CANONICALIZE_EXISTING</span>) {
+    <span class="kw">let</span> <span class="ident">strip</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_STRIP</span>);
+    <span class="kw">let</span> <span class="ident">zero</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_ZERO</span>);
+    <span class="kw">let</span> <span class="ident">quiet</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_QUIET</span>);
+    <span class="kw">let</span> <span class="ident">logical</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_LOGICAL</span>);
+    <span class="kw">let</span> <span class="ident">can_mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_CANONICALIZE_EXISTING</span>) {
         <span class="ident">MissingHandling::Existing</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_CANONICALIZE_MISSING</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_CANONICALIZE_MISSING</span>) {
         <span class="ident">MissingHandling::Missing</span>
     } <span class="kw">else</span> {
         <span class="ident">MissingHandling::Normal</span>
@@ -379,7 +388,7 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
@@ -389,33 +398,38 @@
             <span class="ident">Arg::new</span>(<span class="ident">OPT_QUIET</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;q&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_QUIET</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Do not print warnings for invalid paths&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Do not print warnings for invalid paths&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_STRIP</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_STRIP</span>)
                 .<span class="ident">visible_alias</span>(<span class="string">&quot;no-symlinks&quot;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Only strip &#39;.&#39; and &#39;..&#39; components, but don&#39;t resolve symbolic links&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Only strip &#39;.&#39; and &#39;..&#39; components, but don&#39;t resolve symbolic links&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_ZERO</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;z&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_ZERO</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Separate output filenames with \\0 rather than newline&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Separate output filenames with \\0 rather than newline&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_LOGICAL</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;L&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_LOGICAL</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;resolve &#39;..&#39; components before symlinks&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;resolve &#39;..&#39; components before symlinks&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_PHYSICAL</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;P&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_PHYSICAL</span>)
                 .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">OPT_STRIP</span>, <span class="ident">OPT_LOGICAL</span>])
-                .<span class="ident">help</span>(<span class="string">&quot;resolve symlinks as encountered (default)&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;resolve symlinks as encountered (default)&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_CANONICALIZE_EXISTING</span>)
@@ -424,7 +438,8 @@
                 .<span class="ident">help</span>(
                     <span class="string">&quot;canonicalize by following every symlink in every component of the \
                      given name recursively, all components must exist&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_CANONICALIZE_MISSING</span>)
@@ -433,12 +448,12 @@
                 .<span class="ident">help</span>(
                     <span class="string">&quot;canonicalize by following every symlink in every component of the \
                      given name recursively, without requirements on components existence&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_RELATIVE_TO</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_RELATIVE_TO</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;DIR&quot;</span>)
                 .<span class="ident">value_parser</span>(<span class="ident">NonEmptyStringValueParser::new</span>())
                 .<span class="ident">help</span>(<span class="string">&quot;print the resolved path relative to DIR&quot;</span>),
@@ -446,14 +461,13 @@
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_RELATIVE_BASE</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_RELATIVE_BASE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;DIR&quot;</span>)
                 .<span class="ident">value_parser</span>(<span class="ident">NonEmptyStringValueParser::new</span>())
                 .<span class="ident">help</span>(<span class="string">&quot;print absolute paths unless paths below DIR&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">ARG_FILES</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">required</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_parser</span>(<span class="ident">NonEmptyStringValueParser::new</span>())
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::AnyPath</span>),

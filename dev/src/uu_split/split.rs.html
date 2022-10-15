@@ -1372,16 +1372,6 @@
 <span id="1372">1372</span>
 <span id="1373">1373</span>
 <span id="1374">1374</span>
-<span id="1375">1375</span>
-<span id="1376">1376</span>
-<span id="1377">1377</span>
-<span id="1378">1378</span>
-<span id="1379">1379</span>
-<span id="1380">1380</span>
-<span id="1381">1381</span>
-<span id="1382">1382</span>
-<span id="1383">1383</span>
-<span id="1384">1384</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Akira Hayakawa &lt;ruby.wktk@gmail.com&gt;</span>
@@ -1397,7 +1387,8 @@
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::filenames::FilenameIterator</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::filenames::SuffixType</span>;
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>, <span class="ident">ValueSource</span>};
+<span class="kw">use</span> <span class="ident">clap::ArgAction</span>;
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">parser::ValueSource</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::env</span>;
 <span class="kw">use</span> <span class="ident">std::fmt</span>;
 <span class="kw">use</span> <span class="ident">std::fs</span>::{<span class="ident">metadata</span>, <span class="ident">File</span>};
@@ -1445,7 +1436,7 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="string">&quot;Create output files containing consecutive or interleaved sections of input&quot;</span>)
@@ -1457,7 +1448,6 @@
             <span class="ident">Arg::new</span>(<span class="ident">OPT_BYTES</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;b&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_BYTES</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;SIZE&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;put SIZE bytes per output file&quot;</span>),
         )
@@ -1465,7 +1455,6 @@
             <span class="ident">Arg::new</span>(<span class="ident">OPT_LINE_BYTES</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;C&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_LINE_BYTES</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;SIZE&quot;</span>)
                 .<span class="ident">default_value</span>(<span class="string">&quot;2&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;put at most SIZE bytes of lines per output file&quot;</span>),
@@ -1474,7 +1463,6 @@
             <span class="ident">Arg::new</span>(<span class="ident">OPT_LINES</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;l&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_LINES</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;NUMBER&quot;</span>)
                 .<span class="ident">default_value</span>(<span class="string">&quot;1000&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;put NUMBER lines/records per output file&quot;</span>),
@@ -1483,7 +1471,6 @@
             <span class="ident">Arg::new</span>(<span class="ident">OPT_NUMBER</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;n&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_NUMBER</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;CHUNKS&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;generate CHUNKS output files; see explanation below&quot;</span>),
         )
@@ -1491,7 +1478,6 @@
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_ADDITIONAL_SUFFIX</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_ADDITIONAL_SUFFIX</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;SUFFIX&quot;</span>)
                 .<span class="ident">default_value</span>(<span class="string">&quot;&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;additional SUFFIX to append to output file names&quot;</span>),
@@ -1499,7 +1485,6 @@
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_FILTER</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_FILTER</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;COMMAND&quot;</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::CommandName</span>)
                 .<span class="ident">help</span>(
@@ -1510,22 +1495,21 @@
             <span class="ident">Arg::new</span>(<span class="ident">OPT_ELIDE_EMPTY_FILES</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_ELIDE_EMPTY_FILES</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;e&#39;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">false</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;do not generate empty output files with &#39;-n&#39;&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;do not generate empty output files with &#39;-n&#39;&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_NUMERIC_SUFFIXES</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;d&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_NUMERIC_SUFFIXES</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">default_missing_value</span>(<span class="string">&quot;0&quot;</span>)
+                .<span class="ident">num_args</span>(<span class="number">0</span>..<span class="op">=</span><span class="number">1</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;use numeric suffixes instead of alphabetic&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_SUFFIX_LENGTH</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;a&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_SUFFIX_LENGTH</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;N&quot;</span>)
                 .<span class="ident">default_value</span>(<span class="ident">OPT_DEFAULT_SUFFIX_LENGTH</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;use suffixes of fixed length N. 0 implies dynamic length.&quot;</span>),
@@ -1534,34 +1518,30 @@
             <span class="ident">Arg::new</span>(<span class="ident">OPT_HEX_SUFFIXES</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;x&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_HEX_SUFFIXES</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">default_missing_value</span>(<span class="string">&quot;0&quot;</span>)
+                .<span class="ident">num_args</span>(<span class="number">0</span>..<span class="op">=</span><span class="number">1</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;use hex suffixes instead of alphabetic&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_VERBOSE</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_VERBOSE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;print a diagnostic just before each output file is opened&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;print a diagnostic just before each output file is opened&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_IO_BLKSIZE</span>)
-                .<span class="ident">long</span>(<span class="ident">OPT_IO_BLKSIZE</span>)
+                .<span class="ident">long</span>(<span class="string">&quot;io-blksize&quot;</span>)
                 .<span class="ident">alias</span>(<span class="ident">OPT_IO_BLKSIZE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">hide</span>(<span class="bool-val">true</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">ARG_INPUT</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">default_value</span>(<span class="string">&quot;-&quot;</span>)
-                .<span class="ident">index</span>(<span class="number">1</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">ARG_PREFIX</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">default_value</span>(<span class="string">&quot;x&quot;</span>)
-                .<span class="ident">index</span>(<span class="number">2</span>),
         )
 }
 
@@ -1786,14 +1766,14 @@
 <span class="doccomment">/// Parse the suffix type from the command-line arguments.</span>
 <span class="kw">fn</span> <span class="ident">suffix_type_from</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">SuffixType</span>, <span class="ident">usize</span>), <span class="ident">SettingsError</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">value_source</span>(<span class="ident">OPT_NUMERIC_SUFFIXES</span>) <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">ValueSource::CommandLine</span>) {
-        <span class="kw">let</span> <span class="ident">suffix_start</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_NUMERIC_SUFFIXES</span>);
+        <span class="kw">let</span> <span class="ident">suffix_start</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_NUMERIC_SUFFIXES</span>);
         <span class="kw">let</span> <span class="ident">suffix_start</span> <span class="op">=</span> <span class="ident">suffix_start</span>.<span class="ident">ok_or</span>(<span class="ident">SettingsError::SuffixNotParsable</span>(<span class="ident">String::new</span>()))<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">suffix_start</span> <span class="op">=</span> <span class="ident">suffix_start</span>
             .<span class="ident">parse</span>()
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">SettingsError::SuffixNotParsable</span>(<span class="ident">suffix_start</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>((<span class="ident">SuffixType::Decimal</span>, <span class="ident">suffix_start</span>))
     } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">value_source</span>(<span class="ident">OPT_HEX_SUFFIXES</span>) <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">ValueSource::CommandLine</span>) {
-        <span class="kw">let</span> <span class="ident">suffix_start</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="ident">OPT_HEX_SUFFIXES</span>);
+        <span class="kw">let</span> <span class="ident">suffix_start</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_HEX_SUFFIXES</span>);
         <span class="kw">let</span> <span class="ident">suffix_start</span> <span class="op">=</span> <span class="ident">suffix_start</span>.<span class="ident">ok_or</span>(<span class="ident">SettingsError::SuffixNotParsable</span>(<span class="ident">String::new</span>()))<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">suffix_start</span> <span class="op">=</span> <span class="ident">usize::from_str_radix</span>(<span class="ident">suffix_start</span>, <span class="number">16</span>)
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">SettingsError::SuffixNotParsable</span>(<span class="ident">suffix_start</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
@@ -1919,7 +1899,7 @@
             <span class="ident">input</span>: <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">ARG_INPUT</span>).<span class="ident">unwrap</span>().<span class="ident">to_owned</span>(),
             <span class="ident">prefix</span>: <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">ARG_PREFIX</span>).<span class="ident">unwrap</span>().<span class="ident">to_owned</span>(),
             <span class="ident">filter</span>: <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_FILTER</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_owned</span>()),
-            <span class="ident">elide_empty_files</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_ELIDE_EMPTY_FILES</span>),
+            <span class="ident">elide_empty_files</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_ELIDE_EMPTY_FILES</span>),
         };
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
         <span class="kw">if</span> <span class="ident">result</span>.<span class="ident">filter</span>.<span class="ident">is_some</span>() {

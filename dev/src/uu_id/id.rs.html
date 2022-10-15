@@ -678,6 +678,11 @@
 <span id="678">678</span>
 <span id="679">679</span>
 <span id="680">680</span>
+<span id="681">681</span>
+<span id="682">682</span>
+<span id="683">683</span>
+<span id="684">684</span>
+<span id="685">685</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Alan Andrade &lt;alan.andradec@gmail.com&gt;</span>
@@ -719,7 +724,7 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::ffi::CStr</span>;
 <span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
 <span class="kw">use</span> <span class="ident">uucore::entries</span>::{<span class="self">self</span>, <span class="ident">Group</span>, <span class="ident">Locate</span>, <span class="ident">Passwd</span>};
@@ -759,15 +764,13 @@ or (when USER omitted) for the current user.&quot;</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ARG_USERS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;USER&quot;</span>;
 }
 
-<span class="kw">fn</span> <span class="ident">get_description</span>() -&gt; <span class="ident">String</span> {
-    <span class="ident">String::from</span>(
-        <span class="string">&quot;The id utility displays the user and group names and numeric IDs, of the \
-                      calling process, to the standard output. If the real and effective IDs are \
-                      different, both are displayed, otherwise only the real ID is displayed.\n\n\
-                      If a user (login name or user ID) is specified, the user and group IDs of \
-                      that user are displayed. In this case, the real and effective IDs are \
-                      assumed to be the same.&quot;</span>,
-    )
+<span class="kw">fn</span> <span class="ident">get_description</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
+    <span class="string">&quot;The id utility displays the user and group names and numeric IDs, of the \
+    calling process, to the standard output. If the real and effective IDs are \
+    different, both are displayed, otherwise only the real ID is displayed.\n\n\
+    If a user (login name or user ID) is specified, the user and group IDs of \
+    that user are displayed. In this case, the real and effective IDs are \
+    assumed to be the same.&quot;</span>
 }
 
 <span class="kw">struct</span> <span class="ident">Ids</span> {
@@ -806,10 +809,8 @@ or (when USER omitted) for the current user.&quot;</span>;
 
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">after_help</span> <span class="op">=</span> <span class="ident">get_description</span>();
-
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>()
-        .<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="ident">after_help</span>[..])
+        .<span class="ident">after_help</span>(<span class="ident">get_description</span>())
         .<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">users</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">matches</span>
@@ -818,13 +819,13 @@ or (when USER omitted) for the current user.&quot;</span>;
         .<span class="ident">unwrap_or_default</span>();
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">State</span> {
-        <span class="ident">nflag</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OPT_NAME</span>),
-        <span class="ident">uflag</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OPT_EFFECTIVE_USER</span>),
-        <span class="ident">gflag</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OPT_GROUP</span>),
-        <span class="ident">gsflag</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OPT_GROUPS</span>),
-        <span class="ident">rflag</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OPT_REAL_ID</span>),
-        <span class="ident">zflag</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OPT_ZERO</span>),
-        <span class="ident">cflag</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OPT_CONTEXT</span>),
+        <span class="ident">nflag</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::OPT_NAME</span>),
+        <span class="ident">uflag</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::OPT_EFFECTIVE_USER</span>),
+        <span class="ident">gflag</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::OPT_GROUP</span>),
+        <span class="ident">gsflag</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::OPT_GROUPS</span>),
+        <span class="ident">rflag</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::OPT_REAL_ID</span>),
+        <span class="ident">zflag</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::OPT_ZERO</span>),
+        <span class="ident">cflag</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::OPT_CONTEXT</span>),
 
         <span class="ident">selinux_supported</span>: {
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;selinux&quot;</span>)]</span>
@@ -919,17 +920,17 @@ or (when USER omitted) for the current user.&quot;</span>;
         };
 
         <span class="comment">// GNU&#39;s `id` does not support the flags: -p/-P/-A.</span>
-        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OPT_PASSWORD</span>) {
+        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::OPT_PASSWORD</span>) {
             <span class="comment">// BSD&#39;s `id` ignores all but the first specified user</span>
             <span class="ident">pline</span>(<span class="ident">possible_pw</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">uid</span>));
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
         };
-        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OPT_HUMAN_READABLE</span>) {
+        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::OPT_HUMAN_READABLE</span>) {
             <span class="comment">// BSD&#39;s `id` ignores all but the first specified user</span>
             <span class="ident">pretty</span>(<span class="ident">possible_pw</span>);
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
         }
-        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::OPT_AUDIT</span>) {
+        <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::OPT_AUDIT</span>) {
             <span class="comment">// BSD&#39;s `id` ignores specified users</span>
             <span class="ident">auditid</span>();
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
@@ -1023,7 +1024,7 @@ or (when USER omitted) for the current user.&quot;</span>;
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
@@ -1043,21 +1044,24 @@ or (when USER omitted) for the current user.&quot;</span>;
                 .<span class="ident">help</span>(
                     <span class="string">&quot;Display the process audit user ID and other process audit properties,\n\
                       which requires privilege (not available on Linux).&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OPT_EFFECTIVE_USER</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;u&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::OPT_EFFECTIVE_USER</span>)
                 .<span class="ident">conflicts_with</span>(<span class="ident">options::OPT_GROUP</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Display only the effective user ID as a number.&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Display only the effective user ID as a number.&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OPT_GROUP</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;g&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::OPT_GROUP</span>)
                 .<span class="ident">conflicts_with</span>(<span class="ident">options::OPT_EFFECTIVE_USER</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Display only the effective group ID as a number&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Display only the effective group ID as a number&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OPT_GROUPS</span>)
@@ -1074,12 +1078,14 @@ or (when USER omitted) for the current user.&quot;</span>;
                 .<span class="ident">help</span>(
                     <span class="string">&quot;Display only the different group IDs as white-space separated numbers, \
                       in no particular order.&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OPT_HUMAN_READABLE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;p&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Make the output human-readable. Each display is on a separate line.&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Make the output human-readable. Each display is on a separate line.&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OPT_NAME</span>)
@@ -1089,12 +1095,14 @@ or (when USER omitted) for the current user.&quot;</span>;
                     <span class="string">&quot;Display the name of the user or group ID for the -G, -g and -u options \
                       instead of the number.\nIf any of the ID numbers cannot be mapped into \
                       names, the number will be displayed as usual.&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OPT_PASSWORD</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;P&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Display the id as a password file entry.&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;Display the id as a password file entry.&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OPT_REAL_ID</span>)
@@ -1103,7 +1111,8 @@ or (when USER omitted) for the current user.&quot;</span>;
                 .<span class="ident">help</span>(
                     <span class="string">&quot;Display the real ID for the -G, -g and -u options instead of \
                       the effective ID.&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OPT_ZERO</span>)
@@ -1112,19 +1121,20 @@ or (when USER omitted) for the current user.&quot;</span>;
                 .<span class="ident">help</span>(
                     <span class="string">&quot;delimit entries with NUL characters, not whitespace;\n\
                       not permitted in default format&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::OPT_CONTEXT</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;Z&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::OPT_CONTEXT</span>)
                 .<span class="ident">conflicts_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::OPT_GROUP</span>, <span class="ident">options::OPT_EFFECTIVE_USER</span>])
-                .<span class="ident">help</span>(<span class="ident">CONTEXT_HELP_TEXT</span>),
+                .<span class="ident">help</span>(<span class="ident">CONTEXT_HELP_TEXT</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::ARG_USERS</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
                 .<span class="ident">value_name</span>(<span class="ident">options::ARG_USERS</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::Username</span>),
         )

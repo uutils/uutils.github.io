@@ -845,6 +845,16 @@
 <span id="845">845</span>
 <span id="846">846</span>
 <span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Ben Eills &lt;ben@beneills.com&gt;</span>
@@ -859,7 +869,7 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">file_diff::diff</span>;
 <span class="kw">use</span> <span class="ident">filetime</span>::{<span class="ident">set_file_times</span>, <span class="ident">FileTime</span>};
 <span class="kw">use</span> <span class="ident">uucore::backup_control</span>::{<span class="self">self</span>, <span class="ident">BackupMode</span>};
@@ -1035,57 +1045,63 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
         .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
         .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
-        .<span class="ident">arg</span>(
-            <span class="ident">backup_control::arguments::backup</span>()
-        )
-        .<span class="ident">arg</span>(
-            <span class="ident">backup_control::arguments::backup_no_args</span>()
-        )
+        .<span class="ident">arg</span>(<span class="ident">backup_control::arguments::backup</span>())
+        .<span class="ident">arg</span>(<span class="ident">backup_control::arguments::backup_no_args</span>())
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_IGNORED</span>)
-            .<span class="ident">short</span>(<span class="string">&#39;c&#39;</span>)
-            .<span class="ident">help</span>(<span class="string">&quot;ignored&quot;</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;c&#39;</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;ignored&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_COMPARE</span>)
-            .<span class="ident">short</span>(<span class="string">&#39;C&#39;</span>)
-            .<span class="ident">long</span>(<span class="ident">OPT_COMPARE</span>)
-            .<span class="ident">help</span>(<span class="string">&quot;compare each pair of source and destination files, and in some cases, do not modify the destination at all&quot;</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;C&#39;</span>)
+                .<span class="ident">long</span>(<span class="ident">OPT_COMPARE</span>)
+                .<span class="ident">help</span>(
+                    <span class="string">&quot;compare each pair of source and destination files, and in some cases, \
+                    do not modify the destination at all&quot;</span>,
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_DIRECTORY</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;d&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_DIRECTORY</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;treat all arguments as directory names. create all components of the specified directories&quot;</span>)
+                .<span class="ident">help</span>(
+                    <span class="string">&quot;treat all arguments as directory names. create all components of \
+                        the specified directories&quot;</span>,
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
-
         .<span class="ident">arg</span>(
             <span class="comment">// TODO implement flag</span>
             <span class="ident">Arg::new</span>(<span class="ident">OPT_CREATE_LEADING</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;D&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;create all leading components of DEST except the last, then copy SOURCE to DEST&quot;</span>)
+                .<span class="ident">help</span>(
+                    <span class="string">&quot;create all leading components of DEST except the last, then copy \
+                        SOURCE to DEST&quot;</span>,
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_GROUP</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;g&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_GROUP</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;set group ownership, instead of process&#39;s current group&quot;</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;GROUP&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                .<span class="ident">value_name</span>(<span class="string">&quot;GROUP&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_MODE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;m&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_MODE</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;set permission mode (as in chmod), instead of rwxr-xr-x&quot;</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;MODE&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+                .<span class="ident">value_name</span>(<span class="string">&quot;MODE&quot;</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_OWNER</span>)
@@ -1093,31 +1109,33 @@
                 .<span class="ident">long</span>(<span class="ident">OPT_OWNER</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;set ownership (super-user only)&quot;</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;OWNER&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::Username</span>)
+                .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::Username</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_PRESERVE_TIMESTAMPS</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;p&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_PRESERVE_TIMESTAMPS</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;apply access/modification times of SOURCE files to corresponding destination files&quot;</span>)
+                .<span class="ident">help</span>(
+                    <span class="string">&quot;apply access/modification times of SOURCE files to \
+                    corresponding destination files&quot;</span>,
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_STRIP</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_STRIP</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;strip symbol tables (no action Windows)&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_STRIP_PROGRAM</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_STRIP_PROGRAM</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;program used to strip binaries (no action Windows)&quot;</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;PROGRAM&quot;</span>)
-                .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::CommandName</span>)
+                .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::CommandName</span>),
         )
-        .<span class="ident">arg</span>(
-            <span class="ident">backup_control::arguments::suffix</span>()
-        )
+        .<span class="ident">arg</span>(<span class="ident">backup_control::arguments::suffix</span>())
         .<span class="ident">arg</span>(
             <span class="comment">// TODO implement flag</span>
             <span class="ident">Arg::new</span>(<span class="ident">OPT_TARGET_DIRECTORY</span>)
@@ -1125,7 +1143,7 @@
                 .<span class="ident">long</span>(<span class="ident">OPT_TARGET_DIRECTORY</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;move all SOURCE arguments into DIRECTORY&quot;</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;DIRECTORY&quot;</span>)
-                .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::DirPath</span>)
+                .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::DirPath</span>),
         )
         .<span class="ident">arg</span>(
             <span class="comment">// TODO implement flag</span>
@@ -1133,13 +1151,14 @@
                 .<span class="ident">short</span>(<span class="string">&#39;T&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_NO_TARGET_DIRECTORY</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;(unimplemented) treat DEST as a normal file&quot;</span>)
-
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_VERBOSE</span>)
-            .<span class="ident">short</span>(<span class="string">&#39;v&#39;</span>)
-            .<span class="ident">long</span>(<span class="ident">OPT_VERBOSE</span>)
-            .<span class="ident">help</span>(<span class="string">&quot;explain what is being done&quot;</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;v&#39;</span>)
+                .<span class="ident">long</span>(<span class="ident">OPT_VERBOSE</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;explain what is being done&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="comment">// TODO implement flag</span>
@@ -1147,6 +1166,7 @@
                 .<span class="ident">short</span>(<span class="string">&#39;P&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_PRESERVE_CONTEXT</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;(unimplemented) preserve security context&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="comment">// TODO implement flag</span>
@@ -1155,13 +1175,13 @@
                 .<span class="ident">long</span>(<span class="ident">OPT_CONTEXT</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;(unimplemented) set security context of files and directories&quot;</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;CONTEXT&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">ARG_FILES</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">min_values</span>(<span class="number">1</span>)
-                .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::AnyPath</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
+                .<span class="ident">num_args</span>(<span class="number">1</span>..)
+                .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::AnyPath</span>),
         )
 }
 
@@ -1175,11 +1195,11 @@
 <span class="doccomment">///</span>
 <span class="doccomment">///</span>
 <span class="kw">fn</span> <span class="ident">check_unimplemented</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_NO_TARGET_DIRECTORY</span>) {
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_NO_TARGET_DIRECTORY</span>) {
         <span class="prelude-val">Err</span>(<span class="ident">InstallError::Unimplemented</span>(<span class="ident">String::from</span>(<span class="string">&quot;--no-target-directory, -T&quot;</span>)).<span class="ident">into</span>())
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_PRESERVE_CONTEXT</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_PRESERVE_CONTEXT</span>) {
         <span class="prelude-val">Err</span>(<span class="ident">InstallError::Unimplemented</span>(<span class="ident">String::from</span>(<span class="string">&quot;--preserve-context, -P&quot;</span>)).<span class="ident">into</span>())
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_CONTEXT</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_CONTEXT</span>) {
         <span class="prelude-val">Err</span>(<span class="ident">InstallError::Unimplemented</span>(<span class="ident">String::from</span>(<span class="string">&quot;--context, -Z&quot;</span>)).<span class="ident">into</span>())
     } <span class="kw">else</span> {
         <span class="prelude-val">Ok</span>(())
@@ -1195,7 +1215,7 @@
 <span class="doccomment">/// In event of failure, returns an integer intended as a program return code.</span>
 <span class="doccomment">///</span>
 <span class="kw">fn</span> <span class="ident">behavior</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">Behavior</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">main_function</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_DIRECTORY</span>) {
+    <span class="kw">let</span> <span class="ident">main_function</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_DIRECTORY</span>) {
         <span class="ident">MainFunction::Directory</span>
     } <span class="kw">else</span> {
         <span class="ident">MainFunction::Standard</span>
@@ -1218,9 +1238,9 @@
         .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_TARGET_DIRECTORY</span>)
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> <span class="ident">d</span>.<span class="ident">to_owned</span>());
 
-    <span class="kw">let</span> <span class="ident">preserve_timestamps</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_PRESERVE_TIMESTAMPS</span>);
-    <span class="kw">let</span> <span class="ident">compare</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_COMPARE</span>);
-    <span class="kw">let</span> <span class="ident">strip</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_STRIP</span>);
+    <span class="kw">let</span> <span class="ident">preserve_timestamps</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_PRESERVE_TIMESTAMPS</span>);
+    <span class="kw">let</span> <span class="ident">compare</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_COMPARE</span>);
+    <span class="kw">let</span> <span class="ident">strip</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_STRIP</span>);
     <span class="kw">if</span> <span class="ident">preserve_timestamps</span> <span class="op">&amp;&amp;</span> <span class="ident">compare</span> {
         <span class="macro">show_error!</span>(<span class="string">&quot;Options --compare and --preserve-timestamps are mutually exclusive&quot;</span>);
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="number">1</span>.<span class="ident">into</span>());
@@ -1244,7 +1264,7 @@
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>())
             .<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>)
             .<span class="ident">to_string</span>(),
-        <span class="ident">verbose</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_VERBOSE</span>),
+        <span class="ident">verbose</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_VERBOSE</span>),
         <span class="ident">preserve_timestamps</span>,
         <span class="ident">compare</span>,
         <span class="ident">strip</span>,
@@ -1254,7 +1274,7 @@
                 .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_str</span>())
                 .<span class="ident">unwrap_or</span>(<span class="ident">DEFAULT_STRIP_PROGRAM</span>),
         ),
-        <span class="ident">create_leading</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_CREATE_LEADING</span>),
+        <span class="ident">create_leading</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_CREATE_LEADING</span>),
         <span class="ident">target_dir</span>,
     })
 }

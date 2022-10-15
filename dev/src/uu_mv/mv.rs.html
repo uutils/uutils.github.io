@@ -498,6 +498,16 @@
 <span id="498">498</span>
 <span id="499">499</span>
 <span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Orvar Segerström &lt;orvarsegerstrom@gmail.com&gt;</span>
@@ -514,7 +524,7 @@
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
 
 <span class="kw">use</span> <span class="ident">clap::builder::ValueParser</span>;
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>, <span class="ident">ErrorKind</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">error::ErrorKind</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">std::env</span>;
 <span class="kw">use</span> <span class="ident">std::ffi::OsString</span>;
 <span class="kw">use</span> <span class="ident">std::fs</span>;
@@ -576,7 +586,7 @@
         <span class="ident">LONG_HELP</span>,
         <span class="ident">backup_control::BACKUP_CONTROL_LONG_HELP</span>
     );
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">app</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">help</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">app</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">after_help</span>(<span class="ident">help</span>);
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">app</span>.<span class="ident">try_get_matches_from_mut</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
 
     <span class="kw">if</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_TARGET_DIRECTORY</span>)
@@ -618,19 +628,19 @@
         <span class="ident">overwrite</span>: <span class="ident">overwrite_mode</span>,
         <span class="ident">backup</span>: <span class="ident">backup_mode</span>,
         <span class="ident">suffix</span>: <span class="ident">backup_suffix</span>,
-        <span class="ident">update</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_UPDATE</span>),
+        <span class="ident">update</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_UPDATE</span>),
         <span class="ident">target_dir</span>: <span class="ident">matches</span>
             .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">OsString</span><span class="op">&gt;</span>(<span class="ident">OPT_TARGET_DIRECTORY</span>)
             .<span class="ident">map</span>(<span class="ident">OsString::from</span>),
-        <span class="ident">no_target_dir</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_NO_TARGET_DIRECTORY</span>),
-        <span class="ident">verbose</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_VERBOSE</span>),
-        <span class="ident">strip_slashes</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_STRIP_TRAILING_SLASHES</span>),
+        <span class="ident">no_target_dir</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_NO_TARGET_DIRECTORY</span>),
+        <span class="ident">verbose</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_VERBOSE</span>),
+        <span class="ident">strip_slashes</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_STRIP_TRAILING_SLASHES</span>),
     };
 
     <span class="ident">exec</span>(<span class="kw-2">&amp;</span><span class="ident">files</span>[..], <span class="kw-2">&amp;</span><span class="ident">behavior</span>)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
@@ -642,24 +652,28 @@
             <span class="ident">Arg::new</span>(<span class="ident">OPT_FORCE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;f&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_FORCE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;do not prompt before overwriting&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;do not prompt before overwriting&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_INTERACTIVE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;i&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_INTERACTIVE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;prompt before override&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;prompt before override&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_NO_CLOBBER</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;n&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_NO_CLOBBER</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;do not overwrite an existing file&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;do not overwrite an existing file&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_STRIP_TRAILING_SLASHES</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_STRIP_TRAILING_SLASHES</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;remove any trailing slashes from each SOURCE argument&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;remove any trailing slashes from each SOURCE argument&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(<span class="ident">backup_control::arguments::suffix</span>())
         .<span class="ident">arg</span>(
@@ -667,7 +681,6 @@
                 .<span class="ident">short</span>(<span class="string">&#39;t&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_TARGET_DIRECTORY</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;move all SOURCE arguments into DIRECTORY&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;DIRECTORY&quot;</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::DirPath</span>)
                 .<span class="ident">conflicts_with</span>(<span class="ident">OPT_NO_TARGET_DIRECTORY</span>)
@@ -677,23 +690,30 @@
             <span class="ident">Arg::new</span>(<span class="ident">OPT_NO_TARGET_DIRECTORY</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;T&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_NO_TARGET_DIRECTORY</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;treat DEST as a normal file&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;treat DEST as a normal file&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
-        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">OPT_UPDATE</span>).<span class="ident">short</span>(<span class="string">&#39;u&#39;</span>).<span class="ident">long</span>(<span class="ident">OPT_UPDATE</span>).<span class="ident">help</span>(
-            <span class="string">&quot;move only when the SOURCE file is newer than the destination file \
+        .<span class="ident">arg</span>(
+            <span class="ident">Arg::new</span>(<span class="ident">OPT_UPDATE</span>)
+                .<span class="ident">short</span>(<span class="string">&#39;u&#39;</span>)
+                .<span class="ident">long</span>(<span class="ident">OPT_UPDATE</span>)
+                .<span class="ident">help</span>(
+                    <span class="string">&quot;move only when the SOURCE file is newer than the destination file \
                        or when the destination file is missing&quot;</span>,
-        ))
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
+        )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_VERBOSE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;v&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_VERBOSE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;explain what is being done&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;explain what is being done&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">ARG_FILES</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">min_values</span>(<span class="number">1</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
+                .<span class="ident">num_args</span>(<span class="number">1</span>..)
                 .<span class="ident">required</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_parser</span>(<span class="ident">ValueParser::os_string</span>())
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::AnyPath</span>),
@@ -706,9 +726,9 @@
     <span class="comment">// overwrite options are supplied, only the last takes effect.</span>
     <span class="comment">// To default to no-clobber in that situation seems safer:</span>
     <span class="comment">//</span>
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_NO_CLOBBER</span>) {
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_NO_CLOBBER</span>) {
         <span class="ident">OverwriteMode::NoClobber</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_INTERACTIVE</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_INTERACTIVE</span>) {
         <span class="ident">OverwriteMode::Interactive</span>
     } <span class="kw">else</span> {
         <span class="ident">OverwriteMode::Force</span>

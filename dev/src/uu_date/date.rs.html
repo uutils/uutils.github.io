@@ -429,9 +429,6 @@
 <span id="429">429</span>
 <span id="430">430</span>
 <span id="431">431</span>
-<span id="432">432</span>
-<span id="433">433</span>
-<span id="434">434</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Anthony Deschamps &lt;anthony.j.deschamps@gmail.com&gt;</span>
@@ -445,7 +442,7 @@
 <span class="kw">use</span> <span class="ident">chrono</span>::{<span class="ident">DateTime</span>, <span class="ident">FixedOffset</span>, <span class="ident">Local</span>, <span class="ident">Offset</span>, <span class="ident">Utc</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
 <span class="kw">use</span> <span class="ident">chrono</span>::{<span class="ident">Datelike</span>, <span class="ident">Timelike</span>};
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">unix</span>, <span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>), <span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;redox&quot;</span>)))]</span>
 <span class="kw">use</span> <span class="ident">libc</span>::{<span class="ident">clock_settime</span>, <span class="ident">timespec</span>, <span class="ident">CLOCK_REALTIME</span>};
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
@@ -594,7 +591,7 @@
         .<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">mut</span> <span class="ident">iter</span><span class="op">|</span> <span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="ident">DATE</span>.<span class="ident">to_string</span>()).<span class="ident">as_str</span>().<span class="ident">into</span>())
     {
         <span class="ident">Format::Iso8601</span>(<span class="ident">fmt</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_RFC_EMAIL</span>) {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_RFC_EMAIL</span>) {
         <span class="ident">Format::Rfc5322</span>
     } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">fmt</span>) <span class="op">=</span> <span class="ident">matches</span>
         .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_RFC_3339</span>)
@@ -625,7 +622,7 @@
     };
 
     <span class="kw">let</span> <span class="ident">settings</span> <span class="op">=</span> <span class="ident">Settings</span> {
-        <span class="ident">utc</span>: <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">OPT_UNIVERSAL</span>),
+        <span class="ident">utc</span>: <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_UNIVERSAL</span>),
         <span class="ident">format</span>,
         <span class="ident">date_source</span>,
         <span class="ident">set_to</span>,
@@ -691,7 +688,7 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
@@ -701,7 +698,6 @@
             <span class="ident">Arg::new</span>(<span class="ident">OPT_DATE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;d&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_DATE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;STRING&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;display time described by STRING, not &#39;now&#39;&quot;</span>),
         )
@@ -709,7 +705,6 @@
             <span class="ident">Arg::new</span>(<span class="ident">OPT_FILE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;f&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_FILE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;DATEFILE&quot;</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;like --date; once for each line of DATEFILE&quot;</span>),
@@ -718,7 +713,6 @@
             <span class="ident">Arg::new</span>(<span class="ident">OPT_ISO_8601</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;I&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_ISO_8601</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;FMT&quot;</span>)
                 .<span class="ident">help</span>(<span class="ident">ISO_8601_HELP_STRING</span>),
         )
@@ -726,25 +720,25 @@
             <span class="ident">Arg::new</span>(<span class="ident">OPT_RFC_EMAIL</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;R&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_RFC_EMAIL</span>)
-                .<span class="ident">help</span>(<span class="ident">RFC_5322_HELP_STRING</span>),
+                .<span class="ident">help</span>(<span class="ident">RFC_5322_HELP_STRING</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_RFC_3339</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_RFC_3339</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;FMT&quot;</span>)
                 .<span class="ident">help</span>(<span class="ident">RFC_3339_HELP_STRING</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_DEBUG</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_DEBUG</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;annotate the parsed date, and warn about questionable usage to stderr&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;annotate the parsed date, and warn about questionable usage to stderr&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_REFERENCE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;r&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_REFERENCE</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;FILE&quot;</span>)
                 .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::AnyPath</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;display the last modification time of FILE&quot;</span>),
@@ -753,7 +747,6 @@
             <span class="ident">Arg::new</span>(<span class="ident">OPT_SET</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_SET</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;STRING&quot;</span>)
                 .<span class="ident">help</span>(<span class="ident">OPT_SET_HELP_STRING</span>),
         )
@@ -762,9 +755,10 @@
                 .<span class="ident">short</span>(<span class="string">&#39;u&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">OPT_UNIVERSAL</span>)
                 .<span class="ident">alias</span>(<span class="ident">OPT_UNIVERSAL_2</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;print or set Coordinated Universal Time (UTC)&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;print or set Coordinated Universal Time (UTC)&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
-        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">OPT_FORMAT</span>).<span class="ident">multiple_occurrences</span>(<span class="bool-val">false</span>))
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">OPT_FORMAT</span>))
 }
 
 <span class="doccomment">/// Return the appropriate format string for the given settings.</span>

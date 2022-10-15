@@ -176,10 +176,6 @@
 <span id="176">176</span>
 <span id="177">177</span>
 <span id="178">178</span>
-<span id="179">179</span>
-<span id="180">180</span>
-<span id="181">181</span>
-<span id="182">182</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
@@ -193,7 +189,7 @@
 <span class="kw">mod</span> <span class="ident">operation</span>;
 <span class="kw">mod</span> <span class="ident">unicode_table</span>;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">Command</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
 <span class="kw">use</span> <span class="ident">nom::AsBytes</span>;
 <span class="kw">use</span> <span class="ident">operation</span>::{<span class="ident">translate_input</span>, <span class="ident">Sequence</span>, <span class="ident">SqueezeOperation</span>, <span class="ident">TranslateOperation</span>};
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">stdin</span>, <span class="ident">stdout</span>, <span class="ident">BufReader</span>, <span class="ident">BufWriter</span>};
@@ -224,16 +220,14 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">collect_lossy</span>();
 
-    <span class="kw">let</span> <span class="ident">after_help</span> <span class="op">=</span> <span class="ident">get_long_usage</span>();
-
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>()
-        .<span class="ident">after_help</span>(<span class="kw-2">&amp;</span><span class="ident">after_help</span>[..])
+        .<span class="ident">after_help</span>(<span class="ident">get_long_usage</span>())
         .<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">delete_flag</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::DELETE</span>);
-    <span class="kw">let</span> <span class="ident">complement_flag</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::COMPLEMENT</span>);
-    <span class="kw">let</span> <span class="ident">squeeze_flag</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::SQUEEZE</span>);
-    <span class="kw">let</span> <span class="ident">truncate_set1_flag</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">options::TRUNCATE_SET1</span>);
+    <span class="kw">let</span> <span class="ident">delete_flag</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::DELETE</span>);
+    <span class="kw">let</span> <span class="ident">complement_flag</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::COMPLEMENT</span>);
+    <span class="kw">let</span> <span class="ident">squeeze_flag</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::SQUEEZE</span>);
+    <span class="kw">let</span> <span class="ident">truncate_set1_flag</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::TRUNCATE_SET1</span>);
 
     <span class="kw">let</span> <span class="ident">sets</span> <span class="op">=</span> <span class="ident">matches</span>
         .<span class="ident">get_many</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::SETS</span>)
@@ -319,7 +313,7 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>() -&gt; <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
     <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
         .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
         .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
@@ -330,13 +324,15 @@
                 .<span class="ident">visible_short_alias</span>(<span class="string">&#39;C&#39;</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;c&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::COMPLEMENT</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;use the complement of SET1&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;use the complement of SET1&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::DELETE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;d&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::DELETE</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;delete characters in SET1, do not translate&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;delete characters in SET1, do not translate&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::SQUEEZE</span>)
@@ -346,21 +342,17 @@
                     <span class="string">&quot;replace each sequence of a repeated character that is \
                      listed in the last specified SET, with a single occurrence \
                      of that character&quot;</span>,
-                ),
+                )
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">options::TRUNCATE_SET1</span>)
                 .<span class="ident">long</span>(<span class="ident">options::TRUNCATE_SET1</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;t&#39;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;first truncate SET1 to length of SET2&quot;</span>),
+                .<span class="ident">help</span>(<span class="string">&quot;first truncate SET1 to length of SET2&quot;</span>)
+                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">options::SETS</span>)
-                .<span class="ident">multiple_occurrences</span>(<span class="bool-val">true</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">min_values</span>(<span class="number">1</span>)
-                .<span class="ident">max_values</span>(<span class="number">2</span>),
-        )
+        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::SETS</span>).<span class="ident">num_args</span>(<span class="number">1</span>..<span class="op">=</span><span class="number">2</span>))
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_tr" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
