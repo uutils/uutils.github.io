@@ -1372,6 +1372,25 @@
 <span id="1372">1372</span>
 <span id="1373">1373</span>
 <span id="1374">1374</span>
+<span id="1375">1375</span>
+<span id="1376">1376</span>
+<span id="1377">1377</span>
+<span id="1378">1378</span>
+<span id="1379">1379</span>
+<span id="1380">1380</span>
+<span id="1381">1381</span>
+<span id="1382">1382</span>
+<span id="1383">1383</span>
+<span id="1384">1384</span>
+<span id="1385">1385</span>
+<span id="1386">1386</span>
+<span id="1387">1387</span>
+<span id="1388">1388</span>
+<span id="1389">1389</span>
+<span id="1390">1390</span>
+<span id="1391">1391</span>
+<span id="1392">1392</span>
+<span id="1393">1393</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Akira Hayakawa &lt;ruby.wktk@gmail.com&gt;</span>
@@ -1412,8 +1431,9 @@
 <span class="kw">static</span> <span class="ident">OPT_SUFFIX_LENGTH</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;suffix-length&quot;</span>;
 <span class="kw">static</span> <span class="ident">OPT_DEFAULT_SUFFIX_LENGTH</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;0&quot;</span>;
 <span class="kw">static</span> <span class="ident">OPT_VERBOSE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;verbose&quot;</span>;
-<span class="comment">//The ---io-blksize parameter is consumed and ignored.</span>
+<span class="comment">//The ---io and ---io-blksize parameters are consumed and ignored.</span>
 <span class="comment">//The parameter is included to make GNU coreutils tests pass.</span>
+<span class="kw">static</span> <span class="ident">OPT_IO</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;-io&quot;</span>;
 <span class="kw">static</span> <span class="ident">OPT_IO_BLKSIZE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;-io-blksize&quot;</span>;
 <span class="kw">static</span> <span class="ident">OPT_ELIDE_EMPTY_FILES</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;elide-empty-files&quot;</span>;
 
@@ -1527,6 +1547,12 @@
                 .<span class="ident">long</span>(<span class="ident">OPT_VERBOSE</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;print a diagnostic just before each output file is opened&quot;</span>)
                 .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
+        )
+        .<span class="ident">arg</span>(
+            <span class="ident">Arg::new</span>(<span class="ident">OPT_IO</span>)
+                .<span class="ident">long</span>(<span class="string">&quot;io&quot;</span>)
+                .<span class="ident">alias</span>(<span class="ident">OPT_IO</span>)
+                .<span class="ident">hide</span>(<span class="bool-val">true</span>),
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg::new</span>(<span class="ident">OPT_IO_BLKSIZE</span>)
@@ -2286,10 +2312,22 @@
                 <span class="comment">// then move on to the next chunk if necessary.</span>
                 <span class="prelude-val">None</span> =&gt; {
                     <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">num_bytes_remaining_in_current_chunk</span>;
-                    <span class="kw">let</span> <span class="ident">num_bytes_written</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[..<span class="ident">end</span>.<span class="ident">min</span>(<span class="ident">buf</span>.<span class="ident">len</span>())])<span class="question-mark">?</span>;
-                    <span class="self">self</span>.<span class="ident">num_bytes_remaining_in_current_chunk</span> <span class="op">-</span><span class="op">=</span> <span class="ident">num_bytes_written</span>;
-                    <span class="ident">total_bytes_written</span> <span class="op">+</span><span class="op">=</span> <span class="ident">num_bytes_written</span>;
-                    <span class="ident">buf</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">buf</span>[<span class="ident">num_bytes_written</span>..];
+
+                    <span class="comment">// This is ugly but here to match GNU behavior. If the input</span>
+                    <span class="comment">// doesn&#39;t end with a \n, pretend that it does for handling</span>
+                    <span class="comment">// the second to last segment chunk. See `line-bytes.sh`.</span>
+                    <span class="kw">if</span> <span class="ident">end</span> <span class="op">==</span> <span class="ident">buf</span>.<span class="ident">len</span>()
+                        <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">num_bytes_remaining_in_current_chunk</span>
+                            <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">chunk_size</span>.<span class="ident">try_into</span>().<span class="ident">unwrap</span>()
+                        <span class="op">&amp;&amp;</span> <span class="ident">buf</span>[<span class="ident">buf</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>] <span class="op">!</span><span class="op">=</span> <span class="string">b&#39;\n&#39;</span>
+                    {
+                        <span class="self">self</span>.<span class="ident">num_bytes_remaining_in_current_chunk</span> <span class="op">=</span> <span class="number">0</span>;
+                    } <span class="kw">else</span> {
+                        <span class="kw">let</span> <span class="ident">num_bytes_written</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[..<span class="ident">end</span>.<span class="ident">min</span>(<span class="ident">buf</span>.<span class="ident">len</span>())])<span class="question-mark">?</span>;
+                        <span class="self">self</span>.<span class="ident">num_bytes_remaining_in_current_chunk</span> <span class="op">-</span><span class="op">=</span> <span class="ident">num_bytes_written</span>;
+                        <span class="ident">total_bytes_written</span> <span class="op">+</span><span class="op">=</span> <span class="ident">num_bytes_written</span>;
+                        <span class="ident">buf</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">buf</span>[<span class="ident">num_bytes_written</span>..];
+                    }
                 }
 
                 <span class="comment">// If there is a newline character and the line</span>
