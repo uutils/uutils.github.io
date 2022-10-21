@@ -985,12 +985,6 @@
 <span id="985">985</span>
 <span id="986">986</span>
 <span id="987">987</span>
-<span id="988">988</span>
-<span id="989">989</span>
-<span id="990">990</span>
-<span id="991">991</span>
-<span id="992">992</span>
-<span id="993">993</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;</span>
@@ -1025,18 +1019,14 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::os::windows::ffi::OsStrExt</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">winapi::shared::minwindef::DWORD</span>;
+<span class="kw">use</span> <span class="ident">windows_sys::Win32::Foundation</span>::{<span class="ident">ERROR_NO_MORE_FILES</span>, <span class="ident">INVALID_HANDLE_VALUE</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">winapi::um::fileapi::GetDiskFreeSpaceW</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">winapi::um::fileapi</span>::{
-    <span class="ident">FindFirstVolumeW</span>, <span class="ident">FindNextVolumeW</span>, <span class="ident">FindVolumeClose</span>, <span class="ident">GetDriveTypeW</span>, <span class="ident">GetVolumeInformationW</span>,
-    <span class="ident">GetVolumePathNamesForVolumeNameW</span>, <span class="ident">QueryDosDeviceW</span>,
+<span class="kw">use</span> <span class="ident">windows_sys::Win32::Storage::FileSystem</span>::{
+    <span class="ident">FindFirstVolumeW</span>, <span class="ident">FindNextVolumeW</span>, <span class="ident">FindVolumeClose</span>, <span class="ident">GetDiskFreeSpaceW</span>, <span class="ident">GetDriveTypeW</span>,
+    <span class="ident">GetVolumeInformationW</span>, <span class="ident">GetVolumePathNamesForVolumeNameW</span>, <span class="ident">QueryDosDeviceW</span>,
 };
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">winapi::um::handleapi::INVALID_HANDLE_VALUE</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">winapi::um::winbase::DRIVE_REMOTE</span>;
+<span class="kw">use</span> <span class="ident">windows_sys::Win32::System::WindowsProgramming::DRIVE_REMOTE</span>;
 
 <span class="comment">// Warning: the pointer has to be used *immediately* or the Vec</span>
 <span class="comment">// it points to will be dropped!</span>
@@ -1258,7 +1248,7 @@
                     .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span><span class="op">&gt;</span>()
                     .<span class="ident">as_ptr</span>(),
                 <span class="ident">dev_name_buf</span>.<span class="ident">as_mut_ptr</span>(),
-                <span class="ident">dev_name_buf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">DWORD</span>,
+                <span class="ident">dev_name_buf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u32</span>,
             )
         };
         <span class="ident">volume_name</span>.<span class="ident">push</span>(<span class="string">&#39;\\&#39;</span>);
@@ -1269,7 +1259,7 @@
             <span class="ident">GetVolumePathNamesForVolumeNameW</span>(
                 <span class="macro">String2LPWSTR!</span>(<span class="ident">volume_name</span>),
                 <span class="ident">mount_root_buf</span>.<span class="ident">as_mut_ptr</span>(),
-                <span class="ident">mount_root_buf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">DWORD</span>,
+                <span class="ident">mount_root_buf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u32</span>,
                 <span class="ident">ptr::null_mut</span>(),
             )
         };
@@ -1289,7 +1279,7 @@
                 <span class="ident">ptr::null_mut</span>(),
                 <span class="ident">ptr::null_mut</span>(),
                 <span class="ident">fs_type_buf</span>.<span class="ident">as_mut_ptr</span>(),
-                <span class="ident">fs_type_buf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">DWORD</span>,
+                <span class="ident">fs_type_buf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u32</span>,
             )
         };
         <span class="kw">let</span> <span class="ident">fs_type</span> <span class="op">=</span> <span class="kw">if</span> <span class="number">0</span> <span class="op">!</span><span class="op">=</span> <span class="ident">success</span> {
@@ -1436,9 +1426,8 @@
     {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">volume_name_buf</span> <span class="op">=</span> [<span class="number">0u16</span>; <span class="ident">MAX_PATH</span>];
         <span class="comment">// As recommended in the MS documentation, retrieve the first volume before the others</span>
-        <span class="kw">let</span> <span class="ident">find_handle</span> <span class="op">=</span> <span class="kw">unsafe</span> {
-            <span class="ident">FindFirstVolumeW</span>(<span class="ident">volume_name_buf</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">volume_name_buf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">DWORD</span>)
-        };
+        <span class="kw">let</span> <span class="ident">find_handle</span> <span class="op">=</span>
+            <span class="kw">unsafe</span> { <span class="ident">FindFirstVolumeW</span>(<span class="ident">volume_name_buf</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">volume_name_buf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u32</span>) };
         <span class="kw">if</span> <span class="ident">INVALID_HANDLE_VALUE</span> <span class="op">==</span> <span class="ident">find_handle</span> {
             <span class="macro">crash!</span>(
                 <span class="ident">EXIT_ERR</span>,
@@ -1460,12 +1449,11 @@
                 <span class="ident">FindNextVolumeW</span>(
                     <span class="ident">find_handle</span>,
                     <span class="ident">volume_name_buf</span>.<span class="ident">as_mut_ptr</span>(),
-                    <span class="ident">volume_name_buf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">DWORD</span>,
+                    <span class="ident">volume_name_buf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u32</span>,
                 )
             } {
                 <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">IOError::last_os_error</span>();
-                <span class="kw">if</span> <span class="ident">err</span>.<span class="ident">raw_os_error</span>() <span class="op">!</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">winapi::shared::winerror::ERROR_NO_MORE_FILES</span> <span class="kw">as</span> <span class="ident">i32</span>)
-                {
+                <span class="kw">if</span> <span class="ident">err</span>.<span class="ident">raw_os_error</span>() <span class="op">!</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ERROR_NO_MORE_FILES</span> <span class="kw">as</span> <span class="ident">i32</span>) {
                     <span class="macro">crash!</span>(<span class="ident">EXIT_ERR</span>, <span class="string">&quot;FindNextVolumeW failed: {}&quot;</span>, <span class="ident">err</span>);
                 }
                 <span class="kw">break</span>;
@@ -1517,7 +1505,7 @@
                 <span class="comment">//path_utf8.as_ptr(),</span>
                 <span class="macro">String2LPWSTR!</span>(<span class="ident">path</span>.<span class="ident">as_os_str</span>()),
                 <span class="ident">root_path</span>.<span class="ident">as_mut_ptr</span>(),
-                <span class="ident">root_path</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">DWORD</span>,
+                <span class="ident">root_path</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u32</span>,
                 <span class="ident">ptr::null_mut</span>(),
             )
         };

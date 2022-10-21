@@ -975,13 +975,6 @@
 <span id="975">975</span>
 <span id="976">976</span>
 <span id="977">977</span>
-<span id="978">978</span>
-<span id="979">979</span>
-<span id="980">980</span>
-<span id="981">981</span>
-<span id="982">982</span>
-<span id="983">983</span>
-<span id="984">984</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Derek Chiang &lt;derekchiang93@gmail.com&gt;</span>
@@ -1025,15 +1018,12 @@
 <span class="kw">use</span> <span class="ident">uucore::parse_glob</span>;
 <span class="kw">use</span> <span class="ident">uucore::parse_size</span>::{<span class="ident">parse_size</span>, <span class="ident">ParseSizeError</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">winapi::shared::minwindef</span>::{<span class="ident">DWORD</span>, <span class="ident">LPVOID</span>};
+<span class="kw">use</span> <span class="ident">windows_sys::Win32::Foundation::HANDLE</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">winapi::um::fileapi</span>::{<span class="ident">FILE_ID_INFO</span>, <span class="ident">FILE_STANDARD_INFO</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">winapi::um::minwinbase</span>::{<span class="ident">FileIdInfo</span>, <span class="ident">FileStandardInfo</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">winapi::um::winbase::GetFileInformationByHandleEx</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">winapi::um::winnt::FILE_ID_128</span>;
+<span class="kw">use</span> <span class="ident">windows_sys::Win32::Storage::FileSystem</span>::{
+    <span class="ident">FileIdInfo</span>, <span class="ident">FileStandardInfo</span>, <span class="ident">GetFileInformationByHandleEx</span>, <span class="ident">FILE_ID_128</span>, <span class="ident">FILE_ID_INFO</span>,
+    <span class="ident">FILE_STANDARD_INFO</span>,
+};
 
 <span class="kw">mod</span> <span class="ident">options</span> {
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;help&quot;</span>;
@@ -1192,21 +1182,19 @@ are supported:
         <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return</span> <span class="ident">size_on_disk</span>, <span class="comment">// opening directories will fail</span>
     };
 
-    <span class="kw">let</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">file</span>.<span class="ident">as_raw_handle</span>();
-
     <span class="kw">unsafe</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file_info</span>: <span class="ident">FILE_STANDARD_INFO</span> <span class="op">=</span> <span class="ident">core::mem::zeroed</span>();
         <span class="kw">let</span> <span class="ident">file_info_ptr</span>: <span class="kw-2">*mut</span> <span class="ident">FILE_STANDARD_INFO</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="ident">file_info</span>;
 
         <span class="kw">let</span> <span class="ident">success</span> <span class="op">=</span> <span class="ident">GetFileInformationByHandleEx</span>(
-            <span class="ident">handle</span>,
+            <span class="ident">file</span>.<span class="ident">as_raw_handle</span>() <span class="kw">as</span> <span class="ident">HANDLE</span>,
             <span class="ident">FileStandardInfo</span>,
-            <span class="ident">file_info_ptr</span> <span class="kw">as</span> <span class="ident">LPVOID</span>,
-            <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">FILE_STANDARD_INFO</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">DWORD</span>,
+            <span class="ident">file_info_ptr</span> <span class="kw">as</span> <span class="kw">_</span>,
+            <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">FILE_STANDARD_INFO</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">u32</span>,
         );
 
         <span class="kw">if</span> <span class="ident">success</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-            <span class="ident">size_on_disk</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">file_info</span>.<span class="ident">AllocationSize</span>.<span class="ident">QuadPart</span>() <span class="kw">as</span> <span class="ident">u64</span>;
+            <span class="ident">size_on_disk</span> <span class="op">=</span> <span class="ident">file_info</span>.<span class="ident">AllocationSize</span> <span class="kw">as</span> <span class="ident">u64</span>;
         }
     }
 
@@ -1222,17 +1210,15 @@ are supported:
         <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return</span> <span class="ident">result</span>,
     };
 
-    <span class="kw">let</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">file</span>.<span class="ident">as_raw_handle</span>();
-
     <span class="kw">unsafe</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file_info</span>: <span class="ident">FILE_ID_INFO</span> <span class="op">=</span> <span class="ident">core::mem::zeroed</span>();
         <span class="kw">let</span> <span class="ident">file_info_ptr</span>: <span class="kw-2">*mut</span> <span class="ident">FILE_ID_INFO</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="ident">file_info</span>;
 
         <span class="kw">let</span> <span class="ident">success</span> <span class="op">=</span> <span class="ident">GetFileInformationByHandleEx</span>(
-            <span class="ident">handle</span>,
+            <span class="ident">file</span>.<span class="ident">as_raw_handle</span>() <span class="kw">as</span> <span class="ident">HANDLE</span>,
             <span class="ident">FileIdInfo</span>,
-            <span class="ident">file_info_ptr</span> <span class="kw">as</span> <span class="ident">LPVOID</span>,
-            <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">FILE_ID_INFO</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">DWORD</span>,
+            <span class="ident">file_info_ptr</span> <span class="kw">as</span> <span class="kw">_</span>,
+            <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">FILE_ID_INFO</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">u32</span>,
         );
 
         <span class="kw">if</span> <span class="ident">success</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {

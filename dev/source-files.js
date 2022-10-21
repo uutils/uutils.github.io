@@ -112,7 +112,7 @@ var sourcesIndex = JSON.parse('{\
 "uu_chroot":["",[],["chroot.rs","error.rs"]],\
 "uu_cksum":["",[],["cksum.rs"]],\
 "uu_comm":["",[],["comm.rs"]],\
-"uu_cp":["",[["platform",[],["linux.rs","mod.rs"]]],["cp.rs"]],\
+"uu_cp":["",[["platform",[],["linux.rs","mod.rs"]]],["copydir.rs","cp.rs"]],\
 "uu_csplit":["",[],["csplit.rs","csplit_error.rs","patterns.rs","split_name.rs"]],\
 "uu_cut":["",[],["cut.rs","searcher.rs"]],\
 "uu_date":["",[],["date.rs"]],\

@@ -426,9 +426,6 @@
 <span id="426">426</span>
 <span id="427">427</span>
 <span id="428">428</span>
-<span id="429">429</span>
-<span id="430">430</span>
-<span id="431">431</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
 <span class="comment">//</span>
 <span class="comment">// (c) Anthony Deschamps &lt;anthony.j.deschamps@gmail.com&gt;</span>
@@ -454,10 +451,7 @@
 <span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
 <span class="kw">use</span> <span class="ident">uucore</span>::{<span class="ident">format_usage</span>, <span class="ident">show_error</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">winapi</span>::{
-    <span class="ident">shared::minwindef::WORD</span>,
-    <span class="ident">um</span>::{<span class="ident">minwinbase::SYSTEMTIME</span>, <span class="ident">sysinfoapi::SetSystemTime</span>},
-};
+<span class="kw">use</span> <span class="ident">windows_sys::Win32</span>::{<span class="ident">Foundation::SYSTEMTIME</span>, <span class="ident">System::SystemInformation::SetSystemTime</span>};
 
 <span class="comment">// Options</span>
 <span class="kw">const</span> <span class="ident">DATE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;date&quot;</span>;
@@ -840,16 +834,16 @@
 <span class="doccomment">/// https://docs.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime</span>
 <span class="kw">fn</span> <span class="ident">set_system_datetime</span>(<span class="ident">date</span>: <span class="ident">DateTime</span><span class="op">&lt;</span><span class="ident">Utc</span><span class="op">&gt;</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">system_time</span> <span class="op">=</span> <span class="ident">SYSTEMTIME</span> {
-        <span class="ident">wYear</span>: <span class="ident">date</span>.<span class="ident">year</span>() <span class="kw">as</span> <span class="ident">WORD</span>,
-        <span class="ident">wMonth</span>: <span class="ident">date</span>.<span class="ident">month</span>() <span class="kw">as</span> <span class="ident">WORD</span>,
+        <span class="ident">wYear</span>: <span class="ident">date</span>.<span class="ident">year</span>() <span class="kw">as</span> <span class="ident">u16</span>,
+        <span class="ident">wMonth</span>: <span class="ident">date</span>.<span class="ident">month</span>() <span class="kw">as</span> <span class="ident">u16</span>,
         <span class="comment">// Ignored</span>
         <span class="ident">wDayOfWeek</span>: <span class="number">0</span>,
-        <span class="ident">wDay</span>: <span class="ident">date</span>.<span class="ident">day</span>() <span class="kw">as</span> <span class="ident">WORD</span>,
-        <span class="ident">wHour</span>: <span class="ident">date</span>.<span class="ident">hour</span>() <span class="kw">as</span> <span class="ident">WORD</span>,
-        <span class="ident">wMinute</span>: <span class="ident">date</span>.<span class="ident">minute</span>() <span class="kw">as</span> <span class="ident">WORD</span>,
-        <span class="ident">wSecond</span>: <span class="ident">date</span>.<span class="ident">second</span>() <span class="kw">as</span> <span class="ident">WORD</span>,
+        <span class="ident">wDay</span>: <span class="ident">date</span>.<span class="ident">day</span>() <span class="kw">as</span> <span class="ident">u16</span>,
+        <span class="ident">wHour</span>: <span class="ident">date</span>.<span class="ident">hour</span>() <span class="kw">as</span> <span class="ident">u16</span>,
+        <span class="ident">wMinute</span>: <span class="ident">date</span>.<span class="ident">minute</span>() <span class="kw">as</span> <span class="ident">u16</span>,
+        <span class="ident">wSecond</span>: <span class="ident">date</span>.<span class="ident">second</span>() <span class="kw">as</span> <span class="ident">u16</span>,
         <span class="comment">// TODO: be careful of leap seconds - valid range is [0, 999] - how to handle?</span>
-        <span class="ident">wMilliseconds</span>: ((<span class="ident">date</span>.<span class="ident">nanosecond</span>() <span class="op">/</span> <span class="number">1_000_000</span>) <span class="op">%</span> <span class="number">1000</span>) <span class="kw">as</span> <span class="ident">WORD</span>,
+        <span class="ident">wMilliseconds</span>: ((<span class="ident">date</span>.<span class="ident">nanosecond</span>() <span class="op">/</span> <span class="number">1_000_000</span>) <span class="op">%</span> <span class="number">1000</span>) <span class="kw">as</span> <span class="ident">u16</span>,
     };
 
     <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">SetSystemTime</span>(<span class="kw-2">&amp;</span><span class="ident">system_time</span>) };
