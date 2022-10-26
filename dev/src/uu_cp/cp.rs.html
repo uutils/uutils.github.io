@@ -1550,6 +1550,12 @@
 <span id="1550">1550</span>
 <span id="1551">1551</span>
 <span id="1552">1552</span>
+<span id="1553">1553</span>
+<span id="1554">1554</span>
+<span id="1555">1555</span>
+<span id="1556">1556</span>
+<span id="1557">1557</span>
+<span id="1558">1558</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::missing_safety_doc</span>)]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::extra_unused_lifetimes</span>)]</span>
 
@@ -1979,7 +1985,7 @@
                 ))
                 .<span class="ident">num_args</span>(<span class="number">0</span>..)
                 .<span class="ident">value_name</span>(<span class="string">&quot;ATTR_LIST&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                .<span class="ident">overrides_with_all</span>([
                     <span class="ident">options::ARCHIVE</span>,
                     <span class="ident">options::PRESERVE_DEFAULT_ATTRIBUTES</span>,
                     <span class="ident">options::NO_PRESERVE</span>,
@@ -1995,7 +2001,7 @@
             <span class="ident">Arg::new</span>(<span class="ident">options::PRESERVE_DEFAULT_ATTRIBUTES</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;p&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::PRESERVE_DEFAULT_ATTRIBUTES</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">options::PRESERVE</span>, <span class="ident">options::NO_PRESERVE</span>, <span class="ident">options::ARCHIVE</span>])
+                .<span class="ident">overrides_with_all</span>([<span class="ident">options::PRESERVE</span>, <span class="ident">options::NO_PRESERVE</span>, <span class="ident">options::ARCHIVE</span>])
                 .<span class="ident">help</span>(<span class="string">&quot;same as --preserve=mode,ownership(unix only),timestamps&quot;</span>)
                 .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
         )
@@ -2003,7 +2009,7 @@
             <span class="ident">Arg::new</span>(<span class="ident">options::NO_PRESERVE</span>)
                 .<span class="ident">long</span>(<span class="ident">options::NO_PRESERVE</span>)
                 .<span class="ident">value_name</span>(<span class="string">&quot;ATTR_LIST&quot;</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                .<span class="ident">overrides_with_all</span>([
                     <span class="ident">options::PRESERVE_DEFAULT_ATTRIBUTES</span>,
                     <span class="ident">options::PRESERVE</span>,
                     <span class="ident">options::ARCHIVE</span>,
@@ -2044,7 +2050,7 @@
             <span class="ident">Arg::new</span>(<span class="ident">options::ARCHIVE</span>)
                 .<span class="ident">short</span>(<span class="string">&#39;a&#39;</span>)
                 .<span class="ident">long</span>(<span class="ident">options::ARCHIVE</span>)
-                .<span class="ident">overrides_with_all</span>(<span class="kw-2">&amp;</span>[
+                .<span class="ident">overrides_with_all</span>([
                     <span class="ident">options::PRESERVE_DEFAULT_ATTRIBUTES</span>,
                     <span class="ident">options::PRESERVE</span>,
                     <span class="ident">options::NO_PRESERVE</span>,
@@ -2816,6 +2822,12 @@
     <span class="ident">symlinked_files</span>: <span class="kw-2">&amp;mut</span> <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">FileInformation</span><span class="op">&gt;</span>,
     <span class="ident">source_in_command_line</span>: <span class="ident">bool</span>,
 ) -&gt; <span class="ident">CopyResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">update</span> <span class="op">&amp;&amp;</span> <span class="ident">options</span>.<span class="ident">overwrite</span> <span class="op">==</span> <span class="ident">OverwriteMode::Interactive</span>(<span class="ident">ClobberMode::Standard</span>) {
+        <span class="comment">// `cp -i --update old new` when `new` exists doesn&#39;t copy anything</span>
+        <span class="comment">// and exit with 0</span>
+        <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+    }
+
     <span class="kw">if</span> <span class="ident">file_or_link_exists</span>(<span class="ident">dest</span>) {
         <span class="ident">handle_existing_dest</span>(<span class="ident">source</span>, <span class="ident">dest</span>, <span class="ident">options</span>, <span class="ident">source_in_command_line</span>)<span class="question-mark">?</span>;
     }
