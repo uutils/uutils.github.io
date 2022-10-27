@@ -171,6 +171,9 @@
 <span id="171">171</span>
 <span id="172">172</span>
 <span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Derek Chiang &lt;derekchiang93@gmail.com&gt;</span>
@@ -299,7 +302,10 @@
 <span class="attribute">#[<span class="ident">uucore::main</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">cwd</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_LOGICAL</span>) {
+    <span class="comment">// if POSIXLY_CORRECT is set, we want to a logical resolution.</span>
+    <span class="comment">// This produces a different output when doing mkdir -p a/b &amp;&amp; ln -s a/b c &amp;&amp; cd c &amp;&amp; pwd</span>
+    <span class="comment">// We should get c in this case instead of a/b at the end of the path</span>
+    <span class="kw">let</span> <span class="ident">cwd</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_LOGICAL</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">env::var</span>(<span class="string">&quot;POSIXLY_CORRECT&quot;</span>).<span class="ident">is_ok</span>() {
         <span class="ident">logical_path</span>()
     } <span class="kw">else</span> {
         <span class="ident">physical_path</span>()
