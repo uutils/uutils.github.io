@@ -460,6 +460,9 @@
 <span id="460">460</span>
 <span id="461">461</span>
 <span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
 <span class="comment">//  *</span>
 <span class="comment">//  * (c) Yury Krivopalov &lt;ykrivopalov@yandex.ru&gt;</span>
@@ -620,12 +623,15 @@
         <span class="prelude-val">Ok</span>(<span class="number">0</span>)
     }<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">fields</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::FIELD</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>() {
-        <span class="string">&quot;-&quot;</span> =&gt; <span class="macro">vec!</span>[<span class="ident">Range</span> {
+    <span class="kw">let</span> <span class="ident">fields</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::FIELD</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>();
+    <span class="comment">// a lone &quot;-&quot; means &quot;all fields&quot;, even as part of a list of fields</span>
+    <span class="kw">let</span> <span class="ident">fields</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">fields</span>.<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>).<span class="ident">any</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span> <span class="op">==</span> <span class="string">&quot;-&quot;</span>) {
+        <span class="macro">vec!</span>[<span class="ident">Range</span> {
             <span class="ident">low</span>: <span class="number">1</span>,
             <span class="ident">high</span>: <span class="ident">std::usize::MAX</span>,
-        }],
-        <span class="ident">v</span> =&gt; <span class="ident">Range::from_list</span>(<span class="ident">v</span>)<span class="question-mark">?</span>,
+        }]
+    } <span class="kw">else</span> {
+        <span class="ident">Range::from_list</span>(<span class="ident">fields</span>)<span class="question-mark">?</span>
     };
 
     <span class="kw">let</span> <span class="ident">format</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::FORMAT</span>) {
