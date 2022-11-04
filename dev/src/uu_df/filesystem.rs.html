@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/df/src/filesystem.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>filesystem.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uu_df/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../uu_df/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uu_df/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/df/src/filesystem.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>filesystem.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uu_df/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../uu_df/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uu_df/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -219,226 +219,226 @@
 <span id="219">219</span>
 <span id="220">220</span>
 <span id="221">221</span>
-</pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
-<span class="comment">//  *</span>
-<span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
-<span class="comment">//  * file that was distributed with this source code.</span>
-<span class="doccomment">//! Provides a summary representation of a filesystem.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! A [`Filesystem`] struct represents a device containing a</span>
-<span class="doccomment">//! filesystem mounted at a particular directory. It also includes</span>
-<span class="doccomment">//! information on amount of space available and amount of space used.</span>
-<span class="comment">// spell-checker:ignore canonicalized</span>
-<span class="kw">use</span> <span class="ident">std::path::Path</span>;
+</pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
+//  *
+//  * For the full copyright and license information, please view the LICENSE
+//  * file that was distributed with this source code.
+</span><span class="doccomment">//! Provides a summary representation of a filesystem.
+//!
+//! A [`Filesystem`] struct represents a device containing a
+//! filesystem mounted at a particular directory. It also includes
+//! information on amount of space available and amount of space used.
+</span><span class="comment">// spell-checker:ignore canonicalized
+</span><span class="kw">use </span>std::path::Path;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-<span class="kw">use</span> <span class="ident">uucore::fsext::statfs</span>;
-<span class="kw">use</span> <span class="ident">uucore::fsext</span>::{<span class="ident">FsUsage</span>, <span class="ident">MountInfo</span>};
+<span class="attribute">#[cfg(unix)]
+</span><span class="kw">use </span>uucore::fsext::statfs;
+<span class="kw">use </span>uucore::fsext::{FsUsage, MountInfo};
 
-<span class="doccomment">/// Summary representation of a filesystem.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// A [`Filesystem`] struct represents a device containing a</span>
-<span class="doccomment">/// filesystem mounted at a particular directory. The</span>
-<span class="doccomment">/// [`Filesystem::mount_info`] field exposes that information. The</span>
-<span class="doccomment">/// [`Filesystem::usage`] field provides information on the amount of</span>
-<span class="doccomment">/// space available on the filesystem and the amount of space used.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">Filesystem</span> {
-    <span class="doccomment">/// The file given on the command line if any.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// When invoking `df` with a positional argument, it displays</span>
-    <span class="doccomment">/// usage information for the filesystem that contains the given</span>
-    <span class="doccomment">/// file. If given, this field contains that filename.</span>
-    <span class="kw">pub</span> <span class="ident">file</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Summary representation of a filesystem.
+///
+/// A [`Filesystem`] struct represents a device containing a
+/// filesystem mounted at a particular directory. The
+/// [`Filesystem::mount_info`] field exposes that information. The
+/// [`Filesystem::usage`] field provides information on the amount of
+/// space available on the filesystem and the amount of space used.
+</span><span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Filesystem {
+    <span class="doccomment">/// The file given on the command line if any.
+    ///
+    /// When invoking `df` with a positional argument, it displays
+    /// usage information for the filesystem that contains the given
+    /// file. If given, this field contains that filename.
+    </span><span class="kw">pub </span>file: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
-    <span class="doccomment">/// Information about the mounted device, mount directory, and related options.</span>
-    <span class="kw">pub</span> <span class="ident">mount_info</span>: <span class="ident">MountInfo</span>,
+    <span class="doccomment">/// Information about the mounted device, mount directory, and related options.
+    </span><span class="kw">pub </span>mount_info: MountInfo,
 
-    <span class="doccomment">/// Information about the amount of space used on the filesystem.</span>
-    <span class="kw">pub</span> <span class="ident">usage</span>: <span class="ident">FsUsage</span>,
+    <span class="doccomment">/// Information about the amount of space used on the filesystem.
+    </span><span class="kw">pub </span>usage: FsUsage,
 }
 
-<span class="doccomment">/// Find the mount info that best matches a given filesystem path.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This function returns the element of `mounts` on which `path` is</span>
-<span class="doccomment">/// mounted. If there are no matches, this function returns</span>
-<span class="doccomment">/// [`None`]. If there are two or more matches, then the single</span>
-<span class="doccomment">/// [`MountInfo`] with the longest mount directory is returned.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If `canonicalize` is `true`, then the `path` is canonicalized</span>
-<span class="doccomment">/// before checking whether it matches any mount directories.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # See also</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * [`Path::canonicalize`]</span>
-<span class="doccomment">/// * [`MountInfo::mount_dir`]</span>
-<span class="kw">fn</span> <span class="ident">mount_info_from_path</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(
-    <span class="ident">mounts</span>: <span class="kw-2">&amp;</span>[<span class="ident">MountInfo</span>],
-    <span class="ident">path</span>: <span class="ident">P</span>,
-    <span class="comment">// This is really only used for testing purposes.</span>
-    <span class="ident">canonicalize</span>: <span class="ident">bool</span>,
-) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">MountInfo</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Find the mount info that best matches a given filesystem path.
+///
+/// This function returns the element of `mounts` on which `path` is
+/// mounted. If there are no matches, this function returns
+/// [`None`]. If there are two or more matches, then the single
+/// [`MountInfo`] with the longest mount directory is returned.
+///
+/// If `canonicalize` is `true`, then the `path` is canonicalized
+/// before checking whether it matches any mount directories.
+///
+/// # See also
+///
+/// * [`Path::canonicalize`]
+/// * [`MountInfo::mount_dir`]
+</span><span class="kw">fn </span>mount_info_from_path&lt;P&gt;(
+    mounts: <span class="kw-2">&amp;</span>[MountInfo],
+    path: P,
+    <span class="comment">// This is really only used for testing purposes.
+    </span>canonicalize: bool,
+) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>MountInfo&gt;
+<span class="kw">where
+    </span>P: AsRef&lt;Path&gt;,
 {
-    <span class="comment">// TODO Refactor this function with `Stater::find_mount_point()`</span>
-    <span class="comment">// in the `stat` crate.</span>
-    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">canonicalize</span> {
-        <span class="ident">path</span>.<span class="ident">as_ref</span>().<span class="ident">canonicalize</span>().<span class="ident">ok</span>()<span class="question-mark">?</span>
-    } <span class="kw">else</span> {
-        <span class="ident">path</span>.<span class="ident">as_ref</span>().<span class="ident">to_path_buf</span>()
+    <span class="comment">// TODO Refactor this function with `Stater::find_mount_point()`
+    // in the `stat` crate.
+    </span><span class="kw">let </span>path = <span class="kw">if </span>canonicalize {
+        path.as_ref().canonicalize().ok()<span class="question-mark">?
+    </span>} <span class="kw">else </span>{
+        path.as_ref().to_path_buf()
     };
 
-    <span class="kw">let</span> <span class="ident">maybe_mount_point</span> <span class="op">=</span> <span class="ident">mounts</span>
-        .<span class="ident">iter</span>()
-        .<span class="ident">find</span>(<span class="op">|</span><span class="ident">mi</span><span class="op">|</span> <span class="ident">mi</span>.<span class="ident">dev_name</span>.<span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>.<span class="ident">to_string_lossy</span>()));
+    <span class="kw">let </span>maybe_mount_point = mounts
+        .iter()
+        .find(|mi| mi.dev_name.eq(<span class="kw-2">&amp;</span>path.to_string_lossy()));
 
-    <span class="ident">maybe_mount_point</span>.<span class="ident">or_else</span>(<span class="op">|</span><span class="op">|</span> {
-        <span class="ident">mounts</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">mi</span><span class="op">|</span> <span class="ident">path</span>.<span class="ident">starts_with</span>(<span class="kw-2">&amp;</span><span class="ident">mi</span>.<span class="ident">mount_dir</span>))
-            .<span class="ident">max_by_key</span>(<span class="op">|</span><span class="ident">mi</span><span class="op">|</span> <span class="ident">mi</span>.<span class="ident">mount_dir</span>.<span class="ident">len</span>())
+    maybe_mount_point.or_else(|| {
+        mounts
+            .iter()
+            .filter(|mi| path.starts_with(<span class="kw-2">&amp;</span>mi.mount_dir))
+            .max_by_key(|mi| mi.mount_dir.len())
     })
 }
 
-<span class="kw">impl</span> <span class="ident">Filesystem</span> {
-    <span class="comment">// TODO: resolve uuid in `mount_info.dev_name` if exists</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">mount_info</span>: <span class="ident">MountInfo</span>, <span class="ident">file</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">_stat_path</span> <span class="op">=</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">mount_info</span>.<span class="ident">mount_dir</span>.<span class="ident">is_empty</span>() {
-            <span class="ident">mount_info</span>.<span class="ident">mount_dir</span>.<span class="ident">clone</span>()
-        } <span class="kw">else</span> {
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-            {
-                <span class="ident">mount_info</span>.<span class="ident">dev_name</span>.<span class="ident">clone</span>()
+<span class="kw">impl </span>Filesystem {
+    <span class="comment">// TODO: resolve uuid in `mount_info.dev_name` if exists
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(mount_info: MountInfo, file: <span class="prelude-ty">Option</span>&lt;String&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>_stat_path = <span class="kw">if </span>!mount_info.mount_dir.is_empty() {
+            mount_info.mount_dir.clone()
+        } <span class="kw">else </span>{
+            <span class="attribute">#[cfg(unix)]
+            </span>{
+                mount_info.dev_name.clone()
             }
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-            {
-                <span class="comment">// On windows, we expect the volume id</span>
-                <span class="ident">mount_info</span>.<span class="ident">dev_id</span>.<span class="ident">clone</span>()
+            <span class="attribute">#[cfg(windows)]
+            </span>{
+                <span class="comment">// On windows, we expect the volume id
+                </span>mount_info.dev_id.clone()
             }
         };
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-        <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">FsUsage::new</span>(<span class="ident">statfs</span>(<span class="ident">_stat_path</span>).<span class="ident">ok</span>()<span class="question-mark">?</span>);
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-        <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">FsUsage::new</span>(<span class="ident">Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">_stat_path</span>));
-        <span class="prelude-val">Some</span>(<span class="self">Self</span> {
-            <span class="ident">mount_info</span>,
-            <span class="ident">usage</span>,
-            <span class="ident">file</span>,
+        <span class="attribute">#[cfg(unix)]
+        </span><span class="kw">let </span>usage = FsUsage::new(statfs(_stat_path).ok()<span class="question-mark">?</span>);
+        <span class="attribute">#[cfg(windows)]
+        </span><span class="kw">let </span>usage = FsUsage::new(Path::new(<span class="kw-2">&amp;</span>_stat_path));
+        <span class="prelude-val">Some</span>(<span class="self">Self </span>{
+            mount_info,
+            usage,
+            file,
         })
     }
 
-    <span class="doccomment">/// Find and create the filesystem that best matches a given path.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function returns a new `Filesystem` derived from the</span>
-    <span class="doccomment">/// element of `mounts` on which `path` is mounted. If there are</span>
-    <span class="doccomment">/// no matches, this function returns [`None`]. If there are two</span>
-    <span class="doccomment">/// or more matches, then the single [`Filesystem`] with the</span>
-    <span class="doccomment">/// longest mount directory is returned.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The `path` is canonicalized before checking whether it matches</span>
-    <span class="doccomment">/// any mount directories.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # See also</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * [`Path::canonicalize`]</span>
-    <span class="doccomment">/// * [`MountInfo::mount_dir`]</span>
-    <span class="doccomment">///</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">from_path</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(<span class="ident">mounts</span>: <span class="kw-2">&amp;</span>[<span class="ident">MountInfo</span>], <span class="ident">path</span>: <span class="ident">P</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Find and create the filesystem that best matches a given path.
+    ///
+    /// This function returns a new `Filesystem` derived from the
+    /// element of `mounts` on which `path` is mounted. If there are
+    /// no matches, this function returns [`None`]. If there are two
+    /// or more matches, then the single [`Filesystem`] with the
+    /// longest mount directory is returned.
+    ///
+    /// The `path` is canonicalized before checking whether it matches
+    /// any mount directories.
+    ///
+    /// # See also
+    ///
+    /// * [`Path::canonicalize`]
+    /// * [`MountInfo::mount_dir`]
+    ///
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_path&lt;P&gt;(mounts: <span class="kw-2">&amp;</span>[MountInfo], path: P) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;
+    <span class="kw">where
+        </span>P: AsRef&lt;Path&gt;,
     {
-        <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">as_ref</span>().<span class="ident">display</span>().<span class="ident">to_string</span>();
-        <span class="kw">let</span> <span class="ident">canonicalize</span> <span class="op">=</span> <span class="bool-val">true</span>;
-        <span class="kw">let</span> <span class="ident">mount_info</span> <span class="op">=</span> <span class="ident">mount_info_from_path</span>(<span class="ident">mounts</span>, <span class="ident">path</span>, <span class="ident">canonicalize</span>)<span class="question-mark">?</span>;
-        <span class="comment">// TODO Make it so that we do not need to clone the `mount_info`.</span>
-        <span class="kw">let</span> <span class="ident">mount_info</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">mount_info</span>).<span class="ident">clone</span>();
-        <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">mount_info</span>, <span class="prelude-val">Some</span>(<span class="ident">file</span>))
+        <span class="kw">let </span>file = path.as_ref().display().to_string();
+        <span class="kw">let </span>canonicalize = <span class="bool-val">true</span>;
+        <span class="kw">let </span>mount_info = mount_info_from_path(mounts, path, canonicalize)<span class="question-mark">?</span>;
+        <span class="comment">// TODO Make it so that we do not need to clone the `mount_info`.
+        </span><span class="kw">let </span>mount_info = (<span class="kw-2">*</span>mount_info).clone();
+        <span class="self">Self</span>::new(mount_info, <span class="prelude-val">Some</span>(file))
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
 
-    <span class="kw">mod</span> <span class="ident">mount_info_from_path</span> {
+    <span class="kw">mod </span>mount_info_from_path {
 
-        <span class="kw">use</span> <span class="ident">uucore::fsext::MountInfo</span>;
+        <span class="kw">use </span>uucore::fsext::MountInfo;
 
-        <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::filesystem::mount_info_from_path</span>;
+        <span class="kw">use </span><span class="kw">crate</span>::filesystem::mount_info_from_path;
 
-        <span class="comment">// Create a fake `MountInfo` with the given directory name.</span>
-        <span class="kw">fn</span> <span class="ident">mount_info</span>(<span class="ident">mount_dir</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">MountInfo</span> {
-            <span class="ident">MountInfo</span> {
-                <span class="ident">dev_id</span>: <span class="ident">Default::default</span>(),
-                <span class="ident">dev_name</span>: <span class="ident">Default::default</span>(),
-                <span class="ident">fs_type</span>: <span class="ident">Default::default</span>(),
-                <span class="ident">mount_dir</span>: <span class="ident">String::from</span>(<span class="ident">mount_dir</span>),
-                <span class="ident">mount_option</span>: <span class="ident">Default::default</span>(),
-                <span class="ident">mount_root</span>: <span class="ident">Default::default</span>(),
-                <span class="ident">remote</span>: <span class="ident">Default::default</span>(),
-                <span class="ident">dummy</span>: <span class="ident">Default::default</span>(),
+        <span class="comment">// Create a fake `MountInfo` with the given directory name.
+        </span><span class="kw">fn </span>mount_info(mount_dir: <span class="kw-2">&amp;</span>str) -&gt; MountInfo {
+            MountInfo {
+                dev_id: Default::default(),
+                dev_name: Default::default(),
+                fs_type: Default::default(),
+                mount_dir: String::from(mount_dir),
+                mount_option: Default::default(),
+                mount_root: Default::default(),
+                remote: Default::default(),
+                dummy: Default::default(),
             }
         }
 
-        <span class="comment">// Check whether two `MountInfo` instances are equal.</span>
-        <span class="kw">fn</span> <span class="ident">mount_info_eq</span>(<span class="ident">m1</span>: <span class="kw-2">&amp;</span><span class="ident">MountInfo</span>, <span class="ident">m2</span>: <span class="kw-2">&amp;</span><span class="ident">MountInfo</span>) -&gt; <span class="ident">bool</span> {
-            <span class="ident">m1</span>.<span class="ident">dev_id</span> <span class="op">==</span> <span class="ident">m2</span>.<span class="ident">dev_id</span>
-                <span class="op">&amp;&amp;</span> <span class="ident">m1</span>.<span class="ident">dev_name</span> <span class="op">==</span> <span class="ident">m2</span>.<span class="ident">dev_name</span>
-                <span class="op">&amp;&amp;</span> <span class="ident">m1</span>.<span class="ident">fs_type</span> <span class="op">==</span> <span class="ident">m2</span>.<span class="ident">fs_type</span>
-                <span class="op">&amp;&amp;</span> <span class="ident">m1</span>.<span class="ident">mount_dir</span> <span class="op">==</span> <span class="ident">m2</span>.<span class="ident">mount_dir</span>
-                <span class="op">&amp;&amp;</span> <span class="ident">m1</span>.<span class="ident">mount_option</span> <span class="op">==</span> <span class="ident">m2</span>.<span class="ident">mount_option</span>
-                <span class="op">&amp;&amp;</span> <span class="ident">m1</span>.<span class="ident">mount_root</span> <span class="op">==</span> <span class="ident">m2</span>.<span class="ident">mount_root</span>
-                <span class="op">&amp;&amp;</span> <span class="ident">m1</span>.<span class="ident">remote</span> <span class="op">==</span> <span class="ident">m2</span>.<span class="ident">remote</span>
-                <span class="op">&amp;&amp;</span> <span class="ident">m1</span>.<span class="ident">dummy</span> <span class="op">==</span> <span class="ident">m2</span>.<span class="ident">dummy</span>
+        <span class="comment">// Check whether two `MountInfo` instances are equal.
+        </span><span class="kw">fn </span>mount_info_eq(m1: <span class="kw-2">&amp;</span>MountInfo, m2: <span class="kw-2">&amp;</span>MountInfo) -&gt; bool {
+            m1.dev_id == m2.dev_id
+                &amp;&amp; m1.dev_name == m2.dev_name
+                &amp;&amp; m1.fs_type == m2.fs_type
+                &amp;&amp; m1.mount_dir == m2.mount_dir
+                &amp;&amp; m1.mount_option == m2.mount_option
+                &amp;&amp; m1.mount_root == m2.mount_root
+                &amp;&amp; m1.remote == m2.remote
+                &amp;&amp; m1.dummy == m2.dummy
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">test_empty_mounts</span>() {
-            <span class="macro">assert!</span>(<span class="ident">mount_info_from_path</span>(<span class="kw-2">&amp;</span>[], <span class="string">&quot;/&quot;</span>, <span class="bool-val">false</span>).<span class="ident">is_none</span>());
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>test_empty_mounts() {
+            <span class="macro">assert!</span>(mount_info_from_path(<span class="kw-2">&amp;</span>[], <span class="string">&quot;/&quot;</span>, <span class="bool-val">false</span>).is_none());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">test_exact_match</span>() {
-            <span class="kw">let</span> <span class="ident">mounts</span> <span class="op">=</span> [<span class="ident">mount_info</span>(<span class="string">&quot;/foo&quot;</span>)];
-            <span class="kw">let</span> <span class="ident">actual</span> <span class="op">=</span> <span class="ident">mount_info_from_path</span>(<span class="kw-2">&amp;</span><span class="ident">mounts</span>, <span class="string">&quot;/foo&quot;</span>, <span class="bool-val">false</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert!</span>(<span class="ident">mount_info_eq</span>(<span class="ident">actual</span>, <span class="kw-2">&amp;</span><span class="ident">mounts</span>[<span class="number">0</span>]));
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>test_exact_match() {
+            <span class="kw">let </span>mounts = [mount_info(<span class="string">&quot;/foo&quot;</span>)];
+            <span class="kw">let </span>actual = mount_info_from_path(<span class="kw-2">&amp;</span>mounts, <span class="string">&quot;/foo&quot;</span>, <span class="bool-val">false</span>).unwrap();
+            <span class="macro">assert!</span>(mount_info_eq(actual, <span class="kw-2">&amp;</span>mounts[<span class="number">0</span>]));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">test_prefix_match</span>() {
-            <span class="kw">let</span> <span class="ident">mounts</span> <span class="op">=</span> [<span class="ident">mount_info</span>(<span class="string">&quot;/foo&quot;</span>)];
-            <span class="kw">let</span> <span class="ident">actual</span> <span class="op">=</span> <span class="ident">mount_info_from_path</span>(<span class="kw-2">&amp;</span><span class="ident">mounts</span>, <span class="string">&quot;/foo/bar&quot;</span>, <span class="bool-val">false</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert!</span>(<span class="ident">mount_info_eq</span>(<span class="ident">actual</span>, <span class="kw-2">&amp;</span><span class="ident">mounts</span>[<span class="number">0</span>]));
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>test_prefix_match() {
+            <span class="kw">let </span>mounts = [mount_info(<span class="string">&quot;/foo&quot;</span>)];
+            <span class="kw">let </span>actual = mount_info_from_path(<span class="kw-2">&amp;</span>mounts, <span class="string">&quot;/foo/bar&quot;</span>, <span class="bool-val">false</span>).unwrap();
+            <span class="macro">assert!</span>(mount_info_eq(actual, <span class="kw-2">&amp;</span>mounts[<span class="number">0</span>]));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">test_multiple_matches</span>() {
-            <span class="kw">let</span> <span class="ident">mounts</span> <span class="op">=</span> [<span class="ident">mount_info</span>(<span class="string">&quot;/foo&quot;</span>), <span class="ident">mount_info</span>(<span class="string">&quot;/foo/bar&quot;</span>)];
-            <span class="kw">let</span> <span class="ident">actual</span> <span class="op">=</span> <span class="ident">mount_info_from_path</span>(<span class="kw-2">&amp;</span><span class="ident">mounts</span>, <span class="string">&quot;/foo/bar&quot;</span>, <span class="bool-val">false</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert!</span>(<span class="ident">mount_info_eq</span>(<span class="ident">actual</span>, <span class="kw-2">&amp;</span><span class="ident">mounts</span>[<span class="number">1</span>]));
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>test_multiple_matches() {
+            <span class="kw">let </span>mounts = [mount_info(<span class="string">&quot;/foo&quot;</span>), mount_info(<span class="string">&quot;/foo/bar&quot;</span>)];
+            <span class="kw">let </span>actual = mount_info_from_path(<span class="kw-2">&amp;</span>mounts, <span class="string">&quot;/foo/bar&quot;</span>, <span class="bool-val">false</span>).unwrap();
+            <span class="macro">assert!</span>(mount_info_eq(actual, <span class="kw-2">&amp;</span>mounts[<span class="number">1</span>]));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">test_no_match</span>() {
-            <span class="kw">let</span> <span class="ident">mounts</span> <span class="op">=</span> [<span class="ident">mount_info</span>(<span class="string">&quot;/foo&quot;</span>)];
-            <span class="macro">assert!</span>(<span class="ident">mount_info_from_path</span>(<span class="kw-2">&amp;</span><span class="ident">mounts</span>, <span class="string">&quot;/bar&quot;</span>, <span class="bool-val">false</span>).<span class="ident">is_none</span>());
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>test_no_match() {
+            <span class="kw">let </span>mounts = [mount_info(<span class="string">&quot;/foo&quot;</span>)];
+            <span class="macro">assert!</span>(mount_info_from_path(<span class="kw-2">&amp;</span>mounts, <span class="string">&quot;/bar&quot;</span>, <span class="bool-val">false</span>).is_none());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">test_partial_match</span>() {
-            <span class="kw">let</span> <span class="ident">mounts</span> <span class="op">=</span> [<span class="ident">mount_info</span>(<span class="string">&quot;/foo/bar&quot;</span>)];
-            <span class="macro">assert!</span>(<span class="ident">mount_info_from_path</span>(<span class="kw-2">&amp;</span><span class="ident">mounts</span>, <span class="string">&quot;/foo/baz&quot;</span>, <span class="bool-val">false</span>).<span class="ident">is_none</span>());
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>test_partial_match() {
+            <span class="kw">let </span>mounts = [mount_info(<span class="string">&quot;/foo/bar&quot;</span>)];
+            <span class="macro">assert!</span>(mount_info_from_path(<span class="kw-2">&amp;</span>mounts, <span class="string">&quot;/foo/baz&quot;</span>, <span class="bool-val">false</span>).is_none());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">test_dev_name_match</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mount_info</span> <span class="op">=</span> <span class="ident">mount_info</span>(<span class="string">&quot;/foo&quot;</span>);
-            <span class="ident">mount_info</span>.<span class="ident">dev_name</span> <span class="op">=</span> <span class="string">&quot;/dev/sda2&quot;</span>.<span class="ident">to_string</span>();
-            <span class="kw">let</span> <span class="ident">mounts</span> <span class="op">=</span> [<span class="ident">mount_info</span>];
-            <span class="kw">let</span> <span class="ident">actual</span> <span class="op">=</span> <span class="ident">mount_info_from_path</span>(<span class="kw-2">&amp;</span><span class="ident">mounts</span>, <span class="string">&quot;/dev/sda2&quot;</span>, <span class="bool-val">false</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert!</span>(<span class="ident">mount_info_eq</span>(<span class="ident">actual</span>, <span class="kw-2">&amp;</span><span class="ident">mounts</span>[<span class="number">0</span>]));
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>test_dev_name_match() {
+            <span class="kw">let </span><span class="kw-2">mut </span>mount_info = mount_info(<span class="string">&quot;/foo&quot;</span>);
+            mount_info.dev_name = <span class="string">&quot;/dev/sda2&quot;</span>.to_string();
+            <span class="kw">let </span>mounts = [mount_info];
+            <span class="kw">let </span>actual = mount_info_from_path(<span class="kw-2">&amp;</span>mounts, <span class="string">&quot;/dev/sda2&quot;</span>, <span class="bool-val">false</span>).unwrap();
+            <span class="macro">assert!</span>(mount_info_eq(actual, <span class="kw-2">&amp;</span>mounts[<span class="number">0</span>]));
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_df" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_df" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

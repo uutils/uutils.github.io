@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/factor/src/numeric/gcd.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>gcd.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uu_factor/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../uu_factor/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uu_factor/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/factor/src/numeric/gcd.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>gcd.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uu_factor/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../uu_factor/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uu_factor/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -127,134 +127,134 @@
 <span id="127">127</span>
 <span id="128">128</span>
 <span id="129">129</span>
-</pre><pre class="rust"><code><span class="comment">// * This file is part of the uutils coreutils package.</span>
-<span class="comment">// *</span>
-<span class="comment">// * (c) 2015 Wiktor Kuropatwa &lt;wiktor.kuropatwa@gmail.com&gt;</span>
-<span class="comment">// * (c) 2020 nicoo            &lt;nicoo@debian.org&gt;</span>
-<span class="comment">// *</span>
-<span class="comment">// * For the full copyright and license information, please view the LICENSE file</span>
-<span class="comment">// * that was distributed with this source code.</span>
+</pre><pre class="rust"><code><span class="comment">// * This file is part of the uutils coreutils package.
+// *
+// * (c) 2015 Wiktor Kuropatwa &lt;wiktor.kuropatwa@gmail.com&gt;
+// * (c) 2020 nicoo            &lt;nicoo@debian.org&gt;
+// *
+// * For the full copyright and license information, please view the LICENSE file
+// * that was distributed with this source code.
 
-<span class="comment">// spell-checker:ignore (vars) kgcdab gcdac gcdbc</span>
+// spell-checker:ignore (vars) kgcdab gcdac gcdbc
 
-<span class="kw">use</span> <span class="ident">std::cmp::min</span>;
-<span class="kw">use</span> <span class="ident">std::mem::swap</span>;
+</span><span class="kw">use </span>std::cmp::min;
+<span class="kw">use </span>std::mem::swap;
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gcd</span>(<span class="kw-2">mut</span> <span class="ident">u</span>: <span class="ident">u64</span>, <span class="kw-2">mut</span> <span class="ident">v</span>: <span class="ident">u64</span>) -&gt; <span class="ident">u64</span> {
-    <span class="comment">// Stein&#39;s binary GCD algorithm</span>
-    <span class="comment">// Base cases: gcd(n, 0) = gcd(0, n) = n</span>
-    <span class="kw">if</span> <span class="ident">u</span> <span class="op">==</span> <span class="number">0</span> {
-        <span class="kw">return</span> <span class="ident">v</span>;
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">v</span> <span class="op">==</span> <span class="number">0</span> {
-        <span class="kw">return</span> <span class="ident">u</span>;
+<span class="kw">pub fn </span>gcd(<span class="kw-2">mut </span>u: u64, <span class="kw-2">mut </span>v: u64) -&gt; u64 {
+    <span class="comment">// Stein&#39;s binary GCD algorithm
+    // Base cases: gcd(n, 0) = gcd(0, n) = n
+    </span><span class="kw">if </span>u == <span class="number">0 </span>{
+        <span class="kw">return </span>v;
+    } <span class="kw">else if </span>v == <span class="number">0 </span>{
+        <span class="kw">return </span>u;
     }
 
-    <span class="comment">// gcd(2ⁱ u, 2ʲ v) = 2ᵏ gcd(u, v) with u, v odd and k = min(i, j)</span>
-    <span class="comment">// 2ᵏ is the greatest power of two that divides both u and v</span>
-    <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">u</span>.<span class="ident">trailing_zeros</span>();
-        <span class="kw">let</span> <span class="ident">j</span> <span class="op">=</span> <span class="ident">v</span>.<span class="ident">trailing_zeros</span>();
-        <span class="ident">u</span> <span class="op">&gt;</span><span class="op">&gt;</span><span class="op">=</span> <span class="ident">i</span>;
-        <span class="ident">v</span> <span class="op">&gt;</span><span class="op">&gt;</span><span class="op">=</span> <span class="ident">j</span>;
-        <span class="ident">min</span>(<span class="ident">i</span>, <span class="ident">j</span>)
+    <span class="comment">// gcd(2ⁱ u, 2ʲ v) = 2ᵏ gcd(u, v) with u, v odd and k = min(i, j)
+    // 2ᵏ is the greatest power of two that divides both u and v
+    </span><span class="kw">let </span>k = {
+        <span class="kw">let </span>i = u.trailing_zeros();
+        <span class="kw">let </span>j = v.trailing_zeros();
+        u &gt;&gt;= i;
+        v &gt;&gt;= j;
+        min(i, j)
     };
 
-    <span class="kw">loop</span> {
-        <span class="comment">// Loop invariant: u and v are odd</span>
-        <span class="macro">debug_assert!</span>(<span class="ident">u</span> <span class="op">%</span> <span class="number">2</span> <span class="op">==</span> <span class="number">1</span>, <span class="string">&quot;u = {} is even&quot;</span>, <span class="ident">u</span>);
-        <span class="macro">debug_assert!</span>(<span class="ident">v</span> <span class="op">%</span> <span class="number">2</span> <span class="op">==</span> <span class="number">1</span>, <span class="string">&quot;v = {} is even&quot;</span>, <span class="ident">v</span>);
+    <span class="kw">loop </span>{
+        <span class="comment">// Loop invariant: u and v are odd
+        </span><span class="macro">debug_assert!</span>(u % <span class="number">2 </span>== <span class="number">1</span>, <span class="string">&quot;u = {} is even&quot;</span>, u);
+        <span class="macro">debug_assert!</span>(v % <span class="number">2 </span>== <span class="number">1</span>, <span class="string">&quot;v = {} is even&quot;</span>, v);
 
-        <span class="comment">// gcd(u, v) = gcd(|u - v|, min(u, v))</span>
-        <span class="kw">if</span> <span class="ident">u</span> <span class="op">&gt;</span> <span class="ident">v</span> {
-            <span class="ident">swap</span>(<span class="kw-2">&amp;mut</span> <span class="ident">u</span>, <span class="kw-2">&amp;mut</span> <span class="ident">v</span>);
+        <span class="comment">// gcd(u, v) = gcd(|u - v|, min(u, v))
+        </span><span class="kw">if </span>u &gt; v {
+            swap(<span class="kw-2">&amp;mut </span>u, <span class="kw-2">&amp;mut </span>v);
         }
-        <span class="ident">v</span> <span class="op">-</span><span class="op">=</span> <span class="ident">u</span>;
+        v -= u;
 
-        <span class="kw">if</span> <span class="ident">v</span> <span class="op">==</span> <span class="number">0</span> {
-            <span class="comment">// Reached the base case; gcd is 2ᵏ u</span>
-            <span class="kw">return</span> <span class="ident">u</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">k</span>;
+        <span class="kw">if </span>v == <span class="number">0 </span>{
+            <span class="comment">// Reached the base case; gcd is 2ᵏ u
+            </span><span class="kw">return </span>u &lt;&lt; k;
         }
 
-        <span class="comment">// gcd(u, 2ʲ v) = gcd(u, v) as u is odd</span>
-        <span class="ident">v</span> <span class="op">&gt;</span><span class="op">&gt;</span><span class="op">=</span> <span class="ident">v</span>.<span class="ident">trailing_zeros</span>();
+        <span class="comment">// gcd(u, 2ʲ v) = gcd(u, v) as u is odd
+        </span>v &gt;&gt;= v.trailing_zeros();
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">quickcheck</span>::{<span class="ident">quickcheck</span>, <span class="ident">TestResult</span>};
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span>quickcheck::{quickcheck, TestResult};
 
-    <span class="macro">quickcheck!</span> {
-        <span class="kw">fn</span> <span class="ident">euclidean</span>(<span class="ident">a</span>: <span class="ident">u64</span>, <span class="ident">b</span>: <span class="ident">u64</span>) -&gt; <span class="ident">bool</span> {
-            <span class="comment">// Test against the Euclidean algorithm</span>
-            <span class="kw">let</span> <span class="ident">g</span> <span class="op">=</span> {
-                <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">a</span>, <span class="kw-2">mut</span> <span class="ident">b</span>) <span class="op">=</span> (<span class="ident">a</span>, <span class="ident">b</span>);
-                <span class="kw">while</span> <span class="ident">b</span> <span class="op">&gt;</span> <span class="number">0</span> {
-                    <span class="ident">a</span> <span class="op">%</span><span class="op">=</span> <span class="ident">b</span>;
-                    <span class="ident">swap</span>(<span class="kw-2">&amp;mut</span> <span class="ident">a</span>, <span class="kw-2">&amp;mut</span> <span class="ident">b</span>);
+    <span class="macro">quickcheck! </span>{
+        <span class="kw">fn </span>euclidean(a: u64, b: u64) -&gt; bool {
+            <span class="comment">// Test against the Euclidean algorithm
+            </span><span class="kw">let </span>g = {
+                <span class="kw">let </span>(<span class="kw-2">mut </span>a, <span class="kw-2">mut </span>b) = (a, b);
+                <span class="kw">while </span>b &gt; <span class="number">0 </span>{
+                    a %= b;
+                    swap(<span class="kw-2">&amp;mut </span>a, <span class="kw-2">&amp;mut </span>b);
                 }
-                <span class="ident">a</span>
+                a
             };
-            <span class="ident">gcd</span>(<span class="ident">a</span>, <span class="ident">b</span>) <span class="op">==</span> <span class="ident">g</span>
+            gcd(a, b) == g
         }
 
-        <span class="kw">fn</span> <span class="ident">one</span>(<span class="ident">a</span>: <span class="ident">u64</span>) -&gt; <span class="ident">bool</span> {
-            <span class="ident">gcd</span>(<span class="number">1</span>, <span class="ident">a</span>) <span class="op">==</span> <span class="number">1</span>
+        <span class="kw">fn </span>one(a: u64) -&gt; bool {
+            gcd(<span class="number">1</span>, a) == <span class="number">1
+        </span>}
+
+        <span class="kw">fn </span>zero(a: u64) -&gt; bool {
+            gcd(<span class="number">0</span>, a) == a
         }
 
-        <span class="kw">fn</span> <span class="ident">zero</span>(<span class="ident">a</span>: <span class="ident">u64</span>) -&gt; <span class="ident">bool</span> {
-            <span class="ident">gcd</span>(<span class="number">0</span>, <span class="ident">a</span>) <span class="op">==</span> <span class="ident">a</span>
+        <span class="kw">fn </span>divisor(a: u64, b: u64) -&gt; TestResult {
+            <span class="comment">// Test that gcd(a, b) divides a and b, unless a == b == 0
+            </span><span class="kw">if </span>a == <span class="number">0 </span>&amp;&amp; b == <span class="number">0 </span>{ <span class="kw">return </span>TestResult::discard(); } <span class="comment">// restrict test domain to !(a == b == 0)
+
+            </span><span class="kw">let </span>g = gcd(a, b);
+            TestResult::from_bool( g != <span class="number">0 </span>&amp;&amp; a % g == <span class="number">0 </span>&amp;&amp; b % g == <span class="number">0 </span>)
         }
 
-        <span class="kw">fn</span> <span class="ident">divisor</span>(<span class="ident">a</span>: <span class="ident">u64</span>, <span class="ident">b</span>: <span class="ident">u64</span>) -&gt; <span class="ident">TestResult</span> {
-            <span class="comment">// Test that gcd(a, b) divides a and b, unless a == b == 0</span>
-            <span class="kw">if</span> <span class="ident">a</span> <span class="op">==</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="ident">b</span> <span class="op">==</span> <span class="number">0</span> { <span class="kw">return</span> <span class="ident">TestResult::discard</span>(); } <span class="comment">// restrict test domain to !(a == b == 0)</span>
-
-            <span class="kw">let</span> <span class="ident">g</span> <span class="op">=</span> <span class="ident">gcd</span>(<span class="ident">a</span>, <span class="ident">b</span>);
-            <span class="ident">TestResult::from_bool</span>( <span class="ident">g</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="ident">a</span> <span class="op">%</span> <span class="ident">g</span> <span class="op">==</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="ident">b</span> <span class="op">%</span> <span class="ident">g</span> <span class="op">==</span> <span class="number">0</span> )
+        <span class="kw">fn </span>commutative(a: u64, b: u64) -&gt; bool {
+            gcd(a, b) == gcd(b, a)
         }
 
-        <span class="kw">fn</span> <span class="ident">commutative</span>(<span class="ident">a</span>: <span class="ident">u64</span>, <span class="ident">b</span>: <span class="ident">u64</span>) -&gt; <span class="ident">bool</span> {
-            <span class="ident">gcd</span>(<span class="ident">a</span>, <span class="ident">b</span>) <span class="op">==</span> <span class="ident">gcd</span>(<span class="ident">b</span>, <span class="ident">a</span>)
+        <span class="kw">fn </span>associative(a: u64, b: u64, c: u64) -&gt; bool {
+            gcd(a, gcd(b, c)) == gcd(gcd(a, b), c)
         }
 
-        <span class="kw">fn</span> <span class="ident">associative</span>(<span class="ident">a</span>: <span class="ident">u64</span>, <span class="ident">b</span>: <span class="ident">u64</span>, <span class="ident">c</span>: <span class="ident">u64</span>) -&gt; <span class="ident">bool</span> {
-            <span class="ident">gcd</span>(<span class="ident">a</span>, <span class="ident">gcd</span>(<span class="ident">b</span>, <span class="ident">c</span>)) <span class="op">==</span> <span class="ident">gcd</span>(<span class="ident">gcd</span>(<span class="ident">a</span>, <span class="ident">b</span>), <span class="ident">c</span>)
+        <span class="kw">fn </span>scalar_multiplication(a: u64, b: u64, k: u64) -&gt; bool {
+            <span class="comment">// TODO: #1559 factor n &gt; 2^64 - 1
+            </span><span class="kw">match </span>(k.checked_mul(a), k.checked_mul(b), k.checked_mul(gcd(a, b))) {
+                (<span class="prelude-val">Some</span>(ka), <span class="prelude-val">Some</span>(kb), <span class="prelude-val">Some</span>(kgcdab)) =&gt; gcd(ka, kb) == kgcdab,
+                <span class="kw">_ </span>=&gt; <span class="bool-val">true
+            </span>}
         }
 
-        <span class="kw">fn</span> <span class="ident">scalar_multiplication</span>(<span class="ident">a</span>: <span class="ident">u64</span>, <span class="ident">b</span>: <span class="ident">u64</span>, <span class="ident">k</span>: <span class="ident">u64</span>) -&gt; <span class="ident">bool</span> {
-            <span class="comment">// TODO: #1559 factor n &gt; 2^64 - 1</span>
-            <span class="kw">match</span> (<span class="ident">k</span>.<span class="ident">checked_mul</span>(<span class="ident">a</span>), <span class="ident">k</span>.<span class="ident">checked_mul</span>(<span class="ident">b</span>), <span class="ident">k</span>.<span class="ident">checked_mul</span>(<span class="ident">gcd</span>(<span class="ident">a</span>, <span class="ident">b</span>))) {
-                (<span class="prelude-val">Some</span>(<span class="ident">ka</span>), <span class="prelude-val">Some</span>(<span class="ident">kb</span>), <span class="prelude-val">Some</span>(<span class="ident">kgcdab</span>)) =&gt; <span class="ident">gcd</span>(<span class="ident">ka</span>, <span class="ident">kb</span>) <span class="op">==</span> <span class="ident">kgcdab</span>,
-                <span class="kw">_</span> =&gt; <span class="bool-val">true</span>
-            }
-        }
-
-        <span class="kw">fn</span> <span class="ident">multiplicative</span>(<span class="ident">a</span>: <span class="ident">u64</span>, <span class="ident">b</span>: <span class="ident">u64</span>, <span class="ident">c</span>: <span class="ident">u64</span>) -&gt; <span class="ident">bool</span> {
-            <span class="comment">// TODO: #1559 factor n &gt; 2^64 - 1</span>
-            <span class="kw">match</span> (<span class="ident">a</span>.<span class="ident">checked_mul</span>(<span class="ident">b</span>), <span class="ident">gcd</span>(<span class="ident">a</span>, <span class="ident">c</span>).<span class="ident">checked_mul</span>(<span class="ident">gcd</span>(<span class="ident">b</span>, <span class="ident">c</span>))) {
-                (<span class="prelude-val">Some</span>(<span class="ident">ab</span>), <span class="prelude-val">Some</span>(<span class="ident">gcdac_gcdbc</span>)) =&gt; {
-                    <span class="comment">// gcd(ab, c) = gcd(a, c) gcd(b, c) when a and b coprime</span>
-                    <span class="ident">gcd</span>(<span class="ident">a</span>, <span class="ident">b</span>) <span class="op">!</span><span class="op">=</span> <span class="number">1</span> <span class="op">|</span><span class="op">|</span> <span class="ident">gcd</span>(<span class="ident">ab</span>, <span class="ident">c</span>) <span class="op">==</span> <span class="ident">gcdac_gcdbc</span>
+        <span class="kw">fn </span>multiplicative(a: u64, b: u64, c: u64) -&gt; bool {
+            <span class="comment">// TODO: #1559 factor n &gt; 2^64 - 1
+            </span><span class="kw">match </span>(a.checked_mul(b), gcd(a, c).checked_mul(gcd(b, c))) {
+                (<span class="prelude-val">Some</span>(ab), <span class="prelude-val">Some</span>(gcdac_gcdbc)) =&gt; {
+                    <span class="comment">// gcd(ab, c) = gcd(a, c) gcd(b, c) when a and b coprime
+                    </span>gcd(a, b) != <span class="number">1 </span>|| gcd(ab, c) == gcdac_gcdbc
                 },
-                <span class="kw">_</span> =&gt; <span class="bool-val">true</span>,
+                <span class="kw">_ </span>=&gt; <span class="bool-val">true</span>,
             }
         }
 
-        <span class="kw">fn</span> <span class="ident">linearity</span>(<span class="ident">a</span>: <span class="ident">u64</span>, <span class="ident">b</span>: <span class="ident">u64</span>, <span class="ident">k</span>: <span class="ident">u64</span>) -&gt; <span class="ident">bool</span> {
-            <span class="comment">// TODO: #1559 factor n &gt; 2^64 - 1</span>
-            <span class="kw">match</span> <span class="ident">k</span>.<span class="ident">checked_mul</span>(<span class="ident">b</span>) {
-                <span class="prelude-val">Some</span>(<span class="ident">kb</span>) =&gt; {
-                    <span class="kw">match</span> <span class="ident">a</span>.<span class="ident">checked_add</span>(<span class="ident">kb</span>) {
-                        <span class="prelude-val">Some</span>(<span class="ident">a_plus_kb</span>) =&gt; <span class="ident">gcd</span>(<span class="ident">a_plus_kb</span>, <span class="ident">b</span>) <span class="op">==</span> <span class="ident">gcd</span>(<span class="ident">a</span>, <span class="ident">b</span>),
-                        <span class="kw">_</span> =&gt; <span class="bool-val">true</span>,
+        <span class="kw">fn </span>linearity(a: u64, b: u64, k: u64) -&gt; bool {
+            <span class="comment">// TODO: #1559 factor n &gt; 2^64 - 1
+            </span><span class="kw">match </span>k.checked_mul(b) {
+                <span class="prelude-val">Some</span>(kb) =&gt; {
+                    <span class="kw">match </span>a.checked_add(kb) {
+                        <span class="prelude-val">Some</span>(a_plus_kb) =&gt; gcd(a_plus_kb, b) == gcd(a, b),
+                        <span class="kw">_ </span>=&gt; <span class="bool-val">true</span>,
                     }
                 }
-                <span class="kw">_</span> =&gt; <span class="bool-val">true</span>,
+                <span class="kw">_ </span>=&gt; <span class="bool-val">true</span>,
             }
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uu_factor" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uu_factor" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

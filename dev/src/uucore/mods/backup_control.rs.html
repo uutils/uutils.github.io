@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uucore/src/lib/mods/backup_control.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>backup_control.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uucore/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uucore/src/lib/mods/backup_control.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>backup_control.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uucore/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -629,103 +629,103 @@
 <span id="629">629</span>
 <span id="630">630</span>
 <span id="631">631</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Implement GNU-style backup functionality.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This module implements the backup functionality as described in the [GNU</span>
-<span class="doccomment">//! manual][1]. It provides</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! - pre-defined [`clap`-Arguments][2] for inclusion in utilities that</span>
-<span class="doccomment">//!   implement backups</span>
-<span class="doccomment">//! - determination of the [backup mode][3]</span>
-<span class="doccomment">//! - determination of the [backup suffix][4]</span>
-<span class="doccomment">//! - [backup target path construction][5]</span>
-<span class="doccomment">//! - [Error types][6] for backup-related errors</span>
-<span class="doccomment">//! - GNU-compliant [help texts][7] for backup-related errors</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Backup-functionality is implemented by the following utilities:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! - `cp`</span>
-<span class="doccomment">//! - `install`</span>
-<span class="doccomment">//! - `ln`</span>
-<span class="doccomment">//! - `mv`</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! [1]: https://www.gnu.org/software/coreutils/manual/html_node/Backup-options.html</span>
-<span class="doccomment">//! [2]: arguments</span>
-<span class="doccomment">//! [3]: `determine_backup_mode()`</span>
-<span class="doccomment">//! [4]: `determine_backup_suffix()`</span>
-<span class="doccomment">//! [5]: `get_backup_path()`</span>
-<span class="doccomment">//! [6]: `BackupError`</span>
-<span class="doccomment">//! [7]: `BACKUP_CONTROL_LONG_HELP`</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # Usage example</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! #[macro_use]</span>
-<span class="doccomment">//! extern crate uucore;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! use clap::{Command, Arg, ArgMatches};</span>
-<span class="doccomment">//! use std::path::{Path, PathBuf};</span>
-<span class="doccomment">//! use uucore::backup_control::{self, BackupMode};</span>
-<span class="doccomment">//! use uucore::error::{UError, UResult};</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! fn main() {</span>
-<span class="doccomment">//!     let usage = String::from(&quot;command [OPTION]... ARG&quot;);</span>
-<span class="doccomment">//!     let long_usage = String::from(&quot;And here&#39;s a detailed explanation&quot;);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     let matches = Command::new(&quot;command&quot;)</span>
-<span class="doccomment">//!         .arg(backup_control::arguments::backup())</span>
-<span class="doccomment">//!         .arg(backup_control::arguments::backup_no_args())</span>
-<span class="doccomment">//!         .arg(backup_control::arguments::suffix())</span>
-<span class="doccomment">//!         .override_usage(usage)</span>
-<span class="doccomment">//!         .after_help(format!(</span>
-<span class="doccomment">//!             &quot;{}\n{}&quot;,</span>
-<span class="doccomment">//!             long_usage,</span>
-<span class="doccomment">//!             backup_control::BACKUP_CONTROL_LONG_HELP</span>
-<span class="doccomment">//!         ))</span>
-<span class="doccomment">//!         .get_matches_from(vec![</span>
-<span class="doccomment">//!             &quot;command&quot;, &quot;--backup=t&quot;, &quot;--suffix=bak~&quot;</span>
-<span class="doccomment">//!         ]);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     let backup_mode = match backup_control::determine_backup_mode(&amp;matches) {</span>
-<span class="doccomment">//!         Err(e) =&gt; {</span>
-<span class="doccomment">//!             show!(e);</span>
-<span class="doccomment">//!             return;</span>
-<span class="doccomment">//!         },</span>
-<span class="doccomment">//!         Ok(mode) =&gt; mode,</span>
-<span class="doccomment">//!     };</span>
-<span class="doccomment">//!     let backup_suffix = backup_control::determine_backup_suffix(&amp;matches);</span>
-<span class="doccomment">//!     let target_path = Path::new(&quot;/tmp/example&quot;);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     let backup_path = backup_control::get_backup_path(</span>
-<span class="doccomment">//!         backup_mode, target_path, &amp;backup_suffix</span>
-<span class="doccomment">//!     );</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     // Perform your backups here.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Implement GNU-style backup functionality.
+//!
+//! This module implements the backup functionality as described in the [GNU
+//! manual][1]. It provides
+//!
+//! - pre-defined [`clap`-Arguments][2] for inclusion in utilities that
+//!   implement backups
+//! - determination of the [backup mode][3]
+//! - determination of the [backup suffix][4]
+//! - [backup target path construction][5]
+//! - [Error types][6] for backup-related errors
+//! - GNU-compliant [help texts][7] for backup-related errors
+//!
+//! Backup-functionality is implemented by the following utilities:
+//!
+//! - `cp`
+//! - `install`
+//! - `ln`
+//! - `mv`
+//!
+//!
+//! [1]: https://www.gnu.org/software/coreutils/manual/html_node/Backup-options.html
+//! [2]: arguments
+//! [3]: `determine_backup_mode()`
+//! [4]: `determine_backup_suffix()`
+//! [5]: `get_backup_path()`
+//! [6]: `BackupError`
+//! [7]: `BACKUP_CONTROL_LONG_HELP`
+//!
+//!
+//! # Usage example
+//!
+//! ```
+//! #[macro_use]
+//! extern crate uucore;
+//!
+//! use clap::{Command, Arg, ArgMatches};
+//! use std::path::{Path, PathBuf};
+//! use uucore::backup_control::{self, BackupMode};
+//! use uucore::error::{UError, UResult};
+//!
+//! fn main() {
+//!     let usage = String::from(&quot;command [OPTION]... ARG&quot;);
+//!     let long_usage = String::from(&quot;And here&#39;s a detailed explanation&quot;);
+//!
+//!     let matches = Command::new(&quot;command&quot;)
+//!         .arg(backup_control::arguments::backup())
+//!         .arg(backup_control::arguments::backup_no_args())
+//!         .arg(backup_control::arguments::suffix())
+//!         .override_usage(usage)
+//!         .after_help(format!(
+//!             &quot;{}\n{}&quot;,
+//!             long_usage,
+//!             backup_control::BACKUP_CONTROL_LONG_HELP
+//!         ))
+//!         .get_matches_from(vec![
+//!             &quot;command&quot;, &quot;--backup=t&quot;, &quot;--suffix=bak~&quot;
+//!         ]);
+//!
+//!     let backup_mode = match backup_control::determine_backup_mode(&amp;matches) {
+//!         Err(e) =&gt; {
+//!             show!(e);
+//!             return;
+//!         },
+//!         Ok(mode) =&gt; mode,
+//!     };
+//!     let backup_suffix = backup_control::determine_backup_suffix(&amp;matches);
+//!     let target_path = Path::new(&quot;/tmp/example&quot;);
+//!
+//!     let backup_path = backup_control::get_backup_path(
+//!         backup_mode, target_path, &amp;backup_suffix
+//!     );
+//!
+//!     // Perform your backups here.
+//!
+//! }
+//! ```
 
-<span class="comment">// spell-checker:ignore backupopt</span>
+</span><span class="comment">// spell-checker:ignore backupopt
 
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">display::Quotable</span>,
-    <span class="ident">error</span>::{<span class="ident">UError</span>, <span class="ident">UResult</span>},
+</span><span class="kw">use crate</span>::{
+    display::Quotable,
+    error::{UError, UResult},
 };
-<span class="kw">use</span> <span class="ident">clap::ArgMatches</span>;
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">env</span>,
-    <span class="ident">error::Error</span>,
-    <span class="ident">fmt</span>::{<span class="ident">Debug</span>, <span class="ident">Display</span>},
-    <span class="ident">path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>},
+<span class="kw">use </span>clap::ArgMatches;
+<span class="kw">use </span>std::{
+    env,
+    error::Error,
+    fmt::{Debug, Display},
+    path::{Path, PathBuf},
 };
 
-<span class="kw">pub</span> <span class="kw">static</span> <span class="ident">BACKUP_CONTROL_VALUES</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>] <span class="op">=</span> <span class="kw-2">&amp;</span>[
+<span class="kw">pub static </span>BACKUP_CONTROL_VALUES: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str] = <span class="kw-2">&amp;</span>[
     <span class="string">&quot;simple&quot;</span>, <span class="string">&quot;never&quot;</span>, <span class="string">&quot;numbered&quot;</span>, <span class="string">&quot;t&quot;</span>, <span class="string">&quot;existing&quot;</span>, <span class="string">&quot;nil&quot;</span>, <span class="string">&quot;none&quot;</span>, <span class="string">&quot;off&quot;</span>,
 ];
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">BACKUP_CONTROL_LONG_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span>
+<span class="kw">pub const </span>BACKUP_CONTROL_LONG_HELP: <span class="kw-2">&amp;</span>str =
     <span class="string">&quot;The backup suffix is &#39;~&#39;, unless set with --suffix or SIMPLE_BACKUP_SUFFIX.
 The version control method may be selected via the --backup option or through
 the VERSION_CONTROL environment variable.  Here are the values:
@@ -735,530 +735,530 @@ the VERSION_CONTROL environment variable.  Here are the values:
   existing, nil   numbered if numbered backups exist, simple otherwise
   simple, never   always make simple backups&quot;</span>;
 
-<span class="kw">static</span> <span class="ident">VALID_ARGS_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Valid arguments are:
+<span class="kw">static </span>VALID_ARGS_HELP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Valid arguments are:
   - &#39;none&#39;, &#39;off&#39;
   - &#39;simple&#39;, &#39;never&#39;
   - &#39;existing&#39;, &#39;nil&#39;
   - &#39;numbered&#39;, &#39;t&#39;&quot;</span>;
 
-<span class="doccomment">/// Available backup modes.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The mapping of the backup modes to the CLI arguments is annotated on the</span>
-<span class="doccomment">/// enum variants.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">BackupMode</span> {
-    <span class="doccomment">/// Argument &#39;none&#39;, &#39;off&#39;</span>
-    <span class="ident">NoBackup</span>,
-    <span class="doccomment">/// Argument &#39;simple&#39;, &#39;never&#39;</span>
-    <span class="ident">SimpleBackup</span>,
-    <span class="doccomment">/// Argument &#39;numbered&#39;, &#39;t&#39;</span>
-    <span class="ident">NumberedBackup</span>,
-    <span class="doccomment">/// Argument &#39;existing&#39;, &#39;nil&#39;</span>
-    <span class="ident">ExistingBackup</span>,
+<span class="doccomment">/// Available backup modes.
+///
+/// The mapping of the backup modes to the CLI arguments is annotated on the
+/// enum variants.
+</span><span class="attribute">#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+</span><span class="kw">pub enum </span>BackupMode {
+    <span class="doccomment">/// Argument &#39;none&#39;, &#39;off&#39;
+    </span>NoBackup,
+    <span class="doccomment">/// Argument &#39;simple&#39;, &#39;never&#39;
+    </span>SimpleBackup,
+    <span class="doccomment">/// Argument &#39;numbered&#39;, &#39;t&#39;
+    </span>NumberedBackup,
+    <span class="doccomment">/// Argument &#39;existing&#39;, &#39;nil&#39;
+    </span>ExistingBackup,
 }
 
-<span class="doccomment">/// Backup error types.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Errors are currently raised by [`determine_backup_mode`] only. All errors</span>
-<span class="doccomment">/// are implemented as [`UError`] for uniform handling across utilities.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">BackupError</span> {
-    <span class="doccomment">/// An invalid argument (e.g. &#39;foo&#39;) was given as backup type. First</span>
-    <span class="doccomment">/// parameter is the argument, second is the arguments origin (CLI or</span>
-    <span class="doccomment">/// ENV-var)</span>
-    <span class="ident">InvalidArgument</span>(<span class="ident">String</span>, <span class="ident">String</span>),
-    <span class="doccomment">/// An ambiguous argument (e.g. &#39;n&#39;) was given as backup type. First</span>
-    <span class="doccomment">/// parameter is the argument, second is the arguments origin (CLI or</span>
-    <span class="doccomment">/// ENV-var)</span>
-    <span class="ident">AmbiguousArgument</span>(<span class="ident">String</span>, <span class="ident">String</span>),
-    <span class="doccomment">/// Currently unused</span>
-    <span class="ident">BackupImpossible</span>(),
-    <span class="comment">// BackupFailed(PathBuf, PathBuf, std::io::Error),</span>
-}
+<span class="doccomment">/// Backup error types.
+///
+/// Errors are currently raised by [`determine_backup_mode`] only. All errors
+/// are implemented as [`UError`] for uniform handling across utilities.
+</span><span class="attribute">#[derive(Debug, Eq, PartialEq)]
+</span><span class="kw">pub enum </span>BackupError {
+    <span class="doccomment">/// An invalid argument (e.g. &#39;foo&#39;) was given as backup type. First
+    /// parameter is the argument, second is the arguments origin (CLI or
+    /// ENV-var)
+    </span>InvalidArgument(String, String),
+    <span class="doccomment">/// An ambiguous argument (e.g. &#39;n&#39;) was given as backup type. First
+    /// parameter is the argument, second is the arguments origin (CLI or
+    /// ENV-var)
+    </span>AmbiguousArgument(String, String),
+    <span class="doccomment">/// Currently unused
+    </span>BackupImpossible(),
+    <span class="comment">// BackupFailed(PathBuf, PathBuf, std::io::Error),
+</span>}
 
-<span class="kw">impl</span> <span class="ident">UError</span> <span class="kw">for</span> <span class="ident">BackupError</span> {
-    <span class="kw">fn</span> <span class="ident">code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">i32</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::BackupImpossible</span>() =&gt; <span class="number">2</span>,
-            <span class="kw">_</span> =&gt; <span class="number">1</span>,
+<span class="kw">impl </span>UError <span class="kw">for </span>BackupError {
+    <span class="kw">fn </span>code(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; i32 {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::BackupImpossible() =&gt; <span class="number">2</span>,
+            <span class="kw">_ </span>=&gt; <span class="number">1</span>,
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">usage</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="comment">// Suggested by clippy.</span>
-        <span class="macro">matches!</span>(
+    <span class="kw">fn </span>usage(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="comment">// Suggested by clippy.
+        </span><span class="macro">matches!</span>(
             <span class="self">self</span>,
-            <span class="ident"><span class="self">Self</span>::InvalidArgument</span>(<span class="kw">_</span>, <span class="kw">_</span>) <span class="op">|</span> <span class="ident"><span class="self">Self</span>::AmbiguousArgument</span>(<span class="kw">_</span>, <span class="kw">_</span>)
+            <span class="self">Self</span>::InvalidArgument(<span class="kw">_</span>, <span class="kw">_</span>) | <span class="self">Self</span>::AmbiguousArgument(<span class="kw">_</span>, <span class="kw">_</span>)
         )
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="ident">BackupError</span> {}
+<span class="kw">impl </span>Error <span class="kw">for </span>BackupError {}
 
-<span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">BackupError</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">std::fmt::Result</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::InvalidArgument</span>(<span class="ident">arg</span>, <span class="ident">origin</span>) =&gt; <span class="macro">write!</span>(
-                <span class="ident">f</span>,
+<span class="kw">impl </span>Display <span class="kw">for </span>BackupError {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::InvalidArgument(arg, origin) =&gt; <span class="macro">write!</span>(
+                f,
                 <span class="string">&quot;invalid argument {} for &#39;{}&#39;\n{}&quot;</span>,
-                <span class="ident">arg</span>.<span class="ident">quote</span>(),
-                <span class="ident">origin</span>,
-                <span class="ident">VALID_ARGS_HELP</span>
+                arg.quote(),
+                origin,
+                VALID_ARGS_HELP
             ),
-            <span class="ident"><span class="self">Self</span>::AmbiguousArgument</span>(<span class="ident">arg</span>, <span class="ident">origin</span>) =&gt; <span class="macro">write!</span>(
-                <span class="ident">f</span>,
+            <span class="self">Self</span>::AmbiguousArgument(arg, origin) =&gt; <span class="macro">write!</span>(
+                f,
                 <span class="string">&quot;ambiguous argument {} for &#39;{}&#39;\n{}&quot;</span>,
-                <span class="ident">arg</span>.<span class="ident">quote</span>(),
-                <span class="ident">origin</span>,
-                <span class="ident">VALID_ARGS_HELP</span>
+                arg.quote(),
+                origin,
+                VALID_ARGS_HELP
             ),
-            <span class="ident"><span class="self">Self</span>::BackupImpossible</span>() =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;cannot create backup&quot;</span>),
-            <span class="comment">// Placeholder for later</span>
-            <span class="comment">// Self::BackupFailed(from, to, e) =&gt; Display::fmt(</span>
-            <span class="comment">//     &amp;uio_error!(e, &quot;failed to backup {} to {}&quot;, from.quote(), to.quote()),</span>
-            <span class="comment">//     f</span>
-            <span class="comment">// ),</span>
+            <span class="self">Self</span>::BackupImpossible() =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;cannot create backup&quot;</span>),
+            <span class="comment">// Placeholder for later
+            // Self::BackupFailed(from, to, e) =&gt; Display::fmt(
+            //     &amp;uio_error!(e, &quot;failed to backup {} to {}&quot;, from.quote(), to.quote()),
+            //     f
+            // ),
+        </span>}
+    }
+}
+
+<span class="doccomment">/// Arguments for backup-related functionality.
+///
+/// Rather than implementing the `clap`-Arguments for every utility, it is
+/// recommended to include the `clap` arguments via the functions provided here.
+/// This way the backup-specific arguments are handled uniformly across
+/// utilities and can be maintained in one central place.
+</span><span class="kw">pub mod </span>arguments {
+    <span class="kw">use </span>clap::ArgAction;
+
+    <span class="kw">extern crate </span>clap;
+
+    <span class="kw">pub static </span>OPT_BACKUP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;backupopt_backup&quot;</span>;
+    <span class="kw">pub static </span>OPT_BACKUP_NO_ARG: <span class="kw-2">&amp;</span>str = <span class="string">&quot;backupopt_b&quot;</span>;
+    <span class="kw">pub static </span>OPT_SUFFIX: <span class="kw-2">&amp;</span>str = <span class="string">&quot;backupopt_suffix&quot;</span>;
+
+    <span class="doccomment">/// &#39;--backup&#39; argument
+    </span><span class="kw">pub fn </span>backup() -&gt; clap::Arg {
+        clap::Arg::new(OPT_BACKUP)
+            .long(<span class="string">&quot;backup&quot;</span>)
+            .help(<span class="string">&quot;make a backup of each existing destination file&quot;</span>)
+            .action(clap::ArgAction::Set)
+            .require_equals(<span class="bool-val">true</span>)
+            .num_args(<span class="number">0</span>..=<span class="number">1</span>)
+            .value_name(<span class="string">&quot;CONTROL&quot;</span>)
+    }
+
+    <span class="doccomment">/// &#39;-b&#39; argument
+    </span><span class="kw">pub fn </span>backup_no_args() -&gt; clap::Arg {
+        clap::Arg::new(OPT_BACKUP_NO_ARG)
+            .short(<span class="string">&#39;b&#39;</span>)
+            .help(<span class="string">&quot;like --backup but does not accept an argument&quot;</span>)
+            .action(ArgAction::SetTrue)
+    }
+
+    <span class="doccomment">/// &#39;-S, --suffix&#39; argument
+    </span><span class="kw">pub fn </span>suffix() -&gt; clap::Arg {
+        clap::Arg::new(OPT_SUFFIX)
+            .short(<span class="string">&#39;S&#39;</span>)
+            .long(<span class="string">&quot;suffix&quot;</span>)
+            .help(<span class="string">&quot;override the usual backup suffix&quot;</span>)
+            .action(clap::ArgAction::Set)
+            .value_name(<span class="string">&quot;SUFFIX&quot;</span>)
+            .allow_hyphen_values(<span class="bool-val">true</span>)
+    }
+}
+
+<span class="doccomment">/// Obtain the suffix to use for a backup.
+///
+/// In order of precedence, this function obtains the backup suffix
+///
+/// 1. From the &#39;-S&#39; or &#39;--suffix&#39; CLI argument, if present
+/// 2. From the &quot;SIMPLE_BACKUP_SUFFIX&quot; environment variable, if present
+/// 3. By using the default &#39;~&#39; if none of the others apply
+///
+/// This function directly takes [`clap::ArgMatches`] as argument and looks for
+/// the &#39;-S&#39; and &#39;--suffix&#39; arguments itself.
+</span><span class="kw">pub fn </span>determine_backup_suffix(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; String {
+    <span class="kw">let </span>supplied_suffix = matches.get_one::&lt;String&gt;(arguments::OPT_SUFFIX);
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(suffix) = supplied_suffix {
+        String::from(suffix)
+    } <span class="kw">else </span>{
+        env::var(<span class="string">&quot;SIMPLE_BACKUP_SUFFIX&quot;</span>).unwrap_or_else(|<span class="kw">_</span>| <span class="string">&quot;~&quot;</span>.to_owned())
+    }
+}
+
+<span class="doccomment">/// Determine the &quot;mode&quot; for the backup operation to perform, if any.
+///
+/// Parses the backup options according to the [GNU manual][1], and converts
+/// them to an instance of `BackupMode` for further processing.
+///
+/// Takes [`clap::ArgMatches`] as argument which **must** contain the options
+/// from [`arguments::backup()`] and [`arguments::backup_no_args()`]. Otherwise
+/// the `NoBackup` mode is returned unconditionally.
+///
+/// It is recommended for anyone who would like to implement the
+/// backup-functionality to use the arguments prepared in the `arguments`
+/// submodule (see examples)
+///
+/// [1]: https://www.gnu.org/software/coreutils/manual/html_node/Backup-options.html
+///
+///
+/// # Errors
+///
+/// If an argument supplied directly to the long `backup` option, or read in
+/// through the `VERSION CONTROL` env var is ambiguous (i.e. may resolve to
+/// multiple backup modes) or invalid, an [`InvalidArgument`][10] or
+/// [`AmbiguousArgument`][11] error is returned, respectively.
+///
+/// [10]: BackupError::InvalidArgument
+/// [11]: BackupError::AmbiguousArgument
+///
+///
+/// # Examples
+///
+/// Here&#39;s how one would integrate the backup mode determination into an
+/// application.
+///
+/// ```
+/// #[macro_use]
+/// extern crate uucore;
+/// use uucore::backup_control::{self, BackupMode};
+/// use clap::{Command, Arg, ArgMatches};
+///
+/// fn main() {
+///     let matches = Command::new(&quot;command&quot;)
+///         .arg(backup_control::arguments::backup())
+///         .arg(backup_control::arguments::backup_no_args())
+///         .get_matches_from(vec![
+///             &quot;command&quot;, &quot;-b&quot;, &quot;--backup=t&quot;
+///         ]);
+///
+///     let backup_mode = backup_control::determine_backup_mode(&amp;matches).unwrap();
+///     assert_eq!(backup_mode, BackupMode::NumberedBackup)
+/// }
+/// ```
+///
+/// This example shows an ambiguous input, as &#39;n&#39; may resolve to 4 different
+/// backup modes.
+///
+///
+/// ```
+/// #[macro_use]
+/// extern crate uucore;
+/// use uucore::backup_control::{self, BackupMode, BackupError};
+/// use clap::{Command, Arg, ArgMatches};
+///
+/// fn main() {
+///     let matches = Command::new(&quot;command&quot;)
+///         .arg(backup_control::arguments::backup())
+///         .arg(backup_control::arguments::backup_no_args())
+///         .get_matches_from(vec![
+///             &quot;command&quot;, &quot;-b&quot;, &quot;--backup=n&quot;
+///         ]);
+///
+///     let backup_mode = backup_control::determine_backup_mode(&amp;matches);
+///
+///     assert!(backup_mode.is_err());
+///     let err = backup_mode.unwrap_err();
+///     // assert_eq!(err, BackupError::AmbiguousArgument);
+///     // Use uucore functionality to show the error to the user
+///     show!(err);
+/// }
+/// ```
+</span><span class="kw">pub fn </span>determine_backup_mode(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; UResult&lt;BackupMode&gt; {
+    <span class="kw">if </span>matches.contains_id(arguments::OPT_BACKUP) {
+        <span class="comment">// Use method to determine the type of backups to make. When this option
+        // is used but method is not specified, then the value of the
+        // VERSION_CONTROL environment variable is used. And if VERSION_CONTROL
+        // is not set, the default backup type is &#39;existing&#39;.
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(method) = matches.get_one::&lt;String&gt;(arguments::OPT_BACKUP) {
+            <span class="comment">// Second argument is for the error string that is returned.
+            </span>match_method(method, <span class="string">&quot;backup type&quot;</span>)
+        } <span class="kw">else if let </span><span class="prelude-val">Ok</span>(method) = env::var(<span class="string">&quot;VERSION_CONTROL&quot;</span>) {
+            <span class="comment">// Second argument is for the error string that is returned.
+            </span>match_method(<span class="kw-2">&amp;</span>method, <span class="string">&quot;$VERSION_CONTROL&quot;</span>)
+        } <span class="kw">else </span>{
+            <span class="comment">// Default if no argument is provided to &#39;--backup&#39;
+            </span><span class="prelude-val">Ok</span>(BackupMode::ExistingBackup)
         }
+    } <span class="kw">else if </span>matches.get_flag(arguments::OPT_BACKUP_NO_ARG) {
+        <span class="comment">// the short form of this option, -b does not accept any argument.
+        // Using -b is equivalent to using --backup=existing.
+        </span><span class="prelude-val">Ok</span>(BackupMode::ExistingBackup)
+    } <span class="kw">else </span>{
+        <span class="comment">// No option was present at all
+        </span><span class="prelude-val">Ok</span>(BackupMode::NoBackup)
     }
 }
 
-<span class="doccomment">/// Arguments for backup-related functionality.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Rather than implementing the `clap`-Arguments for every utility, it is</span>
-<span class="doccomment">/// recommended to include the `clap` arguments via the functions provided here.</span>
-<span class="doccomment">/// This way the backup-specific arguments are handled uniformly across</span>
-<span class="doccomment">/// utilities and can be maintained in one central place.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">arguments</span> {
-    <span class="kw">use</span> <span class="ident">clap::ArgAction</span>;
-
-    <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">clap</span>;
-
-    <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">OPT_BACKUP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;backupopt_backup&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">OPT_BACKUP_NO_ARG</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;backupopt_b&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">OPT_SUFFIX</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;backupopt_suffix&quot;</span>;
-
-    <span class="doccomment">/// &#39;--backup&#39; argument</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">backup</span>() -&gt; <span class="ident">clap::Arg</span> {
-        <span class="ident">clap::Arg::new</span>(<span class="ident">OPT_BACKUP</span>)
-            .<span class="ident">long</span>(<span class="string">&quot;backup&quot;</span>)
-            .<span class="ident">help</span>(<span class="string">&quot;make a backup of each existing destination file&quot;</span>)
-            .<span class="ident">action</span>(<span class="ident">clap::ArgAction::Set</span>)
-            .<span class="ident">require_equals</span>(<span class="bool-val">true</span>)
-            .<span class="ident">num_args</span>(<span class="number">0</span>..<span class="op">=</span><span class="number">1</span>)
-            .<span class="ident">value_name</span>(<span class="string">&quot;CONTROL&quot;</span>)
-    }
-
-    <span class="doccomment">/// &#39;-b&#39; argument</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">backup_no_args</span>() -&gt; <span class="ident">clap::Arg</span> {
-        <span class="ident">clap::Arg::new</span>(<span class="ident">OPT_BACKUP_NO_ARG</span>)
-            .<span class="ident">short</span>(<span class="string">&#39;b&#39;</span>)
-            .<span class="ident">help</span>(<span class="string">&quot;like --backup but does not accept an argument&quot;</span>)
-            .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>)
-    }
-
-    <span class="doccomment">/// &#39;-S, --suffix&#39; argument</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">suffix</span>() -&gt; <span class="ident">clap::Arg</span> {
-        <span class="ident">clap::Arg::new</span>(<span class="ident">OPT_SUFFIX</span>)
-            .<span class="ident">short</span>(<span class="string">&#39;S&#39;</span>)
-            .<span class="ident">long</span>(<span class="string">&quot;suffix&quot;</span>)
-            .<span class="ident">help</span>(<span class="string">&quot;override the usual backup suffix&quot;</span>)
-            .<span class="ident">action</span>(<span class="ident">clap::ArgAction::Set</span>)
-            .<span class="ident">value_name</span>(<span class="string">&quot;SUFFIX&quot;</span>)
-            .<span class="ident">allow_hyphen_values</span>(<span class="bool-val">true</span>)
+<span class="doccomment">/// Match a backup option string to a `BackupMode`.
+///
+/// The GNU manual specifies that abbreviations to options are valid as long as
+/// they aren&#39;t ambiguous. This function matches the given `method` argument
+/// against all valid backup options (via `starts_with`), and returns a valid
+/// [`BackupMode`] if exactly one backup option matches the `method` given.
+///
+/// `origin` is required in order to format the generated error message
+/// properly, when an error occurs.
+///
+///
+/// # Errors
+///
+/// If `method` is invalid or ambiguous (i.e. may resolve to multiple backup
+/// modes), an [`InvalidArgument`][10] or [`AmbiguousArgument`][11] error is
+/// returned, respectively.
+///
+/// [10]: BackupError::InvalidArgument
+/// [11]: BackupError::AmbiguousArgument
+</span><span class="kw">fn </span>match_method(method: <span class="kw-2">&amp;</span>str, origin: <span class="kw-2">&amp;</span>str) -&gt; UResult&lt;BackupMode&gt; {
+    <span class="kw">let </span>matches: Vec&lt;&amp;&amp;str&gt; = BACKUP_CONTROL_VALUES
+        .iter()
+        .filter(|val| val.starts_with(method))
+        .collect();
+    <span class="kw">if </span>matches.len() == <span class="number">1 </span>{
+        <span class="kw">match </span><span class="kw-2">*</span>matches[<span class="number">0</span>] {
+            <span class="string">&quot;simple&quot; </span>| <span class="string">&quot;never&quot; </span>=&gt; <span class="prelude-val">Ok</span>(BackupMode::SimpleBackup),
+            <span class="string">&quot;numbered&quot; </span>| <span class="string">&quot;t&quot; </span>=&gt; <span class="prelude-val">Ok</span>(BackupMode::NumberedBackup),
+            <span class="string">&quot;existing&quot; </span>| <span class="string">&quot;nil&quot; </span>=&gt; <span class="prelude-val">Ok</span>(BackupMode::ExistingBackup),
+            <span class="string">&quot;none&quot; </span>| <span class="string">&quot;off&quot; </span>=&gt; <span class="prelude-val">Ok</span>(BackupMode::NoBackup),
+            <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(), <span class="comment">// cannot happen as we must have exactly one match
+                                 // from the list above.
+        </span>}
+    } <span class="kw">else if </span>matches.is_empty() {
+        <span class="prelude-val">Err</span>(BackupError::InvalidArgument(method.to_string(), origin.to_string()).into())
+    } <span class="kw">else </span>{
+        <span class="prelude-val">Err</span>(BackupError::AmbiguousArgument(method.to_string(), origin.to_string()).into())
     }
 }
 
-<span class="doccomment">/// Obtain the suffix to use for a backup.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// In order of precedence, this function obtains the backup suffix</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// 1. From the &#39;-S&#39; or &#39;--suffix&#39; CLI argument, if present</span>
-<span class="doccomment">/// 2. From the &quot;SIMPLE_BACKUP_SUFFIX&quot; environment variable, if present</span>
-<span class="doccomment">/// 3. By using the default &#39;~&#39; if none of the others apply</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This function directly takes [`clap::ArgMatches`] as argument and looks for</span>
-<span class="doccomment">/// the &#39;-S&#39; and &#39;--suffix&#39; arguments itself.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">determine_backup_suffix</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="ident">String</span> {
-    <span class="kw">let</span> <span class="ident">supplied_suffix</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">arguments::OPT_SUFFIX</span>);
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">suffix</span>) <span class="op">=</span> <span class="ident">supplied_suffix</span> {
-        <span class="ident">String::from</span>(<span class="ident">suffix</span>)
-    } <span class="kw">else</span> {
-        <span class="ident">env::var</span>(<span class="string">&quot;SIMPLE_BACKUP_SUFFIX&quot;</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;~&quot;</span>.<span class="ident">to_owned</span>())
+<span class="kw">pub fn </span>get_backup_path(
+    backup_mode: BackupMode,
+    backup_path: <span class="kw-2">&amp;</span>Path,
+    suffix: <span class="kw-2">&amp;</span>str,
+) -&gt; <span class="prelude-ty">Option</span>&lt;PathBuf&gt; {
+    <span class="kw">match </span>backup_mode {
+        BackupMode::NoBackup =&gt; <span class="prelude-val">None</span>,
+        BackupMode::SimpleBackup =&gt; <span class="prelude-val">Some</span>(simple_backup_path(backup_path, suffix)),
+        BackupMode::NumberedBackup =&gt; <span class="prelude-val">Some</span>(numbered_backup_path(backup_path)),
+        BackupMode::ExistingBackup =&gt; <span class="prelude-val">Some</span>(existing_backup_path(backup_path, suffix)),
     }
 }
 
-<span class="doccomment">/// Determine the &quot;mode&quot; for the backup operation to perform, if any.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Parses the backup options according to the [GNU manual][1], and converts</span>
-<span class="doccomment">/// them to an instance of `BackupMode` for further processing.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Takes [`clap::ArgMatches`] as argument which **must** contain the options</span>
-<span class="doccomment">/// from [`arguments::backup()`] and [`arguments::backup_no_args()`]. Otherwise</span>
-<span class="doccomment">/// the `NoBackup` mode is returned unconditionally.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// It is recommended for anyone who would like to implement the</span>
-<span class="doccomment">/// backup-functionality to use the arguments prepared in the `arguments`</span>
-<span class="doccomment">/// submodule (see examples)</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [1]: https://www.gnu.org/software/coreutils/manual/html_node/Backup-options.html</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Errors</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If an argument supplied directly to the long `backup` option, or read in</span>
-<span class="doccomment">/// through the `VERSION CONTROL` env var is ambiguous (i.e. may resolve to</span>
-<span class="doccomment">/// multiple backup modes) or invalid, an [`InvalidArgument`][10] or</span>
-<span class="doccomment">/// [`AmbiguousArgument`][11] error is returned, respectively.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [10]: BackupError::InvalidArgument</span>
-<span class="doccomment">/// [11]: BackupError::AmbiguousArgument</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Here&#39;s how one would integrate the backup mode determination into an</span>
-<span class="doccomment">/// application.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// #[macro_use]</span>
-<span class="doccomment">/// extern crate uucore;</span>
-<span class="doccomment">/// use uucore::backup_control::{self, BackupMode};</span>
-<span class="doccomment">/// use clap::{Command, Arg, ArgMatches};</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// fn main() {</span>
-<span class="doccomment">///     let matches = Command::new(&quot;command&quot;)</span>
-<span class="doccomment">///         .arg(backup_control::arguments::backup())</span>
-<span class="doccomment">///         .arg(backup_control::arguments::backup_no_args())</span>
-<span class="doccomment">///         .get_matches_from(vec![</span>
-<span class="doccomment">///             &quot;command&quot;, &quot;-b&quot;, &quot;--backup=t&quot;</span>
-<span class="doccomment">///         ]);</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     let backup_mode = backup_control::determine_backup_mode(&amp;matches).unwrap();</span>
-<span class="doccomment">///     assert_eq!(backup_mode, BackupMode::NumberedBackup)</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This example shows an ambiguous input, as &#39;n&#39; may resolve to 4 different</span>
-<span class="doccomment">/// backup modes.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// #[macro_use]</span>
-<span class="doccomment">/// extern crate uucore;</span>
-<span class="doccomment">/// use uucore::backup_control::{self, BackupMode, BackupError};</span>
-<span class="doccomment">/// use clap::{Command, Arg, ArgMatches};</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// fn main() {</span>
-<span class="doccomment">///     let matches = Command::new(&quot;command&quot;)</span>
-<span class="doccomment">///         .arg(backup_control::arguments::backup())</span>
-<span class="doccomment">///         .arg(backup_control::arguments::backup_no_args())</span>
-<span class="doccomment">///         .get_matches_from(vec![</span>
-<span class="doccomment">///             &quot;command&quot;, &quot;-b&quot;, &quot;--backup=n&quot;</span>
-<span class="doccomment">///         ]);</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     let backup_mode = backup_control::determine_backup_mode(&amp;matches);</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     assert!(backup_mode.is_err());</span>
-<span class="doccomment">///     let err = backup_mode.unwrap_err();</span>
-<span class="doccomment">///     // assert_eq!(err, BackupError::AmbiguousArgument);</span>
-<span class="doccomment">///     // Use uucore functionality to show the error to the user</span>
-<span class="doccomment">///     show!(err);</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">determine_backup_mode</span>(<span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">BackupMode</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">contains_id</span>(<span class="ident">arguments::OPT_BACKUP</span>) {
-        <span class="comment">// Use method to determine the type of backups to make. When this option</span>
-        <span class="comment">// is used but method is not specified, then the value of the</span>
-        <span class="comment">// VERSION_CONTROL environment variable is used. And if VERSION_CONTROL</span>
-        <span class="comment">// is not set, the default backup type is &#39;existing&#39;.</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">method</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">arguments::OPT_BACKUP</span>) {
-            <span class="comment">// Second argument is for the error string that is returned.</span>
-            <span class="ident">match_method</span>(<span class="ident">method</span>, <span class="string">&quot;backup type&quot;</span>)
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">method</span>) <span class="op">=</span> <span class="ident">env::var</span>(<span class="string">&quot;VERSION_CONTROL&quot;</span>) {
-            <span class="comment">// Second argument is for the error string that is returned.</span>
-            <span class="ident">match_method</span>(<span class="kw-2">&amp;</span><span class="ident">method</span>, <span class="string">&quot;$VERSION_CONTROL&quot;</span>)
-        } <span class="kw">else</span> {
-            <span class="comment">// Default if no argument is provided to &#39;--backup&#39;</span>
-            <span class="prelude-val">Ok</span>(<span class="ident">BackupMode::ExistingBackup</span>)
-        }
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">arguments::OPT_BACKUP_NO_ARG</span>) {
-        <span class="comment">// the short form of this option, -b does not accept any argument.</span>
-        <span class="comment">// Using -b is equivalent to using --backup=existing.</span>
-        <span class="prelude-val">Ok</span>(<span class="ident">BackupMode::ExistingBackup</span>)
-    } <span class="kw">else</span> {
-        <span class="comment">// No option was present at all</span>
-        <span class="prelude-val">Ok</span>(<span class="ident">BackupMode::NoBackup</span>)
-    }
+<span class="kw">fn </span>simple_backup_path(path: <span class="kw-2">&amp;</span>Path, suffix: <span class="kw-2">&amp;</span>str) -&gt; PathBuf {
+    <span class="kw">let </span><span class="kw-2">mut </span>p = path.to_string_lossy().into_owned();
+    p.push_str(suffix);
+    PathBuf::from(p)
 }
 
-<span class="doccomment">/// Match a backup option string to a `BackupMode`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The GNU manual specifies that abbreviations to options are valid as long as</span>
-<span class="doccomment">/// they aren&#39;t ambiguous. This function matches the given `method` argument</span>
-<span class="doccomment">/// against all valid backup options (via `starts_with`), and returns a valid</span>
-<span class="doccomment">/// [`BackupMode`] if exactly one backup option matches the `method` given.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `origin` is required in order to format the generated error message</span>
-<span class="doccomment">/// properly, when an error occurs.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Errors</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If `method` is invalid or ambiguous (i.e. may resolve to multiple backup</span>
-<span class="doccomment">/// modes), an [`InvalidArgument`][10] or [`AmbiguousArgument`][11] error is</span>
-<span class="doccomment">/// returned, respectively.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [10]: BackupError::InvalidArgument</span>
-<span class="doccomment">/// [11]: BackupError::AmbiguousArgument</span>
-<span class="kw">fn</span> <span class="ident">match_method</span>(<span class="ident">method</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">origin</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">BackupMode</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">matches</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="op">&amp;&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">BACKUP_CONTROL_VALUES</span>
-        .<span class="ident">iter</span>()
-        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">starts_with</span>(<span class="ident">method</span>))
-        .<span class="ident">collect</span>();
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> {
-        <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">matches</span>[<span class="number">0</span>] {
-            <span class="string">&quot;simple&quot;</span> <span class="op">|</span> <span class="string">&quot;never&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">BackupMode::SimpleBackup</span>),
-            <span class="string">&quot;numbered&quot;</span> <span class="op">|</span> <span class="string">&quot;t&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">BackupMode::NumberedBackup</span>),
-            <span class="string">&quot;existing&quot;</span> <span class="op">|</span> <span class="string">&quot;nil&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">BackupMode::ExistingBackup</span>),
-            <span class="string">&quot;none&quot;</span> <span class="op">|</span> <span class="string">&quot;off&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">BackupMode::NoBackup</span>),
-            <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(), <span class="comment">// cannot happen as we must have exactly one match</span>
-                                 <span class="comment">// from the list above.</span>
-        }
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_empty</span>() {
-        <span class="prelude-val">Err</span>(<span class="ident">BackupError::InvalidArgument</span>(<span class="ident">method</span>.<span class="ident">to_string</span>(), <span class="ident">origin</span>.<span class="ident">to_string</span>()).<span class="ident">into</span>())
-    } <span class="kw">else</span> {
-        <span class="prelude-val">Err</span>(<span class="ident">BackupError::AmbiguousArgument</span>(<span class="ident">method</span>.<span class="ident">to_string</span>(), <span class="ident">origin</span>.<span class="ident">to_string</span>()).<span class="ident">into</span>())
-    }
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_backup_path</span>(
-    <span class="ident">backup_mode</span>: <span class="ident">BackupMode</span>,
-    <span class="ident">backup_path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
-    <span class="ident">suffix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">backup_mode</span> {
-        <span class="ident">BackupMode::NoBackup</span> =&gt; <span class="prelude-val">None</span>,
-        <span class="ident">BackupMode::SimpleBackup</span> =&gt; <span class="prelude-val">Some</span>(<span class="ident">simple_backup_path</span>(<span class="ident">backup_path</span>, <span class="ident">suffix</span>)),
-        <span class="ident">BackupMode::NumberedBackup</span> =&gt; <span class="prelude-val">Some</span>(<span class="ident">numbered_backup_path</span>(<span class="ident">backup_path</span>)),
-        <span class="ident">BackupMode::ExistingBackup</span> =&gt; <span class="prelude-val">Some</span>(<span class="ident">existing_backup_path</span>(<span class="ident">backup_path</span>, <span class="ident">suffix</span>)),
-    }
-}
-
-<span class="kw">fn</span> <span class="ident">simple_backup_path</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">suffix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">PathBuf</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">to_string_lossy</span>().<span class="ident">into_owned</span>();
-    <span class="ident">p</span>.<span class="ident">push_str</span>(<span class="ident">suffix</span>);
-    <span class="ident">PathBuf::from</span>(<span class="ident">p</span>)
-}
-
-<span class="kw">fn</span> <span class="ident">numbered_backup_path</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="ident">PathBuf</span> {
-    <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">1_u64</span>.. {
-        <span class="kw">let</span> <span class="ident">path_str</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{}.~{}~&quot;</span>, <span class="ident">path</span>.<span class="ident">to_string_lossy</span>(), <span class="ident">i</span>);
-        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="ident">path_str</span>);
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">path</span>.<span class="ident">exists</span>() {
-            <span class="kw">return</span> <span class="ident">path</span>.<span class="ident">to_path_buf</span>();
+<span class="kw">fn </span>numbered_backup_path(path: <span class="kw-2">&amp;</span>Path) -&gt; PathBuf {
+    <span class="kw">for </span>i <span class="kw">in </span><span class="number">1_u64</span>.. {
+        <span class="kw">let </span>path_str = <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{}.~{}~&quot;</span>, path.to_string_lossy(), i);
+        <span class="kw">let </span>path = Path::new(path_str);
+        <span class="kw">if </span>!path.exists() {
+            <span class="kw">return </span>path.to_path_buf();
         }
     }
     <span class="macro">panic!</span>(<span class="string">&quot;cannot create backup&quot;</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">existing_backup_path</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">suffix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">PathBuf</span> {
-    <span class="kw">let</span> <span class="ident">test_path_str</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{}.~1~&quot;</span>, <span class="ident">path</span>.<span class="ident">to_string_lossy</span>());
-    <span class="kw">let</span> <span class="ident">test_path</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="ident">test_path_str</span>);
-    <span class="kw">if</span> <span class="ident">test_path</span>.<span class="ident">exists</span>() {
-        <span class="ident">numbered_backup_path</span>(<span class="ident">path</span>)
-    } <span class="kw">else</span> {
-        <span class="ident">simple_backup_path</span>(<span class="ident">path</span>, <span class="ident">suffix</span>)
+<span class="kw">fn </span>existing_backup_path(path: <span class="kw-2">&amp;</span>Path, suffix: <span class="kw-2">&amp;</span>str) -&gt; PathBuf {
+    <span class="kw">let </span>test_path_str = <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{}.~1~&quot;</span>, path.to_string_lossy());
+    <span class="kw">let </span>test_path = Path::new(test_path_str);
+    <span class="kw">if </span>test_path.exists() {
+        numbered_backup_path(path)
+    } <span class="kw">else </span>{
+        simple_backup_path(path, suffix)
     }
 }
 
-<span class="comment">//</span>
-<span class="comment">// Tests for this module</span>
-<span class="comment">//</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">std::env</span>;
-    <span class="comment">// Required to instantiate mutex in shared context</span>
-    <span class="kw">use</span> <span class="ident">clap::Command</span>;
-    <span class="kw">use</span> <span class="ident">once_cell::sync::Lazy</span>;
-    <span class="kw">use</span> <span class="ident">std::sync::Mutex</span>;
+<span class="comment">//
+// Tests for this module
+//
+</span><span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span>std::env;
+    <span class="comment">// Required to instantiate mutex in shared context
+    </span><span class="kw">use </span>clap::Command;
+    <span class="kw">use </span>once_cell::sync::Lazy;
+    <span class="kw">use </span>std::sync::Mutex;
 
-    <span class="comment">// The mutex is required here as by default all tests are run as separate</span>
-    <span class="comment">// threads under the same parent process. As environment variables are</span>
-    <span class="comment">// specific to processes (and thus shared among threads), data races *will*</span>
-    <span class="comment">// occur if no precautions are taken. Thus we have all tests that rely on</span>
-    <span class="comment">// environment variables lock this empty mutex to ensure they don&#39;t access</span>
-    <span class="comment">// it concurrently.</span>
-    <span class="kw">static</span> <span class="ident">TEST_MUTEX</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span>()<span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Mutex::new</span>(()));
+    <span class="comment">// The mutex is required here as by default all tests are run as separate
+    // threads under the same parent process. As environment variables are
+    // specific to processes (and thus shared among threads), data races *will*
+    // occur if no precautions are taken. Thus we have all tests that rely on
+    // environment variables lock this empty mutex to ensure they don&#39;t access
+    // it concurrently.
+    </span><span class="kw">static </span>TEST_MUTEX: Lazy&lt;Mutex&lt;()&gt;&gt; = Lazy::new(|| Mutex::new(()));
 
-    <span class="comment">// Environment variable for &quot;VERSION_CONTROL&quot;</span>
-    <span class="kw">static</span> <span class="ident">ENV_VERSION_CONTROL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;VERSION_CONTROL&quot;</span>;
+    <span class="comment">// Environment variable for &quot;VERSION_CONTROL&quot;
+    </span><span class="kw">static </span>ENV_VERSION_CONTROL: <span class="kw-2">&amp;</span>str = <span class="string">&quot;VERSION_CONTROL&quot;</span>;
 
-    <span class="kw">fn</span> <span class="ident">make_app</span>() -&gt; <span class="ident">clap::Command</span> {
-        <span class="ident">Command::new</span>(<span class="string">&quot;command&quot;</span>)
-            .<span class="ident">arg</span>(<span class="ident">arguments::backup</span>())
-            .<span class="ident">arg</span>(<span class="ident">arguments::backup_no_args</span>())
-            .<span class="ident">arg</span>(<span class="ident">arguments::suffix</span>())
+    <span class="kw">fn </span>make_app() -&gt; clap::Command {
+        Command::new(<span class="string">&quot;command&quot;</span>)
+            .arg(arguments::backup())
+            .arg(arguments::backup_no_args())
+            .arg(arguments::suffix())
     }
 
-    <span class="comment">// Defaults to --backup=existing</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_backup_mode_short_only</span>() {
-        <span class="kw">let</span> <span class="ident">_dummy</span> <span class="op">=</span> <span class="ident">TEST_MUTEX</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">make_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;-b&quot;</span>]);
+    <span class="comment">// Defaults to --backup=existing
+    </span><span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_backup_mode_short_only() {
+        <span class="kw">let </span>_dummy = TEST_MUTEX.lock().unwrap();
+        <span class="kw">let </span>matches = make_app().get_matches_from(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;-b&quot;</span>]);
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">determine_backup_mode</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>result = determine_backup_mode(<span class="kw-2">&amp;</span>matches).unwrap();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">result</span>, <span class="ident">BackupMode::ExistingBackup</span>);
+        <span class="macro">assert_eq!</span>(result, BackupMode::ExistingBackup);
     }
 
-    <span class="comment">// --backup takes precedence over -b</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_backup_mode_long_preferred_over_short</span>() {
-        <span class="kw">let</span> <span class="ident">_dummy</span> <span class="op">=</span> <span class="ident">TEST_MUTEX</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">make_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;-b&quot;</span>, <span class="string">&quot;--backup=none&quot;</span>]);
+    <span class="comment">// --backup takes precedence over -b
+    </span><span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_backup_mode_long_preferred_over_short() {
+        <span class="kw">let </span>_dummy = TEST_MUTEX.lock().unwrap();
+        <span class="kw">let </span>matches = make_app().get_matches_from(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;-b&quot;</span>, <span class="string">&quot;--backup=none&quot;</span>]);
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">determine_backup_mode</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>result = determine_backup_mode(<span class="kw-2">&amp;</span>matches).unwrap();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">result</span>, <span class="ident">BackupMode::NoBackup</span>);
+        <span class="macro">assert_eq!</span>(result, BackupMode::NoBackup);
     }
 
-    <span class="comment">// --backup can be passed without an argument</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_backup_mode_long_without_args_no_env</span>() {
-        <span class="kw">let</span> <span class="ident">_dummy</span> <span class="op">=</span> <span class="ident">TEST_MUTEX</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">make_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup&quot;</span>]);
+    <span class="comment">// --backup can be passed without an argument
+    </span><span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_backup_mode_long_without_args_no_env() {
+        <span class="kw">let </span>_dummy = TEST_MUTEX.lock().unwrap();
+        <span class="kw">let </span>matches = make_app().get_matches_from(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup&quot;</span>]);
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">determine_backup_mode</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>result = determine_backup_mode(<span class="kw-2">&amp;</span>matches).unwrap();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">result</span>, <span class="ident">BackupMode::ExistingBackup</span>);
+        <span class="macro">assert_eq!</span>(result, BackupMode::ExistingBackup);
     }
 
-    <span class="comment">// --backup can be passed with an argument only</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_backup_mode_long_with_args</span>() {
-        <span class="kw">let</span> <span class="ident">_dummy</span> <span class="op">=</span> <span class="ident">TEST_MUTEX</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">make_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup=simple&quot;</span>]);
+    <span class="comment">// --backup can be passed with an argument only
+    </span><span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_backup_mode_long_with_args() {
+        <span class="kw">let </span>_dummy = TEST_MUTEX.lock().unwrap();
+        <span class="kw">let </span>matches = make_app().get_matches_from(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup=simple&quot;</span>]);
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">determine_backup_mode</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>result = determine_backup_mode(<span class="kw-2">&amp;</span>matches).unwrap();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">result</span>, <span class="ident">BackupMode::SimpleBackup</span>);
+        <span class="macro">assert_eq!</span>(result, BackupMode::SimpleBackup);
     }
 
-    <span class="comment">// --backup errors on invalid argument</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_backup_mode_long_with_args_invalid</span>() {
-        <span class="kw">let</span> <span class="ident">_dummy</span> <span class="op">=</span> <span class="ident">TEST_MUTEX</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">make_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup=foobar&quot;</span>]);
+    <span class="comment">// --backup errors on invalid argument
+    </span><span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_backup_mode_long_with_args_invalid() {
+        <span class="kw">let </span>_dummy = TEST_MUTEX.lock().unwrap();
+        <span class="kw">let </span>matches = make_app().get_matches_from(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup=foobar&quot;</span>]);
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">determine_backup_mode</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>);
+        <span class="kw">let </span>result = determine_backup_mode(<span class="kw-2">&amp;</span>matches);
 
-        <span class="macro">assert!</span>(<span class="ident">result</span>.<span class="ident">is_err</span>());
-        <span class="kw">let</span> <span class="ident">text</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">result</span>.<span class="ident">unwrap_err</span>());
-        <span class="macro">assert!</span>(<span class="ident">text</span>.<span class="ident">contains</span>(<span class="string">&quot;invalid argument &#39;foobar&#39; for &#39;backup type&#39;&quot;</span>));
+        <span class="macro">assert!</span>(result.is_err());
+        <span class="kw">let </span>text = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, result.unwrap_err());
+        <span class="macro">assert!</span>(text.contains(<span class="string">&quot;invalid argument &#39;foobar&#39; for &#39;backup type&#39;&quot;</span>));
     }
 
-    <span class="comment">// --backup errors on ambiguous argument</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_backup_mode_long_with_args_ambiguous</span>() {
-        <span class="kw">let</span> <span class="ident">_dummy</span> <span class="op">=</span> <span class="ident">TEST_MUTEX</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">make_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup=n&quot;</span>]);
+    <span class="comment">// --backup errors on ambiguous argument
+    </span><span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_backup_mode_long_with_args_ambiguous() {
+        <span class="kw">let </span>_dummy = TEST_MUTEX.lock().unwrap();
+        <span class="kw">let </span>matches = make_app().get_matches_from(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup=n&quot;</span>]);
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">determine_backup_mode</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>);
+        <span class="kw">let </span>result = determine_backup_mode(<span class="kw-2">&amp;</span>matches);
 
-        <span class="macro">assert!</span>(<span class="ident">result</span>.<span class="ident">is_err</span>());
-        <span class="kw">let</span> <span class="ident">text</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">result</span>.<span class="ident">unwrap_err</span>());
-        <span class="macro">assert!</span>(<span class="ident">text</span>.<span class="ident">contains</span>(<span class="string">&quot;ambiguous argument &#39;n&#39; for &#39;backup type&#39;&quot;</span>));
+        <span class="macro">assert!</span>(result.is_err());
+        <span class="kw">let </span>text = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, result.unwrap_err());
+        <span class="macro">assert!</span>(text.contains(<span class="string">&quot;ambiguous argument &#39;n&#39; for &#39;backup type&#39;&quot;</span>));
     }
 
-    <span class="comment">// --backup accepts shortened arguments (si for simple)</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_backup_mode_long_with_arg_shortened</span>() {
-        <span class="kw">let</span> <span class="ident">_dummy</span> <span class="op">=</span> <span class="ident">TEST_MUTEX</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">make_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup=si&quot;</span>]);
+    <span class="comment">// --backup accepts shortened arguments (si for simple)
+    </span><span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_backup_mode_long_with_arg_shortened() {
+        <span class="kw">let </span>_dummy = TEST_MUTEX.lock().unwrap();
+        <span class="kw">let </span>matches = make_app().get_matches_from(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup=si&quot;</span>]);
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">determine_backup_mode</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>result = determine_backup_mode(<span class="kw-2">&amp;</span>matches).unwrap();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">result</span>, <span class="ident">BackupMode::SimpleBackup</span>);
+        <span class="macro">assert_eq!</span>(result, BackupMode::SimpleBackup);
     }
 
-    <span class="comment">// -b ignores the &quot;VERSION_CONTROL&quot; environment variable</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_backup_mode_short_only_ignore_env</span>() {
-        <span class="kw">let</span> <span class="ident">_dummy</span> <span class="op">=</span> <span class="ident">TEST_MUTEX</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-        <span class="ident">env::set_var</span>(<span class="ident">ENV_VERSION_CONTROL</span>, <span class="string">&quot;none&quot;</span>);
-        <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">make_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;-b&quot;</span>]);
+    <span class="comment">// -b ignores the &quot;VERSION_CONTROL&quot; environment variable
+    </span><span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_backup_mode_short_only_ignore_env() {
+        <span class="kw">let </span>_dummy = TEST_MUTEX.lock().unwrap();
+        env::set_var(ENV_VERSION_CONTROL, <span class="string">&quot;none&quot;</span>);
+        <span class="kw">let </span>matches = make_app().get_matches_from(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;-b&quot;</span>]);
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">determine_backup_mode</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>result = determine_backup_mode(<span class="kw-2">&amp;</span>matches).unwrap();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">result</span>, <span class="ident">BackupMode::ExistingBackup</span>);
-        <span class="ident">env::remove_var</span>(<span class="ident">ENV_VERSION_CONTROL</span>);
+        <span class="macro">assert_eq!</span>(result, BackupMode::ExistingBackup);
+        env::remove_var(ENV_VERSION_CONTROL);
     }
 
-    <span class="comment">// --backup can be passed without an argument, but reads env var if existent</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_backup_mode_long_without_args_with_env</span>() {
-        <span class="kw">let</span> <span class="ident">_dummy</span> <span class="op">=</span> <span class="ident">TEST_MUTEX</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-        <span class="ident">env::set_var</span>(<span class="ident">ENV_VERSION_CONTROL</span>, <span class="string">&quot;none&quot;</span>);
-        <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">make_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup&quot;</span>]);
+    <span class="comment">// --backup can be passed without an argument, but reads env var if existent
+    </span><span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_backup_mode_long_without_args_with_env() {
+        <span class="kw">let </span>_dummy = TEST_MUTEX.lock().unwrap();
+        env::set_var(ENV_VERSION_CONTROL, <span class="string">&quot;none&quot;</span>);
+        <span class="kw">let </span>matches = make_app().get_matches_from(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup&quot;</span>]);
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">determine_backup_mode</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>result = determine_backup_mode(<span class="kw-2">&amp;</span>matches).unwrap();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">result</span>, <span class="ident">BackupMode::NoBackup</span>);
-        <span class="ident">env::remove_var</span>(<span class="ident">ENV_VERSION_CONTROL</span>);
+        <span class="macro">assert_eq!</span>(result, BackupMode::NoBackup);
+        env::remove_var(ENV_VERSION_CONTROL);
     }
 
-    <span class="comment">// --backup errors on invalid VERSION_CONTROL env var</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_backup_mode_long_with_env_var_invalid</span>() {
-        <span class="kw">let</span> <span class="ident">_dummy</span> <span class="op">=</span> <span class="ident">TEST_MUTEX</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-        <span class="ident">env::set_var</span>(<span class="ident">ENV_VERSION_CONTROL</span>, <span class="string">&quot;foobar&quot;</span>);
-        <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">make_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup&quot;</span>]);
+    <span class="comment">// --backup errors on invalid VERSION_CONTROL env var
+    </span><span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_backup_mode_long_with_env_var_invalid() {
+        <span class="kw">let </span>_dummy = TEST_MUTEX.lock().unwrap();
+        env::set_var(ENV_VERSION_CONTROL, <span class="string">&quot;foobar&quot;</span>);
+        <span class="kw">let </span>matches = make_app().get_matches_from(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup&quot;</span>]);
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">determine_backup_mode</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>);
+        <span class="kw">let </span>result = determine_backup_mode(<span class="kw-2">&amp;</span>matches);
 
-        <span class="macro">assert!</span>(<span class="ident">result</span>.<span class="ident">is_err</span>());
-        <span class="kw">let</span> <span class="ident">text</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">result</span>.<span class="ident">unwrap_err</span>());
-        <span class="macro">assert!</span>(<span class="ident">text</span>.<span class="ident">contains</span>(<span class="string">&quot;invalid argument &#39;foobar&#39; for &#39;$VERSION_CONTROL&#39;&quot;</span>));
-        <span class="ident">env::remove_var</span>(<span class="ident">ENV_VERSION_CONTROL</span>);
+        <span class="macro">assert!</span>(result.is_err());
+        <span class="kw">let </span>text = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, result.unwrap_err());
+        <span class="macro">assert!</span>(text.contains(<span class="string">&quot;invalid argument &#39;foobar&#39; for &#39;$VERSION_CONTROL&#39;&quot;</span>));
+        env::remove_var(ENV_VERSION_CONTROL);
     }
 
-    <span class="comment">// --backup errors on ambiguous VERSION_CONTROL env var</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_backup_mode_long_with_env_var_ambiguous</span>() {
-        <span class="kw">let</span> <span class="ident">_dummy</span> <span class="op">=</span> <span class="ident">TEST_MUTEX</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-        <span class="ident">env::set_var</span>(<span class="ident">ENV_VERSION_CONTROL</span>, <span class="string">&quot;n&quot;</span>);
-        <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">make_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup&quot;</span>]);
+    <span class="comment">// --backup errors on ambiguous VERSION_CONTROL env var
+    </span><span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_backup_mode_long_with_env_var_ambiguous() {
+        <span class="kw">let </span>_dummy = TEST_MUTEX.lock().unwrap();
+        env::set_var(ENV_VERSION_CONTROL, <span class="string">&quot;n&quot;</span>);
+        <span class="kw">let </span>matches = make_app().get_matches_from(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup&quot;</span>]);
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">determine_backup_mode</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>);
+        <span class="kw">let </span>result = determine_backup_mode(<span class="kw-2">&amp;</span>matches);
 
-        <span class="macro">assert!</span>(<span class="ident">result</span>.<span class="ident">is_err</span>());
-        <span class="kw">let</span> <span class="ident">text</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">result</span>.<span class="ident">unwrap_err</span>());
-        <span class="macro">assert!</span>(<span class="ident">text</span>.<span class="ident">contains</span>(<span class="string">&quot;ambiguous argument &#39;n&#39; for &#39;$VERSION_CONTROL&#39;&quot;</span>));
-        <span class="ident">env::remove_var</span>(<span class="ident">ENV_VERSION_CONTROL</span>);
+        <span class="macro">assert!</span>(result.is_err());
+        <span class="kw">let </span>text = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, result.unwrap_err());
+        <span class="macro">assert!</span>(text.contains(<span class="string">&quot;ambiguous argument &#39;n&#39; for &#39;$VERSION_CONTROL&#39;&quot;</span>));
+        env::remove_var(ENV_VERSION_CONTROL);
     }
 
-    <span class="comment">// --backup accepts shortened env vars (si for simple)</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_backup_mode_long_with_env_var_shortened</span>() {
-        <span class="kw">let</span> <span class="ident">_dummy</span> <span class="op">=</span> <span class="ident">TEST_MUTEX</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-        <span class="ident">env::set_var</span>(<span class="ident">ENV_VERSION_CONTROL</span>, <span class="string">&quot;si&quot;</span>);
-        <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">make_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup&quot;</span>]);
+    <span class="comment">// --backup accepts shortened env vars (si for simple)
+    </span><span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_backup_mode_long_with_env_var_shortened() {
+        <span class="kw">let </span>_dummy = TEST_MUTEX.lock().unwrap();
+        env::set_var(ENV_VERSION_CONTROL, <span class="string">&quot;si&quot;</span>);
+        <span class="kw">let </span>matches = make_app().get_matches_from(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;--backup&quot;</span>]);
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">determine_backup_mode</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>result = determine_backup_mode(<span class="kw-2">&amp;</span>matches).unwrap();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">result</span>, <span class="ident">BackupMode::SimpleBackup</span>);
-        <span class="ident">env::remove_var</span>(<span class="ident">ENV_VERSION_CONTROL</span>);
+        <span class="macro">assert_eq!</span>(result, BackupMode::SimpleBackup);
+        env::remove_var(ENV_VERSION_CONTROL);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_suffix_takes_hyphen_value</span>() {
-        <span class="kw">let</span> <span class="ident">_dummy</span> <span class="op">=</span> <span class="ident">TEST_MUTEX</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">make_app</span>().<span class="ident">get_matches_from</span>(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;-b&quot;</span>, <span class="string">&quot;--suffix&quot;</span>, <span class="string">&quot;-v&quot;</span>]);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_suffix_takes_hyphen_value() {
+        <span class="kw">let </span>_dummy = TEST_MUTEX.lock().unwrap();
+        <span class="kw">let </span>matches = make_app().get_matches_from(<span class="macro">vec!</span>[<span class="string">&quot;command&quot;</span>, <span class="string">&quot;-b&quot;</span>, <span class="string">&quot;--suffix&quot;</span>, <span class="string">&quot;-v&quot;</span>]);
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">determine_backup_suffix</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">result</span>, <span class="string">&quot;-v&quot;</span>);
+        <span class="kw">let </span>result = determine_backup_suffix(<span class="kw-2">&amp;</span>matches);
+        <span class="macro">assert_eq!</span>(result, <span class="string">&quot;-v&quot;</span>);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uucore" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uucore" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

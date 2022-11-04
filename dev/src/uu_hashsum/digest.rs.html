@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/hashsum/src/digest.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>digest.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uu_hashsum/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../uu_hashsum/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uu_hashsum/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/hashsum/src/digest.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>digest.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uu_hashsum/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../uu_hashsum/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uu_hashsum/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -291,298 +291,298 @@
 <span id="291">291</span>
 <span id="292">292</span>
 <span id="293">293</span>
-</pre><pre class="rust"><code><span class="comment">// spell-checker:ignore memmem</span>
-<span class="doccomment">//! Implementations of digest functions, like md5 and sha1.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The [`Digest`] trait represents the interface for providing inputs</span>
-<span class="doccomment">//! to these digest functions and accessing the resulting hash. The</span>
-<span class="doccomment">//! [`DigestWriter`] struct provides a wrapper around [`Digest`] that</span>
-<span class="doccomment">//! implements the [`Write`] trait, for use in situations where calling</span>
-<span class="doccomment">//! [`write`] would be useful.</span>
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">digest</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">md5</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">sha1</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">sha2</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">sha3</span>;
+</pre><pre class="rust"><code><span class="comment">// spell-checker:ignore memmem
+</span><span class="doccomment">//! Implementations of digest functions, like md5 and sha1.
+//!
+//! The [`Digest`] trait represents the interface for providing inputs
+//! to these digest functions and accessing the resulting hash. The
+//! [`DigestWriter`] struct provides a wrapper around [`Digest`] that
+//! implements the [`Write`] trait, for use in situations where calling
+//! [`write`] would be useful.
+</span><span class="kw">extern crate </span>digest;
+<span class="kw">extern crate </span>md5;
+<span class="kw">extern crate </span>sha1;
+<span class="kw">extern crate </span>sha2;
+<span class="kw">extern crate </span>sha3;
 
-<span class="kw">use</span> <span class="ident">std::io::Write</span>;
+<span class="kw">use </span>std::io::Write;
 
-<span class="kw">use</span> <span class="ident">hex::encode</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">memchr::memmem</span>;
+<span class="kw">use </span>hex::encode;
+<span class="attribute">#[cfg(windows)]
+</span><span class="kw">use </span>memchr::memmem;
 
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Digest</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span>
-    <span class="kw">where</span>
-        <span class="self">Self</span>: <span class="ident">Sized</span>;
-    <span class="kw">fn</span> <span class="ident">input</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]);
-    <span class="kw">fn</span> <span class="ident">result</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">out</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">u8</span>]);
-    <span class="kw">fn</span> <span class="ident">reset</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>);
-    <span class="kw">fn</span> <span class="ident">output_bits</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span>;
-    <span class="kw">fn</span> <span class="ident">output_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        (<span class="self">self</span>.<span class="ident">output_bits</span>() <span class="op">+</span> <span class="number">7</span>) <span class="op">/</span> <span class="number">8</span>
-    }
-    <span class="kw">fn</span> <span class="ident">result_str</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0</span>; <span class="self">self</span>.<span class="ident">output_bytes</span>()];
-        <span class="self">self</span>.<span class="ident">result</span>(<span class="kw-2">&amp;mut</span> <span class="ident">buf</span>);
-        <span class="ident">encode</span>(<span class="ident">buf</span>)
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">Digest</span> <span class="kw">for</span> <span class="ident">blake2b_simd::State</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::new</span>()
-    }
-
-    <span class="kw">fn</span> <span class="ident">input</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) {
-        <span class="self">self</span>.<span class="ident">update</span>(<span class="ident">input</span>);
-    }
-
-    <span class="kw">fn</span> <span class="ident">result</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">out</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">u8</span>]) {
-        <span class="kw">let</span> <span class="ident">hash_result</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">finalize</span>();
-        <span class="ident">out</span>.<span class="ident">copy_from_slice</span>(<span class="ident">hash_result</span>.<span class="ident">as_bytes</span>());
-    }
-
-    <span class="kw">fn</span> <span class="ident">reset</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="kw-2">*</span><span class="self">self</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::new</span>();
-    }
-
-    <span class="kw">fn</span> <span class="ident">output_bits</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="number">512</span>
+<span class="kw">pub trait </span>Digest {
+    <span class="kw">fn </span>new() -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span><span class="self">Self</span>: Sized;
+    <span class="kw">fn </span>input(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>[u8]);
+    <span class="kw">fn </span>result(<span class="kw-2">&amp;mut </span><span class="self">self</span>, out: <span class="kw-2">&amp;mut </span>[u8]);
+    <span class="kw">fn </span>reset(<span class="kw-2">&amp;mut </span><span class="self">self</span>);
+    <span class="kw">fn </span>output_bits(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize;
+    <span class="kw">fn </span>output_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        (<span class="self">self</span>.output_bits() + <span class="number">7</span>) / <span class="number">8
+    </span>}
+    <span class="kw">fn </span>result_str(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; String {
+        <span class="kw">let </span><span class="kw-2">mut </span>buf: Vec&lt;u8&gt; = <span class="macro">vec!</span>[<span class="number">0</span>; <span class="self">self</span>.output_bytes()];
+        <span class="self">self</span>.result(<span class="kw-2">&amp;mut </span>buf);
+        encode(buf)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Digest</span> <span class="kw">for</span> <span class="ident">blake3::Hasher</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::new</span>()
+<span class="kw">impl </span>Digest <span class="kw">for </span>blake2b_simd::State {
+    <span class="kw">fn </span>new() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
     }
 
-    <span class="kw">fn</span> <span class="ident">input</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) {
-        <span class="self">self</span>.<span class="ident">update</span>(<span class="ident">input</span>);
+    <span class="kw">fn </span>input(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>[u8]) {
+        <span class="self">self</span>.update(input);
     }
 
-    <span class="kw">fn</span> <span class="ident">result</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">out</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">u8</span>]) {
-        <span class="kw">let</span> <span class="ident">hash_result</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">finalize</span>();
-        <span class="ident">out</span>.<span class="ident">copy_from_slice</span>(<span class="ident">hash_result</span>.<span class="ident">as_bytes</span>());
+    <span class="kw">fn </span>result(<span class="kw-2">&amp;mut </span><span class="self">self</span>, out: <span class="kw-2">&amp;mut </span>[u8]) {
+        <span class="kw">let </span>hash_result = <span class="kw-2">&amp;</span><span class="self">self</span>.finalize();
+        out.copy_from_slice(hash_result.as_bytes());
     }
 
-    <span class="kw">fn</span> <span class="ident">reset</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="kw-2">*</span><span class="self">self</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::new</span>();
+    <span class="kw">fn </span>reset(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="kw-2">*</span><span class="self">self </span>= <span class="self">Self</span>::new();
     }
 
-    <span class="kw">fn</span> <span class="ident">output_bits</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="number">256</span>
-    }
+    <span class="kw">fn </span>output_bits(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="number">512
+    </span>}
 }
 
-<span class="comment">// Implements the Digest trait for sha2 / sha3 algorithms with fixed output</span>
-<span class="macro">macro_rules!</span> <span class="ident">impl_digest_common</span> {
-    (<span class="macro-nonterminal">$</span><span class="kw">type</span>: <span class="macro-nonterminal">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">size</span>: <span class="ident">expr</span>) =&gt; {
-        <span class="kw">impl</span> <span class="ident">Digest</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="kw">type</span> {
-            <span class="kw">fn</span> <span class="macro-nonterminal">new</span>() -&gt; <span class="self">Self</span> {
-                <span class="ident"><span class="self">Self</span>::default</span>()
+<span class="kw">impl </span>Digest <span class="kw">for </span>blake3::Hasher {
+    <span class="kw">fn </span>new() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
+    }
+
+    <span class="kw">fn </span>input(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>[u8]) {
+        <span class="self">self</span>.update(input);
+    }
+
+    <span class="kw">fn </span>result(<span class="kw-2">&amp;mut </span><span class="self">self</span>, out: <span class="kw-2">&amp;mut </span>[u8]) {
+        <span class="kw">let </span>hash_result = <span class="kw-2">&amp;</span><span class="self">self</span>.finalize();
+        out.copy_from_slice(hash_result.as_bytes());
+    }
+
+    <span class="kw">fn </span>reset(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="kw-2">*</span><span class="self">self </span>= <span class="self">Self</span>::new();
+    }
+
+    <span class="kw">fn </span>output_bits(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="number">256
+    </span>}
+}
+
+<span class="comment">// Implements the Digest trait for sha2 / sha3 algorithms with fixed output
+</span><span class="macro">macro_rules! </span>impl_digest_common {
+    (<span class="macro-nonterminal">$</span><span class="kw">type</span>: <span class="macro-nonterminal">ty</span>, <span class="macro-nonterminal">$size</span>: expr) =&gt; {
+        <span class="kw">impl </span>Digest <span class="kw">for </span><span class="macro-nonterminal">$</span><span class="kw">type </span>{
+            <span class="kw">fn </span><span class="macro-nonterminal">new</span>() -&gt; <span class="self">Self </span>{
+                <span class="self">Self</span>::default()
             }
 
-            <span class="kw">fn</span> <span class="ident">input</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) {
-                <span class="ident">digest::Digest::update</span>(<span class="self">self</span>, <span class="ident">input</span>);
+            <span class="kw">fn </span>input(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>[u8]) {
+                digest::Digest::update(<span class="self">self</span>, input);
             }
 
-            <span class="kw">fn</span> <span class="ident">result</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">out</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">u8</span>]) {
-                <span class="ident">digest::Digest::finalize_into_reset</span>(<span class="self">self</span>, <span class="ident">out</span>.<span class="ident">into</span>());
+            <span class="kw">fn </span>result(<span class="kw-2">&amp;mut </span><span class="self">self</span>, out: <span class="kw-2">&amp;mut </span>[u8]) {
+                digest::Digest::finalize_into_reset(<span class="self">self</span>, out.into());
             }
 
-            <span class="kw">fn</span> <span class="ident">reset</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-                <span class="kw-2">*</span><span class="self">self</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::new</span>();
+            <span class="kw">fn </span>reset(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+                <span class="kw-2">*</span><span class="self">self </span>= <span class="self">Self</span>::new();
             }
 
-            <span class="kw">fn</span> <span class="ident">output_bits</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-                <span class="macro-nonterminal">$</span><span class="macro-nonterminal">size</span>
-            }
+            <span class="kw">fn </span>output_bits(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+                <span class="macro-nonterminal">$size
+            </span>}
         }
     };
 }
 
-<span class="comment">// Implements the Digest trait for sha2 / sha3 algorithms with variable output</span>
-<span class="macro">macro_rules!</span> <span class="ident">impl_digest_shake</span> {
+<span class="comment">// Implements the Digest trait for sha2 / sha3 algorithms with variable output
+</span><span class="macro">macro_rules! </span>impl_digest_shake {
     (<span class="macro-nonterminal">$</span><span class="kw">type</span>: <span class="macro-nonterminal">ty</span>) =&gt; {
-        <span class="kw">impl</span> <span class="ident">Digest</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="kw">type</span> {
-            <span class="kw">fn</span> <span class="macro-nonterminal">new</span>() -&gt; <span class="self">Self</span> {
-                <span class="ident"><span class="self">Self</span>::default</span>()
+        <span class="kw">impl </span>Digest <span class="kw">for </span><span class="macro-nonterminal">$</span><span class="kw">type </span>{
+            <span class="kw">fn </span><span class="macro-nonterminal">new</span>() -&gt; <span class="self">Self </span>{
+                <span class="self">Self</span>::default()
             }
 
-            <span class="kw">fn</span> <span class="ident">input</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) {
-                <span class="ident">digest::Update::update</span>(<span class="self">self</span>, <span class="ident">input</span>);
+            <span class="kw">fn </span>input(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>[u8]) {
+                digest::Update::update(<span class="self">self</span>, input);
             }
 
-            <span class="kw">fn</span> <span class="ident">result</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">out</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">u8</span>]) {
-                <span class="ident">digest::ExtendableOutputReset::finalize_xof_reset_into</span>(<span class="self">self</span>, <span class="ident">out</span>);
+            <span class="kw">fn </span>result(<span class="kw-2">&amp;mut </span><span class="self">self</span>, out: <span class="kw-2">&amp;mut </span>[u8]) {
+                digest::ExtendableOutputReset::finalize_xof_reset_into(<span class="self">self</span>, out);
             }
 
-            <span class="kw">fn</span> <span class="ident">reset</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-                <span class="kw-2">*</span><span class="self">self</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::new</span>();
+            <span class="kw">fn </span>reset(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+                <span class="kw-2">*</span><span class="self">self </span>= <span class="self">Self</span>::new();
             }
 
-            <span class="kw">fn</span> <span class="ident">output_bits</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-                <span class="number">0</span>
-            }
+            <span class="kw">fn </span>output_bits(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+                <span class="number">0
+            </span>}
         }
     };
 }
 
-<span class="macro">impl_digest_common!</span>(<span class="ident">md5::Md5</span>, <span class="number">128</span>);
-<span class="macro">impl_digest_common!</span>(<span class="ident">sha1::Sha1</span>, <span class="number">160</span>);
-<span class="macro">impl_digest_common!</span>(<span class="ident">sha2::Sha224</span>, <span class="number">224</span>);
-<span class="macro">impl_digest_common!</span>(<span class="ident">sha2::Sha256</span>, <span class="number">256</span>);
-<span class="macro">impl_digest_common!</span>(<span class="ident">sha2::Sha384</span>, <span class="number">384</span>);
-<span class="macro">impl_digest_common!</span>(<span class="ident">sha2::Sha512</span>, <span class="number">512</span>);
+<span class="macro">impl_digest_common!</span>(md5::Md5, <span class="number">128</span>);
+<span class="macro">impl_digest_common!</span>(sha1::Sha1, <span class="number">160</span>);
+<span class="macro">impl_digest_common!</span>(sha2::Sha224, <span class="number">224</span>);
+<span class="macro">impl_digest_common!</span>(sha2::Sha256, <span class="number">256</span>);
+<span class="macro">impl_digest_common!</span>(sha2::Sha384, <span class="number">384</span>);
+<span class="macro">impl_digest_common!</span>(sha2::Sha512, <span class="number">512</span>);
 
-<span class="macro">impl_digest_common!</span>(<span class="ident">sha3::Sha3_224</span>, <span class="number">224</span>);
-<span class="macro">impl_digest_common!</span>(<span class="ident">sha3::Sha3_256</span>, <span class="number">256</span>);
-<span class="macro">impl_digest_common!</span>(<span class="ident">sha3::Sha3_384</span>, <span class="number">384</span>);
-<span class="macro">impl_digest_common!</span>(<span class="ident">sha3::Sha3_512</span>, <span class="number">512</span>);
-<span class="macro">impl_digest_shake!</span>(<span class="ident">sha3::Shake128</span>);
-<span class="macro">impl_digest_shake!</span>(<span class="ident">sha3::Shake256</span>);
+<span class="macro">impl_digest_common!</span>(sha3::Sha3_224, <span class="number">224</span>);
+<span class="macro">impl_digest_common!</span>(sha3::Sha3_256, <span class="number">256</span>);
+<span class="macro">impl_digest_common!</span>(sha3::Sha3_384, <span class="number">384</span>);
+<span class="macro">impl_digest_common!</span>(sha3::Sha3_512, <span class="number">512</span>);
+<span class="macro">impl_digest_shake!</span>(sha3::Shake128);
+<span class="macro">impl_digest_shake!</span>(sha3::Shake256);
 
-<span class="doccomment">/// A struct that writes to a digest.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This struct wraps a [`Digest`] and provides a [`Write`]</span>
-<span class="doccomment">/// implementation that passes input bytes directly to the</span>
-<span class="doccomment">/// [`Digest::input`].</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// On Windows, if `binary` is `false`, then the [`write`]</span>
-<span class="doccomment">/// implementation replaces instances of &quot;\r\n&quot; with &quot;\n&quot; before passing</span>
-<span class="doccomment">/// the input bytes to the [`digest`].</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DigestWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">digest</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>,
+<span class="doccomment">/// A struct that writes to a digest.
+///
+/// This struct wraps a [`Digest`] and provides a [`Write`]
+/// implementation that passes input bytes directly to the
+/// [`Digest::input`].
+///
+/// On Windows, if `binary` is `false`, then the [`write`]
+/// implementation replaces instances of &quot;\r\n&quot; with &quot;\n&quot; before passing
+/// the input bytes to the [`digest`].
+</span><span class="kw">pub struct </span>DigestWriter&lt;<span class="lifetime">&#39;a</span>&gt; {
+    digest: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
 
-    <span class="doccomment">/// Whether to write to the digest in binary mode or text mode on Windows.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If this is `false`, then instances of &quot;\r\n&quot; are replaced with</span>
-    <span class="doccomment">/// &quot;\n&quot; before passing input bytes to the [`digest`].</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-    <span class="ident">binary</span>: <span class="ident">bool</span>,
+    <span class="doccomment">/// Whether to write to the digest in binary mode or text mode on Windows.
+    ///
+    /// If this is `false`, then instances of &quot;\r\n&quot; are replaced with
+    /// &quot;\n&quot; before passing input bytes to the [`digest`].
+    </span><span class="attribute">#[allow(dead_code)]
+    </span>binary: bool,
 
-    <span class="doccomment">/// Whether the previous</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-    <span class="ident">was_last_character_carriage_return</span>: <span class="ident">bool</span>,
-    <span class="comment">// TODO These are dead code only on non-Windows operating systems.</span>
-    <span class="comment">// It might be better to use a `#[cfg(windows)]` guard here.</span>
+    <span class="doccomment">/// Whether the previous
+    </span><span class="attribute">#[allow(dead_code)]
+    </span>was_last_character_carriage_return: bool,
+    <span class="comment">// TODO These are dead code only on non-Windows operating systems.
+    // It might be better to use a `#[cfg(windows)]` guard here.
+</span>}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; DigestWriter&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">pub fn </span>new(digest: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, binary: bool) -&gt; DigestWriter {
+        <span class="kw">let </span>was_last_character_carriage_return = <span class="bool-val">false</span>;
+        DigestWriter {
+            digest,
+            binary,
+            was_last_character_carriage_return,
+        }
+    }
+
+    <span class="kw">pub fn </span>finalize(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; bool {
+        <span class="kw">if </span><span class="self">self</span>.was_last_character_carriage_return {
+            <span class="self">self</span>.digest.input(<span class="kw-2">&amp;</span>[<span class="string">b&#39;\r&#39;</span>]);
+            <span class="bool-val">true
+        </span>} <span class="kw">else </span>{
+            <span class="bool-val">false
+        </span>}
+    }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">DigestWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">digest</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>, <span class="ident">binary</span>: <span class="ident">bool</span>) -&gt; <span class="ident">DigestWriter</span> {
-        <span class="kw">let</span> <span class="ident">was_last_character_carriage_return</span> <span class="op">=</span> <span class="bool-val">false</span>;
-        <span class="ident">DigestWriter</span> {
-            <span class="ident">digest</span>,
-            <span class="ident">binary</span>,
-            <span class="ident">was_last_character_carriage_return</span>,
-        }
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Write <span class="kw">for </span>DigestWriter&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="attribute">#[cfg(not(windows))]
+    </span><span class="kw">fn </span>write(<span class="kw-2">&amp;mut </span><span class="self">self</span>, buf: <span class="kw-2">&amp;</span>[u8]) -&gt; std::io::Result&lt;usize&gt; {
+        <span class="self">self</span>.digest.input(buf);
+        <span class="prelude-val">Ok</span>(buf.len())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">finalize</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">was_last_character_carriage_return</span> {
-            <span class="self">self</span>.<span class="ident">digest</span>.<span class="ident">input</span>(<span class="kw-2">&amp;</span>[<span class="string">b&#39;\r&#39;</span>]);
-            <span class="bool-val">true</span>
-        } <span class="kw">else</span> {
-            <span class="bool-val">false</span>
-        }
-    }
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Write</span> <span class="kw">for</span> <span class="ident">DigestWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">digest</span>.<span class="ident">input</span>(<span class="ident">buf</span>);
-        <span class="prelude-val">Ok</span>(<span class="ident">buf</span>.<span class="ident">len</span>())
-    }
-
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">binary</span> {
-            <span class="self">self</span>.<span class="ident">digest</span>.<span class="ident">input</span>(<span class="ident">buf</span>);
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">buf</span>.<span class="ident">len</span>());
+    <span class="attribute">#[cfg(windows)]
+    </span><span class="kw">fn </span>write(<span class="kw-2">&amp;mut </span><span class="self">self</span>, buf: <span class="kw-2">&amp;</span>[u8]) -&gt; std::io::Result&lt;usize&gt; {
+        <span class="kw">if </span><span class="self">self</span>.binary {
+            <span class="self">self</span>.digest.input(buf);
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(buf.len());
         }
 
-        <span class="comment">// The remaining code handles Windows text mode, where we must</span>
-        <span class="comment">// replace each occurrence of &quot;\r\n&quot; with &quot;\n&quot;.</span>
-        <span class="comment">//</span>
-        <span class="comment">// First, if the last character written was &quot;\r&quot; and the first</span>
-        <span class="comment">// character in the current buffer to write is not &quot;\n&quot;, then we</span>
-        <span class="comment">// need to write the &quot;\r&quot; that we buffered from the previous</span>
-        <span class="comment">// call to `write()`.</span>
-        <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">len</span>();
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">was_last_character_carriage_return</span> <span class="op">&amp;&amp;</span> <span class="ident">n</span> <span class="op">&gt;</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="ident">buf</span>[<span class="number">0</span>] <span class="op">!</span><span class="op">=</span> <span class="string">b&#39;\n&#39;</span> {
-            <span class="self">self</span>.<span class="ident">digest</span>.<span class="ident">input</span>(<span class="kw-2">&amp;</span>[<span class="string">b&#39;\r&#39;</span>]);
+        <span class="comment">// The remaining code handles Windows text mode, where we must
+        // replace each occurrence of &quot;\r\n&quot; with &quot;\n&quot;.
+        //
+        // First, if the last character written was &quot;\r&quot; and the first
+        // character in the current buffer to write is not &quot;\n&quot;, then we
+        // need to write the &quot;\r&quot; that we buffered from the previous
+        // call to `write()`.
+        </span><span class="kw">let </span>n = buf.len();
+        <span class="kw">if </span><span class="self">self</span>.was_last_character_carriage_return &amp;&amp; n &gt; <span class="number">0 </span>&amp;&amp; buf[<span class="number">0</span>] != <span class="string">b&#39;\n&#39; </span>{
+            <span class="self">self</span>.digest.input(<span class="kw-2">&amp;</span>[<span class="string">b&#39;\r&#39;</span>]);
         }
 
-        <span class="comment">// Next, find all occurrences of &quot;\r\n&quot;, inputting the slice</span>
-        <span class="comment">// just before the &quot;\n&quot; in the previous instance of &quot;\r\n&quot; and</span>
-        <span class="comment">// the beginning of this &quot;\r\n&quot;.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i_prev</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">memmem::find_iter</span>(<span class="ident">buf</span>, <span class="string">b&quot;\r\n&quot;</span>) {
-            <span class="self">self</span>.<span class="ident">digest</span>.<span class="ident">input</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[<span class="ident">i_prev</span>..<span class="ident">i</span>]);
-            <span class="ident">i_prev</span> <span class="op">=</span> <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>;
+        <span class="comment">// Next, find all occurrences of &quot;\r\n&quot;, inputting the slice
+        // just before the &quot;\n&quot; in the previous instance of &quot;\r\n&quot; and
+        // the beginning of this &quot;\r\n&quot;.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>i_prev = <span class="number">0</span>;
+        <span class="kw">for </span>i <span class="kw">in </span>memmem::find_iter(buf, <span class="string">b&quot;\r\n&quot;</span>) {
+            <span class="self">self</span>.digest.input(<span class="kw-2">&amp;</span>buf[i_prev..i]);
+            i_prev = i + <span class="number">1</span>;
         }
 
-        <span class="comment">// Finally, check whether the last character is &quot;\r&quot;. If so,</span>
-        <span class="comment">// buffer it until we know that the next character is not &quot;\n&quot;,</span>
-        <span class="comment">// which can only be known on the next call to `write()`.</span>
-        <span class="comment">//</span>
-        <span class="comment">// This all assumes that `write()` will be called on adjacent</span>
-        <span class="comment">// blocks of the input.</span>
-        <span class="kw">if</span> <span class="ident">n</span> <span class="op">&gt;</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="ident">buf</span>[<span class="ident">n</span> <span class="op">-</span> <span class="number">1</span>] <span class="op">==</span> <span class="string">b&#39;\r&#39;</span> {
-            <span class="self">self</span>.<span class="ident">was_last_character_carriage_return</span> <span class="op">=</span> <span class="bool-val">true</span>;
-            <span class="self">self</span>.<span class="ident">digest</span>.<span class="ident">input</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[<span class="ident">i_prev</span>..<span class="ident">n</span> <span class="op">-</span> <span class="number">1</span>]);
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">was_last_character_carriage_return</span> <span class="op">=</span> <span class="bool-val">false</span>;
-            <span class="self">self</span>.<span class="ident">digest</span>.<span class="ident">input</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[<span class="ident">i_prev</span>..<span class="ident">n</span>]);
+        <span class="comment">// Finally, check whether the last character is &quot;\r&quot;. If so,
+        // buffer it until we know that the next character is not &quot;\n&quot;,
+        // which can only be known on the next call to `write()`.
+        //
+        // This all assumes that `write()` will be called on adjacent
+        // blocks of the input.
+        </span><span class="kw">if </span>n &gt; <span class="number">0 </span>&amp;&amp; buf[n - <span class="number">1</span>] == <span class="string">b&#39;\r&#39; </span>{
+            <span class="self">self</span>.was_last_character_carriage_return = <span class="bool-val">true</span>;
+            <span class="self">self</span>.digest.input(<span class="kw-2">&amp;</span>buf[i_prev..n - <span class="number">1</span>]);
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.was_last_character_carriage_return = <span class="bool-val">false</span>;
+            <span class="self">self</span>.digest.input(<span class="kw-2">&amp;</span>buf[i_prev..n]);
         }
 
-        <span class="comment">// Even though we dropped a &quot;\r&quot; for each &quot;\r\n&quot; we found, we</span>
-        <span class="comment">// still report the number of bytes written as `n`. This is</span>
-        <span class="comment">// because the meaning of the returned number is supposed to be</span>
-        <span class="comment">// the number of bytes consumed by the writer, so that if the</span>
-        <span class="comment">// calling code were calling `write()` in a loop, it would know</span>
-        <span class="comment">// where the next contiguous slice of the buffer starts.</span>
-        <span class="prelude-val">Ok</span>(<span class="ident">n</span>)
+        <span class="comment">// Even though we dropped a &quot;\r&quot; for each &quot;\r\n&quot; we found, we
+        // still report the number of bytes written as `n`. This is
+        // because the meaning of the returned number is supposed to be
+        // the number of bytes consumed by the writer, so that if the
+        // calling code were calling `write()` in a loop, it would know
+        // where the next contiguous slice of the buffer starts.
+        </span><span class="prelude-val">Ok</span>(n)
     }
 
-    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn </span>flush(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; std::io::Result&lt;()&gt; {
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
 
-    <span class="doccomment">/// Test for replacing a &quot;\r\n&quot; sequence with &quot;\n&quot; when the &quot;\r&quot; is</span>
-    <span class="doccomment">/// at the end of one block and the &quot;\n&quot; is at the beginning of the</span>
-    <span class="doccomment">/// next block, when reading in blocks.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_crlf_across_blocks</span>() {
-        <span class="kw">use</span> <span class="ident">std::io::Write</span>;
+    <span class="doccomment">/// Test for replacing a &quot;\r\n&quot; sequence with &quot;\n&quot; when the &quot;\r&quot; is
+    /// at the end of one block and the &quot;\n&quot; is at the beginning of the
+    /// next block, when reading in blocks.
+    </span><span class="attribute">#[cfg(windows)]
+    #[test]
+    </span><span class="kw">fn </span>test_crlf_across_blocks() {
+        <span class="kw">use </span>std::io::Write;
 
-        <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::digest::Digest</span>;
-        <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::digest::DigestWriter</span>;
+        <span class="kw">use </span><span class="kw">crate</span>::digest::Digest;
+        <span class="kw">use </span><span class="kw">crate</span>::digest::DigestWriter;
 
-        <span class="comment">// Writing &quot;\r&quot; in one call to `write()`, and then &quot;\n&quot; in another.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">digest</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">md5::Md5::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">writer_crlf</span> <span class="op">=</span> <span class="ident">DigestWriter::new</span>(<span class="kw-2">&amp;mut</span> <span class="ident">digest</span>, <span class="bool-val">false</span>);
-        <span class="ident">writer_crlf</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span>[<span class="string">b&#39;\r&#39;</span>]).<span class="ident">unwrap</span>();
-        <span class="ident">writer_crlf</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span>[<span class="string">b&#39;\n&#39;</span>]).<span class="ident">unwrap</span>();
-        <span class="ident">writer_crlf</span>.<span class="ident">finalize</span>();
-        <span class="kw">let</span> <span class="ident">result_crlf</span> <span class="op">=</span> <span class="ident">digest</span>.<span class="ident">result_str</span>();
+        <span class="comment">// Writing &quot;\r&quot; in one call to `write()`, and then &quot;\n&quot; in another.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>digest = Box::new(md5::Md5::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;;
+        <span class="kw">let </span><span class="kw-2">mut </span>writer_crlf = DigestWriter::new(<span class="kw-2">&amp;mut </span>digest, <span class="bool-val">false</span>);
+        writer_crlf.write_all(<span class="kw-2">&amp;</span>[<span class="string">b&#39;\r&#39;</span>]).unwrap();
+        writer_crlf.write_all(<span class="kw-2">&amp;</span>[<span class="string">b&#39;\n&#39;</span>]).unwrap();
+        writer_crlf.finalize();
+        <span class="kw">let </span>result_crlf = digest.result_str();
 
-        <span class="comment">// We expect &quot;\r\n&quot; to be replaced with &quot;\n&quot; in text mode on Windows.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">digest</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">md5::Md5::new</span>()) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Digest</span><span class="op">&gt;</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">writer_lf</span> <span class="op">=</span> <span class="ident">DigestWriter::new</span>(<span class="kw-2">&amp;mut</span> <span class="ident">digest</span>, <span class="bool-val">false</span>);
-        <span class="ident">writer_lf</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span>[<span class="string">b&#39;\n&#39;</span>]).<span class="ident">unwrap</span>();
-        <span class="ident">writer_lf</span>.<span class="ident">finalize</span>();
-        <span class="kw">let</span> <span class="ident">result_lf</span> <span class="op">=</span> <span class="ident">digest</span>.<span class="ident">result_str</span>();
+        <span class="comment">// We expect &quot;\r\n&quot; to be replaced with &quot;\n&quot; in text mode on Windows.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>digest = Box::new(md5::Md5::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;;
+        <span class="kw">let </span><span class="kw-2">mut </span>writer_lf = DigestWriter::new(<span class="kw-2">&amp;mut </span>digest, <span class="bool-val">false</span>);
+        writer_lf.write_all(<span class="kw-2">&amp;</span>[<span class="string">b&#39;\n&#39;</span>]).unwrap();
+        writer_lf.finalize();
+        <span class="kw">let </span>result_lf = digest.result_str();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">result_crlf</span>, <span class="ident">result_lf</span>);
+        <span class="macro">assert_eq!</span>(result_crlf, result_lf);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_hashsum" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_hashsum" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

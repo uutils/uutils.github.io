@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/sort/src/chunks.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>chunks.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uu_sort/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../uu_sort/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uu_sort/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/sort/src/chunks.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>chunks.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uu_sort/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../uu_sort/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uu_sort/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -319,326 +319,326 @@
 <span id="319">319</span>
 <span id="320">320</span>
 <span id="321">321</span>
-</pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
-<span class="comment">//  *</span>
-<span class="comment">//  * (c) Michael Debertol &lt;michael.debertol..AT..gmail.com&gt;</span>
-<span class="comment">//  *</span>
-<span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
-<span class="comment">//  * file that was distributed with this source code.</span>
+</pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
+//  *
+//  * (c) Michael Debertol &lt;michael.debertol..AT..gmail.com&gt;
+//  *
+//  * For the full copyright and license information, please view the LICENSE
+//  * file that was distributed with this source code.
 
-<span class="doccomment">//! Utilities for reading files as chunks.</span>
+</span><span class="doccomment">//! Utilities for reading files as chunks.
 
-<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-<span class="comment">// Ignores non-used warning for `borrow_buffer` in `Chunk`</span>
+</span><span class="attribute">#![allow(dead_code)]
+</span><span class="comment">// Ignores non-used warning for `borrow_buffer` in `Chunk`
 
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">io</span>::{<span class="ident">ErrorKind</span>, <span class="ident">Read</span>},
-    <span class="ident">sync::mpsc::SyncSender</span>,
+</span><span class="kw">use </span>std::{
+    io::{ErrorKind, Read},
+    sync::mpsc::SyncSender,
 };
 
-<span class="kw">use</span> <span class="ident">memchr::memchr_iter</span>;
-<span class="kw">use</span> <span class="ident">ouroboros::self_referencing</span>;
-<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
+<span class="kw">use </span>memchr::memchr_iter;
+<span class="kw">use </span>ouroboros::self_referencing;
+<span class="kw">use </span>uucore::error::{UResult, USimpleError};
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">numeric_str_cmp::NumInfo</span>, <span class="ident">GeneralF64ParseResult</span>, <span class="ident">GlobalSettings</span>, <span class="ident">Line</span>, <span class="ident">SortError</span>};
+<span class="kw">use crate</span>::{numeric_str_cmp::NumInfo, GeneralF64ParseResult, GlobalSettings, Line, SortError};
 
-<span class="doccomment">/// The chunk that is passed around between threads.</span>
-<span class="doccomment">/// `lines` consist of slices into `buffer`.</span>
-<span class="attribute">#[<span class="ident">self_referencing</span>(<span class="ident">pub_extras</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Chunk</span> {
-    <span class="kw">pub</span> <span class="ident">buffer</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
-    <span class="attribute">#[<span class="ident">borrows</span>(<span class="ident">buffer</span>)]</span>
-    <span class="attribute">#[<span class="ident">covariant</span>]</span>
-    <span class="kw">pub</span> <span class="ident">contents</span>: <span class="ident">ChunkContents</span><span class="op">&lt;</span><span class="lifetime">&#39;this</span><span class="op">&gt;</span>,
+<span class="doccomment">/// The chunk that is passed around between threads.
+/// `lines` consist of slices into `buffer`.
+</span><span class="attribute">#[self_referencing(pub_extras)]
+#[derive(Debug)]
+</span><span class="kw">pub struct </span>Chunk {
+    <span class="kw">pub </span>buffer: Vec&lt;u8&gt;,
+    <span class="attribute">#[borrows(buffer)]
+    #[covariant]
+    </span><span class="kw">pub </span>contents: ChunkContents&lt;<span class="lifetime">&#39;this</span>&gt;,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ChunkContents</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="ident">lines</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">line_data</span>: <span class="ident">LineData</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
+<span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub struct </span>ChunkContents&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">pub </span>lines: Vec&lt;Line&lt;<span class="lifetime">&#39;a</span>&gt;&gt;,
+    <span class="kw">pub </span>line_data: LineData&lt;<span class="lifetime">&#39;a</span>&gt;,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LineData</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="ident">selections</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">num_infos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">NumInfo</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">parsed_floats</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">GeneralF64ParseResult</span><span class="op">&gt;</span>,
+<span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub struct </span>LineData&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">pub </span>selections: Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;,
+    <span class="kw">pub </span>num_infos: Vec&lt;NumInfo&gt;,
+    <span class="kw">pub </span>parsed_floats: Vec&lt;GeneralF64ParseResult&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Chunk</span> {
-    <span class="doccomment">/// Destroy this chunk and return its components to be reused.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">recycle</span>(<span class="kw-2">mut</span> <span class="self">self</span>) -&gt; <span class="ident">RecycledChunk</span> {
-        <span class="kw">let</span> <span class="ident">recycled_contents</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">with_contents_mut</span>(<span class="op">|</span><span class="ident">contents</span><span class="op">|</span> {
-            <span class="ident">contents</span>.<span class="ident">lines</span>.<span class="ident">clear</span>();
-            <span class="ident">contents</span>.<span class="ident">line_data</span>.<span class="ident">selections</span>.<span class="ident">clear</span>();
-            <span class="ident">contents</span>.<span class="ident">line_data</span>.<span class="ident">num_infos</span>.<span class="ident">clear</span>();
-            <span class="ident">contents</span>.<span class="ident">line_data</span>.<span class="ident">parsed_floats</span>.<span class="ident">clear</span>();
-            <span class="kw">let</span> <span class="ident">lines</span> <span class="op">=</span> <span class="kw">unsafe</span> {
-                <span class="comment">// SAFETY: It is safe to (temporarily) transmute to a vector of lines with a longer lifetime,</span>
-                <span class="comment">// because the vector is empty.</span>
-                <span class="comment">// Transmuting is necessary to make recycling possible. See https://github.com/rust-lang/rfcs/pull/2802</span>
-                <span class="comment">// for a rfc to make this unnecessary. Its example is similar to the code here.</span>
-                <span class="ident">std::mem::transmute</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">std::mem::take</span>(
-                    <span class="kw-2">&amp;mut</span> <span class="ident">contents</span>.<span class="ident">lines</span>,
+<span class="kw">impl </span>Chunk {
+    <span class="doccomment">/// Destroy this chunk and return its components to be reused.
+    </span><span class="kw">pub fn </span>recycle(<span class="kw-2">mut </span><span class="self">self</span>) -&gt; RecycledChunk {
+        <span class="kw">let </span>recycled_contents = <span class="self">self</span>.with_contents_mut(|contents| {
+            contents.lines.clear();
+            contents.line_data.selections.clear();
+            contents.line_data.num_infos.clear();
+            contents.line_data.parsed_floats.clear();
+            <span class="kw">let </span>lines = <span class="kw">unsafe </span>{
+                <span class="comment">// SAFETY: It is safe to (temporarily) transmute to a vector of lines with a longer lifetime,
+                // because the vector is empty.
+                // Transmuting is necessary to make recycling possible. See https://github.com/rust-lang/rfcs/pull/2802
+                // for a rfc to make this unnecessary. Its example is similar to the code here.
+                </span>std::mem::transmute::&lt;Vec&lt;Line&lt;<span class="lifetime">&#39;_</span>&gt;&gt;, Vec&lt;Line&lt;<span class="lifetime">&#39;static</span>&gt;&gt;&gt;(std::mem::take(
+                    <span class="kw-2">&amp;mut </span>contents.lines,
                 ))
             };
-            <span class="kw">let</span> <span class="ident">selections</span> <span class="op">=</span> <span class="kw">unsafe</span> {
-                <span class="comment">// SAFETY: (same as above) It is safe to (temporarily) transmute to a vector of &amp;str with a longer lifetime,</span>
-                <span class="comment">// because the vector is empty.</span>
-                <span class="ident">std::mem::transmute</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">std::mem::take</span>(
-                    <span class="kw-2">&amp;mut</span> <span class="ident">contents</span>.<span class="ident">line_data</span>.<span class="ident">selections</span>,
+            <span class="kw">let </span>selections = <span class="kw">unsafe </span>{
+                <span class="comment">// SAFETY: (same as above) It is safe to (temporarily) transmute to a vector of &amp;str with a longer lifetime,
+                // because the vector is empty.
+                </span>std::mem::transmute::&lt;Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;_ </span>str&gt;, Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt;&gt;(std::mem::take(
+                    <span class="kw-2">&amp;mut </span>contents.line_data.selections,
                 ))
             };
             (
-                <span class="ident">lines</span>,
-                <span class="ident">selections</span>,
-                <span class="ident">std::mem::take</span>(<span class="kw-2">&amp;mut</span> <span class="ident">contents</span>.<span class="ident">line_data</span>.<span class="ident">num_infos</span>),
-                <span class="ident">std::mem::take</span>(<span class="kw-2">&amp;mut</span> <span class="ident">contents</span>.<span class="ident">line_data</span>.<span class="ident">parsed_floats</span>),
+                lines,
+                selections,
+                std::mem::take(<span class="kw-2">&amp;mut </span>contents.line_data.num_infos),
+                std::mem::take(<span class="kw-2">&amp;mut </span>contents.line_data.parsed_floats),
             )
         });
-        <span class="ident">RecycledChunk</span> {
-            <span class="ident">lines</span>: <span class="ident">recycled_contents</span>.<span class="number">0</span>,
-            <span class="ident">selections</span>: <span class="ident">recycled_contents</span>.<span class="number">1</span>,
-            <span class="ident">num_infos</span>: <span class="ident">recycled_contents</span>.<span class="number">2</span>,
-            <span class="ident">parsed_floats</span>: <span class="ident">recycled_contents</span>.<span class="number">3</span>,
-            <span class="ident">buffer</span>: <span class="self">self</span>.<span class="ident">into_heads</span>().<span class="ident">buffer</span>,
+        RecycledChunk {
+            lines: recycled_contents.<span class="number">0</span>,
+            selections: recycled_contents.<span class="number">1</span>,
+            num_infos: recycled_contents.<span class="number">2</span>,
+            parsed_floats: recycled_contents.<span class="number">3</span>,
+            buffer: <span class="self">self</span>.into_heads().buffer,
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lines</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&gt;</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">borrow_contents</span>().<span class="ident">lines</span>
+    <span class="kw">pub fn </span>lines(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Vec&lt;Line&gt; {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.borrow_contents().lines
     }
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">line_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">LineData</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">borrow_contents</span>().<span class="ident">line_data</span>
+    <span class="kw">pub fn </span>line_data(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>LineData {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.borrow_contents().line_data
     }
 }
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RecycledChunk</span> {
-    <span class="ident">lines</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">selections</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span>,
-    <span class="ident">num_infos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">NumInfo</span><span class="op">&gt;</span>,
-    <span class="ident">parsed_floats</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">GeneralF64ParseResult</span><span class="op">&gt;</span>,
-    <span class="ident">buffer</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
+<span class="kw">pub struct </span>RecycledChunk {
+    lines: Vec&lt;Line&lt;<span class="lifetime">&#39;static</span>&gt;&gt;,
+    selections: Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt;,
+    num_infos: Vec&lt;NumInfo&gt;,
+    parsed_floats: Vec&lt;GeneralF64ParseResult&gt;,
+    buffer: Vec&lt;u8&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">RecycledChunk</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">capacity</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">lines</span>: <span class="ident">Vec::new</span>(),
-            <span class="ident">selections</span>: <span class="ident">Vec::new</span>(),
-            <span class="ident">num_infos</span>: <span class="ident">Vec::new</span>(),
-            <span class="ident">parsed_floats</span>: <span class="ident">Vec::new</span>(),
-            <span class="ident">buffer</span>: <span class="macro">vec!</span>[<span class="number">0</span>; <span class="ident">capacity</span>],
+<span class="kw">impl </span>RecycledChunk {
+    <span class="kw">pub fn </span>new(capacity: usize) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            lines: Vec::new(),
+            selections: Vec::new(),
+            num_infos: Vec::new(),
+            parsed_floats: Vec::new(),
+            buffer: <span class="macro">vec!</span>[<span class="number">0</span>; capacity],
         }
     }
 }
 
-<span class="doccomment">/// Read a chunk, parse lines and send them.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// No empty chunk will be sent. If we reach the end of the input, `false` is returned.</span>
-<span class="doccomment">/// However, if this function returns `true`, it is not guaranteed that there is still</span>
-<span class="doccomment">/// input left: If the input fits _exactly_ into a buffer, we will only notice that there&#39;s</span>
-<span class="doccomment">/// nothing more to read at the next invocation. In case there is no input left, nothing will</span>
-<span class="doccomment">/// be sent.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Arguments</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// (see also `read_to_chunk` for a more detailed documentation)</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `sender`: The sender to send the lines to the sorter.</span>
-<span class="doccomment">/// * `recycled_chunk`: The recycled chunk, as returned by `Chunk::recycle`.</span>
-<span class="doccomment">///   (i.e. `buffer.len()` should be equal to `buffer.capacity()`)</span>
-<span class="doccomment">/// * `max_buffer_size`: How big `buffer` can be.</span>
-<span class="doccomment">/// * `carry_over`: The bytes that must be carried over in between invocations.</span>
-<span class="doccomment">/// * `file`: The current file.</span>
-<span class="doccomment">/// * `next_files`: What `file` should be updated to next.</span>
-<span class="doccomment">/// * `separator`: The line separator.</span>
-<span class="doccomment">/// * `settings`: The global settings.</span>
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::too_many_arguments</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Read</span><span class="op">&gt;</span>(
-    <span class="ident">sender</span>: <span class="kw-2">&amp;</span><span class="ident">SyncSender</span><span class="op">&lt;</span><span class="ident">Chunk</span><span class="op">&gt;</span>,
-    <span class="ident">recycled_chunk</span>: <span class="ident">RecycledChunk</span>,
-    <span class="ident">max_buffer_size</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
-    <span class="ident">carry_over</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
-    <span class="ident">file</span>: <span class="kw-2">&amp;mut</span> <span class="ident">T</span>,
-    <span class="ident">next_files</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">separator</span>: <span class="ident">u8</span>,
-    <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">GlobalSettings</span>,
-) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">RecycledChunk</span> {
-        <span class="ident">lines</span>,
-        <span class="ident">selections</span>,
-        <span class="ident">num_infos</span>,
-        <span class="ident">parsed_floats</span>,
-        <span class="kw-2">mut</span> <span class="ident">buffer</span>,
-    } <span class="op">=</span> <span class="ident">recycled_chunk</span>;
-    <span class="kw">if</span> <span class="ident">buffer</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="ident">carry_over</span>.<span class="ident">len</span>() {
-        <span class="ident">buffer</span>.<span class="ident">resize</span>(<span class="ident">carry_over</span>.<span class="ident">len</span>() <span class="op">+</span> <span class="number">10</span> <span class="op">*</span> <span class="number">1024</span>, <span class="number">0</span>);
+<span class="doccomment">/// Read a chunk, parse lines and send them.
+///
+/// No empty chunk will be sent. If we reach the end of the input, `false` is returned.
+/// However, if this function returns `true`, it is not guaranteed that there is still
+/// input left: If the input fits _exactly_ into a buffer, we will only notice that there&#39;s
+/// nothing more to read at the next invocation. In case there is no input left, nothing will
+/// be sent.
+///
+/// # Arguments
+///
+/// (see also `read_to_chunk` for a more detailed documentation)
+///
+/// * `sender`: The sender to send the lines to the sorter.
+/// * `recycled_chunk`: The recycled chunk, as returned by `Chunk::recycle`.
+///   (i.e. `buffer.len()` should be equal to `buffer.capacity()`)
+/// * `max_buffer_size`: How big `buffer` can be.
+/// * `carry_over`: The bytes that must be carried over in between invocations.
+/// * `file`: The current file.
+/// * `next_files`: What `file` should be updated to next.
+/// * `separator`: The line separator.
+/// * `settings`: The global settings.
+</span><span class="attribute">#[allow(clippy::too_many_arguments)]
+</span><span class="kw">pub fn </span>read&lt;T: Read&gt;(
+    sender: <span class="kw-2">&amp;</span>SyncSender&lt;Chunk&gt;,
+    recycled_chunk: RecycledChunk,
+    max_buffer_size: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+    carry_over: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;,
+    file: <span class="kw-2">&amp;mut </span>T,
+    next_files: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>Iterator&lt;Item = UResult&lt;T&gt;&gt;,
+    separator: u8,
+    settings: <span class="kw-2">&amp;</span>GlobalSettings,
+) -&gt; UResult&lt;bool&gt; {
+    <span class="kw">let </span>RecycledChunk {
+        lines,
+        selections,
+        num_infos,
+        parsed_floats,
+        <span class="kw-2">mut </span>buffer,
+    } = recycled_chunk;
+    <span class="kw">if </span>buffer.len() &lt; carry_over.len() {
+        buffer.resize(carry_over.len() + <span class="number">10 </span>* <span class="number">1024</span>, <span class="number">0</span>);
     }
-    <span class="ident">buffer</span>[..<span class="ident">carry_over</span>.<span class="ident">len</span>()].<span class="ident">copy_from_slice</span>(<span class="ident">carry_over</span>);
-    <span class="kw">let</span> (<span class="ident">read</span>, <span class="ident">should_continue</span>) <span class="op">=</span> <span class="ident">read_to_buffer</span>(
-        <span class="ident">file</span>,
-        <span class="ident">next_files</span>,
-        <span class="kw-2">&amp;mut</span> <span class="ident">buffer</span>,
-        <span class="ident">max_buffer_size</span>,
-        <span class="ident">carry_over</span>.<span class="ident">len</span>(),
-        <span class="ident">separator</span>,
+    buffer[..carry_over.len()].copy_from_slice(carry_over);
+    <span class="kw">let </span>(read, should_continue) = read_to_buffer(
+        file,
+        next_files,
+        <span class="kw-2">&amp;mut </span>buffer,
+        max_buffer_size,
+        carry_over.len(),
+        separator,
     )<span class="question-mark">?</span>;
-    <span class="ident">carry_over</span>.<span class="ident">clear</span>();
-    <span class="ident">carry_over</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">buffer</span>[<span class="ident">read</span>..]);
+    carry_over.clear();
+    carry_over.extend_from_slice(<span class="kw-2">&amp;</span>buffer[read..]);
 
-    <span class="kw">if</span> <span class="ident">read</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-        <span class="kw">let</span> <span class="ident">payload</span>: <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">Chunk</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Chunk::try_new</span>(<span class="ident">buffer</span>, <span class="op">|</span><span class="ident">buffer</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">selections</span> <span class="op">=</span> <span class="kw">unsafe</span> {
-                <span class="comment">// SAFETY: It is safe to transmute to an empty vector of selections with shorter lifetime.</span>
-                <span class="comment">// It was only temporarily transmuted to a Vec&lt;Line&lt;&#39;static&gt;&gt; to make recycling possible.</span>
-                <span class="ident">std::mem::transmute</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">selections</span>)
+    <span class="kw">if </span>read != <span class="number">0 </span>{
+        <span class="kw">let </span>payload: UResult&lt;Chunk&gt; = Chunk::try_new(buffer, |buffer| {
+            <span class="kw">let </span>selections = <span class="kw">unsafe </span>{
+                <span class="comment">// SAFETY: It is safe to transmute to an empty vector of selections with shorter lifetime.
+                // It was only temporarily transmuted to a Vec&lt;Line&lt;&#39;static&gt;&gt; to make recycling possible.
+                </span>std::mem::transmute::&lt;Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt;, Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;_ </span>str&gt;&gt;(selections)
             };
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lines</span> <span class="op">=</span> <span class="kw">unsafe</span> {
-                <span class="comment">// SAFETY: (same as above) It is safe to transmute to a vector of lines with shorter lifetime,</span>
-                <span class="comment">// because it was only temporarily transmuted to a Vec&lt;Line&lt;&#39;static&gt;&gt; to make recycling possible.</span>
-                <span class="ident">std::mem::transmute</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">lines</span>)
+            <span class="kw">let </span><span class="kw-2">mut </span>lines = <span class="kw">unsafe </span>{
+                <span class="comment">// SAFETY: (same as above) It is safe to transmute to a vector of lines with shorter lifetime,
+                // because it was only temporarily transmuted to a Vec&lt;Line&lt;&#39;static&gt;&gt; to make recycling possible.
+                </span>std::mem::transmute::&lt;Vec&lt;Line&lt;<span class="lifetime">&#39;static</span>&gt;&gt;, Vec&lt;Line&lt;<span class="lifetime">&#39;_</span>&gt;&gt;&gt;(lines)
             };
-            <span class="kw">let</span> <span class="ident">read</span> <span class="op">=</span> <span class="ident">std::str::from_utf8</span>(<span class="kw-2">&amp;</span><span class="ident">buffer</span>[..<span class="ident">read</span>])
-                .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">error</span><span class="op">|</span> <span class="ident">SortError::Uft8Error</span> { <span class="ident">error</span> })<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">line_data</span> <span class="op">=</span> <span class="ident">LineData</span> {
-                <span class="ident">selections</span>,
-                <span class="ident">num_infos</span>,
-                <span class="ident">parsed_floats</span>,
+            <span class="kw">let </span>read = std::str::from_utf8(<span class="kw-2">&amp;</span>buffer[..read])
+                .map_err(|error| SortError::Uft8Error { error })<span class="question-mark">?</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>line_data = LineData {
+                selections,
+                num_infos,
+                parsed_floats,
             };
-            <span class="ident">parse_lines</span>(<span class="ident">read</span>, <span class="kw-2">&amp;mut</span> <span class="ident">lines</span>, <span class="kw-2">&amp;mut</span> <span class="ident">line_data</span>, <span class="ident">separator</span>, <span class="ident">settings</span>);
-            <span class="prelude-val">Ok</span>(<span class="ident">ChunkContents</span> { <span class="ident">lines</span>, <span class="ident">line_data</span> })
+            parse_lines(read, <span class="kw-2">&amp;mut </span>lines, <span class="kw-2">&amp;mut </span>line_data, separator, settings);
+            <span class="prelude-val">Ok</span>(ChunkContents { lines, line_data })
         });
-        <span class="ident">sender</span>.<span class="ident">send</span>(<span class="ident">payload</span><span class="question-mark">?</span>).<span class="ident">unwrap</span>();
+        sender.send(payload<span class="question-mark">?</span>).unwrap();
     }
-    <span class="prelude-val">Ok</span>(<span class="ident">should_continue</span>)
+    <span class="prelude-val">Ok</span>(should_continue)
 }
 
-<span class="doccomment">/// Split `read` into `Line`s, and add them to `lines`.</span>
-<span class="kw">fn</span> <span class="ident">parse_lines</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
-    <span class="ident">read</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
-    <span class="ident">lines</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">line_data</span>: <span class="kw-2">&amp;mut</span> <span class="ident">LineData</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    <span class="ident">separator</span>: <span class="ident">u8</span>,
-    <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">GlobalSettings</span>,
+<span class="doccomment">/// Split `read` into `Line`s, and add them to `lines`.
+</span><span class="kw">fn </span>parse_lines&lt;<span class="lifetime">&#39;a</span>&gt;(
+    read: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
+    lines: <span class="kw-2">&amp;mut </span>Vec&lt;Line&lt;<span class="lifetime">&#39;a</span>&gt;&gt;,
+    line_data: <span class="kw-2">&amp;mut </span>LineData&lt;<span class="lifetime">&#39;a</span>&gt;,
+    separator: u8,
+    settings: <span class="kw-2">&amp;</span>GlobalSettings,
 ) {
-    <span class="kw">let</span> <span class="ident">read</span> <span class="op">=</span> <span class="ident">read</span>.<span class="ident">strip_suffix</span>(<span class="ident">separator</span> <span class="kw">as</span> <span class="ident">char</span>).<span class="ident">unwrap_or</span>(<span class="ident">read</span>);
+    <span class="kw">let </span>read = read.strip_suffix(separator <span class="kw">as </span>char).unwrap_or(read);
 
-    <span class="macro">assert!</span>(<span class="ident">lines</span>.<span class="ident">is_empty</span>());
-    <span class="macro">assert!</span>(<span class="ident">line_data</span>.<span class="ident">selections</span>.<span class="ident">is_empty</span>());
-    <span class="macro">assert!</span>(<span class="ident">line_data</span>.<span class="ident">num_infos</span>.<span class="ident">is_empty</span>());
-    <span class="macro">assert!</span>(<span class="ident">line_data</span>.<span class="ident">parsed_floats</span>.<span class="ident">is_empty</span>());
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">token_buffer</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="ident">lines</span>.<span class="ident">extend</span>(
-        <span class="ident">read</span>.<span class="ident">split</span>(<span class="ident">separator</span> <span class="kw">as</span> <span class="ident">char</span>)
-            .<span class="ident">enumerate</span>()
-            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">index</span>, <span class="ident">line</span>)<span class="op">|</span> <span class="ident">Line::create</span>(<span class="ident">line</span>, <span class="ident">index</span>, <span class="ident">line_data</span>, <span class="kw-2">&amp;mut</span> <span class="ident">token_buffer</span>, <span class="ident">settings</span>)),
+    <span class="macro">assert!</span>(lines.is_empty());
+    <span class="macro">assert!</span>(line_data.selections.is_empty());
+    <span class="macro">assert!</span>(line_data.num_infos.is_empty());
+    <span class="macro">assert!</span>(line_data.parsed_floats.is_empty());
+    <span class="kw">let </span><span class="kw-2">mut </span>token_buffer = <span class="macro">vec!</span>[];
+    lines.extend(
+        read.split(separator <span class="kw">as </span>char)
+            .enumerate()
+            .map(|(index, line)| Line::create(line, index, line_data, <span class="kw-2">&amp;mut </span>token_buffer, settings)),
     );
 }
 
-<span class="doccomment">/// Read from `file` into `buffer`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This function makes sure that at least two lines are read (unless we reach EOF and there&#39;s no next file),</span>
-<span class="doccomment">/// growing the buffer if necessary.</span>
-<span class="doccomment">/// The last line is likely to not have been fully read into the buffer. Its bytes must be copied to</span>
-<span class="doccomment">/// the front of the buffer for the next invocation so that it can be continued to be read</span>
-<span class="doccomment">/// (see the return values and `start_offset`).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Arguments</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `file`: The file to start reading from.</span>
-<span class="doccomment">/// * `next_files`: When `file` reaches EOF, it is updated to `next_files.next()` if that is `Some`,</span>
-<span class="doccomment">///    and this function continues reading.</span>
-<span class="doccomment">/// * `buffer`: The buffer that is filled with bytes. Its contents will mostly be overwritten (see `start_offset`</span>
-<span class="doccomment">///   as well). It will be grown up to `max_buffer_size` if necessary, but it will always grow to read at least two lines.</span>
-<span class="doccomment">/// * `max_buffer_size`: Grow the buffer to at most this length. If None, the buffer will not grow, unless needed to read at least two lines.</span>
-<span class="doccomment">/// * `start_offset`: The amount of bytes at the start of `buffer` that were carried over</span>
-<span class="doccomment">///    from the previous read and should not be overwritten.</span>
-<span class="doccomment">/// * `separator`: The byte that separates lines.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Returns</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * The amount of bytes in `buffer` that can now be interpreted as lines.</span>
-<span class="doccomment">///   The remaining bytes must be copied to the start of the buffer for the next invocation,</span>
-<span class="doccomment">///   if another invocation is necessary, which is determined by the other return value.</span>
-<span class="doccomment">/// * Whether this function should be called again.</span>
-<span class="kw">fn</span> <span class="ident">read_to_buffer</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Read</span><span class="op">&gt;</span>(
-    <span class="ident">file</span>: <span class="kw-2">&amp;mut</span> <span class="ident">T</span>,
-    <span class="ident">next_files</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">buffer</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
-    <span class="ident">max_buffer_size</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
-    <span class="ident">start_offset</span>: <span class="ident">usize</span>,
-    <span class="ident">separator</span>: <span class="ident">u8</span>,
-) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">bool</span>)<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">read_target</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="ident">buffer</span>[<span class="ident">start_offset</span>..];
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">last_file_target_size</span> <span class="op">=</span> <span class="ident">read_target</span>.<span class="ident">len</span>();
-    <span class="kw">loop</span> {
-        <span class="kw">match</span> <span class="ident">file</span>.<span class="ident">read</span>(<span class="ident">read_target</span>) {
+<span class="doccomment">/// Read from `file` into `buffer`.
+///
+/// This function makes sure that at least two lines are read (unless we reach EOF and there&#39;s no next file),
+/// growing the buffer if necessary.
+/// The last line is likely to not have been fully read into the buffer. Its bytes must be copied to
+/// the front of the buffer for the next invocation so that it can be continued to be read
+/// (see the return values and `start_offset`).
+///
+/// # Arguments
+///
+/// * `file`: The file to start reading from.
+/// * `next_files`: When `file` reaches EOF, it is updated to `next_files.next()` if that is `Some`,
+///    and this function continues reading.
+/// * `buffer`: The buffer that is filled with bytes. Its contents will mostly be overwritten (see `start_offset`
+///   as well). It will be grown up to `max_buffer_size` if necessary, but it will always grow to read at least two lines.
+/// * `max_buffer_size`: Grow the buffer to at most this length. If None, the buffer will not grow, unless needed to read at least two lines.
+/// * `start_offset`: The amount of bytes at the start of `buffer` that were carried over
+///    from the previous read and should not be overwritten.
+/// * `separator`: The byte that separates lines.
+///
+/// # Returns
+///
+/// * The amount of bytes in `buffer` that can now be interpreted as lines.
+///   The remaining bytes must be copied to the start of the buffer for the next invocation,
+///   if another invocation is necessary, which is determined by the other return value.
+/// * Whether this function should be called again.
+</span><span class="kw">fn </span>read_to_buffer&lt;T: Read&gt;(
+    file: <span class="kw-2">&amp;mut </span>T,
+    next_files: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>Iterator&lt;Item = UResult&lt;T&gt;&gt;,
+    buffer: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;,
+    max_buffer_size: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+    start_offset: usize,
+    separator: u8,
+) -&gt; UResult&lt;(usize, bool)&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>read_target = <span class="kw-2">&amp;mut </span>buffer[start_offset..];
+    <span class="kw">let </span><span class="kw-2">mut </span>last_file_target_size = read_target.len();
+    <span class="kw">loop </span>{
+        <span class="kw">match </span>file.read(read_target) {
             <span class="prelude-val">Ok</span>(<span class="number">0</span>) =&gt; {
-                <span class="kw">if</span> <span class="ident">read_target</span>.<span class="ident">is_empty</span>() {
-                    <span class="comment">// chunk is full</span>
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">max_buffer_size</span>) <span class="op">=</span> <span class="ident">max_buffer_size</span> {
-                        <span class="kw">if</span> <span class="ident">max_buffer_size</span> <span class="op">&gt;</span> <span class="ident">buffer</span>.<span class="ident">len</span>() {
-                            <span class="comment">// we can grow the buffer</span>
-                            <span class="kw">let</span> <span class="ident">prev_len</span> <span class="op">=</span> <span class="ident">buffer</span>.<span class="ident">len</span>();
-                            <span class="kw">if</span> <span class="ident">buffer</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="ident">max_buffer_size</span> <span class="op">/</span> <span class="number">2</span> {
-                                <span class="ident">buffer</span>.<span class="ident">resize</span>(<span class="ident">buffer</span>.<span class="ident">len</span>() <span class="op">*</span> <span class="number">2</span>, <span class="number">0</span>);
-                            } <span class="kw">else</span> {
-                                <span class="ident">buffer</span>.<span class="ident">resize</span>(<span class="ident">max_buffer_size</span>, <span class="number">0</span>);
+                <span class="kw">if </span>read_target.is_empty() {
+                    <span class="comment">// chunk is full
+                    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(max_buffer_size) = max_buffer_size {
+                        <span class="kw">if </span>max_buffer_size &gt; buffer.len() {
+                            <span class="comment">// we can grow the buffer
+                            </span><span class="kw">let </span>prev_len = buffer.len();
+                            <span class="kw">if </span>buffer.len() &lt; max_buffer_size / <span class="number">2 </span>{
+                                buffer.resize(buffer.len() * <span class="number">2</span>, <span class="number">0</span>);
+                            } <span class="kw">else </span>{
+                                buffer.resize(max_buffer_size, <span class="number">0</span>);
                             }
-                            <span class="ident">read_target</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="ident">buffer</span>[<span class="ident">prev_len</span>..];
+                            read_target = <span class="kw-2">&amp;mut </span>buffer[prev_len..];
                             <span class="kw">continue</span>;
                         }
                     }
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sep_iter</span> <span class="op">=</span> <span class="ident">memchr_iter</span>(<span class="ident">separator</span>, <span class="ident">buffer</span>).<span class="ident">rev</span>();
-                    <span class="kw">let</span> <span class="ident">last_line_end</span> <span class="op">=</span> <span class="ident">sep_iter</span>.<span class="ident">next</span>();
-                    <span class="kw">if</span> <span class="ident">sep_iter</span>.<span class="ident">next</span>().<span class="ident">is_some</span>() {
-                        <span class="comment">// We read enough lines.</span>
-                        <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">last_line_end</span>.<span class="ident">unwrap</span>();
-                        <span class="comment">// We want to include the separator here, because it shouldn&#39;t be carried over.</span>
-                        <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="ident">end</span> <span class="op">+</span> <span class="number">1</span>, <span class="bool-val">true</span>));
-                    } <span class="kw">else</span> {
-                        <span class="comment">// We need to read more lines</span>
-                        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">buffer</span>.<span class="ident">len</span>();
-                        <span class="comment">// resize the vector to 10 KB more</span>
-                        <span class="ident">buffer</span>.<span class="ident">resize</span>(<span class="ident">len</span> <span class="op">+</span> <span class="number">1024</span> <span class="op">*</span> <span class="number">10</span>, <span class="number">0</span>);
-                        <span class="ident">read_target</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="ident">buffer</span>[<span class="ident">len</span>..];
+                    <span class="kw">let </span><span class="kw-2">mut </span>sep_iter = memchr_iter(separator, buffer).rev();
+                    <span class="kw">let </span>last_line_end = sep_iter.next();
+                    <span class="kw">if </span>sep_iter.next().is_some() {
+                        <span class="comment">// We read enough lines.
+                        </span><span class="kw">let </span>end = last_line_end.unwrap();
+                        <span class="comment">// We want to include the separator here, because it shouldn&#39;t be carried over.
+                        </span><span class="kw">return </span><span class="prelude-val">Ok</span>((end + <span class="number">1</span>, <span class="bool-val">true</span>));
+                    } <span class="kw">else </span>{
+                        <span class="comment">// We need to read more lines
+                        </span><span class="kw">let </span>len = buffer.len();
+                        <span class="comment">// resize the vector to 10 KB more
+                        </span>buffer.resize(len + <span class="number">1024 </span>* <span class="number">10</span>, <span class="number">0</span>);
+                        read_target = <span class="kw-2">&amp;mut </span>buffer[len..];
                     }
-                } <span class="kw">else</span> {
-                    <span class="comment">// This file has been fully read.</span>
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">leftover_len</span> <span class="op">=</span> <span class="ident">read_target</span>.<span class="ident">len</span>();
-                    <span class="kw">if</span> <span class="ident">last_file_target_size</span> <span class="op">!</span><span class="op">=</span> <span class="ident">leftover_len</span> {
-                        <span class="comment">// The file was not empty.</span>
-                        <span class="kw">let</span> <span class="ident">read_len</span> <span class="op">=</span> <span class="ident">buffer</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="ident">leftover_len</span>;
-                        <span class="kw">if</span> <span class="ident">buffer</span>[<span class="ident">read_len</span> <span class="op">-</span> <span class="number">1</span>] <span class="op">!</span><span class="op">=</span> <span class="ident">separator</span> {
-                            <span class="comment">// The file did not end with a separator. We have to insert one.</span>
-                            <span class="ident">buffer</span>[<span class="ident">read_len</span>] <span class="op">=</span> <span class="ident">separator</span>;
-                            <span class="ident">leftover_len</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
+                } <span class="kw">else </span>{
+                    <span class="comment">// This file has been fully read.
+                    </span><span class="kw">let </span><span class="kw-2">mut </span>leftover_len = read_target.len();
+                    <span class="kw">if </span>last_file_target_size != leftover_len {
+                        <span class="comment">// The file was not empty.
+                        </span><span class="kw">let </span>read_len = buffer.len() - leftover_len;
+                        <span class="kw">if </span>buffer[read_len - <span class="number">1</span>] != separator {
+                            <span class="comment">// The file did not end with a separator. We have to insert one.
+                            </span>buffer[read_len] = separator;
+                            leftover_len -= <span class="number">1</span>;
                         }
-                        <span class="kw">let</span> <span class="ident">read_len</span> <span class="op">=</span> <span class="ident">buffer</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="ident">leftover_len</span>;
-                        <span class="ident">read_target</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="ident">buffer</span>[<span class="ident">read_len</span>..];
+                        <span class="kw">let </span>read_len = buffer.len() - leftover_len;
+                        read_target = <span class="kw-2">&amp;mut </span>buffer[read_len..];
                     }
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">next_file</span>) <span class="op">=</span> <span class="ident">next_files</span>.<span class="ident">next</span>() {
-                        <span class="comment">// There is another file.</span>
-                        <span class="ident">last_file_target_size</span> <span class="op">=</span> <span class="ident">leftover_len</span>;
-                        <span class="kw-2">*</span><span class="ident">file</span> <span class="op">=</span> <span class="ident">next_file</span><span class="question-mark">?</span>;
-                    } <span class="kw">else</span> {
-                        <span class="comment">// This was the last file.</span>
-                        <span class="kw">let</span> <span class="ident">read_len</span> <span class="op">=</span> <span class="ident">buffer</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="ident">leftover_len</span>;
-                        <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="ident">read_len</span>, <span class="bool-val">false</span>));
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(next_file) = next_files.next() {
+                        <span class="comment">// There is another file.
+                        </span>last_file_target_size = leftover_len;
+                        <span class="kw-2">*</span>file = next_file<span class="question-mark">?</span>;
+                    } <span class="kw">else </span>{
+                        <span class="comment">// This was the last file.
+                        </span><span class="kw">let </span>read_len = buffer.len() - leftover_len;
+                        <span class="kw">return </span><span class="prelude-val">Ok</span>((read_len, <span class="bool-val">false</span>));
                     }
                 }
             }
-            <span class="prelude-val">Ok</span>(<span class="ident">n</span>) =&gt; {
-                <span class="ident">read_target</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="ident">read_target</span>[<span class="ident">n</span>..];
+            <span class="prelude-val">Ok</span>(n) =&gt; {
+                read_target = <span class="kw-2">&amp;mut </span>read_target[n..];
             }
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">kind</span>() <span class="op">==</span> <span class="ident">ErrorKind::Interrupted</span> =&gt; {
-                <span class="comment">// retry</span>
-            }
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">2</span>, <span class="ident">e</span>.<span class="ident">to_string</span>())),
+            <span class="prelude-val">Err</span>(e) <span class="kw">if </span>e.kind() == ErrorKind::Interrupted =&gt; {
+                <span class="comment">// retry
+            </span>}
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(<span class="number">2</span>, e.to_string())),
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_sort" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_sort" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

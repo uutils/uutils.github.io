@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uucore/src/lib/parser/parse_size.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>parse_size.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uucore/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uucore/src/lib/parser/parse_size.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>parse_size.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uucore/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -321,328 +321,328 @@
 <span id="321">321</span>
 <span id="322">322</span>
 <span id="323">323</span>
-</pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
-<span class="comment">//  *</span>
-<span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
-<span class="comment">//  * file that was distributed with this source code.</span>
+</pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
+//  *
+//  * For the full copyright and license information, please view the LICENSE
+//  * file that was distributed with this source code.
 
-<span class="comment">// spell-checker:ignore (ToDO) hdsf ghead gtail</span>
+// spell-checker:ignore (ToDO) hdsf ghead gtail
 
-<span class="kw">use</span> <span class="ident">std::error::Error</span>;
-<span class="kw">use</span> <span class="ident">std::fmt</span>;
+</span><span class="kw">use </span>std::error::Error;
+<span class="kw">use </span>std::fmt;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::display::Quotable</span>;
+<span class="kw">use </span><span class="kw">crate</span>::display::Quotable;
 
-<span class="doccomment">/// Parse a size string into a number of bytes.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// A size string comprises an integer and an optional unit. The unit</span>
-<span class="doccomment">/// may be K, M, G, T, P, E, Z or Y (powers of 1024), or KB, MB,</span>
-<span class="doccomment">/// etc. (powers of 1000), or b which is 512.</span>
-<span class="doccomment">/// Binary prefixes can be used, too: KiB=K, MiB=M, and so on.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Errors</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Will return `ParseSizeError` if it&#39;s not possible to parse this</span>
-<span class="doccomment">/// string into a number, e.g. if the string does not begin with a</span>
-<span class="doccomment">/// numeral, or if the unit is not one of the supported units described</span>
-<span class="doccomment">/// in the preceding section.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust</span>
-<span class="doccomment">/// use uucore::parse_size::parse_size;</span>
-<span class="doccomment">/// assert_eq!(Ok(123), parse_size(&quot;123&quot;));</span>
-<span class="doccomment">/// assert_eq!(Ok(9 * 1000), parse_size(&quot;9kB&quot;)); // kB is 1000</span>
-<span class="doccomment">/// assert_eq!(Ok(2 * 1024), parse_size(&quot;2K&quot;)); // K is 1024</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_size</span>(<span class="ident">size</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">ParseSizeError</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">size</span>.<span class="ident">is_empty</span>() {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseSizeError::parse_failure</span>(<span class="ident">size</span>));
+<span class="doccomment">/// Parse a size string into a number of bytes.
+///
+/// A size string comprises an integer and an optional unit. The unit
+/// may be K, M, G, T, P, E, Z or Y (powers of 1024), or KB, MB,
+/// etc. (powers of 1000), or b which is 512.
+/// Binary prefixes can be used, too: KiB=K, MiB=M, and so on.
+///
+/// # Errors
+///
+/// Will return `ParseSizeError` if it&#39;s not possible to parse this
+/// string into a number, e.g. if the string does not begin with a
+/// numeral, or if the unit is not one of the supported units described
+/// in the preceding section.
+///
+/// # Examples
+///
+/// ```rust
+/// use uucore::parse_size::parse_size;
+/// assert_eq!(Ok(123), parse_size(&quot;123&quot;));
+/// assert_eq!(Ok(9 * 1000), parse_size(&quot;9kB&quot;)); // kB is 1000
+/// assert_eq!(Ok(2 * 1024), parse_size(&quot;2K&quot;)); // K is 1024
+/// ```
+</span><span class="kw">pub fn </span>parse_size(size: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;u64, ParseSizeError&gt; {
+    <span class="kw">if </span>size.is_empty() {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(ParseSizeError::parse_failure(size));
     }
-    <span class="comment">// Get the numeric part of the size argument. For example, if the</span>
-    <span class="comment">// argument is &quot;123K&quot;, then the numeric part is &quot;123&quot;.</span>
-    <span class="kw">let</span> <span class="ident">numeric_string</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">size</span>.<span class="ident">chars</span>().<span class="ident">take_while</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">is_ascii_digit</span>()).<span class="ident">collect</span>();
-    <span class="kw">let</span> <span class="ident">number</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">numeric_string</span>.<span class="ident">is_empty</span>() {
-        <span class="kw">match</span> <span class="ident">numeric_string</span>.<span class="ident">parse</span>() {
-            <span class="prelude-val">Ok</span>(<span class="ident">n</span>) =&gt; <span class="ident">n</span>,
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseSizeError::parse_failure</span>(<span class="ident">size</span>)),
+    <span class="comment">// Get the numeric part of the size argument. For example, if the
+    // argument is &quot;123K&quot;, then the numeric part is &quot;123&quot;.
+    </span><span class="kw">let </span>numeric_string: String = size.chars().take_while(|c| c.is_ascii_digit()).collect();
+    <span class="kw">let </span>number: u64 = <span class="kw">if </span>!numeric_string.is_empty() {
+        <span class="kw">match </span>numeric_string.parse() {
+            <span class="prelude-val">Ok</span>(n) =&gt; n,
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(ParseSizeError::parse_failure(size)),
         }
-    } <span class="kw">else</span> {
-        <span class="number">1</span>
-    };
+    } <span class="kw">else </span>{
+        <span class="number">1
+    </span>};
 
-    <span class="comment">// Get the alphabetic units part of the size argument and compute</span>
-    <span class="comment">// the factor it represents. For example, if the argument is &quot;123K&quot;,</span>
-    <span class="comment">// then the unit part is &quot;K&quot; and the factor is 1024. This may be the</span>
-    <span class="comment">// empty string, in which case, the factor is 1.</span>
-    <span class="kw">let</span> <span class="ident">unit</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">size</span>[<span class="ident">numeric_string</span>.<span class="ident">len</span>()..];
-    <span class="kw">let</span> (<span class="ident">base</span>, <span class="ident">exponent</span>): (<span class="ident">u128</span>, <span class="ident">u32</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">unit</span> {
-        <span class="string">&quot;&quot;</span> =&gt; (<span class="number">1</span>, <span class="number">0</span>),
-        <span class="string">&quot;b&quot;</span> =&gt; (<span class="number">512</span>, <span class="number">1</span>), <span class="comment">// (`od`, `head` and `tail` use &quot;b&quot;)</span>
-        <span class="string">&quot;KiB&quot;</span> <span class="op">|</span> <span class="string">&quot;kiB&quot;</span> <span class="op">|</span> <span class="string">&quot;K&quot;</span> <span class="op">|</span> <span class="string">&quot;k&quot;</span> =&gt; (<span class="number">1024</span>, <span class="number">1</span>),
-        <span class="string">&quot;MiB&quot;</span> <span class="op">|</span> <span class="string">&quot;miB&quot;</span> <span class="op">|</span> <span class="string">&quot;M&quot;</span> <span class="op">|</span> <span class="string">&quot;m&quot;</span> =&gt; (<span class="number">1024</span>, <span class="number">2</span>),
-        <span class="string">&quot;GiB&quot;</span> <span class="op">|</span> <span class="string">&quot;giB&quot;</span> <span class="op">|</span> <span class="string">&quot;G&quot;</span> <span class="op">|</span> <span class="string">&quot;g&quot;</span> =&gt; (<span class="number">1024</span>, <span class="number">3</span>),
-        <span class="string">&quot;TiB&quot;</span> <span class="op">|</span> <span class="string">&quot;tiB&quot;</span> <span class="op">|</span> <span class="string">&quot;T&quot;</span> <span class="op">|</span> <span class="string">&quot;t&quot;</span> =&gt; (<span class="number">1024</span>, <span class="number">4</span>),
-        <span class="string">&quot;PiB&quot;</span> <span class="op">|</span> <span class="string">&quot;piB&quot;</span> <span class="op">|</span> <span class="string">&quot;P&quot;</span> <span class="op">|</span> <span class="string">&quot;p&quot;</span> =&gt; (<span class="number">1024</span>, <span class="number">5</span>),
-        <span class="string">&quot;EiB&quot;</span> <span class="op">|</span> <span class="string">&quot;eiB&quot;</span> <span class="op">|</span> <span class="string">&quot;E&quot;</span> <span class="op">|</span> <span class="string">&quot;e&quot;</span> =&gt; (<span class="number">1024</span>, <span class="number">6</span>),
-        <span class="string">&quot;ZiB&quot;</span> <span class="op">|</span> <span class="string">&quot;ziB&quot;</span> <span class="op">|</span> <span class="string">&quot;Z&quot;</span> <span class="op">|</span> <span class="string">&quot;z&quot;</span> =&gt; (<span class="number">1024</span>, <span class="number">7</span>),
-        <span class="string">&quot;YiB&quot;</span> <span class="op">|</span> <span class="string">&quot;yiB&quot;</span> <span class="op">|</span> <span class="string">&quot;Y&quot;</span> <span class="op">|</span> <span class="string">&quot;y&quot;</span> =&gt; (<span class="number">1024</span>, <span class="number">8</span>),
-        <span class="string">&quot;KB&quot;</span> <span class="op">|</span> <span class="string">&quot;kB&quot;</span> =&gt; (<span class="number">1000</span>, <span class="number">1</span>),
-        <span class="string">&quot;MB&quot;</span> <span class="op">|</span> <span class="string">&quot;mB&quot;</span> =&gt; (<span class="number">1000</span>, <span class="number">2</span>),
-        <span class="string">&quot;GB&quot;</span> <span class="op">|</span> <span class="string">&quot;gB&quot;</span> =&gt; (<span class="number">1000</span>, <span class="number">3</span>),
-        <span class="string">&quot;TB&quot;</span> <span class="op">|</span> <span class="string">&quot;tB&quot;</span> =&gt; (<span class="number">1000</span>, <span class="number">4</span>),
-        <span class="string">&quot;PB&quot;</span> <span class="op">|</span> <span class="string">&quot;pB&quot;</span> =&gt; (<span class="number">1000</span>, <span class="number">5</span>),
-        <span class="string">&quot;EB&quot;</span> <span class="op">|</span> <span class="string">&quot;eB&quot;</span> =&gt; (<span class="number">1000</span>, <span class="number">6</span>),
-        <span class="string">&quot;ZB&quot;</span> <span class="op">|</span> <span class="string">&quot;zB&quot;</span> =&gt; (<span class="number">1000</span>, <span class="number">7</span>),
-        <span class="string">&quot;YB&quot;</span> <span class="op">|</span> <span class="string">&quot;yB&quot;</span> =&gt; (<span class="number">1000</span>, <span class="number">8</span>),
-        <span class="kw">_</span> <span class="kw">if</span> <span class="ident">numeric_string</span>.<span class="ident">is_empty</span>() =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseSizeError::parse_failure</span>(<span class="ident">size</span>)),
-        <span class="kw">_</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseSizeError::invalid_suffix</span>(<span class="ident">size</span>)),
+    <span class="comment">// Get the alphabetic units part of the size argument and compute
+    // the factor it represents. For example, if the argument is &quot;123K&quot;,
+    // then the unit part is &quot;K&quot; and the factor is 1024. This may be the
+    // empty string, in which case, the factor is 1.
+    </span><span class="kw">let </span>unit = <span class="kw-2">&amp;</span>size[numeric_string.len()..];
+    <span class="kw">let </span>(base, exponent): (u128, u32) = <span class="kw">match </span>unit {
+        <span class="string">&quot;&quot; </span>=&gt; (<span class="number">1</span>, <span class="number">0</span>),
+        <span class="string">&quot;b&quot; </span>=&gt; (<span class="number">512</span>, <span class="number">1</span>), <span class="comment">// (`od`, `head` and `tail` use &quot;b&quot;)
+        </span><span class="string">&quot;KiB&quot; </span>| <span class="string">&quot;kiB&quot; </span>| <span class="string">&quot;K&quot; </span>| <span class="string">&quot;k&quot; </span>=&gt; (<span class="number">1024</span>, <span class="number">1</span>),
+        <span class="string">&quot;MiB&quot; </span>| <span class="string">&quot;miB&quot; </span>| <span class="string">&quot;M&quot; </span>| <span class="string">&quot;m&quot; </span>=&gt; (<span class="number">1024</span>, <span class="number">2</span>),
+        <span class="string">&quot;GiB&quot; </span>| <span class="string">&quot;giB&quot; </span>| <span class="string">&quot;G&quot; </span>| <span class="string">&quot;g&quot; </span>=&gt; (<span class="number">1024</span>, <span class="number">3</span>),
+        <span class="string">&quot;TiB&quot; </span>| <span class="string">&quot;tiB&quot; </span>| <span class="string">&quot;T&quot; </span>| <span class="string">&quot;t&quot; </span>=&gt; (<span class="number">1024</span>, <span class="number">4</span>),
+        <span class="string">&quot;PiB&quot; </span>| <span class="string">&quot;piB&quot; </span>| <span class="string">&quot;P&quot; </span>| <span class="string">&quot;p&quot; </span>=&gt; (<span class="number">1024</span>, <span class="number">5</span>),
+        <span class="string">&quot;EiB&quot; </span>| <span class="string">&quot;eiB&quot; </span>| <span class="string">&quot;E&quot; </span>| <span class="string">&quot;e&quot; </span>=&gt; (<span class="number">1024</span>, <span class="number">6</span>),
+        <span class="string">&quot;ZiB&quot; </span>| <span class="string">&quot;ziB&quot; </span>| <span class="string">&quot;Z&quot; </span>| <span class="string">&quot;z&quot; </span>=&gt; (<span class="number">1024</span>, <span class="number">7</span>),
+        <span class="string">&quot;YiB&quot; </span>| <span class="string">&quot;yiB&quot; </span>| <span class="string">&quot;Y&quot; </span>| <span class="string">&quot;y&quot; </span>=&gt; (<span class="number">1024</span>, <span class="number">8</span>),
+        <span class="string">&quot;KB&quot; </span>| <span class="string">&quot;kB&quot; </span>=&gt; (<span class="number">1000</span>, <span class="number">1</span>),
+        <span class="string">&quot;MB&quot; </span>| <span class="string">&quot;mB&quot; </span>=&gt; (<span class="number">1000</span>, <span class="number">2</span>),
+        <span class="string">&quot;GB&quot; </span>| <span class="string">&quot;gB&quot; </span>=&gt; (<span class="number">1000</span>, <span class="number">3</span>),
+        <span class="string">&quot;TB&quot; </span>| <span class="string">&quot;tB&quot; </span>=&gt; (<span class="number">1000</span>, <span class="number">4</span>),
+        <span class="string">&quot;PB&quot; </span>| <span class="string">&quot;pB&quot; </span>=&gt; (<span class="number">1000</span>, <span class="number">5</span>),
+        <span class="string">&quot;EB&quot; </span>| <span class="string">&quot;eB&quot; </span>=&gt; (<span class="number">1000</span>, <span class="number">6</span>),
+        <span class="string">&quot;ZB&quot; </span>| <span class="string">&quot;zB&quot; </span>=&gt; (<span class="number">1000</span>, <span class="number">7</span>),
+        <span class="string">&quot;YB&quot; </span>| <span class="string">&quot;yB&quot; </span>=&gt; (<span class="number">1000</span>, <span class="number">8</span>),
+        <span class="kw">_ if </span>numeric_string.is_empty() =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(ParseSizeError::parse_failure(size)),
+        <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(ParseSizeError::invalid_suffix(size)),
     };
-    <span class="kw">let</span> <span class="ident">factor</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">u64::try_from</span>(<span class="ident">base</span>.<span class="ident">pow</span>(<span class="ident">exponent</span>)) {
-        <span class="prelude-val">Ok</span>(<span class="ident">n</span>) =&gt; <span class="ident">n</span>,
-        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseSizeError::size_too_big</span>(<span class="ident">size</span>)),
+    <span class="kw">let </span>factor = <span class="kw">match </span>u64::try_from(base.pow(exponent)) {
+        <span class="prelude-val">Ok</span>(n) =&gt; n,
+        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(ParseSizeError::size_too_big(size)),
     };
-    <span class="ident">number</span>
-        .<span class="ident">checked_mul</span>(<span class="ident">factor</span>)
-        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">ParseSizeError::size_too_big</span>(<span class="ident">size</span>))
+    number
+        .checked_mul(factor)
+        .ok_or_else(|| ParseSizeError::size_too_big(size))
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ParseSizeError</span> {
-    <span class="ident">InvalidSuffix</span>(<span class="ident">String</span>), <span class="comment">// Suffix</span>
-    <span class="ident">ParseFailure</span>(<span class="ident">String</span>),  <span class="comment">// Syntax</span>
-    <span class="ident">SizeTooBig</span>(<span class="ident">String</span>),    <span class="comment">// Overflow</span>
-}
+<span class="attribute">#[derive(Debug, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>ParseSizeError {
+    InvalidSuffix(String), <span class="comment">// Suffix
+    </span>ParseFailure(String),  <span class="comment">// Syntax
+    </span>SizeTooBig(String),    <span class="comment">// Overflow
+</span>}
 
-<span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="ident">ParseSizeError</span> {
-    <span class="kw">fn</span> <span class="ident">description</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::InvalidSuffix</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) =&gt; <span class="ident">s</span>,
-            <span class="ident"><span class="self">Self</span>::ParseFailure</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) =&gt; <span class="ident">s</span>,
-            <span class="ident"><span class="self">Self</span>::SizeTooBig</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) =&gt; <span class="ident">s</span>,
+<span class="kw">impl </span>Error <span class="kw">for </span>ParseSizeError {
+    <span class="kw">fn </span>description(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw">match </span><span class="kw-2">*</span><span class="self">self </span>{
+            <span class="self">Self</span>::InvalidSuffix(<span class="kw-2">ref </span>s) =&gt; s,
+            <span class="self">Self</span>::ParseFailure(<span class="kw-2">ref </span>s) =&gt; s,
+            <span class="self">Self</span>::SizeTooBig(<span class="kw-2">ref </span>s) =&gt; s,
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">ParseSizeError</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">fmt::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::InvalidSuffix</span>(<span class="ident">s</span>) <span class="op">|</span> <span class="ident"><span class="self">Self</span>::ParseFailure</span>(<span class="ident">s</span>) <span class="op">|</span> <span class="ident"><span class="self">Self</span>::SizeTooBig</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>,
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>ParseSizeError {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; <span class="prelude-ty">Result</span>&lt;(), fmt::Error&gt; {
+        <span class="kw">let </span>s = <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::InvalidSuffix(s) | <span class="self">Self</span>::ParseFailure(s) | <span class="self">Self</span>::SizeTooBig(s) =&gt; s,
         };
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">s</span>)
+        <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, s)
     }
 }
 
-<span class="comment">// FIXME: It&#39;s more idiomatic to move the formatting into the Display impl,</span>
-<span class="comment">// but there&#39;s a lot of downstream code that constructs these errors manually</span>
-<span class="comment">// that would be affected</span>
-<span class="kw">impl</span> <span class="ident">ParseSizeError</span> {
-    <span class="kw">fn</span> <span class="ident">invalid_suffix</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::InvalidSuffix</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">s</span>.<span class="ident">quote</span>()))
+<span class="comment">// FIXME: It&#39;s more idiomatic to move the formatting into the Display impl,
+// but there&#39;s a lot of downstream code that constructs these errors manually
+// that would be affected
+</span><span class="kw">impl </span>ParseSizeError {
+    <span class="kw">fn </span>invalid_suffix(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::InvalidSuffix(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, s.quote()))
     }
 
-    <span class="kw">fn</span> <span class="ident">parse_failure</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="comment">// stderr on linux (GNU coreutils 8.32) (LC_ALL=C)</span>
-        <span class="comment">// has to be handled in the respective uutils because strings differ, e.g.:</span>
-        <span class="comment">//</span>
-        <span class="comment">// `NUM`</span>
-        <span class="comment">// head:     invalid number of bytes: &#39;1fb&#39;</span>
-        <span class="comment">// tail:     invalid number of bytes: &#39;1fb&#39;</span>
-        <span class="comment">//</span>
-        <span class="comment">// `SIZE`</span>
-        <span class="comment">// split:    invalid number of bytes: &#39;1fb&#39;</span>
-        <span class="comment">// truncate: Invalid number: &#39;1fb&#39;</span>
-        <span class="comment">//</span>
-        <span class="comment">// `MODE`</span>
-        <span class="comment">// stdbuf:   invalid mode &#39;1fb&#39;</span>
-        <span class="comment">//</span>
-        <span class="comment">// `SIZE`</span>
-        <span class="comment">// sort:     invalid suffix in --buffer-size argument &#39;1fb&#39;</span>
-        <span class="comment">// sort:     invalid --buffer-size argument &#39;fb&#39;</span>
-        <span class="comment">//</span>
-        <span class="comment">// `SIZE`</span>
-        <span class="comment">// du:       invalid suffix in --buffer-size argument &#39;1fb&#39;</span>
-        <span class="comment">// du:       invalid suffix in --threshold argument &#39;1fb&#39;</span>
-        <span class="comment">// du:       invalid --buffer-size argument &#39;fb&#39;</span>
-        <span class="comment">// du:       invalid --threshold argument &#39;fb&#39;</span>
-        <span class="comment">//</span>
-        <span class="comment">// `BYTES`</span>
-        <span class="comment">// od:       invalid suffix in --read-bytes argument &#39;1fb&#39;</span>
-        <span class="comment">// od:       invalid --read-bytes argument  argument &#39;fb&#39;</span>
-        <span class="comment">//                   --skip-bytes</span>
-        <span class="comment">//                   --width</span>
-        <span class="comment">//                   --strings</span>
-        <span class="comment">// etc.</span>
-        <span class="ident"><span class="self">Self</span>::ParseFailure</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">s</span>.<span class="ident">quote</span>()))
+    <span class="kw">fn </span>parse_failure(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+        <span class="comment">// stderr on linux (GNU coreutils 8.32) (LC_ALL=C)
+        // has to be handled in the respective uutils because strings differ, e.g.:
+        //
+        // `NUM`
+        // head:     invalid number of bytes: &#39;1fb&#39;
+        // tail:     invalid number of bytes: &#39;1fb&#39;
+        //
+        // `SIZE`
+        // split:    invalid number of bytes: &#39;1fb&#39;
+        // truncate: Invalid number: &#39;1fb&#39;
+        //
+        // `MODE`
+        // stdbuf:   invalid mode &#39;1fb&#39;
+        //
+        // `SIZE`
+        // sort:     invalid suffix in --buffer-size argument &#39;1fb&#39;
+        // sort:     invalid --buffer-size argument &#39;fb&#39;
+        //
+        // `SIZE`
+        // du:       invalid suffix in --buffer-size argument &#39;1fb&#39;
+        // du:       invalid suffix in --threshold argument &#39;1fb&#39;
+        // du:       invalid --buffer-size argument &#39;fb&#39;
+        // du:       invalid --threshold argument &#39;fb&#39;
+        //
+        // `BYTES`
+        // od:       invalid suffix in --read-bytes argument &#39;1fb&#39;
+        // od:       invalid --read-bytes argument  argument &#39;fb&#39;
+        //                   --skip-bytes
+        //                   --width
+        //                   --strings
+        // etc.
+        </span><span class="self">Self</span>::ParseFailure(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, s.quote()))
     }
 
-    <span class="kw">fn</span> <span class="ident">size_too_big</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="comment">// stderr on linux (GNU coreutils 8.32) (LC_ALL=C)</span>
-        <span class="comment">// has to be handled in the respective uutils because strings differ, e.g.:</span>
-        <span class="comment">//</span>
-        <span class="comment">// head:     invalid number of bytes: &#39;1Y&#39;: Value too large for defined data type</span>
-        <span class="comment">// tail:     invalid number of bytes: &#39;1Y&#39;: Value too large for defined data type</span>
-        <span class="comment">// split:    invalid number of bytes: &#39;1Y&#39;: Value too large for defined data type</span>
-        <span class="comment">// truncate:          Invalid number: &#39;1Y&#39;: Value too large for defined data type</span>
-        <span class="comment">// stdbuf:               invalid mode &#39;1Y&#39;: Value too large for defined data type</span>
-        <span class="comment">// sort:     -S argument &#39;1Y&#39; too large</span>
-        <span class="comment">// du:       -B argument &#39;1Y&#39; too large</span>
-        <span class="comment">// od:       -N argument &#39;1Y&#39; too large</span>
-        <span class="comment">// etc.</span>
-        <span class="comment">//</span>
-        <span class="comment">// stderr on macos (brew - GNU coreutils 8.32) also differs for the same version, e.g.:</span>
-        <span class="comment">// ghead:   invalid number of bytes: &#39;1Y&#39;: Value too large to be stored in data type</span>
-        <span class="comment">// gtail:   invalid number of bytes: &#39;1Y&#39;: Value too large to be stored in data type</span>
-        <span class="ident"><span class="self">Self</span>::SizeTooBig</span>(<span class="macro">format!</span>(
+    <span class="kw">fn </span>size_too_big(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+        <span class="comment">// stderr on linux (GNU coreutils 8.32) (LC_ALL=C)
+        // has to be handled in the respective uutils because strings differ, e.g.:
+        //
+        // head:     invalid number of bytes: &#39;1Y&#39;: Value too large for defined data type
+        // tail:     invalid number of bytes: &#39;1Y&#39;: Value too large for defined data type
+        // split:    invalid number of bytes: &#39;1Y&#39;: Value too large for defined data type
+        // truncate:          Invalid number: &#39;1Y&#39;: Value too large for defined data type
+        // stdbuf:               invalid mode &#39;1Y&#39;: Value too large for defined data type
+        // sort:     -S argument &#39;1Y&#39; too large
+        // du:       -B argument &#39;1Y&#39; too large
+        // od:       -N argument &#39;1Y&#39; too large
+        // etc.
+        //
+        // stderr on macos (brew - GNU coreutils 8.32) also differs for the same version, e.g.:
+        // ghead:   invalid number of bytes: &#39;1Y&#39;: Value too large to be stored in data type
+        // gtail:   invalid number of bytes: &#39;1Y&#39;: Value too large to be stored in data type
+        </span><span class="self">Self</span>::SizeTooBig(<span class="macro">format!</span>(
             <span class="string">&quot;{}: Value too large for defined data type&quot;</span>,
-            <span class="ident">s</span>.<span class="ident">quote</span>()
+            s.quote()
         ))
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="kw">fn</span> <span class="ident">variant_eq</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ParseSizeError</span>, <span class="ident">b</span>: <span class="kw-2">&amp;</span><span class="ident">ParseSizeError</span>) -&gt; <span class="ident">bool</span> {
-        <span class="ident">std::mem::discriminant</span>(<span class="ident">a</span>) <span class="op">==</span> <span class="ident">std::mem::discriminant</span>(<span class="ident">b</span>)
+    <span class="kw">fn </span>variant_eq(a: <span class="kw-2">&amp;</span>ParseSizeError, b: <span class="kw-2">&amp;</span>ParseSizeError) -&gt; bool {
+        std::mem::discriminant(a) == std::mem::discriminant(b)
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">all_suffixes</span>() {
-        <span class="comment">// Units  are  K,M,G,T,P,E,Z,Y (powers of 1024) or KB,MB,... (powers of 1000).</span>
-        <span class="comment">// Binary prefixes can be used, too: KiB=K, MiB=M, and so on.</span>
-        <span class="kw">let</span> <span class="ident">suffixes</span> <span class="op">=</span> [
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>all_suffixes() {
+        <span class="comment">// Units  are  K,M,G,T,P,E,Z,Y (powers of 1024) or KB,MB,... (powers of 1000).
+        // Binary prefixes can be used, too: KiB=K, MiB=M, and so on.
+        </span><span class="kw">let </span>suffixes = [
             (<span class="string">&#39;K&#39;</span>, <span class="number">1u32</span>),
             (<span class="string">&#39;M&#39;</span>, <span class="number">2u32</span>),
             (<span class="string">&#39;G&#39;</span>, <span class="number">3u32</span>),
             (<span class="string">&#39;T&#39;</span>, <span class="number">4u32</span>),
             (<span class="string">&#39;P&#39;</span>, <span class="number">5u32</span>),
             (<span class="string">&#39;E&#39;</span>, <span class="number">6u32</span>),
-            <span class="comment">// The following will always result ParseSizeError::SizeTooBig as they cannot fit in u64</span>
-            <span class="comment">// (&#39;Z&#39;, 7u32),</span>
-            <span class="comment">// (&#39;Y&#39;, 8u32),</span>
-        ];
+            <span class="comment">// The following will always result ParseSizeError::SizeTooBig as they cannot fit in u64
+            // (&#39;Z&#39;, 7u32),
+            // (&#39;Y&#39;, 8u32),
+        </span>];
 
-        <span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="ident">c</span>, <span class="ident">exp</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">suffixes</span> {
-            <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;2{}B&quot;</span>, <span class="ident">c</span>); <span class="comment">// KB</span>
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2</span> <span class="op">*</span> (<span class="number">1000_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">u64</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
-            <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;2{}&quot;</span>, <span class="ident">c</span>); <span class="comment">// K</span>
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2</span> <span class="op">*</span> (<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">u64</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
-            <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;2{}iB&quot;</span>, <span class="ident">c</span>); <span class="comment">// KiB</span>
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2</span> <span class="op">*</span> (<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">u64</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
-            <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;2{}iB&quot;</span>, <span class="ident">c</span>.<span class="ident">to_lowercase</span>()); <span class="comment">// kiB</span>
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2</span> <span class="op">*</span> (<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">u64</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
+        <span class="kw">for </span><span class="kw-2">&amp;</span>(c, exp) <span class="kw">in </span><span class="kw-2">&amp;</span>suffixes {
+            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;2{}B&quot;</span>, c); <span class="comment">// KB
+            </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2 </span>* (<span class="number">1000_u128</span>).pow(exp)) <span class="kw">as </span>u64), parse_size(<span class="kw-2">&amp;</span>s));
+            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;2{}&quot;</span>, c); <span class="comment">// K
+            </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2 </span>* (<span class="number">1024_u128</span>).pow(exp)) <span class="kw">as </span>u64), parse_size(<span class="kw-2">&amp;</span>s));
+            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;2{}iB&quot;</span>, c); <span class="comment">// KiB
+            </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2 </span>* (<span class="number">1024_u128</span>).pow(exp)) <span class="kw">as </span>u64), parse_size(<span class="kw-2">&amp;</span>s));
+            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;2{}iB&quot;</span>, c.to_lowercase()); <span class="comment">// kiB
+            </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2 </span>* (<span class="number">1024_u128</span>).pow(exp)) <span class="kw">as </span>u64), parse_size(<span class="kw-2">&amp;</span>s));
 
-            <span class="comment">// suffix only</span>
-            <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}B&quot;</span>, <span class="ident">c</span>); <span class="comment">// KB</span>
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1000_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">u64</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
-            <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">c</span>); <span class="comment">// K</span>
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">u64</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
-            <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}iB&quot;</span>, <span class="ident">c</span>); <span class="comment">// KiB</span>
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">u64</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
-            <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}iB&quot;</span>, <span class="ident">c</span>.<span class="ident">to_lowercase</span>()); <span class="comment">// kiB</span>
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1024_u128</span>).<span class="ident">pow</span>(<span class="ident">exp</span>)) <span class="kw">as</span> <span class="ident">u64</span>), <span class="ident">parse_size</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>));
+            <span class="comment">// suffix only
+            </span><span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;{}B&quot;</span>, c); <span class="comment">// KB
+            </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1000_u128</span>).pow(exp)) <span class="kw">as </span>u64), parse_size(<span class="kw-2">&amp;</span>s));
+            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, c); <span class="comment">// K
+            </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1024_u128</span>).pow(exp)) <span class="kw">as </span>u64), parse_size(<span class="kw-2">&amp;</span>s));
+            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;{}iB&quot;</span>, c); <span class="comment">// KiB
+            </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1024_u128</span>).pow(exp)) <span class="kw">as </span>u64), parse_size(<span class="kw-2">&amp;</span>s));
+            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;{}iB&quot;</span>, c.to_lowercase()); <span class="comment">// kiB
+            </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1024_u128</span>).pow(exp)) <span class="kw">as </span>u64), parse_size(<span class="kw-2">&amp;</span>s));
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;128&quot;</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">overflow_x64</span>() {
-        <span class="macro">assert!</span>(<span class="ident">parse_size</span>(<span class="string">&quot;10000000000000000000000&quot;</span>).<span class="ident">is_err</span>());
-        <span class="macro">assert!</span>(<span class="ident">parse_size</span>(<span class="string">&quot;1000000000T&quot;</span>).<span class="ident">is_err</span>());
-        <span class="macro">assert!</span>(<span class="ident">parse_size</span>(<span class="string">&quot;100000P&quot;</span>).<span class="ident">is_err</span>());
-        <span class="macro">assert!</span>(<span class="ident">parse_size</span>(<span class="string">&quot;100E&quot;</span>).<span class="ident">is_err</span>());
-        <span class="macro">assert!</span>(<span class="ident">parse_size</span>(<span class="string">&quot;1Z&quot;</span>).<span class="ident">is_err</span>());
-        <span class="macro">assert!</span>(<span class="ident">parse_size</span>(<span class="string">&quot;1Y&quot;</span>).<span class="ident">is_err</span>());
+    <span class="attribute">#[test]
+    #[cfg(not(target_pointer_width = <span class="string">&quot;128&quot;</span>))]
+    </span><span class="kw">fn </span>overflow_x64() {
+        <span class="macro">assert!</span>(parse_size(<span class="string">&quot;10000000000000000000000&quot;</span>).is_err());
+        <span class="macro">assert!</span>(parse_size(<span class="string">&quot;1000000000T&quot;</span>).is_err());
+        <span class="macro">assert!</span>(parse_size(<span class="string">&quot;100000P&quot;</span>).is_err());
+        <span class="macro">assert!</span>(parse_size(<span class="string">&quot;100E&quot;</span>).is_err());
+        <span class="macro">assert!</span>(parse_size(<span class="string">&quot;1Z&quot;</span>).is_err());
+        <span class="macro">assert!</span>(parse_size(<span class="string">&quot;1Y&quot;</span>).is_err());
 
-        <span class="macro">assert!</span>(<span class="ident">variant_eq</span>(
-            <span class="kw-2">&amp;</span><span class="ident">parse_size</span>(<span class="string">&quot;1Z&quot;</span>).<span class="ident">unwrap_err</span>(),
-            <span class="kw-2">&amp;</span><span class="ident">ParseSizeError::SizeTooBig</span>(<span class="ident">String::new</span>())
+        <span class="macro">assert!</span>(variant_eq(
+            <span class="kw-2">&amp;</span>parse_size(<span class="string">&quot;1Z&quot;</span>).unwrap_err(),
+            <span class="kw-2">&amp;</span>ParseSizeError::SizeTooBig(String::new())
         ));
 
         <span class="macro">assert_eq!</span>(
-            <span class="ident">ParseSizeError::SizeTooBig</span>(<span class="string">&quot;&#39;1Y&#39;: Value too large for defined data type&quot;</span>.<span class="ident">to_string</span>()),
-            <span class="ident">parse_size</span>(<span class="string">&quot;1Y&quot;</span>).<span class="ident">unwrap_err</span>()
+            ParseSizeError::SizeTooBig(<span class="string">&quot;&#39;1Y&#39;: Value too large for defined data type&quot;</span>.to_string()),
+            parse_size(<span class="string">&quot;1Y&quot;</span>).unwrap_err()
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">invalid_suffix</span>() {
-        <span class="kw">let</span> <span class="ident">test_strings</span> <span class="op">=</span> [<span class="string">&quot;328hdsf3290&quot;</span>, <span class="string">&quot;5mib&quot;</span>, <span class="string">&quot;1e2&quot;</span>, <span class="string">&quot;1H&quot;</span>, <span class="string">&quot;1.2&quot;</span>];
-        <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">test_string</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">test_strings</span> {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>invalid_suffix() {
+        <span class="kw">let </span>test_strings = [<span class="string">&quot;328hdsf3290&quot;</span>, <span class="string">&quot;5mib&quot;</span>, <span class="string">&quot;1e2&quot;</span>, <span class="string">&quot;1H&quot;</span>, <span class="string">&quot;1.2&quot;</span>];
+        <span class="kw">for </span><span class="kw-2">&amp;</span>test_string <span class="kw">in </span><span class="kw-2">&amp;</span>test_strings {
             <span class="macro">assert_eq!</span>(
-                <span class="ident">parse_size</span>(<span class="ident">test_string</span>).<span class="ident">unwrap_err</span>(),
-                <span class="ident">ParseSizeError::InvalidSuffix</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">test_string</span>.<span class="ident">quote</span>()))
+                parse_size(test_string).unwrap_err(),
+                ParseSizeError::InvalidSuffix(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, test_string.quote()))
             );
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">invalid_syntax</span>() {
-        <span class="kw">let</span> <span class="ident">test_strings</span> <span class="op">=</span> [<span class="string">&quot;biB&quot;</span>, <span class="string">&quot;-&quot;</span>, <span class="string">&quot;+&quot;</span>, <span class="string">&quot;&quot;</span>, <span class="string">&quot;-1&quot;</span>, <span class="string">&quot;∞&quot;</span>];
-        <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">test_string</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">test_strings</span> {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>invalid_syntax() {
+        <span class="kw">let </span>test_strings = [<span class="string">&quot;biB&quot;</span>, <span class="string">&quot;-&quot;</span>, <span class="string">&quot;+&quot;</span>, <span class="string">&quot;&quot;</span>, <span class="string">&quot;-1&quot;</span>, <span class="string">&quot;∞&quot;</span>];
+        <span class="kw">for </span><span class="kw-2">&amp;</span>test_string <span class="kw">in </span><span class="kw-2">&amp;</span>test_strings {
             <span class="macro">assert_eq!</span>(
-                <span class="ident">parse_size</span>(<span class="ident">test_string</span>).<span class="ident">unwrap_err</span>(),
-                <span class="ident">ParseSizeError::ParseFailure</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">test_string</span>.<span class="ident">quote</span>()))
+                parse_size(test_string).unwrap_err(),
+                ParseSizeError::ParseFailure(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, test_string.quote()))
             );
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">b_suffix</span>() {
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">3</span> <span class="op">*</span> <span class="number">512</span>), <span class="ident">parse_size</span>(<span class="string">&quot;3b&quot;</span>)); <span class="comment">// b is 512</span>
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>b_suffix() {
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">3 </span>* <span class="number">512</span>), parse_size(<span class="string">&quot;3b&quot;</span>)); <span class="comment">// b is 512
+    </span>}
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>no_suffix() {
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1234</span>), parse_size(<span class="string">&quot;1234&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">0</span>), parse_size(<span class="string">&quot;0&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">5</span>), parse_size(<span class="string">&quot;5&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">999</span>), parse_size(<span class="string">&quot;999&quot;</span>));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">no_suffix</span>() {
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1234</span>), <span class="ident">parse_size</span>(<span class="string">&quot;1234&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">0</span>), <span class="ident">parse_size</span>(<span class="string">&quot;0&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">5</span>), <span class="ident">parse_size</span>(<span class="string">&quot;5&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">999</span>), <span class="ident">parse_size</span>(<span class="string">&quot;999&quot;</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>kilobytes_suffix() {
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">123 </span>* <span class="number">1000</span>), parse_size(<span class="string">&quot;123KB&quot;</span>)); <span class="comment">// KB is 1000
+        </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">9 </span>* <span class="number">1000</span>), parse_size(<span class="string">&quot;9kB&quot;</span>)); <span class="comment">// kB is 1000
+        </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2 </span>* <span class="number">1024</span>), parse_size(<span class="string">&quot;2K&quot;</span>)); <span class="comment">// K is 1024
+        </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">0</span>), parse_size(<span class="string">&quot;0K&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">0</span>), parse_size(<span class="string">&quot;0KB&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1000</span>), parse_size(<span class="string">&quot;KB&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1024</span>), parse_size(<span class="string">&quot;K&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2000</span>), parse_size(<span class="string">&quot;2kB&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">4000</span>), parse_size(<span class="string">&quot;4KB&quot;</span>));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">kilobytes_suffix</span>() {
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">123</span> <span class="op">*</span> <span class="number">1000</span>), <span class="ident">parse_size</span>(<span class="string">&quot;123KB&quot;</span>)); <span class="comment">// KB is 1000</span>
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">9</span> <span class="op">*</span> <span class="number">1000</span>), <span class="ident">parse_size</span>(<span class="string">&quot;9kB&quot;</span>)); <span class="comment">// kB is 1000</span>
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2</span> <span class="op">*</span> <span class="number">1024</span>), <span class="ident">parse_size</span>(<span class="string">&quot;2K&quot;</span>)); <span class="comment">// K is 1024</span>
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">0</span>), <span class="ident">parse_size</span>(<span class="string">&quot;0K&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">0</span>), <span class="ident">parse_size</span>(<span class="string">&quot;0KB&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1000</span>), <span class="ident">parse_size</span>(<span class="string">&quot;KB&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1024</span>), <span class="ident">parse_size</span>(<span class="string">&quot;K&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2000</span>), <span class="ident">parse_size</span>(<span class="string">&quot;2kB&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">4000</span>), <span class="ident">parse_size</span>(<span class="string">&quot;4KB&quot;</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>megabytes_suffix() {
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">123 </span>* <span class="number">1024 </span>* <span class="number">1024</span>), parse_size(<span class="string">&quot;123M&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">123 </span>* <span class="number">1000 </span>* <span class="number">1000</span>), parse_size(<span class="string">&quot;123MB&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1024 </span>* <span class="number">1024</span>), parse_size(<span class="string">&quot;M&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1000 </span>* <span class="number">1000</span>), parse_size(<span class="string">&quot;MB&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2 </span>* <span class="number">1_048_576</span>), parse_size(<span class="string">&quot;2m&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">4 </span>* <span class="number">1_048_576</span>), parse_size(<span class="string">&quot;4M&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2_000_000</span>), parse_size(<span class="string">&quot;2mB&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">4_000_000</span>), parse_size(<span class="string">&quot;4MB&quot;</span>));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">megabytes_suffix</span>() {
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">123</span> <span class="op">*</span> <span class="number">1024</span> <span class="op">*</span> <span class="number">1024</span>), <span class="ident">parse_size</span>(<span class="string">&quot;123M&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">123</span> <span class="op">*</span> <span class="number">1000</span> <span class="op">*</span> <span class="number">1000</span>), <span class="ident">parse_size</span>(<span class="string">&quot;123MB&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1024</span> <span class="op">*</span> <span class="number">1024</span>), <span class="ident">parse_size</span>(<span class="string">&quot;M&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1000</span> <span class="op">*</span> <span class="number">1000</span>), <span class="ident">parse_size</span>(<span class="string">&quot;MB&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2</span> <span class="op">*</span> <span class="number">1_048_576</span>), <span class="ident">parse_size</span>(<span class="string">&quot;2m&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">4</span> <span class="op">*</span> <span class="number">1_048_576</span>), <span class="ident">parse_size</span>(<span class="string">&quot;4M&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2_000_000</span>), <span class="ident">parse_size</span>(<span class="string">&quot;2mB&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">4_000_000</span>), <span class="ident">parse_size</span>(<span class="string">&quot;4MB&quot;</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>gigabytes_suffix() {
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1_073_741_824</span>), parse_size(<span class="string">&quot;1G&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2_000_000_000</span>), parse_size(<span class="string">&quot;2GB&quot;</span>));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">gigabytes_suffix</span>() {
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1_073_741_824</span>), <span class="ident">parse_size</span>(<span class="string">&quot;1G&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2_000_000_000</span>), <span class="ident">parse_size</span>(<span class="string">&quot;2GB&quot;</span>));
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;64&quot;</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">x64</span>() {
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1_099_511_627_776</span>), <span class="ident">parse_size</span>(<span class="string">&quot;1T&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1_125_899_906_842_624</span>), <span class="ident">parse_size</span>(<span class="string">&quot;1P&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1_152_921_504_606_846_976</span>), <span class="ident">parse_size</span>(<span class="string">&quot;1E&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2_000_000_000_000</span>), <span class="ident">parse_size</span>(<span class="string">&quot;2TB&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2_000_000_000_000_000</span>), <span class="ident">parse_size</span>(<span class="string">&quot;2PB&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2_000_000_000_000_000_000</span>), <span class="ident">parse_size</span>(<span class="string">&quot;2EB&quot;</span>));
+    <span class="attribute">#[test]
+    #[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
+    </span><span class="kw">fn </span>x64() {
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1_099_511_627_776</span>), parse_size(<span class="string">&quot;1T&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1_125_899_906_842_624</span>), parse_size(<span class="string">&quot;1P&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1_152_921_504_606_846_976</span>), parse_size(<span class="string">&quot;1E&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2_000_000_000_000</span>), parse_size(<span class="string">&quot;2TB&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2_000_000_000_000_000</span>), parse_size(<span class="string">&quot;2PB&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2_000_000_000_000_000_000</span>), parse_size(<span class="string">&quot;2EB&quot;</span>));
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uucore" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uucore" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

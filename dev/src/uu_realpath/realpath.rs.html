@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/realpath/src/realpath.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>realpath.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uu_realpath/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../uu_realpath/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uu_realpath/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/realpath/src/realpath.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>realpath.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uu_realpath/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../uu_realpath/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uu_realpath/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -295,302 +295,302 @@
 <span id="295">295</span>
 <span id="296">296</span>
 <span id="297">297</span>
-</pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
-<span class="comment">//  *</span>
-<span class="comment">//  * (c) 2014 Vsevolod Velichko &lt;torkvemada@sorokdva.net&gt;</span>
-<span class="comment">//  *</span>
-<span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
-<span class="comment">//  * file that was distributed with this source code.</span>
+</pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
+//  *
+//  * (c) 2014 Vsevolod Velichko &lt;torkvemada@sorokdva.net&gt;
+//  *
+//  * For the full copyright and license information, please view the LICENSE
+//  * file that was distributed with this source code.
 
-<span class="comment">// spell-checker:ignore (ToDO) retcode</span>
+// spell-checker:ignore (ToDO) retcode
 
-<span class="attribute">#[<span class="ident">macro_use</span>]</span>
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">uucore</span>;
+</span><span class="attribute">#[macro_use]
+</span><span class="kw">extern crate </span>uucore;
 
-<span class="kw">use</span> <span class="ident">clap</span>::{
-    <span class="ident">builder::NonEmptyStringValueParser</span>, <span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">ArgMatches</span>, <span class="ident">Command</span>,
+<span class="kw">use </span>clap::{
+    builder::NonEmptyStringValueParser, crate_version, Arg, ArgAction, ArgMatches, Command,
 };
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">io</span>::{<span class="ident">stdout</span>, <span class="ident">Write</span>},
-    <span class="ident">path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>},
+<span class="kw">use </span>std::{
+    io::{stdout, Write},
+    path::{Path, PathBuf},
 };
-<span class="kw">use</span> <span class="ident">uucore::error::UClapError</span>;
-<span class="kw">use</span> <span class="ident">uucore::fs::make_path_relative_to</span>;
-<span class="kw">use</span> <span class="ident">uucore</span>::{
-    <span class="ident">display</span>::{<span class="ident">print_verbatim</span>, <span class="ident">Quotable</span>},
-    <span class="ident">error</span>::{<span class="ident">FromIo</span>, <span class="ident">UResult</span>},
-    <span class="ident">format_usage</span>,
-    <span class="ident">fs</span>::{<span class="ident">canonicalize</span>, <span class="ident">MissingHandling</span>, <span class="ident">ResolveMode</span>},
+<span class="kw">use </span>uucore::error::UClapError;
+<span class="kw">use </span>uucore::fs::make_path_relative_to;
+<span class="kw">use </span>uucore::{
+    display::{print_verbatim, Quotable},
+    error::{FromIo, UResult},
+    format_usage,
+    fs::{canonicalize, MissingHandling, ResolveMode},
 };
 
-<span class="kw">static</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;print the resolved path&quot;</span>;
-<span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;{} [OPTION]... FILE...&quot;</span>;
+<span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;print the resolved path&quot;</span>;
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;{} [OPTION]... FILE...&quot;</span>;
 
-<span class="kw">static</span> <span class="ident">OPT_QUIET</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;quiet&quot;</span>;
-<span class="kw">static</span> <span class="ident">OPT_STRIP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;strip&quot;</span>;
-<span class="kw">static</span> <span class="ident">OPT_ZERO</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;zero&quot;</span>;
-<span class="kw">static</span> <span class="ident">OPT_PHYSICAL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;physical&quot;</span>;
-<span class="kw">static</span> <span class="ident">OPT_LOGICAL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;logical&quot;</span>;
-<span class="kw">const</span> <span class="ident">OPT_CANONICALIZE_MISSING</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;canonicalize-missing&quot;</span>;
-<span class="kw">const</span> <span class="ident">OPT_CANONICALIZE_EXISTING</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;canonicalize-existing&quot;</span>;
-<span class="kw">const</span> <span class="ident">OPT_RELATIVE_TO</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;relative-to&quot;</span>;
-<span class="kw">const</span> <span class="ident">OPT_RELATIVE_BASE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;relative-base&quot;</span>;
+<span class="kw">static </span>OPT_QUIET: <span class="kw-2">&amp;</span>str = <span class="string">&quot;quiet&quot;</span>;
+<span class="kw">static </span>OPT_STRIP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;strip&quot;</span>;
+<span class="kw">static </span>OPT_ZERO: <span class="kw-2">&amp;</span>str = <span class="string">&quot;zero&quot;</span>;
+<span class="kw">static </span>OPT_PHYSICAL: <span class="kw-2">&amp;</span>str = <span class="string">&quot;physical&quot;</span>;
+<span class="kw">static </span>OPT_LOGICAL: <span class="kw-2">&amp;</span>str = <span class="string">&quot;logical&quot;</span>;
+<span class="kw">const </span>OPT_CANONICALIZE_MISSING: <span class="kw-2">&amp;</span>str = <span class="string">&quot;canonicalize-missing&quot;</span>;
+<span class="kw">const </span>OPT_CANONICALIZE_EXISTING: <span class="kw-2">&amp;</span>str = <span class="string">&quot;canonicalize-existing&quot;</span>;
+<span class="kw">const </span>OPT_RELATIVE_TO: <span class="kw-2">&amp;</span>str = <span class="string">&quot;relative-to&quot;</span>;
+<span class="kw">const </span>OPT_RELATIVE_BASE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;relative-base&quot;</span>;
 
-<span class="kw">static</span> <span class="ident">ARG_FILES</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;files&quot;</span>;
+<span class="kw">static </span>ARG_FILES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;files&quot;</span>;
 
-<span class="attribute">#[<span class="ident">uucore::main</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>).<span class="ident">with_exit_code</span>(<span class="number">1</span>)<span class="question-mark">?</span>;
+<span class="attribute">#[uucore::main]
+</span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
+    <span class="kw">let </span>matches = uu_app().try_get_matches_from(args).with_exit_code(<span class="number">1</span>)<span class="question-mark">?</span>;
 
-    <span class="comment">/*  the list of files */</span>
+    <span class="comment">/*  the list of files */
 
-    <span class="kw">let</span> <span class="ident">paths</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">matches</span>
-        .<span class="ident">get_many</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">ARG_FILES</span>)
-        .<span class="ident">unwrap</span>()
-        .<span class="ident">map</span>(<span class="ident">PathBuf::from</span>)
-        .<span class="ident">collect</span>();
+    </span><span class="kw">let </span>paths: Vec&lt;PathBuf&gt; = matches
+        .get_many::&lt;String&gt;(ARG_FILES)
+        .unwrap()
+        .map(PathBuf::from)
+        .collect();
 
-    <span class="kw">let</span> <span class="ident">strip</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_STRIP</span>);
-    <span class="kw">let</span> <span class="ident">zero</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_ZERO</span>);
-    <span class="kw">let</span> <span class="ident">quiet</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_QUIET</span>);
-    <span class="kw">let</span> <span class="ident">logical</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_LOGICAL</span>);
-    <span class="kw">let</span> <span class="ident">can_mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_CANONICALIZE_EXISTING</span>) {
-        <span class="ident">MissingHandling::Existing</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">OPT_CANONICALIZE_MISSING</span>) {
-        <span class="ident">MissingHandling::Missing</span>
-    } <span class="kw">else</span> {
-        <span class="ident">MissingHandling::Normal</span>
+    <span class="kw">let </span>strip = matches.get_flag(OPT_STRIP);
+    <span class="kw">let </span>zero = matches.get_flag(OPT_ZERO);
+    <span class="kw">let </span>quiet = matches.get_flag(OPT_QUIET);
+    <span class="kw">let </span>logical = matches.get_flag(OPT_LOGICAL);
+    <span class="kw">let </span>can_mode = <span class="kw">if </span>matches.get_flag(OPT_CANONICALIZE_EXISTING) {
+        MissingHandling::Existing
+    } <span class="kw">else if </span>matches.get_flag(OPT_CANONICALIZE_MISSING) {
+        MissingHandling::Missing
+    } <span class="kw">else </span>{
+        MissingHandling::Normal
     };
-    <span class="kw">let</span> <span class="ident">resolve_mode</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">strip</span> {
-        <span class="ident">ResolveMode::None</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">logical</span> {
-        <span class="ident">ResolveMode::Logical</span>
-    } <span class="kw">else</span> {
-        <span class="ident">ResolveMode::Physical</span>
+    <span class="kw">let </span>resolve_mode = <span class="kw">if </span>strip {
+        ResolveMode::None
+    } <span class="kw">else if </span>logical {
+        ResolveMode::Logical
+    } <span class="kw">else </span>{
+        ResolveMode::Physical
     };
-    <span class="kw">let</span> (<span class="ident">relative_to</span>, <span class="ident">relative_base</span>) <span class="op">=</span> <span class="ident">prepare_relative_options</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>, <span class="ident">can_mode</span>, <span class="ident">resolve_mode</span>)<span class="question-mark">?</span>;
-    <span class="kw">for</span> <span class="ident">path</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">paths</span> {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">resolve_path</span>(
-            <span class="ident">path</span>,
-            <span class="ident">zero</span>,
-            <span class="ident">resolve_mode</span>,
-            <span class="ident">can_mode</span>,
-            <span class="ident">relative_to</span>.<span class="ident">as_deref</span>(),
-            <span class="ident">relative_base</span>.<span class="ident">as_deref</span>(),
+    <span class="kw">let </span>(relative_to, relative_base) = prepare_relative_options(<span class="kw-2">&amp;</span>matches, can_mode, resolve_mode)<span class="question-mark">?</span>;
+    <span class="kw">for </span>path <span class="kw">in </span><span class="kw-2">&amp;</span>paths {
+        <span class="kw">let </span>result = resolve_path(
+            path,
+            zero,
+            resolve_mode,
+            can_mode,
+            relative_to.as_deref(),
+            relative_base.as_deref(),
         );
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">quiet</span> {
-            <span class="macro">show_if_err!</span>(<span class="ident">result</span>.<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">path</span>.<span class="ident">maybe_quote</span>().<span class="ident">to_string</span>()));
+        <span class="kw">if </span>!quiet {
+            <span class="macro">show_if_err!</span>(result.map_err_context(|| path.maybe_quote().to_string()));
         }
     }
-    <span class="comment">// Although we return `Ok`, it is possible that a call to</span>
-    <span class="comment">// `show!()` above has set the exit code for the program to a</span>
-    <span class="comment">// non-zero integer.</span>
-    <span class="prelude-val">Ok</span>(())
+    <span class="comment">// Although we return `Ok`, it is possible that a call to
+    // `show!()` above has set the exit code for the program to a
+    // non-zero integer.
+    </span><span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
-    <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
-        .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
-        .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
-        .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
-        .<span class="ident">infer_long_args</span>(<span class="bool-val">true</span>)
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">OPT_QUIET</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;q&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">OPT_QUIET</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Do not print warnings for invalid paths&quot;</span>)
-                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
+<span class="kw">pub fn </span>uu_app() -&gt; Command {
+    Command::new(uucore::util_name())
+        .version(<span class="macro">crate_version!</span>())
+        .about(ABOUT)
+        .override_usage(format_usage(USAGE))
+        .infer_long_args(<span class="bool-val">true</span>)
+        .arg(
+            Arg::new(OPT_QUIET)
+                .short(<span class="string">&#39;q&#39;</span>)
+                .long(OPT_QUIET)
+                .help(<span class="string">&quot;Do not print warnings for invalid paths&quot;</span>)
+                .action(ArgAction::SetTrue),
         )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">OPT_STRIP</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;s&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">OPT_STRIP</span>)
-                .<span class="ident">visible_alias</span>(<span class="string">&quot;no-symlinks&quot;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Only strip &#39;.&#39; and &#39;..&#39; components, but don&#39;t resolve symbolic links&quot;</span>)
-                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
+        .arg(
+            Arg::new(OPT_STRIP)
+                .short(<span class="string">&#39;s&#39;</span>)
+                .long(OPT_STRIP)
+                .visible_alias(<span class="string">&quot;no-symlinks&quot;</span>)
+                .help(<span class="string">&quot;Only strip &#39;.&#39; and &#39;..&#39; components, but don&#39;t resolve symbolic links&quot;</span>)
+                .action(ArgAction::SetTrue),
         )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">OPT_ZERO</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;z&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">OPT_ZERO</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Separate output filenames with \\0 rather than newline&quot;</span>)
-                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
+        .arg(
+            Arg::new(OPT_ZERO)
+                .short(<span class="string">&#39;z&#39;</span>)
+                .long(OPT_ZERO)
+                .help(<span class="string">&quot;Separate output filenames with \\0 rather than newline&quot;</span>)
+                .action(ArgAction::SetTrue),
         )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">OPT_LOGICAL</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;L&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">OPT_LOGICAL</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;resolve &#39;..&#39; components before symlinks&quot;</span>)
-                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
+        .arg(
+            Arg::new(OPT_LOGICAL)
+                .short(<span class="string">&#39;L&#39;</span>)
+                .long(OPT_LOGICAL)
+                .help(<span class="string">&quot;resolve &#39;..&#39; components before symlinks&quot;</span>)
+                .action(ArgAction::SetTrue),
         )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">OPT_PHYSICAL</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;P&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">OPT_PHYSICAL</span>)
-                .<span class="ident">overrides_with_all</span>([<span class="ident">OPT_STRIP</span>, <span class="ident">OPT_LOGICAL</span>])
-                .<span class="ident">help</span>(<span class="string">&quot;resolve symlinks as encountered (default)&quot;</span>)
-                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
+        .arg(
+            Arg::new(OPT_PHYSICAL)
+                .short(<span class="string">&#39;P&#39;</span>)
+                .long(OPT_PHYSICAL)
+                .overrides_with_all([OPT_STRIP, OPT_LOGICAL])
+                .help(<span class="string">&quot;resolve symlinks as encountered (default)&quot;</span>)
+                .action(ArgAction::SetTrue),
         )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">OPT_CANONICALIZE_EXISTING</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;e&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">OPT_CANONICALIZE_EXISTING</span>)
-                .<span class="ident">help</span>(
+        .arg(
+            Arg::new(OPT_CANONICALIZE_EXISTING)
+                .short(<span class="string">&#39;e&#39;</span>)
+                .long(OPT_CANONICALIZE_EXISTING)
+                .help(
                     <span class="string">&quot;canonicalize by following every symlink in every component of the \
                      given name recursively, all components must exist&quot;</span>,
                 )
-                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
+                .action(ArgAction::SetTrue),
         )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">OPT_CANONICALIZE_MISSING</span>)
-                .<span class="ident">short</span>(<span class="string">&#39;m&#39;</span>)
-                .<span class="ident">long</span>(<span class="ident">OPT_CANONICALIZE_MISSING</span>)
-                .<span class="ident">help</span>(
+        .arg(
+            Arg::new(OPT_CANONICALIZE_MISSING)
+                .short(<span class="string">&#39;m&#39;</span>)
+                .long(OPT_CANONICALIZE_MISSING)
+                .help(
                     <span class="string">&quot;canonicalize by following every symlink in every component of the \
                      given name recursively, without requirements on components existence&quot;</span>,
                 )
-                .<span class="ident">action</span>(<span class="ident">ArgAction::SetTrue</span>),
+                .action(ArgAction::SetTrue),
         )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">OPT_RELATIVE_TO</span>)
-                .<span class="ident">long</span>(<span class="ident">OPT_RELATIVE_TO</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;DIR&quot;</span>)
-                .<span class="ident">value_parser</span>(<span class="ident">NonEmptyStringValueParser::new</span>())
-                .<span class="ident">help</span>(<span class="string">&quot;print the resolved path relative to DIR&quot;</span>),
+        .arg(
+            Arg::new(OPT_RELATIVE_TO)
+                .long(OPT_RELATIVE_TO)
+                .value_name(<span class="string">&quot;DIR&quot;</span>)
+                .value_parser(NonEmptyStringValueParser::new())
+                .help(<span class="string">&quot;print the resolved path relative to DIR&quot;</span>),
         )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">OPT_RELATIVE_BASE</span>)
-                .<span class="ident">long</span>(<span class="ident">OPT_RELATIVE_BASE</span>)
-                .<span class="ident">value_name</span>(<span class="string">&quot;DIR&quot;</span>)
-                .<span class="ident">value_parser</span>(<span class="ident">NonEmptyStringValueParser::new</span>())
-                .<span class="ident">help</span>(<span class="string">&quot;print absolute paths unless paths below DIR&quot;</span>),
+        .arg(
+            Arg::new(OPT_RELATIVE_BASE)
+                .long(OPT_RELATIVE_BASE)
+                .value_name(<span class="string">&quot;DIR&quot;</span>)
+                .value_parser(NonEmptyStringValueParser::new())
+                .help(<span class="string">&quot;print absolute paths unless paths below DIR&quot;</span>),
         )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">ARG_FILES</span>)
-                .<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>)
-                .<span class="ident">required</span>(<span class="bool-val">true</span>)
-                .<span class="ident">value_parser</span>(<span class="ident">NonEmptyStringValueParser::new</span>())
-                .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::AnyPath</span>),
+        .arg(
+            Arg::new(ARG_FILES)
+                .action(ArgAction::Append)
+                .required(<span class="bool-val">true</span>)
+                .value_parser(NonEmptyStringValueParser::new())
+                .value_hint(clap::ValueHint::AnyPath),
         )
 }
 
-<span class="doccomment">/// Prepare `--relative-to` and `--relative-base` options.</span>
-<span class="doccomment">/// Convert them to their absolute values.</span>
-<span class="doccomment">/// Check if `--relative-to` is a descendant of `--relative-base`,</span>
-<span class="doccomment">/// otherwise nullify their value.</span>
-<span class="kw">fn</span> <span class="ident">prepare_relative_options</span>(
-    <span class="ident">matches</span>: <span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>,
-    <span class="ident">can_mode</span>: <span class="ident">MissingHandling</span>,
-    <span class="ident">resolve_mode</span>: <span class="ident">ResolveMode</span>,
-) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span>)<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">relative_to</span> <span class="op">=</span> <span class="ident">matches</span>
-        .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_RELATIVE_TO</span>)
-        .<span class="ident">map</span>(<span class="ident">PathBuf::from</span>);
-    <span class="kw">let</span> <span class="ident">relative_base</span> <span class="op">=</span> <span class="ident">matches</span>
-        .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">OPT_RELATIVE_BASE</span>)
-        .<span class="ident">map</span>(<span class="ident">PathBuf::from</span>);
-    <span class="kw">let</span> <span class="ident">relative_to</span> <span class="op">=</span> <span class="ident">canonicalize_relative_option</span>(<span class="ident">relative_to</span>, <span class="ident">can_mode</span>, <span class="ident">resolve_mode</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">relative_base</span> <span class="op">=</span> <span class="ident">canonicalize_relative_option</span>(<span class="ident">relative_base</span>, <span class="ident">can_mode</span>, <span class="ident">resolve_mode</span>)<span class="question-mark">?</span>;
-    <span class="kw">if</span> <span class="kw">let</span> (<span class="prelude-val">Some</span>(<span class="ident">base</span>), <span class="prelude-val">Some</span>(<span class="ident">to</span>)) <span class="op">=</span> (<span class="ident">relative_base</span>.<span class="ident">as_deref</span>(), <span class="ident">relative_to</span>.<span class="ident">as_deref</span>()) {
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">to</span>.<span class="ident">starts_with</span>(<span class="ident">base</span>) {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="prelude-val">None</span>, <span class="prelude-val">None</span>));
+<span class="doccomment">/// Prepare `--relative-to` and `--relative-base` options.
+/// Convert them to their absolute values.
+/// Check if `--relative-to` is a descendant of `--relative-base`,
+/// otherwise nullify their value.
+</span><span class="kw">fn </span>prepare_relative_options(
+    matches: <span class="kw-2">&amp;</span>ArgMatches,
+    can_mode: MissingHandling,
+    resolve_mode: ResolveMode,
+) -&gt; UResult&lt;(<span class="prelude-ty">Option</span>&lt;PathBuf&gt;, <span class="prelude-ty">Option</span>&lt;PathBuf&gt;)&gt; {
+    <span class="kw">let </span>relative_to = matches
+        .get_one::&lt;String&gt;(OPT_RELATIVE_TO)
+        .map(PathBuf::from);
+    <span class="kw">let </span>relative_base = matches
+        .get_one::&lt;String&gt;(OPT_RELATIVE_BASE)
+        .map(PathBuf::from);
+    <span class="kw">let </span>relative_to = canonicalize_relative_option(relative_to, can_mode, resolve_mode)<span class="question-mark">?</span>;
+    <span class="kw">let </span>relative_base = canonicalize_relative_option(relative_base, can_mode, resolve_mode)<span class="question-mark">?</span>;
+    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(base), <span class="prelude-val">Some</span>(to)) = (relative_base.as_deref(), relative_to.as_deref()) {
+        <span class="kw">if </span>!to.starts_with(base) {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>((<span class="prelude-val">None</span>, <span class="prelude-val">None</span>));
         }
     }
-    <span class="prelude-val">Ok</span>((<span class="ident">relative_to</span>, <span class="ident">relative_base</span>))
+    <span class="prelude-val">Ok</span>((relative_to, relative_base))
 }
 
-<span class="doccomment">/// Prepare single `relative-*` option.</span>
-<span class="kw">fn</span> <span class="ident">canonicalize_relative_option</span>(
-    <span class="ident">relative</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span>,
-    <span class="ident">can_mode</span>: <span class="ident">MissingHandling</span>,
-    <span class="ident">resolve_mode</span>: <span class="ident">ResolveMode</span>,
-) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">relative</span> {
-        <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
-        <span class="prelude-val">Some</span>(<span class="ident">p</span>) =&gt; <span class="prelude-val">Some</span>(
-            <span class="ident">canonicalize_relative</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>, <span class="ident">can_mode</span>, <span class="ident">resolve_mode</span>)
-                .<span class="ident">map_err_context</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">maybe_quote</span>().<span class="ident">to_string</span>())<span class="question-mark">?</span>,
+<span class="doccomment">/// Prepare single `relative-*` option.
+</span><span class="kw">fn </span>canonicalize_relative_option(
+    relative: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
+    can_mode: MissingHandling,
+    resolve_mode: ResolveMode,
+) -&gt; UResult&lt;<span class="prelude-ty">Option</span>&lt;PathBuf&gt;&gt; {
+    <span class="prelude-val">Ok</span>(<span class="kw">match </span>relative {
+        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
+        <span class="prelude-val">Some</span>(p) =&gt; <span class="prelude-val">Some</span>(
+            canonicalize_relative(<span class="kw-2">&amp;</span>p, can_mode, resolve_mode)
+                .map_err_context(|| p.maybe_quote().to_string())<span class="question-mark">?</span>,
         ),
     })
 }
 
-<span class="doccomment">/// Make `relative-to` or `relative-base` path values absolute.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Errors</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If the given path is not a directory the function returns an error.</span>
-<span class="doccomment">/// If some parts of the file don&#39;t exist, or symlinks make loops, or</span>
-<span class="doccomment">/// some other IO error happens, the function returns error, too.</span>
-<span class="kw">fn</span> <span class="ident">canonicalize_relative</span>(
-    <span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
-    <span class="ident">can_mode</span>: <span class="ident">MissingHandling</span>,
-    <span class="ident">resolve</span>: <span class="ident">ResolveMode</span>,
-) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">abs</span> <span class="op">=</span> <span class="ident">canonicalize</span>(<span class="ident">r</span>, <span class="ident">can_mode</span>, <span class="ident">resolve</span>)<span class="question-mark">?</span>;
-    <span class="kw">if</span> <span class="ident">can_mode</span> <span class="op">==</span> <span class="ident">MissingHandling::Existing</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">abs</span>.<span class="ident">is_dir</span>() {
-        <span class="ident">abs</span>.<span class="ident">read_dir</span>()<span class="question-mark">?</span>; <span class="comment">// raise not a directory error</span>
-    }
-    <span class="prelude-val">Ok</span>(<span class="ident">abs</span>)
+<span class="doccomment">/// Make `relative-to` or `relative-base` path values absolute.
+///
+/// # Errors
+///
+/// If the given path is not a directory the function returns an error.
+/// If some parts of the file don&#39;t exist, or symlinks make loops, or
+/// some other IO error happens, the function returns error, too.
+</span><span class="kw">fn </span>canonicalize_relative(
+    r: <span class="kw-2">&amp;</span>Path,
+    can_mode: MissingHandling,
+    resolve: ResolveMode,
+) -&gt; std::io::Result&lt;PathBuf&gt; {
+    <span class="kw">let </span>abs = canonicalize(r, can_mode, resolve)<span class="question-mark">?</span>;
+    <span class="kw">if </span>can_mode == MissingHandling::Existing &amp;&amp; !abs.is_dir() {
+        abs.read_dir()<span class="question-mark">?</span>; <span class="comment">// raise not a directory error
+    </span>}
+    <span class="prelude-val">Ok</span>(abs)
 }
 
-<span class="doccomment">/// Resolve a path to an absolute form and print it.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If `relative_to` and/or `relative_base` is given</span>
-<span class="doccomment">/// the path is printed in a relative form to one of this options.</span>
-<span class="doccomment">/// See the details in `process_relative` function.</span>
-<span class="doccomment">/// If `zero` is `true`, then this function</span>
-<span class="doccomment">/// prints the path followed by the null byte (`&#39;\0&#39;`) instead of a</span>
-<span class="doccomment">/// newline character (`&#39;\n&#39;`).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Errors</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This function returns an error if there is a problem resolving</span>
-<span class="doccomment">/// symbolic links.</span>
-<span class="kw">fn</span> <span class="ident">resolve_path</span>(
-    <span class="ident">p</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
-    <span class="ident">zero</span>: <span class="ident">bool</span>,
-    <span class="ident">resolve</span>: <span class="ident">ResolveMode</span>,
-    <span class="ident">can_mode</span>: <span class="ident">MissingHandling</span>,
-    <span class="ident">relative_to</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span>,
-    <span class="ident">relative_base</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span>,
-) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">abs</span> <span class="op">=</span> <span class="ident">canonicalize</span>(<span class="ident">p</span>, <span class="ident">can_mode</span>, <span class="ident">resolve</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">line_ending</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">zero</span> { <span class="string">b&#39;\0&#39;</span> } <span class="kw">else</span> { <span class="string">b&#39;\n&#39;</span> };
+<span class="doccomment">/// Resolve a path to an absolute form and print it.
+///
+/// If `relative_to` and/or `relative_base` is given
+/// the path is printed in a relative form to one of this options.
+/// See the details in `process_relative` function.
+/// If `zero` is `true`, then this function
+/// prints the path followed by the null byte (`&#39;\0&#39;`) instead of a
+/// newline character (`&#39;\n&#39;`).
+///
+/// # Errors
+///
+/// This function returns an error if there is a problem resolving
+/// symbolic links.
+</span><span class="kw">fn </span>resolve_path(
+    p: <span class="kw-2">&amp;</span>Path,
+    zero: bool,
+    resolve: ResolveMode,
+    can_mode: MissingHandling,
+    relative_to: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
+    relative_base: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
+) -&gt; std::io::Result&lt;()&gt; {
+    <span class="kw">let </span>abs = canonicalize(p, can_mode, resolve)<span class="question-mark">?</span>;
+    <span class="kw">let </span>line_ending = <span class="kw">if </span>zero { <span class="string">b&#39;\0&#39; </span>} <span class="kw">else </span>{ <span class="string">b&#39;\n&#39; </span>};
 
-    <span class="kw">let</span> <span class="ident">abs</span> <span class="op">=</span> <span class="ident">process_relative</span>(<span class="ident">abs</span>, <span class="ident">relative_base</span>, <span class="ident">relative_to</span>);
+    <span class="kw">let </span>abs = process_relative(abs, relative_base, relative_to);
 
-    <span class="ident">print_verbatim</span>(<span class="kw-2">&amp;</span><span class="ident">abs</span>)<span class="question-mark">?</span>;
-    <span class="ident">stdout</span>().<span class="ident">write_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">line_ending</span>])<span class="question-mark">?</span>;
+    print_verbatim(<span class="kw-2">&amp;</span>abs)<span class="question-mark">?</span>;
+    stdout().write_all(<span class="kw-2">&amp;</span>[line_ending])<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="doccomment">/// Conditionally converts an absolute path to a relative form,</span>
-<span class="doccomment">/// according to the rules:</span>
-<span class="doccomment">/// 1. if only `relative_to` is given, the result is relative to `relative_to`</span>
-<span class="doccomment">/// 1. if only `relative_base` is given, it checks whether given `path` is a descendant</span>
-<span class="doccomment">/// of `relative_base`, on success the result is relative to `relative_base`, otherwise</span>
-<span class="doccomment">/// the result is the given `path`</span>
-<span class="doccomment">/// 1. if both `relative_to` and `relative_base` are given, the result is relative to `relative_to`</span>
-<span class="doccomment">/// if `path` is a descendant of `relative_base`, otherwise the result is `path`</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// For more information see</span>
-<span class="doccomment">/// &lt;https://www.gnu.org/software/coreutils/manual/html_node/Realpath-usage-examples.html&gt;</span>
-<span class="kw">fn</span> <span class="ident">process_relative</span>(
-    <span class="ident">path</span>: <span class="ident">PathBuf</span>,
-    <span class="ident">relative_base</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span>,
-    <span class="ident">relative_to</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span>,
-) -&gt; <span class="ident">PathBuf</span> {
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">base</span>) <span class="op">=</span> <span class="ident">relative_base</span> {
-        <span class="kw">if</span> <span class="ident">path</span>.<span class="ident">starts_with</span>(<span class="ident">base</span>) {
-            <span class="ident">make_path_relative_to</span>(<span class="ident">path</span>, <span class="ident">relative_to</span>.<span class="ident">unwrap_or</span>(<span class="ident">base</span>))
-        } <span class="kw">else</span> {
-            <span class="ident">path</span>
+<span class="doccomment">/// Conditionally converts an absolute path to a relative form,
+/// according to the rules:
+/// 1. if only `relative_to` is given, the result is relative to `relative_to`
+/// 1. if only `relative_base` is given, it checks whether given `path` is a descendant
+/// of `relative_base`, on success the result is relative to `relative_base`, otherwise
+/// the result is the given `path`
+/// 1. if both `relative_to` and `relative_base` are given, the result is relative to `relative_to`
+/// if `path` is a descendant of `relative_base`, otherwise the result is `path`
+///
+/// For more information see
+/// &lt;https://www.gnu.org/software/coreutils/manual/html_node/Realpath-usage-examples.html&gt;
+</span><span class="kw">fn </span>process_relative(
+    path: PathBuf,
+    relative_base: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
+    relative_to: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
+) -&gt; PathBuf {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(base) = relative_base {
+        <span class="kw">if </span>path.starts_with(base) {
+            make_path_relative_to(path, relative_to.unwrap_or(base))
+        } <span class="kw">else </span>{
+            path
         }
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">to</span>) <span class="op">=</span> <span class="ident">relative_to</span> {
-        <span class="ident">make_path_relative_to</span>(<span class="ident">path</span>, <span class="ident">to</span>)
-    } <span class="kw">else</span> {
-        <span class="ident">path</span>
+    } <span class="kw">else if let </span><span class="prelude-val">Some</span>(to) = relative_to {
+        make_path_relative_to(path, to)
+    } <span class="kw">else </span>{
+        path
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_realpath" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_realpath" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

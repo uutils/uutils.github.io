@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uucore/src/lib/features/tokenize/num_format/num_format.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>num_format.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../storage.js"></script><script defer src="../../../../../source-script.js"></script><script defer src="../../../../../source-files.js"></script><script defer src="../../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../../uucore/index.html"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uucore/src/lib/features/tokenize/num_format/num_format.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>num_format.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../../normalize.css"><link rel="stylesheet" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../../dark.css" disabled><link rel="stylesheet" href="../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../storage.js"></script><script defer src="../../../../../source-script.js"></script><script defer src="../../../../../source-files.js"></script><script defer src="../../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../../uucore/index.html"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -268,275 +268,275 @@
 <span id="268">268</span>
 <span id="269">269</span>
 <span id="270">270</span>
-</pre><pre class="rust"><code><span class="comment">// spell-checker:ignore (vars) charf cninetyninehexfloatf decf floatf intf scif strf Cninety</span>
+</pre><pre class="rust"><code><span class="comment">// spell-checker:ignore (vars) charf cninetyninehexfloatf decf floatf intf scif strf Cninety
 
-<span class="doccomment">//! handles creating printed output for numeric substitutions</span>
+</span><span class="doccomment">//! handles creating printed output for numeric substitutions
 
-<span class="comment">// spell-checker:ignore (vars) charf decf floatf intf scif strf Cninety</span>
+</span><span class="comment">// spell-checker:ignore (vars) charf decf floatf intf scif strf Cninety
 
-<span class="kw">use</span> <span class="ident">std::env</span>;
-<span class="kw">use</span> <span class="ident">std::vec::Vec</span>;
+</span><span class="kw">use </span>std::env;
+<span class="kw">use </span>std::vec::Vec;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::display::Quotable</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">show_error</span>, <span class="ident">show_warning</span>};
+<span class="kw">use </span><span class="kw">crate</span>::display::Quotable;
+<span class="kw">use crate</span>::{show_error, show_warning};
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::format_field</span>::{<span class="ident">FieldType</span>, <span class="ident">FormatField</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::formatter</span>::{<span class="ident">Base</span>, <span class="ident">FormatPrimitive</span>, <span class="ident">Formatter</span>, <span class="ident">InitialPrefix</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::formatters::cninetyninehexfloatf::CninetyNineHexFloatf</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::formatters::decf::Decf</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::formatters::floatf::Floatf</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::formatters::intf::Intf</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::formatters::scif::Scif</span>;
+<span class="kw">use </span><span class="kw">super</span>::format_field::{FieldType, FormatField};
+<span class="kw">use </span><span class="kw">super</span>::formatter::{Base, FormatPrimitive, Formatter, InitialPrefix};
+<span class="kw">use </span><span class="kw">super</span>::formatters::cninetyninehexfloatf::CninetyNineHexFloatf;
+<span class="kw">use </span><span class="kw">super</span>::formatters::decf::Decf;
+<span class="kw">use </span><span class="kw">super</span>::formatters::floatf::Floatf;
+<span class="kw">use </span><span class="kw">super</span>::formatters::intf::Intf;
+<span class="kw">use </span><span class="kw">super</span>::formatters::scif::Scif;
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">warn_expected_numeric</span>(<span class="ident">pf_arg</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-    <span class="comment">// important: keep println here not print</span>
-    <span class="macro">show_error!</span>(<span class="string">&quot;{}: expected a numeric value&quot;</span>, <span class="ident">pf_arg</span>.<span class="ident">maybe_quote</span>());
+<span class="kw">pub fn </span>warn_expected_numeric(pf_arg: <span class="kw-2">&amp;</span>str) {
+    <span class="comment">// important: keep println here not print
+    </span><span class="macro">show_error!</span>(<span class="string">&quot;{}: expected a numeric value&quot;</span>, pf_arg.maybe_quote());
 }
 
-<span class="comment">// when character constant arguments have excess characters</span>
-<span class="comment">// issue a warning when POSIXLY_CORRECT is not set</span>
-<span class="kw">fn</span> <span class="ident">warn_char_constant_ign</span>(<span class="ident">remaining_bytes</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) {
-    <span class="kw">match</span> <span class="ident">env::var</span>(<span class="string">&quot;POSIXLY_CORRECT&quot;</span>) {
+<span class="comment">// when character constant arguments have excess characters
+// issue a warning when POSIXLY_CORRECT is not set
+</span><span class="kw">fn </span>warn_char_constant_ign(remaining_bytes: <span class="kw-2">&amp;</span>[u8]) {
+    <span class="kw">match </span>env::var(<span class="string">&quot;POSIXLY_CORRECT&quot;</span>) {
         <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; {}
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">env::VarError::NotPresent</span> <span class="op">=</span> <span class="ident">e</span> {
+        <span class="prelude-val">Err</span>(e) =&gt; {
+            <span class="kw">if let </span>env::VarError::NotPresent = e {
                 <span class="macro">show_warning!</span>(
                     <span class="string">&quot;{:?}: character(s) following character \
                      constant have been ignored&quot;</span>,
-                    <span class="ident">remaining_bytes</span>
+                    remaining_bytes
                 );
             }
         }
     }
 }
 
-<span class="comment">// this function looks at the first few</span>
-<span class="comment">// characters of an argument and returns a value if we can learn</span>
-<span class="comment">// a value from that (e.g. no argument? return 0, char constant? ret value)</span>
-<span class="kw">fn</span> <span class="ident">get_provided</span>(<span class="ident">str_in_opt</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">String</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
-    <span class="kw">const</span> <span class="ident">C_S_QUOTE</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">39</span>;
-    <span class="kw">const</span> <span class="ident">C_D_QUOTE</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">34</span>;
-    <span class="kw">match</span> <span class="ident">str_in_opt</span> {
-        <span class="prelude-val">Some</span>(<span class="ident">str_in</span>) =&gt; {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">byte_it</span> <span class="op">=</span> <span class="ident">str_in</span>.<span class="ident">bytes</span>();
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ch</span>) <span class="op">=</span> <span class="ident">byte_it</span>.<span class="ident">next</span>() {
-                <span class="kw">match</span> <span class="ident">ch</span> {
-                    <span class="ident">C_S_QUOTE</span> <span class="op">|</span> <span class="ident">C_D_QUOTE</span> =&gt; {
-                        <span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="ident">byte_it</span>.<span class="ident">next</span>() {
-                            <span class="prelude-val">Some</span>(<span class="ident">second_byte</span>) =&gt; {
-                                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ignored</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-                                <span class="kw">for</span> <span class="ident">cont</span> <span class="kw">in</span> <span class="ident">byte_it</span> {
-                                    <span class="ident">ignored</span>.<span class="ident">push</span>(<span class="ident">cont</span>);
+<span class="comment">// this function looks at the first few
+// characters of an argument and returns a value if we can learn
+// a value from that (e.g. no argument? return 0, char constant? ret value)
+</span><span class="kw">fn </span>get_provided(str_in_opt: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>String&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;u8&gt; {
+    <span class="kw">const </span>C_S_QUOTE: u8 = <span class="number">39</span>;
+    <span class="kw">const </span>C_D_QUOTE: u8 = <span class="number">34</span>;
+    <span class="kw">match </span>str_in_opt {
+        <span class="prelude-val">Some</span>(str_in) =&gt; {
+            <span class="kw">let </span><span class="kw-2">mut </span>byte_it = str_in.bytes();
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(ch) = byte_it.next() {
+                <span class="kw">match </span>ch {
+                    C_S_QUOTE | C_D_QUOTE =&gt; {
+                        <span class="prelude-val">Some</span>(<span class="kw">match </span>byte_it.next() {
+                            <span class="prelude-val">Some</span>(second_byte) =&gt; {
+                                <span class="kw">let </span><span class="kw-2">mut </span>ignored: Vec&lt;u8&gt; = Vec::new();
+                                <span class="kw">for </span>cont <span class="kw">in </span>byte_it {
+                                    ignored.push(cont);
                                 }
-                                <span class="kw">if</span> <span class="op">!</span><span class="ident">ignored</span>.<span class="ident">is_empty</span>() {
-                                    <span class="ident">warn_char_constant_ign</span>(<span class="kw-2">&amp;</span><span class="ident">ignored</span>);
+                                <span class="kw">if </span>!ignored.is_empty() {
+                                    warn_char_constant_ign(<span class="kw-2">&amp;</span>ignored);
                                 }
-                                <span class="ident">second_byte</span> <span class="kw">as</span> <span class="ident">u8</span>
+                                second_byte <span class="kw">as </span>u8
                             }
-                            <span class="comment">// no byte after quote</span>
-                            <span class="prelude-val">None</span> =&gt; {
-                                <span class="kw">let</span> <span class="ident">so_far</span> <span class="op">=</span> (<span class="ident">ch</span> <span class="kw">as</span> <span class="ident">u8</span> <span class="kw">as</span> <span class="ident">char</span>).<span class="ident">to_string</span>();
-                                <span class="ident">warn_expected_numeric</span>(<span class="kw-2">&amp;</span><span class="ident">so_far</span>);
-                                <span class="number">0_u8</span>
-                            }
+                            <span class="comment">// no byte after quote
+                            </span><span class="prelude-val">None </span>=&gt; {
+                                <span class="kw">let </span>so_far = (ch <span class="kw">as </span>u8 <span class="kw">as </span>char).to_string();
+                                warn_expected_numeric(<span class="kw-2">&amp;</span>so_far);
+                                <span class="number">0_u8
+                            </span>}
                         })
                     }
-                    <span class="comment">// first byte is not quote</span>
-                    <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>, <span class="comment">// no first byte</span>
-                }
-            } <span class="kw">else</span> {
+                    <span class="comment">// first byte is not quote
+                    </span><span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>, <span class="comment">// no first byte
+                </span>}
+            } <span class="kw">else </span>{
                 <span class="prelude-val">Some</span>(<span class="number">0_u8</span>)
             }
         }
-        <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Some</span>(<span class="number">0</span>),
+        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Some</span>(<span class="number">0</span>),
     }
 }
 
-<span class="comment">// takes a string and returns</span>
-<span class="comment">// a sign,</span>
-<span class="comment">// a base,</span>
-<span class="comment">// and an offset for index after all</span>
-<span class="comment">//  initial spacing, sign, base prefix, and leading zeroes</span>
-<span class="kw">fn</span> <span class="ident">get_initial_prefix</span>(<span class="ident">str_in</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">field_type</span>: <span class="kw-2">&amp;</span><span class="ident">FieldType</span>) -&gt; <span class="ident">InitialPrefix</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">str_it</span> <span class="op">=</span> <span class="ident">str_in</span>.<span class="ident">chars</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">InitialPrefix</span> {
-        <span class="ident">radix_in</span>: <span class="ident">Base::Ten</span>,
-        <span class="ident">sign</span>: <span class="number">1</span>,
-        <span class="ident">offset</span>: <span class="number">0</span>,
+<span class="comment">// takes a string and returns
+// a sign,
+// a base,
+// and an offset for index after all
+//  initial spacing, sign, base prefix, and leading zeroes
+</span><span class="kw">fn </span>get_initial_prefix(str_in: <span class="kw-2">&amp;</span>str, field_type: <span class="kw-2">&amp;</span>FieldType) -&gt; InitialPrefix {
+    <span class="kw">let </span><span class="kw-2">mut </span>str_it = str_in.chars();
+    <span class="kw">let </span><span class="kw-2">mut </span>ret = InitialPrefix {
+        radix_in: Base::Ten,
+        sign: <span class="number">1</span>,
+        offset: <span class="number">0</span>,
     };
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">top_char</span> <span class="op">=</span> <span class="ident">str_it</span>.<span class="ident">next</span>();
-    <span class="comment">// skip spaces and ensure top_char is the first non-space char</span>
-    <span class="comment">// (or None if none exists)</span>
-    <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="string">&#39; &#39;</span>) <span class="op">=</span> <span class="ident">top_char</span> {
-        <span class="ident">ret</span>.<span class="ident">offset</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-        <span class="ident">top_char</span> <span class="op">=</span> <span class="ident">str_it</span>.<span class="ident">next</span>();
+    <span class="kw">let </span><span class="kw-2">mut </span>top_char = str_it.next();
+    <span class="comment">// skip spaces and ensure top_char is the first non-space char
+    // (or None if none exists)
+    </span><span class="kw">while let </span><span class="prelude-val">Some</span>(<span class="string">&#39; &#39;</span>) = top_char {
+        ret.offset += <span class="number">1</span>;
+        top_char = str_it.next();
     }
-    <span class="comment">// parse sign</span>
-    <span class="kw">match</span> <span class="ident">top_char</span> {
+    <span class="comment">// parse sign
+    </span><span class="kw">match </span>top_char {
         <span class="prelude-val">Some</span>(<span class="string">&#39;+&#39;</span>) =&gt; {
-            <span class="ident">ret</span>.<span class="ident">offset</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-            <span class="ident">top_char</span> <span class="op">=</span> <span class="ident">str_it</span>.<span class="ident">next</span>();
+            ret.offset += <span class="number">1</span>;
+            top_char = str_it.next();
         }
         <span class="prelude-val">Some</span>(<span class="string">&#39;-&#39;</span>) =&gt; {
-            <span class="ident">ret</span>.<span class="ident">sign</span> <span class="op">=</span> <span class="op">-</span><span class="number">1</span>;
-            <span class="ident">ret</span>.<span class="ident">offset</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-            <span class="ident">top_char</span> <span class="op">=</span> <span class="ident">str_it</span>.<span class="ident">next</span>();
+            ret.sign = -<span class="number">1</span>;
+            ret.offset += <span class="number">1</span>;
+            top_char = str_it.next();
         }
-        <span class="kw">_</span> =&gt; {}
+        <span class="kw">_ </span>=&gt; {}
     }
-    <span class="comment">// we want to exit with offset being</span>
-    <span class="comment">// the index of the first non-zero</span>
-    <span class="comment">// digit before the decimal point or</span>
-    <span class="comment">// if there is none, the zero before the</span>
-    <span class="comment">// decimal point, or, if there is none,</span>
-    <span class="comment">// the decimal point.</span>
+    <span class="comment">// we want to exit with offset being
+    // the index of the first non-zero
+    // digit before the decimal point or
+    // if there is none, the zero before the
+    // decimal point, or, if there is none,
+    // the decimal point.
 
-    <span class="comment">// while we are determining the offset</span>
-    <span class="comment">// we will ensure as a convention</span>
-    <span class="comment">// the offset is always on the first character</span>
-    <span class="comment">// that we are yet unsure if it is the</span>
-    <span class="comment">// final offset. If the zero could be before</span>
-    <span class="comment">// a decimal point we don&#39;t move past the zero.</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">is_hex</span> <span class="op">=</span> <span class="bool-val">false</span>;
-    <span class="kw">if</span> <span class="prelude-val">Some</span>(<span class="string">&#39;0&#39;</span>) <span class="op">==</span> <span class="ident">top_char</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">base</span>) <span class="op">=</span> <span class="ident">str_it</span>.<span class="ident">next</span>() {
-            <span class="comment">// lead zeroes can only exist in</span>
-            <span class="comment">// octal and hex base</span>
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">do_clean_lead_zeroes</span> <span class="op">=</span> <span class="bool-val">false</span>;
-            <span class="kw">match</span> <span class="ident">base</span> {
-                <span class="string">&#39;x&#39;</span> <span class="op">|</span> <span class="string">&#39;X&#39;</span> =&gt; {
-                    <span class="ident">is_hex</span> <span class="op">=</span> <span class="bool-val">true</span>;
-                    <span class="ident">ret</span>.<span class="ident">offset</span> <span class="op">+</span><span class="op">=</span> <span class="number">2</span>;
-                    <span class="ident">ret</span>.<span class="ident">radix_in</span> <span class="op">=</span> <span class="ident">Base::Hex</span>;
-                    <span class="ident">do_clean_lead_zeroes</span> <span class="op">=</span> <span class="bool-val">true</span>;
+    // while we are determining the offset
+    // we will ensure as a convention
+    // the offset is always on the first character
+    // that we are yet unsure if it is the
+    // final offset. If the zero could be before
+    // a decimal point we don&#39;t move past the zero.
+    </span><span class="kw">let </span><span class="kw-2">mut </span>is_hex = <span class="bool-val">false</span>;
+    <span class="kw">if </span><span class="prelude-val">Some</span>(<span class="string">&#39;0&#39;</span>) == top_char {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(base) = str_it.next() {
+            <span class="comment">// lead zeroes can only exist in
+            // octal and hex base
+            </span><span class="kw">let </span><span class="kw-2">mut </span>do_clean_lead_zeroes = <span class="bool-val">false</span>;
+            <span class="kw">match </span>base {
+                <span class="string">&#39;x&#39; </span>| <span class="string">&#39;X&#39; </span>=&gt; {
+                    is_hex = <span class="bool-val">true</span>;
+                    ret.offset += <span class="number">2</span>;
+                    ret.radix_in = Base::Hex;
+                    do_clean_lead_zeroes = <span class="bool-val">true</span>;
                 }
-                <span class="ident">e</span> @ <span class="string">&#39;0&#39;</span>..<span class="op">=</span><span class="string">&#39;9&#39;</span> =&gt; {
-                    <span class="ident">ret</span>.<span class="ident">offset</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="ident">FieldType::Intf</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">field_type</span> {
-                        <span class="ident">ret</span>.<span class="ident">radix_in</span> <span class="op">=</span> <span class="ident">Base::Octal</span>;
+                e @ <span class="string">&#39;0&#39;</span>..=<span class="string">&#39;9&#39; </span>=&gt; {
+                    ret.offset += <span class="number">1</span>;
+                    <span class="kw">if let </span>FieldType::Intf = <span class="kw-2">*</span>field_type {
+                        ret.radix_in = Base::Octal;
                     }
-                    <span class="kw">if</span> <span class="ident">e</span> <span class="op">==</span> <span class="string">&#39;0&#39;</span> {
-                        <span class="ident">do_clean_lead_zeroes</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                    <span class="kw">if </span>e == <span class="string">&#39;0&#39; </span>{
+                        do_clean_lead_zeroes = <span class="bool-val">true</span>;
                     }
                 }
-                <span class="kw">_</span> =&gt; {}
+                <span class="kw">_ </span>=&gt; {}
             }
-            <span class="kw">if</span> <span class="ident">do_clean_lead_zeroes</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">first</span> <span class="op">=</span> <span class="bool-val">true</span>;
-                <span class="kw">for</span> <span class="ident">ch_zero</span> <span class="kw">in</span> <span class="ident">str_it</span> {
-                    <span class="comment">// see notes on offset above:</span>
-                    <span class="comment">// this is why the offset for octal and decimal numbers</span>
-                    <span class="comment">// that reach this branch is 1 even though</span>
-                    <span class="comment">// they have already eaten the characters &#39;00&#39;</span>
-                    <span class="comment">// this is also why when hex encounters its</span>
-                    <span class="comment">// first zero it does not move its offset</span>
-                    <span class="comment">// forward because it does not know for sure</span>
-                    <span class="comment">// that it&#39;s current offset (of that zero)</span>
-                    <span class="comment">// is not the final offset,</span>
-                    <span class="comment">// whereas at that point octal knows its</span>
-                    <span class="comment">// current offset is not the final offset.</span>
-                    <span class="kw">match</span> <span class="ident">ch_zero</span> {
-                        <span class="string">&#39;0&#39;</span> =&gt; {
-                            <span class="kw">if</span> <span class="op">!</span>(<span class="ident">is_hex</span> <span class="op">&amp;&amp;</span> <span class="ident">first</span>) {
-                                <span class="ident">ret</span>.<span class="ident">offset</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+            <span class="kw">if </span>do_clean_lead_zeroes {
+                <span class="kw">let </span><span class="kw-2">mut </span>first = <span class="bool-val">true</span>;
+                <span class="kw">for </span>ch_zero <span class="kw">in </span>str_it {
+                    <span class="comment">// see notes on offset above:
+                    // this is why the offset for octal and decimal numbers
+                    // that reach this branch is 1 even though
+                    // they have already eaten the characters &#39;00&#39;
+                    // this is also why when hex encounters its
+                    // first zero it does not move its offset
+                    // forward because it does not know for sure
+                    // that it&#39;s current offset (of that zero)
+                    // is not the final offset,
+                    // whereas at that point octal knows its
+                    // current offset is not the final offset.
+                    </span><span class="kw">match </span>ch_zero {
+                        <span class="string">&#39;0&#39; </span>=&gt; {
+                            <span class="kw">if </span>!(is_hex &amp;&amp; first) {
+                                ret.offset += <span class="number">1</span>;
                             }
                         }
-                        <span class="comment">// if decimal, keep last zero if one exists</span>
-                        <span class="comment">// (it&#39;s possible for last zero to</span>
-                        <span class="comment">// not exist at this branch if we&#39;re in hex input)</span>
-                        <span class="string">&#39;.&#39;</span> =&gt; <span class="kw">break</span>,
-                        <span class="comment">// other digit, etc.</span>
-                        <span class="kw">_</span> =&gt; {
-                            <span class="kw">if</span> <span class="op">!</span>(<span class="ident">is_hex</span> <span class="op">&amp;&amp;</span> <span class="ident">first</span>) {
-                                <span class="ident">ret</span>.<span class="ident">offset</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                        <span class="comment">// if decimal, keep last zero if one exists
+                        // (it&#39;s possible for last zero to
+                        // not exist at this branch if we&#39;re in hex input)
+                        </span><span class="string">&#39;.&#39; </span>=&gt; <span class="kw">break</span>,
+                        <span class="comment">// other digit, etc.
+                        </span><span class="kw">_ </span>=&gt; {
+                            <span class="kw">if </span>!(is_hex &amp;&amp; first) {
+                                ret.offset += <span class="number">1</span>;
                             }
                             <span class="kw">break</span>;
                         }
                     }
-                    <span class="kw">if</span> <span class="ident">first</span> {
-                        <span class="ident">first</span> <span class="op">=</span> <span class="bool-val">false</span>;
+                    <span class="kw">if </span>first {
+                        first = <span class="bool-val">false</span>;
                     }
                 }
             }
         }
     }
-    <span class="ident">ret</span>
+    ret
 }
 
-<span class="comment">// this is the function a Sub&#39;s print will delegate to</span>
-<span class="comment">// if it is a numeric field, passing the field details</span>
-<span class="comment">// and an iterator to the argument</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">num_format</span>(<span class="ident">field</span>: <span class="kw-2">&amp;</span><span class="ident">FormatField</span>, <span class="ident">in_str_opt</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">String</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">field_char</span> <span class="op">=</span> <span class="ident">field</span>.<span class="ident">field_char</span>;
+<span class="comment">// this is the function a Sub&#39;s print will delegate to
+// if it is a numeric field, passing the field details
+// and an iterator to the argument
+</span><span class="kw">pub fn </span>num_format(field: <span class="kw-2">&amp;</span>FormatField, in_str_opt: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>String&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+    <span class="kw">let </span>field_char = field.field_char;
 
-    <span class="comment">// num format mainly operates by further delegating to one of</span>
-    <span class="comment">// several Formatter structs depending on the field</span>
-    <span class="comment">// see formatter.rs for more details</span>
+    <span class="comment">// num format mainly operates by further delegating to one of
+    // several Formatter structs depending on the field
+    // see formatter.rs for more details
 
-    <span class="comment">// to do switch to static dispatch</span>
-    <span class="kw">let</span> <span class="ident">formatter</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Formatter</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">field</span>.<span class="ident">field_type</span> {
-        <span class="ident">FieldType::Intf</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">Intf::new</span>()),
-        <span class="ident">FieldType::Floatf</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">Floatf::new</span>()),
-        <span class="ident">FieldType::CninetyNineHexFloatf</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">CninetyNineHexFloatf::new</span>()),
-        <span class="ident">FieldType::Scif</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">Scif::new</span>()),
-        <span class="ident">FieldType::Decf</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">Decf::new</span>()),
-        <span class="kw">_</span> =&gt; {
+    // to do switch to static dispatch
+    </span><span class="kw">let </span>formatter: Box&lt;<span class="kw">dyn </span>Formatter&gt; = <span class="kw">match </span><span class="kw-2">*</span>field.field_type {
+        FieldType::Intf =&gt; Box::new(Intf::new()),
+        FieldType::Floatf =&gt; Box::new(Floatf::new()),
+        FieldType::CninetyNineHexFloatf =&gt; Box::new(CninetyNineHexFloatf::new()),
+        FieldType::Scif =&gt; Box::new(Scif::new()),
+        FieldType::Decf =&gt; Box::new(Decf::new()),
+        <span class="kw">_ </span>=&gt; {
             <span class="macro">panic!</span>(<span class="string">&quot;asked to do num format with non-num field type&quot;</span>);
         }
     };
-    <span class="kw">let</span> <span class="ident">prim_opt</span><span class="op">=</span>
-        <span class="comment">// if we can get an assumed value from looking at the first</span>
-        <span class="comment">// few characters, use that value to create the FormatPrimitive</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">provided_num</span>) <span class="op">=</span> <span class="ident">get_provided</span>(<span class="ident">in_str_opt</span>) {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tmp</span> : <span class="ident">FormatPrimitive</span> <span class="op">=</span> <span class="ident">Default::default</span>();
-            <span class="kw">match</span> <span class="ident">field_char</span> {
-                <span class="string">&#39;u&#39;</span> <span class="op">|</span> <span class="string">&#39;i&#39;</span> <span class="op">|</span> <span class="string">&#39;d&#39;</span> =&gt; {
-                    <span class="ident">tmp</span>.<span class="ident">pre_decimal</span> <span class="op">=</span> <span class="prelude-val">Some</span>(
-                        <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">provided_num</span>));
+    <span class="kw">let </span>prim_opt=
+        <span class="comment">// if we can get an assumed value from looking at the first
+        // few characters, use that value to create the FormatPrimitive
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(provided_num) = get_provided(in_str_opt) {
+            <span class="kw">let </span><span class="kw-2">mut </span>tmp : FormatPrimitive = Default::default();
+            <span class="kw">match </span>field_char {
+                <span class="string">&#39;u&#39; </span>| <span class="string">&#39;i&#39; </span>| <span class="string">&#39;d&#39; </span>=&gt; {
+                    tmp.pre_decimal = <span class="prelude-val">Some</span>(
+                        <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, provided_num));
                 },
-                <span class="string">&#39;x&#39;</span> <span class="op">|</span> <span class="string">&#39;X&#39;</span> =&gt; {
-                    <span class="ident">tmp</span>.<span class="ident">pre_decimal</span> <span class="op">=</span> <span class="prelude-val">Some</span>(
-                        <span class="macro">format!</span>(<span class="string">&quot;{:x}&quot;</span>, <span class="ident">provided_num</span>));
+                <span class="string">&#39;x&#39; </span>| <span class="string">&#39;X&#39; </span>=&gt; {
+                    tmp.pre_decimal = <span class="prelude-val">Some</span>(
+                        <span class="macro">format!</span>(<span class="string">&quot;{:x}&quot;</span>, provided_num));
                 },
-                <span class="string">&#39;o&#39;</span> =&gt; {
-                    <span class="ident">tmp</span>.<span class="ident">pre_decimal</span> <span class="op">=</span> <span class="prelude-val">Some</span>(
-                        <span class="macro">format!</span>(<span class="string">&quot;{:o}&quot;</span>, <span class="ident">provided_num</span>));
+                <span class="string">&#39;o&#39; </span>=&gt; {
+                    tmp.pre_decimal = <span class="prelude-val">Some</span>(
+                        <span class="macro">format!</span>(<span class="string">&quot;{:o}&quot;</span>, provided_num));
                 },
-                <span class="string">&#39;e&#39;</span> <span class="op">|</span> <span class="string">&#39;E&#39;</span> <span class="op">|</span> <span class="string">&#39;g&#39;</span> <span class="op">|</span> <span class="string">&#39;G&#39;</span> =&gt; {
-                    <span class="kw">let</span> <span class="ident">as_str</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">provided_num</span>);
-                    <span class="kw">let</span> <span class="ident">initial_prefix</span> <span class="op">=</span> <span class="ident">get_initial_prefix</span>(
-                        <span class="kw-2">&amp;</span><span class="ident">as_str</span>,
-                        <span class="ident">field</span>.<span class="ident">field_type</span>
+                <span class="string">&#39;e&#39; </span>| <span class="string">&#39;E&#39; </span>| <span class="string">&#39;g&#39; </span>| <span class="string">&#39;G&#39; </span>=&gt; {
+                    <span class="kw">let </span>as_str = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, provided_num);
+                    <span class="kw">let </span>initial_prefix = get_initial_prefix(
+                        <span class="kw-2">&amp;</span>as_str,
+                        field.field_type
                     );
-                    <span class="ident">tmp</span><span class="op">=</span><span class="ident">formatter</span>.<span class="ident">get_primitive</span>(<span class="ident">field</span>, <span class="kw-2">&amp;</span><span class="ident">initial_prefix</span>, <span class="kw-2">&amp;</span><span class="ident">as_str</span>)
-                        .<span class="ident">expect</span>(<span class="string">&quot;err during default provided num&quot;</span>);
+                    tmp=formatter.get_primitive(field, <span class="kw-2">&amp;</span>initial_prefix, <span class="kw-2">&amp;</span>as_str)
+                        .expect(<span class="string">&quot;err during default provided num&quot;</span>);
                 },
-                <span class="kw">_</span> =&gt; {
-                    <span class="ident">tmp</span>.<span class="ident">pre_decimal</span> <span class="op">=</span> <span class="prelude-val">Some</span>(
-                        <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">provided_num</span>));
-                    <span class="ident">tmp</span>.<span class="ident">post_decimal</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String::from</span>(<span class="string">&quot;0&quot;</span>));
+                <span class="kw">_ </span>=&gt; {
+                    tmp.pre_decimal = <span class="prelude-val">Some</span>(
+                        <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, provided_num));
+                    tmp.post_decimal = <span class="prelude-val">Some</span>(String::from(<span class="string">&quot;0&quot;</span>));
                 }
             }
-            <span class="prelude-val">Some</span>(<span class="ident">tmp</span>)
-        } <span class="kw">else</span> {
-            <span class="comment">// otherwise we&#39;ll interpret the argument as a number</span>
-            <span class="comment">// using the appropriate Formatter</span>
-            <span class="kw">let</span> <span class="ident">in_str</span> <span class="op">=</span> <span class="ident">in_str_opt</span>.<span class="ident">expect</span>(
+            <span class="prelude-val">Some</span>(tmp)
+        } <span class="kw">else </span>{
+            <span class="comment">// otherwise we&#39;ll interpret the argument as a number
+            // using the appropriate Formatter
+            </span><span class="kw">let </span>in_str = in_str_opt.expect(
                 <span class="string">&quot;please send the devs this message:
                 \n get_provided is failing to ret as Some(0) on no str &quot;</span>);
-            <span class="comment">// first get information about the beginning of the</span>
-            <span class="comment">// numeric argument that would be useful for</span>
-            <span class="comment">// any formatter (int or float)</span>
-            <span class="kw">let</span> <span class="ident">initial_prefix</span> <span class="op">=</span> <span class="ident">get_initial_prefix</span>(
-                <span class="ident">in_str</span>,
-                <span class="ident">field</span>.<span class="ident">field_type</span>
+            <span class="comment">// first get information about the beginning of the
+            // numeric argument that would be useful for
+            // any formatter (int or float)
+            </span><span class="kw">let </span>initial_prefix = get_initial_prefix(
+                in_str,
+                field.field_type
             );
-            <span class="comment">// then get the FormatPrimitive from the Formatter</span>
-            <span class="ident">formatter</span>.<span class="ident">get_primitive</span>(<span class="ident">field</span>, <span class="kw-2">&amp;</span><span class="ident">initial_prefix</span>, <span class="ident">in_str</span>)
+            <span class="comment">// then get the FormatPrimitive from the Formatter
+            </span>formatter.get_primitive(field, <span class="kw-2">&amp;</span>initial_prefix, in_str)
         };
-    <span class="comment">// if we have a formatPrimitive, print its results</span>
-    <span class="comment">// according to the field-char appropriate Formatter</span>
-    <span class="ident">prim_opt</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">prim</span><span class="op">|</span> <span class="ident">formatter</span>.<span class="ident">primitive_to_str</span>(<span class="kw-2">&amp;</span><span class="ident">prim</span>, <span class="ident">field</span>.<span class="ident">clone</span>()))
+    <span class="comment">// if we have a formatPrimitive, print its results
+    // according to the field-char appropriate Formatter
+    </span>prim_opt.map(|prim| formatter.primitive_to_str(<span class="kw-2">&amp;</span>prim, field.clone()))
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="uucore" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="uucore" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

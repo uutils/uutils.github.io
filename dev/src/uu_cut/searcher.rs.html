@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/cut/src/searcher.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>searcher.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uu_cut/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../uu_cut/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uu_cut/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/cut/src/searcher.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>searcher.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uu_cut/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../uu_cut/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uu_cut/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -103,110 +103,110 @@
 <span id="103">103</span>
 <span id="104">104</span>
 <span id="105">105</span>
-</pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
-<span class="comment">//</span>
-<span class="comment">// (c) Rolf Morel &lt;rolfmorel@gmail.com&gt;</span>
-<span class="comment">//</span>
-<span class="comment">// For the full copyright and license information, please view the LICENSE</span>
-<span class="comment">// file that was distributed with this source code.</span>
+</pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
+//
+// (c) Rolf Morel &lt;rolfmorel@gmail.com&gt;
+//
+// For the full copyright and license information, please view the LICENSE
+// file that was distributed with this source code.
 
-<span class="kw">use</span> <span class="ident">memchr::memchr</span>;
+</span><span class="kw">use </span>memchr::memchr;
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Searcher</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">haystack</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>],
-    <span class="ident">needle</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>],
-    <span class="ident">position</span>: <span class="ident">usize</span>,
+<span class="kw">pub struct </span>Searcher&lt;<span class="lifetime">&#39;a</span>&gt; {
+    haystack: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[u8],
+    needle: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[u8],
+    position: usize,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Searcher</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">haystack</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>], <span class="ident">needle</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>]) -&gt; <span class="ident">Searcher</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">needle</span>.<span class="ident">is_empty</span>());
-        <span class="ident">Searcher</span> {
-            <span class="ident">haystack</span>,
-            <span class="ident">needle</span>,
-            <span class="ident">position</span>: <span class="number">0</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Searcher&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">pub fn </span>new(haystack: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[u8], needle: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[u8]) -&gt; Searcher&lt;<span class="lifetime">&#39;a</span>&gt; {
+        <span class="macro">assert!</span>(!needle.is_empty());
+        Searcher {
+            haystack,
+            needle,
+            position: <span class="number">0</span>,
         }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Searcher</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">usize</span>;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Iterator <span class="kw">for </span>Searcher&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">type </span>Item = usize;
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span> {
-        <span class="kw">loop</span> {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">match_idx</span>) <span class="op">=</span> <span class="ident">memchr</span>(<span class="self">self</span>.<span class="ident">needle</span>[<span class="number">0</span>], <span class="self">self</span>.<span class="ident">haystack</span>) {
-                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">needle</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span>
-                    <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">haystack</span>[<span class="ident">match_idx</span> <span class="op">+</span> <span class="number">1</span>..].<span class="ident">starts_with</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">needle</span>[<span class="number">1</span>..])
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
+        <span class="kw">loop </span>{
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(match_idx) = memchr(<span class="self">self</span>.needle[<span class="number">0</span>], <span class="self">self</span>.haystack) {
+                <span class="kw">if </span><span class="self">self</span>.needle.len() == <span class="number">1
+                    </span>|| <span class="self">self</span>.haystack[match_idx + <span class="number">1</span>..].starts_with(<span class="kw-2">&amp;</span><span class="self">self</span>.needle[<span class="number">1</span>..])
                 {
-                    <span class="kw">let</span> <span class="ident">match_pos</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">position</span> <span class="op">+</span> <span class="ident">match_idx</span>;
-                    <span class="kw">let</span> <span class="ident">skip</span> <span class="op">=</span> <span class="ident">match_idx</span> <span class="op">+</span> <span class="self">self</span>.<span class="ident">needle</span>.<span class="ident">len</span>();
-                    <span class="self">self</span>.<span class="ident">haystack</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">haystack</span>[<span class="ident">skip</span>..];
-                    <span class="self">self</span>.<span class="ident">position</span> <span class="op">+</span><span class="op">=</span> <span class="ident">skip</span>;
-                    <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">match_pos</span>);
-                } <span class="kw">else</span> {
-                    <span class="kw">let</span> <span class="ident">skip</span> <span class="op">=</span> <span class="ident">match_idx</span> <span class="op">+</span> <span class="number">1</span>;
-                    <span class="self">self</span>.<span class="ident">haystack</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">haystack</span>[<span class="ident">skip</span>..];
-                    <span class="self">self</span>.<span class="ident">position</span> <span class="op">+</span><span class="op">=</span> <span class="ident">skip</span>;
-                    <span class="comment">// continue</span>
-                }
-            } <span class="kw">else</span> {
-                <span class="kw">return</span> <span class="prelude-val">None</span>;
+                    <span class="kw">let </span>match_pos = <span class="self">self</span>.position + match_idx;
+                    <span class="kw">let </span>skip = match_idx + <span class="self">self</span>.needle.len();
+                    <span class="self">self</span>.haystack = <span class="kw-2">&amp;</span><span class="self">self</span>.haystack[skip..];
+                    <span class="self">self</span>.position += skip;
+                    <span class="kw">return </span><span class="prelude-val">Some</span>(match_pos);
+                } <span class="kw">else </span>{
+                    <span class="kw">let </span>skip = match_idx + <span class="number">1</span>;
+                    <span class="self">self</span>.haystack = <span class="kw-2">&amp;</span><span class="self">self</span>.haystack[skip..];
+                    <span class="self">self</span>.position += skip;
+                    <span class="comment">// continue
+                </span>}
+            } <span class="kw">else </span>{
+                <span class="kw">return </span><span class="prelude-val">None</span>;
             }
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
 
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="kw">const</span> <span class="ident">NEEDLE</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="string">&quot;ab&quot;</span>.<span class="ident">as_bytes</span>();
+    <span class="kw">const </span>NEEDLE: <span class="kw-2">&amp;</span>[u8] = <span class="string">&quot;ab&quot;</span>.as_bytes();
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_normal</span>() {
-        <span class="kw">let</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">Searcher::new</span>(<span class="string">&quot;a.a.a&quot;</span>.<span class="ident">as_bytes</span>(), <span class="string">&quot;a&quot;</span>.<span class="ident">as_bytes</span>());
-        <span class="kw">let</span> <span class="ident">items</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">collect</span>();
-        <span class="macro">assert_eq!</span>(<span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">2</span>, <span class="number">4</span>], <span class="ident">items</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_normal() {
+        <span class="kw">let </span>iter = Searcher::new(<span class="string">&quot;a.a.a&quot;</span>.as_bytes(), <span class="string">&quot;a&quot;</span>.as_bytes());
+        <span class="kw">let </span>items: Vec&lt;usize&gt; = iter.collect();
+        <span class="macro">assert_eq!</span>(<span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">2</span>, <span class="number">4</span>], items);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_empty</span>() {
-        <span class="kw">let</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">Searcher::new</span>(<span class="string">&quot;&quot;</span>.<span class="ident">as_bytes</span>(), <span class="string">&quot;a&quot;</span>.<span class="ident">as_bytes</span>());
-        <span class="kw">let</span> <span class="ident">items</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">collect</span>();
-        <span class="macro">assert_eq!</span>(<span class="macro">vec!</span>[] <span class="kw">as</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">items</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_empty() {
+        <span class="kw">let </span>iter = Searcher::new(<span class="string">&quot;&quot;</span>.as_bytes(), <span class="string">&quot;a&quot;</span>.as_bytes());
+        <span class="kw">let </span>items: Vec&lt;usize&gt; = iter.collect();
+        <span class="macro">assert_eq!</span>(<span class="macro">vec!</span>[] <span class="kw">as </span>Vec&lt;usize&gt;, items);
     }
 
-    <span class="kw">fn</span> <span class="ident">test_multibyte</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">expected</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>]) {
-        <span class="kw">let</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">Searcher::new</span>(<span class="ident">line</span>, <span class="ident">NEEDLE</span>);
-        <span class="kw">let</span> <span class="ident">items</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">collect</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">items</span>);
+    <span class="kw">fn </span>test_multibyte(line: <span class="kw-2">&amp;</span>[u8], expected: <span class="kw-2">&amp;</span>[usize]) {
+        <span class="kw">let </span>iter = Searcher::new(line, NEEDLE);
+        <span class="kw">let </span>items: Vec&lt;usize&gt; = iter.collect();
+        <span class="macro">assert_eq!</span>(expected, items);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_multibyte_normal</span>() {
-        <span class="ident">test_multibyte</span>(<span class="string">&quot;...ab...ab...&quot;</span>.<span class="ident">as_bytes</span>(), <span class="kw-2">&amp;</span>[<span class="number">3</span>, <span class="number">8</span>]);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_multibyte_normal() {
+        test_multibyte(<span class="string">&quot;...ab...ab...&quot;</span>.as_bytes(), <span class="kw-2">&amp;</span>[<span class="number">3</span>, <span class="number">8</span>]);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_multibyte_needle_head_at_end</span>() {
-        <span class="ident">test_multibyte</span>(<span class="string">&quot;a&quot;</span>.<span class="ident">as_bytes</span>(), <span class="kw-2">&amp;</span>[]);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_multibyte_needle_head_at_end() {
+        test_multibyte(<span class="string">&quot;a&quot;</span>.as_bytes(), <span class="kw-2">&amp;</span>[]);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_multibyte_starting_needle</span>() {
-        <span class="ident">test_multibyte</span>(<span class="string">&quot;ab...ab...&quot;</span>.<span class="ident">as_bytes</span>(), <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">5</span>]);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_multibyte_starting_needle() {
+        test_multibyte(<span class="string">&quot;ab...ab...&quot;</span>.as_bytes(), <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">5</span>]);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_multibyte_trailing_needle</span>() {
-        <span class="ident">test_multibyte</span>(<span class="string">&quot;...ab...ab&quot;</span>.<span class="ident">as_bytes</span>(), <span class="kw-2">&amp;</span>[<span class="number">3</span>, <span class="number">8</span>]);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_multibyte_trailing_needle() {
+        test_multibyte(<span class="string">&quot;...ab...ab&quot;</span>.as_bytes(), <span class="kw-2">&amp;</span>[<span class="number">3</span>, <span class="number">8</span>]);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_multibyte_first_byte_false_match</span>() {
-        <span class="ident">test_multibyte</span>(<span class="string">&quot;aA..aCaC..ab..aD&quot;</span>.<span class="ident">as_bytes</span>(), <span class="kw-2">&amp;</span>[<span class="number">10</span>]);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_multibyte_first_byte_false_match() {
+        test_multibyte(<span class="string">&quot;aA..aCaC..ab..aD&quot;</span>.as_bytes(), <span class="kw-2">&amp;</span>[<span class="number">10</span>]);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_cut" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_cut" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

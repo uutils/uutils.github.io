@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/factor/src/miller_rabin.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>miller_rabin.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uu_factor/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../uu_factor/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uu_factor/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/factor/src/miller_rabin.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>miller_rabin.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uu_factor/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../uu_factor/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uu_factor/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -208,215 +208,215 @@
 <span id="208">208</span>
 <span id="209">209</span>
 <span id="210">210</span>
-</pre><pre class="rust"><code><span class="comment">// * This file is part of the uutils coreutils package.</span>
-<span class="comment">// *</span>
-<span class="comment">// * (c) 2020 nicoo &lt;nicoo@debian.org&gt;</span>
-<span class="comment">// *</span>
-<span class="comment">// * For the full copyright and license information, please view the LICENSE file</span>
-<span class="comment">// * that was distributed with this source code.</span>
+</pre><pre class="rust"><code><span class="comment">// * This file is part of the uutils coreutils package.
+// *
+// * (c) 2020 nicoo &lt;nicoo@debian.org&gt;
+// *
+// * For the full copyright and license information, please view the LICENSE file
+// * that was distributed with this source code.
 
-<span class="comment">// spell-checker:ignore (URL) appspot</span>
+// spell-checker:ignore (URL) appspot
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::numeric</span>::<span class="kw-2">*</span>;
+</span><span class="kw">use </span><span class="kw">crate</span>::numeric::<span class="kw-2">*</span>;
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">trait</span> <span class="ident">Basis</span> {
-    <span class="kw">const</span> <span class="ident">BASIS</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">u64</span>];
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">trait </span>Basis {
+    <span class="kw">const </span>BASIS: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[u64];
 }
 
-<span class="kw">impl</span> <span class="ident">Basis</span> <span class="kw">for</span> <span class="ident">Montgomery</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
-    <span class="comment">// Small set of bases for the Miller-Rabin prime test, valid for all 64b integers;</span>
-    <span class="comment">//  discovered by Jim Sinclair on 2011-04-20, see miller-rabin.appspot.com</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::unreadable_literal</span>)]</span>
-    <span class="kw">const</span> <span class="ident">BASIS</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">u64</span>] <span class="op">=</span> <span class="kw-2">&amp;</span>[<span class="number">2</span>, <span class="number">325</span>, <span class="number">9375</span>, <span class="number">28178</span>, <span class="number">450775</span>, <span class="number">9780504</span>, <span class="number">1795265022</span>];
+<span class="kw">impl </span>Basis <span class="kw">for </span>Montgomery&lt;u64&gt; {
+    <span class="comment">// Small set of bases for the Miller-Rabin prime test, valid for all 64b integers;
+    //  discovered by Jim Sinclair on 2011-04-20, see miller-rabin.appspot.com
+    </span><span class="attribute">#[allow(clippy::unreadable_literal)]
+    </span><span class="kw">const </span>BASIS: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[u64] = <span class="kw-2">&amp;</span>[<span class="number">2</span>, <span class="number">325</span>, <span class="number">9375</span>, <span class="number">28178</span>, <span class="number">450775</span>, <span class="number">9780504</span>, <span class="number">1795265022</span>];
 }
 
-<span class="kw">impl</span> <span class="ident">Basis</span> <span class="kw">for</span> <span class="ident">Montgomery</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
-    <span class="comment">// spell-checker:ignore (names) Steve Worley</span>
-    <span class="comment">// Small set of bases for the Miller-Rabin prime test, valid for all 32b integers;</span>
-    <span class="comment">//  discovered by Steve Worley on 2013-05-27, see miller-rabin.appspot.com</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::unreadable_literal</span>)]</span>
-    <span class="kw">const</span> <span class="ident">BASIS</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">u64</span>] <span class="op">=</span> <span class="kw-2">&amp;</span>[
+<span class="kw">impl </span>Basis <span class="kw">for </span>Montgomery&lt;u32&gt; {
+    <span class="comment">// spell-checker:ignore (names) Steve Worley
+    // Small set of bases for the Miller-Rabin prime test, valid for all 32b integers;
+    //  discovered by Steve Worley on 2013-05-27, see miller-rabin.appspot.com
+    </span><span class="attribute">#[allow(clippy::unreadable_literal)]
+    </span><span class="kw">const </span>BASIS: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[u64] = <span class="kw-2">&amp;</span>[
         <span class="number">4230279247111683200</span>,
         <span class="number">14694767155120705706</span>,
         <span class="number">16641139526367750375</span>,
     ];
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="attribute">#[<span class="ident">must_use</span> <span class="op">=</span> <span class="string">&quot;Ignoring the output of a primality test.&quot;</span>]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="prelude-ty">Result</span> {
-    <span class="ident">Prime</span>,
-    <span class="ident">Pseudoprime</span>,
-    <span class="ident">Composite</span>(<span class="ident">u64</span>),
+<span class="attribute">#[derive(Eq, PartialEq)]
+#[must_use = <span class="string">&quot;Ignoring the output of a primality test.&quot;</span>]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span><span class="prelude-ty">Result </span>{
+    Prime,
+    Pseudoprime,
+    Composite(u64),
 }
 
-<span class="kw">impl</span> <span class="prelude-ty">Result</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">is_prime</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw-2">*</span><span class="self">self</span> <span class="op">==</span> <span class="ident"><span class="self">Self</span>::Prime</span>
+<span class="kw">impl </span><span class="prelude-ty">Result </span>{
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>is_prime(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="kw-2">*</span><span class="self">self </span>== <span class="self">Self</span>::Prime
     }
 }
 
-<span class="comment">// Deterministic Miller-Rabin primality-checking algorithm, adapted to extract</span>
-<span class="comment">// (some) dividers; it will fail to factor strong pseudoprimes.</span>
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::many_single_char_names</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">test</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Arithmetic</span> <span class="op">+</span> <span class="ident">Basis</span><span class="op">&gt;</span>(<span class="ident">m</span>: <span class="ident">A</span>) -&gt; <span class="prelude-ty">Result</span> {
-    <span class="kw">use</span> <span class="ident"><span class="self">self</span>::Result</span>::<span class="kw-2">*</span>;
+<span class="comment">// Deterministic Miller-Rabin primality-checking algorithm, adapted to extract
+// (some) dividers; it will fail to factor strong pseudoprimes.
+</span><span class="attribute">#[allow(clippy::many_single_char_names)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>test&lt;A: Arithmetic + Basis&gt;(m: A) -&gt; <span class="prelude-ty">Result </span>{
+    <span class="kw">use </span><span class="self">self</span>::Result::<span class="kw-2">*</span>;
 
-    <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">m</span>.<span class="ident">modulus</span>();
-    <span class="macro">debug_assert!</span>(<span class="ident">n</span> <span class="op">&gt;</span> <span class="number">1</span>);
-    <span class="macro">debug_assert!</span>(<span class="ident">n</span> <span class="op">%</span> <span class="number">2</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>);
+    <span class="kw">let </span>n = m.modulus();
+    <span class="macro">debug_assert!</span>(n &gt; <span class="number">1</span>);
+    <span class="macro">debug_assert!</span>(n % <span class="number">2 </span>!= <span class="number">0</span>);
 
-    <span class="comment">// n-1 = r 2ⁱ</span>
-    <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> (<span class="ident">n</span> <span class="op">-</span> <span class="number">1</span>).<span class="ident">trailing_zeros</span>();
-    <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> (<span class="ident">n</span> <span class="op">-</span> <span class="number">1</span>) <span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">i</span>;
+    <span class="comment">// n-1 = r 2ⁱ
+    </span><span class="kw">let </span>i = (n - <span class="number">1</span>).trailing_zeros();
+    <span class="kw">let </span>r = (n - <span class="number">1</span>) &gt;&gt; i;
 
-    <span class="kw">let</span> <span class="ident">one</span> <span class="op">=</span> <span class="ident">m</span>.<span class="ident">one</span>();
-    <span class="kw">let</span> <span class="ident">minus_one</span> <span class="op">=</span> <span class="ident">m</span>.<span class="ident">minus_one</span>();
+    <span class="kw">let </span>one = m.one();
+    <span class="kw">let </span>minus_one = m.minus_one();
 
-    <span class="lifetime">&#39;witness</span>: <span class="kw">for</span> <span class="ident">_a</span> <span class="kw">in</span> <span class="ident">A::BASIS</span>.<span class="ident">iter</span>() {
-        <span class="kw">let</span> <span class="ident">_a</span> <span class="op">=</span> <span class="ident">_a</span> <span class="op">%</span> <span class="ident">n</span>;
-        <span class="kw">if</span> <span class="ident">_a</span> <span class="op">==</span> <span class="number">0</span> {
+    <span class="lifetime">&#39;witness</span>: <span class="kw">for </span>_a <span class="kw">in </span>A::BASIS.iter() {
+        <span class="kw">let </span>_a = _a % n;
+        <span class="kw">if </span>_a == <span class="number">0 </span>{
             <span class="kw">continue</span>;
         }
 
-        <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="ident">m</span>.<span class="ident">to_mod</span>(<span class="ident">_a</span>);
+        <span class="kw">let </span>a = m.to_mod(_a);
 
-        <span class="comment">// x = a^r mod n</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">m</span>.<span class="ident">pow</span>(<span class="ident">a</span>, <span class="ident">r</span>);
+        <span class="comment">// x = a^r mod n
+        </span><span class="kw">let </span><span class="kw-2">mut </span>x = m.pow(a, r);
 
-        <span class="kw">if</span> <span class="ident">x</span> <span class="op">==</span> <span class="ident">one</span> <span class="op">|</span><span class="op">|</span> <span class="ident">x</span> <span class="op">==</span> <span class="ident">minus_one</span> {
+        <span class="kw">if </span>x == one || x == minus_one {
             <span class="kw">continue</span>;
         }
 
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">1</span>..<span class="ident">i</span> {
-            <span class="kw">let</span> <span class="ident">y</span> <span class="op">=</span> <span class="ident">m</span>.<span class="ident">mul</span>(<span class="ident">x</span>, <span class="ident">x</span>);
-            <span class="kw">if</span> <span class="ident">y</span> <span class="op">==</span> <span class="ident">one</span> {
-                <span class="kw">return</span> <span class="ident">Composite</span>(<span class="ident">gcd</span>(<span class="ident">m</span>.<span class="ident">to_u64</span>(<span class="ident">x</span>) <span class="op">-</span> <span class="number">1</span>, <span class="ident">m</span>.<span class="ident">modulus</span>()));
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">y</span> <span class="op">==</span> <span class="ident">minus_one</span> {
-                <span class="comment">// This basis element is not a witness of `n` being composite.</span>
-                <span class="comment">// Keep looking.</span>
-                <span class="kw">continue</span> <span class="lifetime">&#39;witness</span>;
+        <span class="kw">for _ in </span><span class="number">1</span>..i {
+            <span class="kw">let </span>y = m.mul(x, x);
+            <span class="kw">if </span>y == one {
+                <span class="kw">return </span>Composite(gcd(m.to_u64(x) - <span class="number">1</span>, m.modulus()));
+            } <span class="kw">else if </span>y == minus_one {
+                <span class="comment">// This basis element is not a witness of `n` being composite.
+                // Keep looking.
+                </span><span class="kw">continue </span><span class="lifetime">&#39;witness</span>;
             }
-            <span class="ident">x</span> <span class="op">=</span> <span class="ident">y</span>;
+            x = y;
         }
 
-        <span class="kw">return</span> <span class="ident">Pseudoprime</span>;
+        <span class="kw">return </span>Pseudoprime;
     }
 
-    <span class="ident">Prime</span>
+    Prime
 }
 
-<span class="comment">// Used by build.rs&#39; tests and debug assertions</span>
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">is_prime</span>(<span class="ident">n</span>: <span class="ident">u64</span>) -&gt; <span class="ident">bool</span> {
-    <span class="kw">if</span> <span class="ident">n</span> <span class="op">&lt;</span> <span class="number">2</span> {
-        <span class="bool-val">false</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">n</span> <span class="op">%</span> <span class="number">2</span> <span class="op">==</span> <span class="number">0</span> {
-        <span class="ident">n</span> <span class="op">==</span> <span class="number">2</span>
-    } <span class="kw">else</span> {
-        <span class="ident">test</span>::<span class="op">&lt;</span><span class="ident">Montgomery</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">Montgomery::new</span>(<span class="ident">n</span>)).<span class="ident">is_prime</span>()
+<span class="comment">// Used by build.rs&#39; tests and debug assertions
+</span><span class="attribute">#[allow(dead_code)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>is_prime(n: u64) -&gt; bool {
+    <span class="kw">if </span>n &lt; <span class="number">2 </span>{
+        <span class="bool-val">false
+    </span>} <span class="kw">else if </span>n % <span class="number">2 </span>== <span class="number">0 </span>{
+        n == <span class="number">2
+    </span>} <span class="kw">else </span>{
+        test::&lt;Montgomery&lt;u64&gt;&gt;(Montgomery::new(n)).is_prime()
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::numeric</span>::{<span class="ident">traits::DoubleInt</span>, <span class="ident">Arithmetic</span>, <span class="ident">Montgomery</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::parametrized_check</span>;
-    <span class="kw">use</span> <span class="ident">quickcheck::quickcheck</span>;
-    <span class="kw">use</span> <span class="ident">std::iter</span>;
-    <span class="kw">const</span> <span class="ident">LARGEST_U64_PRIME</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">0xFFFFFFFFFFFFFFC5</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::numeric::{traits::DoubleInt, Arithmetic, Montgomery};
+    <span class="kw">use </span><span class="kw">crate</span>::parametrized_check;
+    <span class="kw">use </span>quickcheck::quickcheck;
+    <span class="kw">use </span>std::iter;
+    <span class="kw">const </span>LARGEST_U64_PRIME: u64 = <span class="number">0xFFFFFFFFFFFFFFC5</span>;
 
-    <span class="kw">fn</span> <span class="ident">primes</span>() -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">u64</span><span class="op">&gt;</span> {
-        <span class="ident">iter::once</span>(<span class="number">2</span>).<span class="ident">chain</span>(<span class="ident">odd_primes</span>())
+    <span class="kw">fn </span>primes() -&gt; <span class="kw">impl </span>Iterator&lt;Item = u64&gt; {
+        iter::once(<span class="number">2</span>).chain(odd_primes())
     }
 
-    <span class="kw">fn</span> <span class="ident">odd_primes</span>() -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">u64</span><span class="op">&gt;</span> {
-        <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::table</span>::{<span class="ident">NEXT_PRIME</span>, <span class="ident">PRIME_INVERSIONS_U64</span>};
-        <span class="ident">PRIME_INVERSIONS_U64</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">p</span>, <span class="kw">_</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="kw-2">*</span><span class="ident">p</span>)
-            .<span class="ident">chain</span>(<span class="ident">iter::once</span>(<span class="ident">NEXT_PRIME</span>))
+    <span class="kw">fn </span>odd_primes() -&gt; <span class="kw">impl </span>Iterator&lt;Item = u64&gt; {
+        <span class="kw">use </span><span class="kw">crate</span>::table::{NEXT_PRIME, PRIME_INVERSIONS_U64};
+        PRIME_INVERSIONS_U64
+            .iter()
+            .map(|(p, <span class="kw">_</span>, <span class="kw">_</span>)| <span class="kw-2">*</span>p)
+            .chain(iter::once(NEXT_PRIME))
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">largest_prime</span>() {
-        <span class="macro">assert!</span>(<span class="ident">is_prime</span>(<span class="ident">LARGEST_U64_PRIME</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>largest_prime() {
+        <span class="macro">assert!</span>(is_prime(LARGEST_U64_PRIME));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">largest_composites</span>() {
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">LARGEST_U64_PRIME</span> <span class="op">+</span> <span class="number">1</span>..<span class="op">=</span><span class="ident">u64::MAX</span> {
-            <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">is_prime</span>(<span class="ident">i</span>), <span class="string">&quot;2⁶⁴ - {} reported prime&quot;</span>, <span class="ident">u64::MAX</span> <span class="op">-</span> <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>largest_composites() {
+        <span class="kw">for </span>i <span class="kw">in </span>LARGEST_U64_PRIME + <span class="number">1</span>..=u64::MAX {
+            <span class="macro">assert!</span>(!is_prime(i), <span class="string">&quot;2⁶⁴ - {} reported prime&quot;</span>, u64::MAX - i + <span class="number">1</span>);
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">two</span>() {
-        <span class="macro">assert!</span>(<span class="ident">is_prime</span>(<span class="number">2</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>two() {
+        <span class="macro">assert!</span>(is_prime(<span class="number">2</span>));
     }
 
-    <span class="kw">fn</span> <span class="ident">first_primes</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">DoubleInt</span><span class="op">&gt;</span>()
-    <span class="kw">where</span>
-        <span class="ident">Montgomery</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>: <span class="ident">Basis</span>,
+    <span class="kw">fn </span>first_primes&lt;A: DoubleInt&gt;()
+    <span class="kw">where
+        </span>Montgomery&lt;A&gt;: Basis,
     {
-        <span class="kw">for</span> <span class="ident">p</span> <span class="kw">in</span> <span class="ident">odd_primes</span>() {
+        <span class="kw">for </span>p <span class="kw">in </span>odd_primes() {
             <span class="macro">assert!</span>(
-                <span class="ident">test</span>(<span class="ident">Montgomery</span>::<span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="ident">::new</span>(<span class="ident">p</span>)).<span class="ident">is_prime</span>(),
+                test(Montgomery::&lt;A&gt;::new(p)).is_prime(),
                 <span class="string">&quot;{} reported composite&quot;</span>,
-                <span class="ident">p</span>
+                p
             );
         }
     }
-    <span class="macro">parametrized_check!</span>(<span class="ident">first_primes</span>);
+    <span class="macro">parametrized_check!</span>(first_primes);
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">one</span>() {
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">is_prime</span>(<span class="number">1</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>one() {
+        <span class="macro">assert!</span>(!is_prime(<span class="number">1</span>));
     }
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">zero</span>() {
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">is_prime</span>(<span class="number">0</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>zero() {
+        <span class="macro">assert!</span>(!is_prime(<span class="number">0</span>));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">first_composites</span>() {
-        <span class="kw">for</span> (<span class="ident">p</span>, <span class="ident">q</span>) <span class="kw">in</span> <span class="ident">primes</span>().<span class="ident">zip</span>(<span class="ident">odd_primes</span>()) {
-            <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">p</span> <span class="op">+</span> <span class="number">1</span>..<span class="ident">q</span> {
-                <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">is_prime</span>(<span class="ident">i</span>), <span class="string">&quot;{} reported prime&quot;</span>, <span class="ident">i</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>first_composites() {
+        <span class="kw">for </span>(p, q) <span class="kw">in </span>primes().zip(odd_primes()) {
+            <span class="kw">for </span>i <span class="kw">in </span>p + <span class="number">1</span>..q {
+                <span class="macro">assert!</span>(!is_prime(i), <span class="string">&quot;{} reported prime&quot;</span>, i);
             }
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">issue_1556</span>() {
-        <span class="comment">// 10 425 511 = 2441 × 4271</span>
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">is_prime</span>(<span class="number">10_425_511</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>issue_1556() {
+        <span class="comment">// 10 425 511 = 2441 × 4271
+        </span><span class="macro">assert!</span>(!is_prime(<span class="number">10_425_511</span>));
     }
 
-    <span class="kw">fn</span> <span class="ident">small_semiprimes</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">DoubleInt</span><span class="op">&gt;</span>()
-    <span class="kw">where</span>
-        <span class="ident">Montgomery</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>: <span class="ident">Basis</span>,
+    <span class="kw">fn </span>small_semiprimes&lt;A: DoubleInt&gt;()
+    <span class="kw">where
+        </span>Montgomery&lt;A&gt;: Basis,
     {
-        <span class="kw">for</span> <span class="ident">p</span> <span class="kw">in</span> <span class="ident">odd_primes</span>() {
-            <span class="kw">for</span> <span class="ident">q</span> <span class="kw">in</span> <span class="ident">odd_primes</span>().<span class="ident">take_while</span>(<span class="op">|</span><span class="ident">q</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">q</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">p</span>) {
-                <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">p</span> <span class="op">*</span> <span class="ident">q</span>;
-                <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">Montgomery</span>::<span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="ident">::new</span>(<span class="ident">n</span>);
-                <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">test</span>(<span class="ident">m</span>).<span class="ident">is_prime</span>(), <span class="string">&quot;{} = {} × {} reported prime&quot;</span>, <span class="ident">n</span>, <span class="ident">p</span>, <span class="ident">q</span>);
+        <span class="kw">for </span>p <span class="kw">in </span>odd_primes() {
+            <span class="kw">for </span>q <span class="kw">in </span>odd_primes().take_while(|q| <span class="kw-2">*</span>q &lt;= p) {
+                <span class="kw">let </span>n = p * q;
+                <span class="kw">let </span>m = Montgomery::&lt;A&gt;::new(n);
+                <span class="macro">assert!</span>(!test(m).is_prime(), <span class="string">&quot;{} = {} × {} reported prime&quot;</span>, n, p, q);
             }
         }
     }
-    <span class="macro">parametrized_check!</span>(<span class="ident">small_semiprimes</span>);
+    <span class="macro">parametrized_check!</span>(small_semiprimes);
 
-    <span class="macro">quickcheck!</span> {
-        <span class="kw">fn</span> <span class="ident">composites</span>(<span class="ident">i</span>: <span class="ident">u64</span>, <span class="ident">j</span>: <span class="ident">u64</span>) -&gt; <span class="ident">bool</span> {
-            <span class="comment">// TODO: #1559 factor n &gt; 2^64 - 1</span>
-            <span class="kw">match</span> <span class="ident">i</span>.<span class="ident">checked_mul</span>(<span class="ident">j</span>) {
-                <span class="prelude-val">Some</span>(<span class="ident">n</span>) =&gt; <span class="ident">i</span> <span class="op">&lt;</span> <span class="number">2</span> <span class="op">|</span><span class="op">|</span> <span class="ident">j</span> <span class="op">&lt;</span> <span class="number">2</span> <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">is_prime</span>(<span class="ident">n</span>),
-                <span class="kw">_</span> =&gt; <span class="bool-val">true</span>,
+    <span class="macro">quickcheck! </span>{
+        <span class="kw">fn </span>composites(i: u64, j: u64) -&gt; bool {
+            <span class="comment">// TODO: #1559 factor n &gt; 2^64 - 1
+            </span><span class="kw">match </span>i.checked_mul(j) {
+                <span class="prelude-val">Some</span>(n) =&gt; i &lt; <span class="number">2 </span>|| j &lt; <span class="number">2 </span>|| !is_prime(n),
+                <span class="kw">_ </span>=&gt; <span class="bool-val">true</span>,
             }
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_factor" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_factor" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

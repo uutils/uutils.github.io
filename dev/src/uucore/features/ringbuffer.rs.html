@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uucore/src/lib/features/ringbuffer.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>ringbuffer.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uucore/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uucore/src/lib/features/ringbuffer.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>ringbuffer.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uucore/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -134,141 +134,141 @@
 <span id="134">134</span>
 <span id="135">135</span>
 <span id="136">136</span>
-</pre><pre class="rust"><code><span class="doccomment">//! A fixed-size ring buffer.</span>
-<span class="kw">use</span> <span class="ident">std::collections::VecDeque</span>;
+</pre><pre class="rust"><code><span class="doccomment">//! A fixed-size ring buffer.
+</span><span class="kw">use </span>std::collections::VecDeque;
 
-<span class="doccomment">/// A fixed-size ring buffer backed by a `VecDeque`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If the ring buffer is not full, then calling the [`push_back`]</span>
-<span class="doccomment">/// method appends elements, as in a [`VecDeque`]. If the ring buffer</span>
-<span class="doccomment">/// is full, then calling [`push_back`] removes the element at the</span>
-<span class="doccomment">/// front of the buffer (in a first-in, first-out manner) before</span>
-<span class="doccomment">/// appending the new element to the back of the buffer.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Use [`from_iter`] to take the last `size` elements from an</span>
-<span class="doccomment">/// iterator.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// After exceeding the size limit, the oldest elements are dropped in</span>
-<span class="doccomment">/// favor of the newest element:</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust,ignore</span>
-<span class="doccomment">/// let mut buffer: RingBuffer&lt;u8&gt; = RingBuffer::new(2);</span>
-<span class="doccomment">/// buffer.push_back(0);</span>
-<span class="doccomment">/// buffer.push_back(1);</span>
-<span class="doccomment">/// buffer.push_back(2);</span>
-<span class="doccomment">/// assert_eq!(vec![1, 2], buffer.data);</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Take the last `n` elements from an iterator:</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust,ignore</span>
-<span class="doccomment">/// let iter = [0, 1, 2].iter();</span>
-<span class="doccomment">/// let actual = RingBuffer::from_iter(iter, 2).data;</span>
-<span class="doccomment">/// let expected = VecDeque::from_iter([1, 2].iter());</span>
-<span class="doccomment">/// assert_eq!(expected, actual);</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`push_back`]: struct.RingBuffer.html#method.push_back</span>
-<span class="doccomment">/// [`from_iter`]: struct.RingBuffer.html#method.from_iter</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RingBuffer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="ident">data</span>: <span class="ident">VecDeque</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-    <span class="ident">size</span>: <span class="ident">usize</span>,
+<span class="doccomment">/// A fixed-size ring buffer backed by a `VecDeque`.
+///
+/// If the ring buffer is not full, then calling the [`push_back`]
+/// method appends elements, as in a [`VecDeque`]. If the ring buffer
+/// is full, then calling [`push_back`] removes the element at the
+/// front of the buffer (in a first-in, first-out manner) before
+/// appending the new element to the back of the buffer.
+///
+/// Use [`from_iter`] to take the last `size` elements from an
+/// iterator.
+///
+/// # Examples
+///
+/// After exceeding the size limit, the oldest elements are dropped in
+/// favor of the newest element:
+///
+/// ```rust,ignore
+/// let mut buffer: RingBuffer&lt;u8&gt; = RingBuffer::new(2);
+/// buffer.push_back(0);
+/// buffer.push_back(1);
+/// buffer.push_back(2);
+/// assert_eq!(vec![1, 2], buffer.data);
+/// ```
+///
+/// Take the last `n` elements from an iterator:
+///
+/// ```rust,ignore
+/// let iter = [0, 1, 2].iter();
+/// let actual = RingBuffer::from_iter(iter, 2).data;
+/// let expected = VecDeque::from_iter([1, 2].iter());
+/// assert_eq!(expected, actual);
+/// ```
+///
+/// [`push_back`]: struct.RingBuffer.html#method.push_back
+/// [`from_iter`]: struct.RingBuffer.html#method.from_iter
+</span><span class="kw">pub struct </span>RingBuffer&lt;T&gt; {
+    <span class="kw">pub </span>data: VecDeque&lt;T&gt;,
+    size: usize,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">RingBuffer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">size</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">data</span>: <span class="ident">VecDeque::new</span>(),
-            <span class="ident">size</span>,
+<span class="kw">impl</span>&lt;T&gt; RingBuffer&lt;T&gt; {
+    <span class="kw">pub fn </span>new(size: usize) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            data: VecDeque::new(),
+            size,
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_iter</span>(<span class="ident">iter</span>: <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">size</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ring_buffer</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">size</span>);
-        <span class="kw">for</span> <span class="ident">value</span> <span class="kw">in</span> <span class="ident">iter</span> {
-            <span class="ident">ring_buffer</span>.<span class="ident">push_back</span>(<span class="ident">value</span>);
+    <span class="kw">pub fn </span>from_iter(iter: <span class="kw">impl </span>Iterator&lt;Item = T&gt;, size: usize) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>ring_buffer = <span class="self">Self</span>::new(size);
+        <span class="kw">for </span>value <span class="kw">in </span>iter {
+            ring_buffer.push_back(value);
         }
-        <span class="ident">ring_buffer</span>
+        ring_buffer
     }
 
-    <span class="doccomment">/// Append a value to the end of the ring buffer.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the ring buffer is not full, this method return [`None`]. If</span>
-    <span class="doccomment">/// the ring buffer is full, appending a new element will cause the</span>
-    <span class="doccomment">/// oldest element to be evicted. In that case this method returns</span>
-    <span class="doccomment">/// that element, or `None`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// In the special case where the size limit is zero, each call to</span>
-    <span class="doccomment">/// this method with input `value` returns `Some(value)`, because</span>
-    <span class="doccomment">/// the input is immediately evicted.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Appending an element when the buffer is full returns the oldest</span>
-    <span class="doccomment">/// element:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust,ignore</span>
-    <span class="doccomment">/// let mut buf = RingBuffer::new(3);</span>
-    <span class="doccomment">/// assert_eq!(None, buf.push_back(0));</span>
-    <span class="doccomment">/// assert_eq!(None, buf.push_back(1));</span>
-    <span class="doccomment">/// assert_eq!(None, buf.push_back(2));</span>
-    <span class="doccomment">/// assert_eq!(Some(0), buf.push_back(3));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the size limit is zero, then this method always returns the</span>
-    <span class="doccomment">/// input value:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust,ignore</span>
-    <span class="doccomment">/// let mut buf = RingBuffer::new(0);</span>
-    <span class="doccomment">/// assert_eq!(Some(0), buf.push_back(0));</span>
-    <span class="doccomment">/// assert_eq!(Some(1), buf.push_back(1));</span>
-    <span class="doccomment">/// assert_eq!(Some(2), buf.push_back(2));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push_back</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">T</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">size</span> <span class="op">==</span> <span class="number">0</span> {
-            <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>);
+    <span class="doccomment">/// Append a value to the end of the ring buffer.
+    ///
+    /// If the ring buffer is not full, this method return [`None`]. If
+    /// the ring buffer is full, appending a new element will cause the
+    /// oldest element to be evicted. In that case this method returns
+    /// that element, or `None`.
+    ///
+    /// In the special case where the size limit is zero, each call to
+    /// this method with input `value` returns `Some(value)`, because
+    /// the input is immediately evicted.
+    ///
+    /// # Examples
+    ///
+    /// Appending an element when the buffer is full returns the oldest
+    /// element:
+    ///
+    /// ```rust,ignore
+    /// let mut buf = RingBuffer::new(3);
+    /// assert_eq!(None, buf.push_back(0));
+    /// assert_eq!(None, buf.push_back(1));
+    /// assert_eq!(None, buf.push_back(2));
+    /// assert_eq!(Some(0), buf.push_back(3));
+    /// ```
+    ///
+    /// If the size limit is zero, then this method always returns the
+    /// input value:
+    ///
+    /// ```rust,ignore
+    /// let mut buf = RingBuffer::new(0);
+    /// assert_eq!(Some(0), buf.push_back(0));
+    /// assert_eq!(Some(1), buf.push_back(1));
+    /// assert_eq!(Some(2), buf.push_back(2));
+    /// ```
+    </span><span class="kw">pub fn </span>push_back(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: T) -&gt; <span class="prelude-ty">Option</span>&lt;T&gt; {
+        <span class="kw">if </span><span class="self">self</span>.size == <span class="number">0 </span>{
+            <span class="kw">return </span><span class="prelude-val">Some</span>(value);
         }
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">size</span> <span class="op">&lt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">len</span>() {
-            <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">pop_front</span>()
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        };
-        <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">push_back</span>(<span class="ident">value</span>);
-        <span class="ident">result</span>
+        <span class="kw">let </span>result = <span class="kw">if </span><span class="self">self</span>.size &lt;= <span class="self">self</span>.data.len() {
+            <span class="self">self</span>.data.pop_front()
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>};
+        <span class="self">self</span>.data.push_back(value);
+        result
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
 
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::ringbuffer::RingBuffer</span>;
-    <span class="kw">use</span> <span class="ident">std::collections::VecDeque</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::ringbuffer::RingBuffer;
+    <span class="kw">use </span>std::collections::VecDeque;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_size_limit_zero</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">RingBuffer::new</span>(<span class="number">0</span>);
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="number">0</span>), <span class="ident">buf</span>.<span class="ident">push_back</span>(<span class="number">0</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="number">1</span>), <span class="ident">buf</span>.<span class="ident">push_back</span>(<span class="number">1</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="number">2</span>), <span class="ident">buf</span>.<span class="ident">push_back</span>(<span class="number">2</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_size_limit_zero() {
+        <span class="kw">let </span><span class="kw-2">mut </span>buf = RingBuffer::new(<span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="number">0</span>), buf.push_back(<span class="number">0</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="number">1</span>), buf.push_back(<span class="number">1</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="number">2</span>), buf.push_back(<span class="number">2</span>));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_evict_oldest</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">RingBuffer::new</span>(<span class="number">2</span>);
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="ident">buf</span>.<span class="ident">push_back</span>(<span class="number">0</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="ident">buf</span>.<span class="ident">push_back</span>(<span class="number">1</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="number">0</span>), <span class="ident">buf</span>.<span class="ident">push_back</span>(<span class="number">2</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_evict_oldest() {
+        <span class="kw">let </span><span class="kw-2">mut </span>buf = RingBuffer::new(<span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, buf.push_back(<span class="number">0</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, buf.push_back(<span class="number">1</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="number">0</span>), buf.push_back(<span class="number">2</span>));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_from_iter</span>() {
-        <span class="kw">let</span> <span class="ident">iter</span> <span class="op">=</span> [<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>].<span class="ident">iter</span>();
-        <span class="kw">let</span> <span class="ident">actual</span> <span class="op">=</span> <span class="ident">RingBuffer::from_iter</span>(<span class="ident">iter</span>, <span class="number">2</span>).<span class="ident">data</span>;
-        <span class="kw">let</span> <span class="ident">expected</span>: <span class="ident">VecDeque</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="op">=</span> [<span class="number">1</span>, <span class="number">2</span>].<span class="ident">iter</span>().<span class="ident">collect</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_from_iter() {
+        <span class="kw">let </span>iter = [<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>].iter();
+        <span class="kw">let </span>actual = RingBuffer::from_iter(iter, <span class="number">2</span>).data;
+        <span class="kw">let </span>expected: VecDeque&lt;<span class="kw-2">&amp;</span>i32&gt; = [<span class="number">1</span>, <span class="number">2</span>].iter().collect();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uucore" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uucore" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

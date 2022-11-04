@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/tail/src/follow/watch.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>watch.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uu_tail/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../uu_tail/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uu_tail/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/tail/src/follow/watch.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>watch.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uu_tail/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../uu_tail/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uu_tail/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -593,44 +593,44 @@
 <span id="593">593</span>
 <span id="594">594</span>
 <span id="595">595</span>
-</pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.</span>
-<span class="comment">//  *</span>
-<span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
-<span class="comment">//  * file that was distributed with this source code.</span>
+</pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
+//  *
+//  * For the full copyright and license information, please view the LICENSE
+//  * file that was distributed with this source code.
 
-<span class="comment">// spell-checker:ignore (ToDO) tailable untailable stdlib kqueue Uncategorized unwatch</span>
+// spell-checker:ignore (ToDO) tailable untailable stdlib kqueue Uncategorized unwatch
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::args</span>::{<span class="ident">FollowMode</span>, <span class="ident">Settings</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::follow::files</span>::{<span class="ident">FileHandling</span>, <span class="ident">PathData</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::paths</span>::{<span class="ident">Input</span>, <span class="ident">InputKind</span>, <span class="ident">MetadataExtTail</span>, <span class="ident">PathExtTail</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">platform</span>, <span class="ident">text</span>};
-<span class="kw">use</span> <span class="ident">notify</span>::{<span class="ident">RecommendedWatcher</span>, <span class="ident">RecursiveMode</span>, <span class="ident">Watcher</span>, <span class="ident">WatcherKind</span>};
-<span class="kw">use</span> <span class="ident">std::collections::VecDeque</span>;
-<span class="kw">use</span> <span class="ident">std::io::BufRead</span>;
-<span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>};
-<span class="kw">use</span> <span class="ident">std::sync::mpsc</span>;
-<span class="kw">use</span> <span class="ident">std::sync::mpsc</span>::{<span class="ident">channel</span>, <span class="ident">Receiver</span>};
-<span class="kw">use</span> <span class="ident">uucore::display::Quotable</span>;
-<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">set_exit_code</span>, <span class="ident">UResult</span>, <span class="ident">USimpleError</span>};
+</span><span class="kw">use </span><span class="kw">crate</span>::args::{FollowMode, Settings};
+<span class="kw">use </span><span class="kw">crate</span>::follow::files::{FileHandling, PathData};
+<span class="kw">use </span><span class="kw">crate</span>::paths::{Input, InputKind, MetadataExtTail, PathExtTail};
+<span class="kw">use crate</span>::{platform, text};
+<span class="kw">use </span>notify::{RecommendedWatcher, RecursiveMode, Watcher, WatcherKind};
+<span class="kw">use </span>std::collections::VecDeque;
+<span class="kw">use </span>std::io::BufRead;
+<span class="kw">use </span>std::path::{Path, PathBuf};
+<span class="kw">use </span>std::sync::mpsc;
+<span class="kw">use </span>std::sync::mpsc::{channel, Receiver};
+<span class="kw">use </span>uucore::display::Quotable;
+<span class="kw">use </span>uucore::error::{set_exit_code, UResult, USimpleError};
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WatcherRx</span> {
-    <span class="ident">watcher</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Watcher</span><span class="op">&gt;</span>,
-    <span class="ident">receiver</span>: <span class="ident">Receiver</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">notify::Event</span>, <span class="ident">notify::Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+<span class="kw">pub struct </span>WatcherRx {
+    watcher: Box&lt;<span class="kw">dyn </span>Watcher&gt;,
+    receiver: Receiver&lt;<span class="prelude-ty">Result</span>&lt;notify::Event, notify::Error&gt;&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">WatcherRx</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(
-        <span class="ident">watcher</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Watcher</span><span class="op">&gt;</span>,
-        <span class="ident">receiver</span>: <span class="ident">Receiver</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">notify::Event</span>, <span class="ident">notify::Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">watcher</span>, <span class="ident">receiver</span> }
+<span class="kw">impl </span>WatcherRx {
+    <span class="kw">fn </span>new(
+        watcher: Box&lt;<span class="kw">dyn </span>Watcher&gt;,
+        receiver: Receiver&lt;<span class="prelude-ty">Result</span>&lt;notify::Event, notify::Error&gt;&gt;,
+    ) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ watcher, receiver }
     }
 
-    <span class="doccomment">/// Wrapper for `notify::Watcher::watch` to also add the parent directory of `path` if necessary.</span>
-    <span class="kw">fn</span> <span class="ident">watch_with_parent</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">to_owned</span>();
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-        <span class="kw">if</span> <span class="ident">path</span>.<span class="ident">is_file</span>() {
+    <span class="doccomment">/// Wrapper for `notify::Watcher::watch` to also add the parent directory of `path` if necessary.
+    </span><span class="kw">fn </span>watch_with_parent(<span class="kw-2">&amp;mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>Path) -&gt; UResult&lt;()&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>path = path.to_owned();
+        <span class="attribute">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+        </span><span class="kw">if </span>path.is_file() {
             <span class="comment">/*
             NOTE: Using the parent directory instead of the file is a workaround.
             This workaround follows the recommendation of the notify crate authors:
@@ -639,145 +639,145 @@
             &gt; one may non-recursively watch the _parent_ directory as well and manage related events.
             NOTE: Adding both: file and parent results in duplicate/wrong events.
             Tested for notify::InotifyWatcher and for notify::PollWatcher.
-            */</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">parent</span>) <span class="op">=</span> <span class="ident">path</span>.<span class="ident">parent</span>() {
-                <span class="kw">if</span> <span class="ident">parent</span>.<span class="ident">is_dir</span>() {
-                    <span class="ident">path</span> <span class="op">=</span> <span class="ident">parent</span>.<span class="ident">to_owned</span>();
-                } <span class="kw">else</span> {
-                    <span class="ident">path</span> <span class="op">=</span> <span class="ident">PathBuf::from</span>(<span class="string">&quot;.&quot;</span>);
+            */
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(parent) = path.parent() {
+                <span class="kw">if </span>parent.is_dir() {
+                    path = parent.to_owned();
+                } <span class="kw">else </span>{
+                    path = PathBuf::from(<span class="string">&quot;.&quot;</span>);
                 }
-            } <span class="kw">else</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(
+            } <span class="kw">else </span>{
+                <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
                     <span class="number">1</span>,
-                    <span class="macro">format!</span>(<span class="string">&quot;cannot watch parent directory of {}&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>()),
+                    <span class="macro">format!</span>(<span class="string">&quot;cannot watch parent directory of {}&quot;</span>, path.display()),
                 ));
             };
         }
-        <span class="kw">if</span> <span class="ident">path</span>.<span class="ident">is_relative</span>() {
-            <span class="ident">path</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">canonicalize</span>()<span class="question-mark">?</span>;
+        <span class="kw">if </span>path.is_relative() {
+            path = path.canonicalize()<span class="question-mark">?</span>;
         }
 
-        <span class="comment">// for syscalls: 2x &quot;inotify_add_watch&quot; (&quot;filename&quot; and &quot;.&quot;) and 1x &quot;inotify_rm_watch&quot;</span>
-        <span class="self">self</span>.<span class="ident">watch</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="ident">RecursiveMode::NonRecursive</span>)<span class="question-mark">?</span>;
+        <span class="comment">// for syscalls: 2x &quot;inotify_add_watch&quot; (&quot;filename&quot; and &quot;.&quot;) and 1x &quot;inotify_rm_watch&quot;
+        </span><span class="self">self</span>.watch(<span class="kw-2">&amp;</span>path, RecursiveMode::NonRecursive)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">watch</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">mode</span>: <span class="ident">RecursiveMode</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">watcher</span>
-            .<span class="ident">watch</span>(<span class="ident">path</span>, <span class="ident">mode</span>)
-            .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="ident">err</span>.<span class="ident">to_string</span>()))
+    <span class="kw">fn </span>watch(<span class="kw-2">&amp;mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>Path, mode: RecursiveMode) -&gt; UResult&lt;()&gt; {
+        <span class="self">self</span>.watcher
+            .watch(path, mode)
+            .map_err(|err| USimpleError::new(<span class="number">1</span>, err.to_string()))
     }
 
-    <span class="kw">fn</span> <span class="ident">unwatch</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">watcher</span>
-            .<span class="ident">unwatch</span>(<span class="ident">path</span>)
-            .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="ident">err</span>.<span class="ident">to_string</span>()))
+    <span class="kw">fn </span>unwatch(<span class="kw-2">&amp;mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>Path) -&gt; UResult&lt;()&gt; {
+        <span class="self">self</span>.watcher
+            .unwatch(path)
+            .map_err(|err| USimpleError::new(<span class="number">1</span>, err.to_string()))
     }
 }
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WatcherService</span> {
-    <span class="doccomment">/// Whether --retry was given on the command line</span>
-    <span class="kw">pub</span> <span class="ident">retry</span>: <span class="ident">bool</span>,
+<span class="kw">pub struct </span>WatcherService {
+    <span class="doccomment">/// Whether --retry was given on the command line
+    </span><span class="kw">pub </span>retry: bool,
 
-    <span class="doccomment">/// The [`FollowMode`]</span>
-    <span class="kw">pub</span> <span class="ident">follow</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FollowMode</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// The [`FollowMode`]
+    </span><span class="kw">pub </span>follow: <span class="prelude-ty">Option</span>&lt;FollowMode&gt;,
 
-    <span class="doccomment">/// Indicates whether to use the fallback `polling` method instead of the</span>
-    <span class="doccomment">/// platform specific event driven method. Since `use_polling` is subject to</span>
-    <span class="doccomment">/// change during runtime it is moved out of [`Settings`].</span>
-    <span class="kw">pub</span> <span class="ident">use_polling</span>: <span class="ident">bool</span>,
-    <span class="kw">pub</span> <span class="ident">watcher_rx</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">WatcherRx</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">orphans</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">files</span>: <span class="ident">FileHandling</span>,
+    <span class="doccomment">/// Indicates whether to use the fallback `polling` method instead of the
+    /// platform specific event driven method. Since `use_polling` is subject to
+    /// change during runtime it is moved out of [`Settings`].
+    </span><span class="kw">pub </span>use_polling: bool,
+    <span class="kw">pub </span>watcher_rx: <span class="prelude-ty">Option</span>&lt;WatcherRx&gt;,
+    <span class="kw">pub </span>orphans: Vec&lt;PathBuf&gt;,
+    <span class="kw">pub </span>files: FileHandling,
 }
 
-<span class="kw">impl</span> <span class="ident">WatcherService</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
-        <span class="ident">retry</span>: <span class="ident">bool</span>,
-        <span class="ident">follow</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FollowMode</span><span class="op">&gt;</span>,
-        <span class="ident">use_polling</span>: <span class="ident">bool</span>,
-        <span class="ident">files</span>: <span class="ident">FileHandling</span>,
-    ) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">retry</span>,
-            <span class="ident">follow</span>,
-            <span class="ident">use_polling</span>,
-            <span class="ident">watcher_rx</span>: <span class="prelude-val">None</span>,
-            <span class="ident">orphans</span>: <span class="ident">Vec::new</span>(),
-            <span class="ident">files</span>,
+<span class="kw">impl </span>WatcherService {
+    <span class="kw">pub fn </span>new(
+        retry: bool,
+        follow: <span class="prelude-ty">Option</span>&lt;FollowMode&gt;,
+        use_polling: bool,
+        files: FileHandling,
+    ) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            retry,
+            follow,
+            use_polling,
+            watcher_rx: <span class="prelude-val">None</span>,
+            orphans: Vec::new(),
+            files,
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::new</span>(
-            <span class="ident">settings</span>.<span class="ident">retry</span>,
-            <span class="ident">settings</span>.<span class="ident">follow</span>,
-            <span class="ident">settings</span>.<span class="ident">use_polling</span>,
-            <span class="ident">FileHandling::from</span>(<span class="ident">settings</span>),
+    <span class="kw">pub fn </span>from(settings: <span class="kw-2">&amp;</span>Settings) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new(
+            settings.retry,
+            settings.follow,
+            settings.use_polling,
+            FileHandling::from(settings),
         )
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_path</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
-        <span class="ident">display_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-        <span class="ident">reader</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">BufRead</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-        <span class="ident">update_last</span>: <span class="ident">bool</span>,
-    ) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">follow</span>.<span class="ident">is_some</span>() {
-            <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">path</span>.<span class="ident">is_relative</span>() {
-                <span class="ident">std::env::current_dir</span>()<span class="question-mark">?</span>.<span class="ident">join</span>(<span class="ident">path</span>)
-            } <span class="kw">else</span> {
-                <span class="ident">path</span>.<span class="ident">to_owned</span>()
+    <span class="kw">pub fn </span>add_path(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        path: <span class="kw-2">&amp;</span>Path,
+        display_name: <span class="kw-2">&amp;</span>str,
+        reader: <span class="prelude-ty">Option</span>&lt;Box&lt;<span class="kw">dyn </span>BufRead&gt;&gt;,
+        update_last: bool,
+    ) -&gt; UResult&lt;()&gt; {
+        <span class="kw">if </span><span class="self">self</span>.follow.is_some() {
+            <span class="kw">let </span>path = <span class="kw">if </span>path.is_relative() {
+                std::env::current_dir()<span class="question-mark">?</span>.join(path)
+            } <span class="kw">else </span>{
+                path.to_owned()
             };
-            <span class="kw">let</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">metadata</span>().<span class="ident">ok</span>();
-            <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">insert</span>(
-                <span class="kw-2">&amp;</span><span class="ident">path</span>,
-                <span class="ident">PathData::new</span>(<span class="ident">reader</span>, <span class="ident">metadata</span>, <span class="ident">display_name</span>),
-                <span class="ident">update_last</span>,
+            <span class="kw">let </span>metadata = path.metadata().ok();
+            <span class="self">self</span>.files.insert(
+                <span class="kw-2">&amp;</span>path,
+                PathData::new(reader, metadata, display_name),
+                update_last,
             );
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_stdin</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">display_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-        <span class="ident">reader</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">BufRead</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-        <span class="ident">update_last</span>: <span class="ident">bool</span>,
-    ) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">follow</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">FollowMode::Descriptor</span>) {
-            <span class="kw">return</span> <span class="self">self</span>.<span class="ident">add_path</span>(
-                <span class="kw-2">&amp;</span><span class="ident">PathBuf::from</span>(<span class="ident">text::DEV_STDIN</span>),
-                <span class="ident">display_name</span>,
-                <span class="ident">reader</span>,
-                <span class="ident">update_last</span>,
+    <span class="kw">pub fn </span>add_stdin(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        display_name: <span class="kw-2">&amp;</span>str,
+        reader: <span class="prelude-ty">Option</span>&lt;Box&lt;<span class="kw">dyn </span>BufRead&gt;&gt;,
+        update_last: bool,
+    ) -&gt; UResult&lt;()&gt; {
+        <span class="kw">if </span><span class="self">self</span>.follow == <span class="prelude-val">Some</span>(FollowMode::Descriptor) {
+            <span class="kw">return </span><span class="self">self</span>.add_path(
+                <span class="kw-2">&amp;</span>PathBuf::from(text::DEV_STDIN),
+                display_name,
+                reader,
+                update_last,
             );
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_bad_path</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
-        <span class="ident">display_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-        <span class="ident">update_last</span>: <span class="ident">bool</span>,
-    ) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">retry</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">follow</span>.<span class="ident">is_some</span>() {
-            <span class="kw">return</span> <span class="self">self</span>.<span class="ident">add_path</span>(<span class="ident">path</span>, <span class="ident">display_name</span>, <span class="prelude-val">None</span>, <span class="ident">update_last</span>);
+    <span class="kw">pub fn </span>add_bad_path(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        path: <span class="kw-2">&amp;</span>Path,
+        display_name: <span class="kw-2">&amp;</span>str,
+        update_last: bool,
+    ) -&gt; UResult&lt;()&gt; {
+        <span class="kw">if </span><span class="self">self</span>.retry &amp;&amp; <span class="self">self</span>.follow.is_some() {
+            <span class="kw">return </span><span class="self">self</span>.add_path(path, display_name, <span class="prelude-val">None</span>, update_last);
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">start</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">follow</span>.<span class="ident">is_none</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+    <span class="kw">pub fn </span>start(<span class="kw-2">&amp;mut </span><span class="self">self</span>, settings: <span class="kw-2">&amp;</span>Settings) -&gt; UResult&lt;()&gt; {
+        <span class="kw">if </span>settings.follow.is_none() {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
 
-        <span class="kw">let</span> (<span class="ident">tx</span>, <span class="ident">rx</span>) <span class="op">=</span> <span class="ident">channel</span>();
+        <span class="kw">let </span>(tx, rx) = channel();
 
         <span class="comment">/*
         Watcher is implemented per platform using the best implementation available on that
@@ -794,90 +794,90 @@
         On macOS only `kqueue` is suitable for our use case because `FSEvents`
         waits for file close util it delivers a modify event. See:
         https://github.com/notify-rs/notify/issues/240
-        */</span>
+        */
 
-        <span class="kw">let</span> <span class="ident">watcher</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Watcher</span><span class="op">&gt;</span>;
-        <span class="kw">let</span> <span class="ident">watcher_config</span> <span class="op">=</span> <span class="ident">notify::Config::default</span>()
-            .<span class="ident">with_poll_interval</span>(<span class="ident">settings</span>.<span class="ident">sleep_sec</span>)
+        </span><span class="kw">let </span>watcher: Box&lt;<span class="kw">dyn </span>Watcher&gt;;
+        <span class="kw">let </span>watcher_config = notify::Config::default()
+            .with_poll_interval(settings.sleep_sec)
             <span class="comment">/*
             NOTE: By enabling compare_contents, performance will be significantly impacted
             as all files will need to be read and hashed at each `poll_interval`.
             However, this is necessary to pass: &quot;gnu/tests/tail-2/F-vs-rename.sh&quot;
-            */</span>
-            .<span class="ident">with_compare_contents</span>(<span class="bool-val">true</span>);
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">use_polling</span> <span class="op">|</span><span class="op">|</span> <span class="ident">RecommendedWatcher::kind</span>() <span class="op">==</span> <span class="ident">WatcherKind::PollWatcher</span> {
-            <span class="self">self</span>.<span class="ident">use_polling</span> <span class="op">=</span> <span class="bool-val">true</span>; <span class="comment">// We have to use polling because there&#39;s no supported backend</span>
-            <span class="ident">watcher</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">notify::PollWatcher::new</span>(<span class="ident">tx</span>, <span class="ident">watcher_config</span>).<span class="ident">unwrap</span>());
-        } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">tx_clone</span> <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">clone</span>();
-            <span class="kw">match</span> <span class="ident">notify::RecommendedWatcher::new</span>(<span class="ident">tx</span>, <span class="ident">notify::Config::default</span>()) {
-                <span class="prelude-val">Ok</span>(<span class="ident">w</span>) =&gt; <span class="ident">watcher</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">w</span>),
-                <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">to_string</span>().<span class="ident">starts_with</span>(<span class="string">&quot;Too many open files&quot;</span>) =&gt; {
+            */
+            </span>.with_compare_contents(<span class="bool-val">true</span>);
+        <span class="kw">if </span><span class="self">self</span>.use_polling || RecommendedWatcher::kind() == WatcherKind::PollWatcher {
+            <span class="self">self</span>.use_polling = <span class="bool-val">true</span>; <span class="comment">// We have to use polling because there&#39;s no supported backend
+            </span>watcher = Box::new(notify::PollWatcher::new(tx, watcher_config).unwrap());
+        } <span class="kw">else </span>{
+            <span class="kw">let </span>tx_clone = tx.clone();
+            <span class="kw">match </span>notify::RecommendedWatcher::new(tx, notify::Config::default()) {
+                <span class="prelude-val">Ok</span>(w) =&gt; watcher = Box::new(w),
+                <span class="prelude-val">Err</span>(e) <span class="kw">if </span>e.to_string().starts_with(<span class="string">&quot;Too many open files&quot;</span>) =&gt; {
                     <span class="comment">/*
                     NOTE: This ErrorKind is `Uncategorized`, but it is not recommended
                     to match an error against `Uncategorized`
                     NOTE: Could be tested with decreasing `max_user_instances`, e.g.:
                     `sudo sysctl fs.inotify.max_user_instances=64`
-                    */</span>
-                    <span class="macro">show_error!</span>(
+                    */
+                    </span><span class="macro">show_error!</span>(
                         <span class="string">&quot;{} cannot be used, reverting to polling: Too many open files&quot;</span>,
-                        <span class="ident">text::BACKEND</span>
+                        text::BACKEND
                     );
-                    <span class="ident">set_exit_code</span>(<span class="number">1</span>);
-                    <span class="self">self</span>.<span class="ident">use_polling</span> <span class="op">=</span> <span class="bool-val">true</span>;
-                    <span class="ident">watcher</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">notify::PollWatcher::new</span>(<span class="ident">tx_clone</span>, <span class="ident">watcher_config</span>).<span class="ident">unwrap</span>());
+                    set_exit_code(<span class="number">1</span>);
+                    <span class="self">self</span>.use_polling = <span class="bool-val">true</span>;
+                    watcher = Box::new(notify::PollWatcher::new(tx_clone, watcher_config).unwrap());
                 }
-                <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="ident">e</span>.<span class="ident">to_string</span>())),
+                <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, e.to_string())),
             };
         }
 
-        <span class="self">self</span>.<span class="ident">watcher_rx</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">WatcherRx::new</span>(<span class="ident">watcher</span>, <span class="ident">rx</span>));
-        <span class="self">self</span>.<span class="ident">init_files</span>(<span class="kw-2">&amp;</span><span class="ident">settings</span>.<span class="ident">inputs</span>)<span class="question-mark">?</span>;
+        <span class="self">self</span>.watcher_rx = <span class="prelude-val">Some</span>(WatcherRx::new(watcher, rx));
+        <span class="self">self</span>.init_files(<span class="kw-2">&amp;</span>settings.inputs)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">follow_descriptor</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">follow</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">FollowMode::Descriptor</span>)
+    <span class="kw">pub fn </span>follow_descriptor(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.follow == <span class="prelude-val">Some</span>(FollowMode::Descriptor)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">follow_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">follow</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">FollowMode::Name</span>)
+    <span class="kw">pub fn </span>follow_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.follow == <span class="prelude-val">Some</span>(FollowMode::Name)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">follow_descriptor_retry</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">follow_descriptor</span>() <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">retry</span>
+    <span class="kw">pub fn </span>follow_descriptor_retry(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.follow_descriptor() &amp;&amp; <span class="self">self</span>.retry
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">follow_name_retry</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">follow_name</span>() <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">retry</span>
+    <span class="kw">pub fn </span>follow_name_retry(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.follow_name() &amp;&amp; <span class="self">self</span>.retry
     }
 
-    <span class="kw">fn</span> <span class="ident">init_files</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">inputs</span>: <span class="kw-2">&amp;</span><span class="ident">VecDeque</span><span class="op">&lt;</span><span class="ident">Input</span><span class="op">&gt;</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">watcher_rx</span>) <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">watcher_rx</span> {
-            <span class="kw">for</span> <span class="ident">input</span> <span class="kw">in</span> <span class="ident">inputs</span> {
-                <span class="kw">match</span> <span class="ident">input</span>.<span class="ident">kind</span>() {
-                    <span class="ident">InputKind::Stdin</span> =&gt; <span class="kw">continue</span>,
-                    <span class="ident">InputKind::File</span>(<span class="ident">path</span>) =&gt; {
-                        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">unix</span>, <span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)))]</span>
-                        <span class="kw">if</span> <span class="op">!</span><span class="ident">path</span>.<span class="ident">is_file</span>() {
+    <span class="kw">fn </span>init_files(<span class="kw-2">&amp;mut </span><span class="self">self</span>, inputs: <span class="kw-2">&amp;</span>VecDeque&lt;Input&gt;) -&gt; UResult&lt;()&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(watcher_rx) = <span class="kw-2">&amp;mut </span><span class="self">self</span>.watcher_rx {
+            <span class="kw">for </span>input <span class="kw">in </span>inputs {
+                <span class="kw">match </span>input.kind() {
+                    InputKind::Stdin =&gt; <span class="kw">continue</span>,
+                    InputKind::File(path) =&gt; {
+                        <span class="attribute">#[cfg(all(unix, not(target_os = <span class="string">&quot;linux&quot;</span>)))]
+                        </span><span class="kw">if </span>!path.is_file() {
                             <span class="kw">continue</span>;
                         }
-                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">to_owned</span>();
-                        <span class="kw">if</span> <span class="ident">path</span>.<span class="ident">is_relative</span>() {
-                            <span class="ident">path</span> <span class="op">=</span> <span class="ident">std::env::current_dir</span>()<span class="question-mark">?</span>.<span class="ident">join</span>(<span class="ident">path</span>);
+                        <span class="kw">let </span><span class="kw-2">mut </span>path = path.to_owned();
+                        <span class="kw">if </span>path.is_relative() {
+                            path = std::env::current_dir()<span class="question-mark">?</span>.join(path);
                         }
 
-                        <span class="kw">if</span> <span class="ident">path</span>.<span class="ident">is_tailable</span>() {
-                            <span class="comment">// Add existing regular files to `Watcher` (InotifyWatcher).</span>
-                            <span class="ident">watcher_rx</span>.<span class="ident">watch_with_parent</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>)<span class="question-mark">?</span>;
-                        } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">path</span>.<span class="ident">is_orphan</span>() {
-                            <span class="comment">// If `path` is not a tailable file, add its parent to `Watcher`.</span>
-                            <span class="ident">watcher_rx</span>
-                                .<span class="ident">watch</span>(<span class="ident">path</span>.<span class="ident">parent</span>().<span class="ident">unwrap</span>(), <span class="ident">RecursiveMode::NonRecursive</span>)<span class="question-mark">?</span>;
-                        } <span class="kw">else</span> {
-                            <span class="comment">// If there is no parent, add `path` to `orphans`.</span>
-                            <span class="self">self</span>.<span class="ident">orphans</span>.<span class="ident">push</span>(<span class="ident">path</span>);
+                        <span class="kw">if </span>path.is_tailable() {
+                            <span class="comment">// Add existing regular files to `Watcher` (InotifyWatcher).
+                            </span>watcher_rx.watch_with_parent(<span class="kw-2">&amp;</span>path)<span class="question-mark">?</span>;
+                        } <span class="kw">else if </span>!path.is_orphan() {
+                            <span class="comment">// If `path` is not a tailable file, add its parent to `Watcher`.
+                            </span>watcher_rx
+                                .watch(path.parent().unwrap(), RecursiveMode::NonRecursive)<span class="question-mark">?</span>;
+                        } <span class="kw">else </span>{
+                            <span class="comment">// If there is no parent, add `path` to `orphans`.
+                            </span><span class="self">self</span>.orphans.push(path);
                         }
                     }
                 }
@@ -886,122 +886,122 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">handle_event</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">event</span>: <span class="kw-2">&amp;</span><span class="ident">notify::Event</span>,
-        <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>,
-    ) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">use</span> <span class="ident">notify::event</span>::<span class="kw-2">*</span>;
+    <span class="kw">fn </span>handle_event(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        event: <span class="kw-2">&amp;</span>notify::Event,
+        settings: <span class="kw-2">&amp;</span>Settings,
+    ) -&gt; UResult&lt;Vec&lt;PathBuf&gt;&gt; {
+        <span class="kw">use </span>notify::event::<span class="kw-2">*</span>;
 
-        <span class="kw">let</span> <span class="ident">event_path</span> <span class="op">=</span> <span class="ident">event</span>.<span class="ident">paths</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">paths</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-        <span class="kw">let</span> <span class="ident">display_name</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">get</span>(<span class="ident">event_path</span>).<span class="ident">display_name</span>.<span class="ident">clone</span>();
+        <span class="kw">let </span>event_path = event.paths.first().unwrap();
+        <span class="kw">let </span><span class="kw-2">mut </span>paths: Vec&lt;PathBuf&gt; = <span class="macro">vec!</span>[];
+        <span class="kw">let </span>display_name = <span class="self">self</span>.files.get(event_path).display_name.clone();
 
-        <span class="kw">match</span> <span class="ident">event</span>.<span class="ident">kind</span> {
-            <span class="ident">EventKind::Modify</span>(<span class="ident">ModifyKind::Metadata</span>(<span class="ident">MetadataKind::Any</span> <span class="op">|</span> <span class="ident">MetadataKind::WriteTime</span>))
+        <span class="kw">match </span>event.kind {
+            EventKind::Modify(ModifyKind::Metadata(MetadataKind::Any | MetadataKind::WriteTime))
 
-                <span class="comment">// | EventKind::Access(AccessKind::Close(AccessMode::Write))</span>
-                <span class="op">|</span> <span class="ident">EventKind::Create</span>(<span class="ident">CreateKind::File</span> <span class="op">|</span> <span class="ident">CreateKind::Folder</span> <span class="op">|</span> <span class="ident">CreateKind::Any</span>)
-                <span class="op">|</span> <span class="ident">EventKind::Modify</span>(<span class="ident">ModifyKind::Data</span>(<span class="ident">DataChange::Any</span>))
-                <span class="op">|</span> <span class="ident">EventKind::Modify</span>(<span class="ident">ModifyKind::Name</span>(<span class="ident">RenameMode::To</span>)) =&gt; {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">new_md</span>) <span class="op">=</span> <span class="ident">event_path</span>.<span class="ident">metadata</span>() {
+                <span class="comment">// | EventKind::Access(AccessKind::Close(AccessMode::Write))
+                </span>| EventKind::Create(CreateKind::File | CreateKind::Folder | CreateKind::Any)
+                | EventKind::Modify(ModifyKind::Data(DataChange::Any))
+                | EventKind::Modify(ModifyKind::Name(RenameMode::To)) =&gt; {
+                    <span class="kw">if let </span><span class="prelude-val">Ok</span>(new_md) = event_path.metadata() {
 
-                        <span class="kw">let</span> <span class="ident">is_tailable</span> <span class="op">=</span> <span class="ident">new_md</span>.<span class="ident">is_tailable</span>();
-                        <span class="kw">let</span> <span class="ident">pd</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">get</span>(<span class="ident">event_path</span>);
-                        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">old_md</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">pd</span>.<span class="ident">metadata</span> {
-                            <span class="kw">if</span> <span class="ident">is_tailable</span> {
-                                <span class="comment">// We resume tracking from the start of the file,</span>
-                                <span class="comment">// assuming it has been truncated to 0. This mimics GNU&#39;s `tail`</span>
-                                <span class="comment">// behavior and is the usual truncation operation for log self.files.</span>
-                                <span class="kw">if</span> <span class="op">!</span><span class="ident">old_md</span>.<span class="ident">is_tailable</span>() {
-                                    <span class="macro">show_error!</span>( <span class="string">&quot;{} has become accessible&quot;</span>, <span class="ident">display_name</span>.<span class="ident">quote</span>());
-                                    <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">update_reader</span>(<span class="ident">event_path</span>)<span class="question-mark">?</span>;
-                                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">pd</span>.<span class="ident">reader</span>.<span class="ident">is_none</span>() {
-                                    <span class="macro">show_error!</span>( <span class="string">&quot;{} has appeared;  following new file&quot;</span>, <span class="ident">display_name</span>.<span class="ident">quote</span>());
-                                    <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">update_reader</span>(<span class="ident">event_path</span>)<span class="question-mark">?</span>;
-                                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">event</span>.<span class="ident">kind</span> <span class="op">==</span> <span class="ident">EventKind::Modify</span>(<span class="ident">ModifyKind::Name</span>(<span class="ident">RenameMode::To</span>))
-                                <span class="op">|</span><span class="op">|</span> (<span class="self">self</span>.<span class="ident">use_polling</span>
-                                <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">old_md</span>.<span class="ident">file_id_eq</span>(<span class="kw-2">&amp;</span><span class="ident">new_md</span>)) {
-                                    <span class="macro">show_error!</span>( <span class="string">&quot;{} has been replaced;  following new file&quot;</span>, <span class="ident">display_name</span>.<span class="ident">quote</span>());
-                                    <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">update_reader</span>(<span class="ident">event_path</span>)<span class="question-mark">?</span>;
-                                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">old_md</span>.<span class="ident">got_truncated</span>(<span class="kw-2">&amp;</span><span class="ident">new_md</span>)<span class="question-mark">?</span> {
-                                    <span class="macro">show_error!</span>(<span class="string">&quot;{}: file truncated&quot;</span>, <span class="ident">display_name</span>);
-                                    <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">update_reader</span>(<span class="ident">event_path</span>)<span class="question-mark">?</span>;
+                        <span class="kw">let </span>is_tailable = new_md.is_tailable();
+                        <span class="kw">let </span>pd = <span class="self">self</span>.files.get(event_path);
+                        <span class="kw">if let </span><span class="prelude-val">Some</span>(old_md) = <span class="kw-2">&amp;</span>pd.metadata {
+                            <span class="kw">if </span>is_tailable {
+                                <span class="comment">// We resume tracking from the start of the file,
+                                // assuming it has been truncated to 0. This mimics GNU&#39;s `tail`
+                                // behavior and is the usual truncation operation for log self.files.
+                                </span><span class="kw">if </span>!old_md.is_tailable() {
+                                    <span class="macro">show_error!</span>( <span class="string">&quot;{} has become accessible&quot;</span>, display_name.quote());
+                                    <span class="self">self</span>.files.update_reader(event_path)<span class="question-mark">?</span>;
+                                } <span class="kw">else if </span>pd.reader.is_none() {
+                                    <span class="macro">show_error!</span>( <span class="string">&quot;{} has appeared;  following new file&quot;</span>, display_name.quote());
+                                    <span class="self">self</span>.files.update_reader(event_path)<span class="question-mark">?</span>;
+                                } <span class="kw">else if </span>event.kind == EventKind::Modify(ModifyKind::Name(RenameMode::To))
+                                || (<span class="self">self</span>.use_polling
+                                &amp;&amp; !old_md.file_id_eq(<span class="kw-2">&amp;</span>new_md)) {
+                                    <span class="macro">show_error!</span>( <span class="string">&quot;{} has been replaced;  following new file&quot;</span>, display_name.quote());
+                                    <span class="self">self</span>.files.update_reader(event_path)<span class="question-mark">?</span>;
+                                } <span class="kw">else if </span>old_md.got_truncated(<span class="kw-2">&amp;</span>new_md)<span class="question-mark">? </span>{
+                                    <span class="macro">show_error!</span>(<span class="string">&quot;{}: file truncated&quot;</span>, display_name);
+                                    <span class="self">self</span>.files.update_reader(event_path)<span class="question-mark">?</span>;
                                 }
-                                <span class="ident">paths</span>.<span class="ident">push</span>(<span class="ident">event_path</span>.<span class="ident">to_owned</span>());
-                            } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">is_tailable</span> <span class="op">&amp;&amp;</span> <span class="ident">old_md</span>.<span class="ident">is_tailable</span>() {
-                                <span class="kw">if</span> <span class="ident">pd</span>.<span class="ident">reader</span>.<span class="ident">is_some</span>() {
-                                    <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">reset_reader</span>(<span class="ident">event_path</span>);
-                                } <span class="kw">else</span> {
+                                paths.push(event_path.to_owned());
+                            } <span class="kw">else if </span>!is_tailable &amp;&amp; old_md.is_tailable() {
+                                <span class="kw">if </span>pd.reader.is_some() {
+                                    <span class="self">self</span>.files.reset_reader(event_path);
+                                } <span class="kw">else </span>{
                                     <span class="macro">show_error!</span>(
                                         <span class="string">&quot;{} has been replaced with an untailable file&quot;</span>,
-                                        <span class="ident">display_name</span>.<span class="ident">quote</span>()
+                                        display_name.quote()
                                     );
                                 }
                             }
-                        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">is_tailable</span> {
-                                <span class="macro">show_error!</span>( <span class="string">&quot;{} has appeared;  following new file&quot;</span>, <span class="ident">display_name</span>.<span class="ident">quote</span>());
-                                <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">update_reader</span>(<span class="ident">event_path</span>)<span class="question-mark">?</span>;
-                                <span class="ident">paths</span>.<span class="ident">push</span>(<span class="ident">event_path</span>.<span class="ident">to_owned</span>());
-                            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">retry</span> {
-                                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">follow_descriptor</span>() {
+                        } <span class="kw">else if </span>is_tailable {
+                                <span class="macro">show_error!</span>( <span class="string">&quot;{} has appeared;  following new file&quot;</span>, display_name.quote());
+                                <span class="self">self</span>.files.update_reader(event_path)<span class="question-mark">?</span>;
+                                paths.push(event_path.to_owned());
+                            } <span class="kw">else if </span>settings.retry {
+                                <span class="kw">if </span><span class="self">self</span>.follow_descriptor() {
                                     <span class="macro">show_error!</span>(
                                         <span class="string">&quot;{} has been replaced with an untailable file; giving up on this name&quot;</span>,
-                                        <span class="ident">display_name</span>.<span class="ident">quote</span>()
+                                        display_name.quote()
                                     );
-                                    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">watcher_rx</span>.<span class="ident">as_mut</span>().<span class="ident">unwrap</span>().<span class="ident">watcher</span>.<span class="ident">unwatch</span>(<span class="ident">event_path</span>);
-                                    <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">remove</span>(<span class="ident">event_path</span>);
-                                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">no_files_remaining</span>(<span class="ident">settings</span>) {
-                                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="ident">text::NO_FILES_REMAINING</span>));
+                                    <span class="kw">let _ </span>= <span class="self">self</span>.watcher_rx.as_mut().unwrap().watcher.unwatch(event_path);
+                                    <span class="self">self</span>.files.remove(event_path);
+                                    <span class="kw">if </span><span class="self">self</span>.files.no_files_remaining(settings) {
+                                        <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, text::NO_FILES_REMAINING));
                                     }
-                                } <span class="kw">else</span> {
+                                } <span class="kw">else </span>{
                                     <span class="macro">show_error!</span>(
                                         <span class="string">&quot;{} has been replaced with an untailable file&quot;</span>,
-                                        <span class="ident">display_name</span>.<span class="ident">quote</span>()
+                                        display_name.quote()
                                     );
                                 }
                             }
-                        <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">update_metadata</span>(<span class="ident">event_path</span>, <span class="prelude-val">Some</span>(<span class="ident">new_md</span>));
+                        <span class="self">self</span>.files.update_metadata(event_path, <span class="prelude-val">Some</span>(new_md));
                     }
                 }
-            <span class="ident">EventKind::Remove</span>(<span class="ident">RemoveKind::File</span> <span class="op">|</span> <span class="ident">RemoveKind::Any</span>)
+            EventKind::Remove(RemoveKind::File | RemoveKind::Any)
 
-                <span class="comment">// | EventKind::Modify(ModifyKind::Name(RenameMode::Any))</span>
-                <span class="op">|</span> <span class="ident">EventKind::Modify</span>(<span class="ident">ModifyKind::Name</span>(<span class="ident">RenameMode::From</span>)) =&gt; {
-                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">follow_name</span>() {
-                        <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">retry</span> {
-                            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">old_md</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">get_mut_metadata</span>(<span class="ident">event_path</span>) {
-                                <span class="kw">if</span> <span class="ident">old_md</span>.<span class="ident">is_tailable</span>() <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">get</span>(<span class="ident">event_path</span>).<span class="ident">reader</span>.<span class="ident">is_some</span>() {
+                <span class="comment">// | EventKind::Modify(ModifyKind::Name(RenameMode::Any))
+                </span>| EventKind::Modify(ModifyKind::Name(RenameMode::From)) =&gt; {
+                    <span class="kw">if </span><span class="self">self</span>.follow_name() {
+                        <span class="kw">if </span>settings.retry {
+                            <span class="kw">if let </span><span class="prelude-val">Some</span>(old_md) = <span class="self">self</span>.files.get_mut_metadata(event_path) {
+                                <span class="kw">if </span>old_md.is_tailable() &amp;&amp; <span class="self">self</span>.files.get(event_path).reader.is_some() {
                                     <span class="macro">show_error!</span>(
                                         <span class="string">&quot;{} {}: {}&quot;</span>,
-                                        <span class="ident">display_name</span>.<span class="ident">quote</span>(),
-                                        <span class="ident">text::BECOME_INACCESSIBLE</span>,
-                                        <span class="ident">text::NO_SUCH_FILE</span>
+                                        display_name.quote(),
+                                        text::BECOME_INACCESSIBLE,
+                                        text::NO_SUCH_FILE
                                     );
                                 }
                             }
-                            <span class="kw">if</span> <span class="ident">event_path</span>.<span class="ident">is_orphan</span>() <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">orphans</span>.<span class="ident">contains</span>(<span class="ident">event_path</span>) {
+                            <span class="kw">if </span>event_path.is_orphan() &amp;&amp; !<span class="self">self</span>.orphans.contains(event_path) {
                                 <span class="macro">show_error!</span>(<span class="string">&quot;directory containing watched file was removed&quot;</span>);
                                 <span class="macro">show_error!</span>(
                                     <span class="string">&quot;{} cannot be used, reverting to polling&quot;</span>,
-                                    <span class="ident">text::BACKEND</span>
+                                    text::BACKEND
                                 );
-                                <span class="self">self</span>.<span class="ident">orphans</span>.<span class="ident">push</span>(<span class="ident">event_path</span>.<span class="ident">to_owned</span>());
-                                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">watcher_rx</span>.<span class="ident">as_mut</span>().<span class="ident">unwrap</span>().<span class="ident">unwatch</span>(<span class="ident">event_path</span>);
+                                <span class="self">self</span>.orphans.push(event_path.to_owned());
+                                <span class="kw">let _ </span>= <span class="self">self</span>.watcher_rx.as_mut().unwrap().unwatch(event_path);
                             }
-                        } <span class="kw">else</span> {
-                            <span class="macro">show_error!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">display_name</span>, <span class="ident">text::NO_SUCH_FILE</span>);
-                            <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">files</span>.<span class="ident">files_remaining</span>() <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">use_polling</span> {
-                                <span class="comment">// NOTE: GNU&#39;s tail exits here for `---disable-inotify`</span>
-                                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="ident">text::NO_FILES_REMAINING</span>));
+                        } <span class="kw">else </span>{
+                            <span class="macro">show_error!</span>(<span class="string">&quot;{}: {}&quot;</span>, display_name, text::NO_SUCH_FILE);
+                            <span class="kw">if </span>!<span class="self">self</span>.files.files_remaining() &amp;&amp; <span class="self">self</span>.use_polling {
+                                <span class="comment">// NOTE: GNU&#39;s tail exits here for `---disable-inotify`
+                                </span><span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, text::NO_FILES_REMAINING));
                             }
                         }
-                        <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">reset_reader</span>(<span class="ident">event_path</span>);
-                    } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">follow_descriptor_retry</span>() {
-                        <span class="comment">// --retry only effective for the initial open</span>
-                        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">watcher_rx</span>.<span class="ident">as_mut</span>().<span class="ident">unwrap</span>().<span class="ident">unwatch</span>(<span class="ident">event_path</span>);
-                        <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">remove</span>(<span class="ident">event_path</span>);
-                    } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">use_polling</span> <span class="op">&amp;&amp;</span> <span class="ident">event</span>.<span class="ident">kind</span> <span class="op">==</span> <span class="ident">EventKind::Remove</span>(<span class="ident">RemoveKind::Any</span>) {
+                        <span class="self">self</span>.files.reset_reader(event_path);
+                    } <span class="kw">else if </span><span class="self">self</span>.follow_descriptor_retry() {
+                        <span class="comment">// --retry only effective for the initial open
+                        </span><span class="kw">let _ </span>= <span class="self">self</span>.watcher_rx.as_mut().unwrap().unwatch(event_path);
+                        <span class="self">self</span>.files.remove(event_path);
+                    } <span class="kw">else if </span><span class="self">self</span>.use_polling &amp;&amp; event.kind == EventKind::Remove(RemoveKind::Any) {
                         <span class="comment">/*
                         BUG: The watched file was removed. Since we&#39;re using Polling, this
                         could be a rename. We can&#39;t tell because `notify::PollWatcher` doesn&#39;t
@@ -1011,10 +1011,10 @@
                         we cannot seek to 0 with `BufReader::seek_relative`.
                         Also because we don&#39;t have the new name, we cannot work around this
                         by simply reopening the file.
-                        */</span>
-                    }
+                        */
+                    </span>}
                 }
-            <span class="ident">EventKind::Modify</span>(<span class="ident">ModifyKind::Name</span>(<span class="ident">RenameMode::Both</span>)) =&gt; {
+            EventKind::Modify(ModifyKind::Name(RenameMode::Both)) =&gt; {
                 <span class="comment">/*
                 NOTE: For `tail -f a`, keep tracking additions to b after `mv a b`
                 (gnu/tests/tail-2/descriptor-vs-rename.sh)
@@ -1030,149 +1030,149 @@
                 The last append to file_a is printed, however this shouldn&#39;t be because
                 after the &quot;mv&quot; tail should only follow &quot;file_b&quot;.
                 TODO: [2022-05; jhscheer] add test for this bug
-                */</span>
+                */
 
-                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">follow_descriptor</span>() {
-                    <span class="kw">let</span> <span class="ident">new_path</span> <span class="op">=</span> <span class="ident">event</span>.<span class="ident">paths</span>.<span class="ident">last</span>().<span class="ident">unwrap</span>();
-                    <span class="ident">paths</span>.<span class="ident">push</span>(<span class="ident">new_path</span>.<span class="ident">to_owned</span>());
+                </span><span class="kw">if </span><span class="self">self</span>.follow_descriptor() {
+                    <span class="kw">let </span>new_path = event.paths.last().unwrap();
+                    paths.push(new_path.to_owned());
 
-                    <span class="kw">let</span> <span class="ident">new_data</span> <span class="op">=</span> <span class="ident">PathData::from_other_with_path</span>(<span class="self">self</span>.<span class="ident">files</span>.<span class="ident">remove</span>(<span class="ident">event_path</span>), <span class="ident">new_path</span>);
-                    <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">insert</span>(
-                        <span class="ident">new_path</span>,
-                        <span class="ident">new_data</span>,
-                        <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">get_last</span>().<span class="ident">unwrap</span>() <span class="op">==</span> <span class="ident">event_path</span>
+                    <span class="kw">let </span>new_data = PathData::from_other_with_path(<span class="self">self</span>.files.remove(event_path), new_path);
+                    <span class="self">self</span>.files.insert(
+                        new_path,
+                        new_data,
+                        <span class="self">self</span>.files.get_last().unwrap() == event_path
                     );
 
-                    <span class="comment">// Unwatch old path and watch new path</span>
-                    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">watcher_rx</span>.<span class="ident">as_mut</span>().<span class="ident">unwrap</span>().<span class="ident">unwatch</span>(<span class="ident">event_path</span>);
-                    <span class="self">self</span>.<span class="ident">watcher_rx</span>.<span class="ident">as_mut</span>().<span class="ident">unwrap</span>().<span class="ident">watch_with_parent</span>(<span class="ident">new_path</span>)<span class="question-mark">?</span>;
+                    <span class="comment">// Unwatch old path and watch new path
+                    </span><span class="kw">let _ </span>= <span class="self">self</span>.watcher_rx.as_mut().unwrap().unwatch(event_path);
+                    <span class="self">self</span>.watcher_rx.as_mut().unwrap().watch_with_parent(new_path)<span class="question-mark">?</span>;
                 }
             }
-            <span class="kw">_</span> =&gt; {}
+            <span class="kw">_ </span>=&gt; {}
         }
-        <span class="prelude-val">Ok</span>(<span class="ident">paths</span>)
+        <span class="prelude-val">Ok</span>(paths)
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">follow</span>(<span class="kw-2">mut</span> <span class="ident">watcher_service</span>: <span class="ident">WatcherService</span>, <span class="ident">settings</span>: <span class="kw-2">&amp;</span><span class="ident">Settings</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">watcher_service</span>.<span class="ident">files</span>.<span class="ident">no_files_remaining</span>(<span class="ident">settings</span>)
-        <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">watcher_service</span>.<span class="ident">files</span>.<span class="ident">only_stdin_remaining</span>()
+<span class="kw">pub fn </span>follow(<span class="kw-2">mut </span>watcher_service: WatcherService, settings: <span class="kw-2">&amp;</span>Settings) -&gt; UResult&lt;()&gt; {
+    <span class="kw">if </span>watcher_service.files.no_files_remaining(settings)
+        &amp;&amp; !watcher_service.files.only_stdin_remaining()
     {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="ident">text::NO_FILES_REMAINING</span>.<span class="ident">to_string</span>()));
+        <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, text::NO_FILES_REMAINING.to_string()));
     }
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">process</span> <span class="op">=</span> <span class="ident">platform::ProcessChecker::new</span>(<span class="ident">settings</span>.<span class="ident">pid</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>process = platform::ProcessChecker::new(settings.pid);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">_event_counter</span> <span class="op">=</span> <span class="number">0</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">_timeout_counter</span> <span class="op">=</span> <span class="number">0</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>_event_counter = <span class="number">0</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>_timeout_counter = <span class="number">0</span>;
 
-    <span class="comment">// main follow loop</span>
-    <span class="kw">loop</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">_read_some</span> <span class="op">=</span> <span class="bool-val">false</span>;
+    <span class="comment">// main follow loop
+    </span><span class="kw">loop </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>_read_some = <span class="bool-val">false</span>;
 
-        <span class="comment">// If `--pid=p`, tail checks whether process p</span>
-        <span class="comment">// is alive at least every `--sleep-interval=N` seconds</span>
-        <span class="kw">if</span> <span class="ident">settings</span>.<span class="ident">follow</span>.<span class="ident">is_some</span>() <span class="op">&amp;&amp;</span> <span class="ident">settings</span>.<span class="ident">pid</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="ident">process</span>.<span class="ident">is_dead</span>() {
-            <span class="comment">// p is dead, tail will also terminate</span>
-            <span class="kw">break</span>;
+        <span class="comment">// If `--pid=p`, tail checks whether process p
+        // is alive at least every `--sleep-interval=N` seconds
+        </span><span class="kw">if </span>settings.follow.is_some() &amp;&amp; settings.pid != <span class="number">0 </span>&amp;&amp; process.is_dead() {
+            <span class="comment">// p is dead, tail will also terminate
+            </span><span class="kw">break</span>;
         }
 
-        <span class="comment">// For `-F` we need to poll if an orphan path becomes available during runtime.</span>
-        <span class="comment">// If a path becomes an orphan during runtime, it will be added to orphans.</span>
-        <span class="comment">// To be able to differentiate between the cases of test_retry8 and test_retry9,</span>
-        <span class="comment">// here paths will not be removed from orphans if the path becomes available.</span>
-        <span class="kw">if</span> <span class="ident">watcher_service</span>.<span class="ident">follow_name_retry</span>() {
-            <span class="kw">for</span> <span class="ident">new_path</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">watcher_service</span>.<span class="ident">orphans</span> {
-                <span class="kw">if</span> <span class="ident">new_path</span>.<span class="ident">exists</span>() {
-                    <span class="kw">let</span> <span class="ident">pd</span> <span class="op">=</span> <span class="ident">watcher_service</span>.<span class="ident">files</span>.<span class="ident">get</span>(<span class="ident">new_path</span>);
-                    <span class="kw">let</span> <span class="ident">md</span> <span class="op">=</span> <span class="ident">new_path</span>.<span class="ident">metadata</span>().<span class="ident">unwrap</span>();
-                    <span class="kw">if</span> <span class="ident">md</span>.<span class="ident">is_tailable</span>() <span class="op">&amp;&amp;</span> <span class="ident">pd</span>.<span class="ident">reader</span>.<span class="ident">is_none</span>() {
+        <span class="comment">// For `-F` we need to poll if an orphan path becomes available during runtime.
+        // If a path becomes an orphan during runtime, it will be added to orphans.
+        // To be able to differentiate between the cases of test_retry8 and test_retry9,
+        // here paths will not be removed from orphans if the path becomes available.
+        </span><span class="kw">if </span>watcher_service.follow_name_retry() {
+            <span class="kw">for </span>new_path <span class="kw">in </span><span class="kw-2">&amp;</span>watcher_service.orphans {
+                <span class="kw">if </span>new_path.exists() {
+                    <span class="kw">let </span>pd = watcher_service.files.get(new_path);
+                    <span class="kw">let </span>md = new_path.metadata().unwrap();
+                    <span class="kw">if </span>md.is_tailable() &amp;&amp; pd.reader.is_none() {
                         <span class="macro">show_error!</span>(
                             <span class="string">&quot;{} has appeared;  following new file&quot;</span>,
-                            <span class="ident">pd</span>.<span class="ident">display_name</span>.<span class="ident">quote</span>()
+                            pd.display_name.quote()
                         );
-                        <span class="ident">watcher_service</span>.<span class="ident">files</span>.<span class="ident">update_metadata</span>(<span class="ident">new_path</span>, <span class="prelude-val">Some</span>(<span class="ident">md</span>));
-                        <span class="ident">watcher_service</span>.<span class="ident">files</span>.<span class="ident">update_reader</span>(<span class="ident">new_path</span>)<span class="question-mark">?</span>;
-                        <span class="ident">_read_some</span> <span class="op">=</span> <span class="ident">watcher_service</span>
-                            .<span class="ident">files</span>
-                            .<span class="ident">tail_file</span>(<span class="ident">new_path</span>, <span class="ident">settings</span>.<span class="ident">verbose</span>)<span class="question-mark">?</span>;
-                        <span class="ident">watcher_service</span>
-                            .<span class="ident">watcher_rx</span>
-                            .<span class="ident">as_mut</span>()
-                            .<span class="ident">unwrap</span>()
-                            .<span class="ident">watch_with_parent</span>(<span class="ident">new_path</span>)<span class="question-mark">?</span>;
+                        watcher_service.files.update_metadata(new_path, <span class="prelude-val">Some</span>(md));
+                        watcher_service.files.update_reader(new_path)<span class="question-mark">?</span>;
+                        _read_some = watcher_service
+                            .files
+                            .tail_file(new_path, settings.verbose)<span class="question-mark">?</span>;
+                        watcher_service
+                            .watcher_rx
+                            .as_mut()
+                            .unwrap()
+                            .watch_with_parent(new_path)<span class="question-mark">?</span>;
                     }
                 }
             }
         }
 
-        <span class="comment">// With  -f, sleep for approximately N seconds (default 1.0) between iterations;</span>
-        <span class="comment">// We wake up if Notify sends an Event or if we wait more than `sleep_sec`.</span>
-        <span class="kw">let</span> <span class="ident">rx_result</span> <span class="op">=</span> <span class="ident">watcher_service</span>
-            .<span class="ident">watcher_rx</span>
-            .<span class="ident">as_mut</span>()
-            .<span class="ident">unwrap</span>()
-            .<span class="ident">receiver</span>
-            .<span class="ident">recv_timeout</span>(<span class="ident">settings</span>.<span class="ident">sleep_sec</span>);
-        <span class="kw">if</span> <span class="ident">rx_result</span>.<span class="ident">is_ok</span>() {
-            <span class="ident">_event_counter</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-            <span class="ident">_timeout_counter</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="comment">// With  -f, sleep for approximately N seconds (default 1.0) between iterations;
+        // We wake up if Notify sends an Event or if we wait more than `sleep_sec`.
+        </span><span class="kw">let </span>rx_result = watcher_service
+            .watcher_rx
+            .as_mut()
+            .unwrap()
+            .receiver
+            .recv_timeout(settings.sleep_sec);
+        <span class="kw">if </span>rx_result.is_ok() {
+            _event_counter += <span class="number">1</span>;
+            _timeout_counter = <span class="number">0</span>;
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">paths</span> <span class="op">=</span> <span class="macro">vec!</span>[]; <span class="comment">// Paths worth checking for new content to print</span>
-        <span class="kw">match</span> <span class="ident">rx_result</span> {
-            <span class="prelude-val">Ok</span>(<span class="prelude-val">Ok</span>(<span class="ident">event</span>)) =&gt; {
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">event_path</span>) <span class="op">=</span> <span class="ident">event</span>.<span class="ident">paths</span>.<span class="ident">first</span>() {
-                    <span class="kw">if</span> <span class="ident">watcher_service</span>.<span class="ident">files</span>.<span class="ident">contains_key</span>(<span class="ident">event_path</span>) {
-                        <span class="comment">// Handle Event if it is about a path that we are monitoring</span>
-                        <span class="ident">paths</span> <span class="op">=</span> <span class="ident">watcher_service</span>.<span class="ident">handle_event</span>(<span class="kw-2">&amp;</span><span class="ident">event</span>, <span class="ident">settings</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>paths = <span class="macro">vec!</span>[]; <span class="comment">// Paths worth checking for new content to print
+        </span><span class="kw">match </span>rx_result {
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">Ok</span>(event)) =&gt; {
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(event_path) = event.paths.first() {
+                    <span class="kw">if </span>watcher_service.files.contains_key(event_path) {
+                        <span class="comment">// Handle Event if it is about a path that we are monitoring
+                        </span>paths = watcher_service.handle_event(<span class="kw-2">&amp;</span>event, settings)<span class="question-mark">?</span>;
                     }
                 }
             }
-            <span class="prelude-val">Ok</span>(<span class="prelude-val">Err</span>(<span class="ident">notify::Error</span> {
-                <span class="ident">kind</span>: <span class="ident">notify::ErrorKind::Io</span>(<span class="kw-2">ref</span> <span class="ident">e</span>),
-                <span class="ident">paths</span>,
-            })) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">kind</span>() <span class="op">==</span> <span class="ident">std::io::ErrorKind::NotFound</span> =&gt; {
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">event_path</span>) <span class="op">=</span> <span class="ident">paths</span>.<span class="ident">first</span>() {
-                    <span class="kw">if</span> <span class="ident">watcher_service</span>.<span class="ident">files</span>.<span class="ident">contains_key</span>(<span class="ident">event_path</span>) {
-                        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">watcher_service</span>
-                            .<span class="ident">watcher_rx</span>
-                            .<span class="ident">as_mut</span>()
-                            .<span class="ident">unwrap</span>()
-                            .<span class="ident">watcher</span>
-                            .<span class="ident">unwatch</span>(<span class="ident">event_path</span>);
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">Err</span>(notify::Error {
+                kind: notify::ErrorKind::Io(<span class="kw-2">ref </span>e),
+                paths,
+            })) <span class="kw">if </span>e.kind() == std::io::ErrorKind::NotFound =&gt; {
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(event_path) = paths.first() {
+                    <span class="kw">if </span>watcher_service.files.contains_key(event_path) {
+                        <span class="kw">let _ </span>= watcher_service
+                            .watcher_rx
+                            .as_mut()
+                            .unwrap()
+                            .watcher
+                            .unwatch(event_path);
                     }
                 }
             }
-            <span class="prelude-val">Ok</span>(<span class="prelude-val">Err</span>(<span class="ident">notify::Error</span> {
-                <span class="ident">kind</span>: <span class="ident">notify::ErrorKind::MaxFilesWatch</span>,
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">Err</span>(notify::Error {
+                kind: notify::ErrorKind::MaxFilesWatch,
                 ..
             })) =&gt; {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(
+                <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
                     <span class="number">1</span>,
-                    <span class="macro">format!</span>(<span class="string">&quot;{} resources exhausted&quot;</span>, <span class="ident">text::BACKEND</span>),
+                    <span class="macro">format!</span>(<span class="string">&quot;{} resources exhausted&quot;</span>, text::BACKEND),
                 ))
             }
-            <span class="prelude-val">Ok</span>(<span class="prelude-val">Err</span>(<span class="ident">e</span>)) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;NotifyError: {}&quot;</span>, <span class="ident">e</span>))),
-            <span class="prelude-val">Err</span>(<span class="ident">mpsc::RecvTimeoutError::Timeout</span>) =&gt; {
-                <span class="ident">_timeout_counter</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">Err</span>(e)) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;NotifyError: {}&quot;</span>, e))),
+            <span class="prelude-val">Err</span>(mpsc::RecvTimeoutError::Timeout) =&gt; {
+                _timeout_counter += <span class="number">1</span>;
             }
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;RecvTimeoutError: {}&quot;</span>, <span class="ident">e</span>))),
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;RecvTimeoutError: {}&quot;</span>, e))),
         }
 
-        <span class="kw">if</span> <span class="ident">watcher_service</span>.<span class="ident">use_polling</span> <span class="op">&amp;&amp;</span> <span class="ident">settings</span>.<span class="ident">follow</span>.<span class="ident">is_some</span>() {
-            <span class="comment">// Consider all files to potentially have new content.</span>
-            <span class="comment">// This is a workaround because `Notify::PollWatcher`</span>
-            <span class="comment">// does not recognize the &quot;renaming&quot; of files.</span>
-            <span class="ident">paths</span> <span class="op">=</span> <span class="ident">watcher_service</span>.<span class="ident">files</span>.<span class="ident">keys</span>().<span class="ident">cloned</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+        <span class="kw">if </span>watcher_service.use_polling &amp;&amp; settings.follow.is_some() {
+            <span class="comment">// Consider all files to potentially have new content.
+            // This is a workaround because `Notify::PollWatcher`
+            // does not recognize the &quot;renaming&quot; of files.
+            </span>paths = watcher_service.files.keys().cloned().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
         }
 
-        <span class="comment">// main print loop</span>
-        <span class="kw">for</span> <span class="ident">path</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">paths</span> {
-            <span class="ident">_read_some</span> <span class="op">=</span> <span class="ident">watcher_service</span>.<span class="ident">files</span>.<span class="ident">tail_file</span>(<span class="ident">path</span>, <span class="ident">settings</span>.<span class="ident">verbose</span>)<span class="question-mark">?</span>;
+        <span class="comment">// main print loop
+        </span><span class="kw">for </span>path <span class="kw">in </span><span class="kw-2">&amp;</span>paths {
+            _read_some = watcher_service.files.tail_file(path, settings.verbose)<span class="question-mark">?</span>;
         }
 
-        <span class="kw">if</span> <span class="ident">_timeout_counter</span> <span class="op">==</span> <span class="ident">settings</span>.<span class="ident">max_unchanged_stats</span> {
+        <span class="kw">if </span>_timeout_counter == settings.max_unchanged_stats {
             <span class="comment">/*
             TODO: [2021-10; jhscheer] implement timeout_counter for each file.
             ‘--max-unchanged-stats=n’
@@ -1183,10 +1183,10 @@
             between when tail prints the last pre-rotation lines and when it prints the lines that
             have accumulated in the new log file. This option is meaningful only when polling
             (i.e., without inotify) and when following by name.
-            */</span>
-        }
+            */
+        </span>}
     }
     <span class="prelude-val">Ok</span>(())
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uu_tail" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uu_tail" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

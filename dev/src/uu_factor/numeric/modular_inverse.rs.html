@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/factor/src/numeric/modular_inverse.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>modular_inverse.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uu_factor/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../uu_factor/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uu_factor/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/factor/src/numeric/modular_inverse.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>modular_inverse.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uu_factor/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../uu_factor/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uu_factor/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -77,84 +77,84 @@
 <span id="77">77</span>
 <span id="78">78</span>
 <span id="79">79</span>
-</pre><pre class="rust"><code><span class="comment">// * This file is part of the uutils coreutils package.</span>
-<span class="comment">// *</span>
-<span class="comment">// * (c) 2015 Wiktor Kuropatwa &lt;wiktor.kuropatwa@gmail.com&gt;</span>
-<span class="comment">// * (c) 2020 nicoo            &lt;nicoo@debian.org&gt;</span>
-<span class="comment">// *</span>
-<span class="comment">// * For the full copyright and license information, please view the LICENSE file</span>
-<span class="comment">// * that was distributed with this source code.</span>
+</pre><pre class="rust"><code><span class="comment">// * This file is part of the uutils coreutils package.
+// *
+// * (c) 2015 Wiktor Kuropatwa &lt;wiktor.kuropatwa@gmail.com&gt;
+// * (c) 2020 nicoo            &lt;nicoo@debian.org&gt;
+// *
+// * For the full copyright and license information, please view the LICENSE file
+// * that was distributed with this source code.
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::traits::Int</span>;
+</span><span class="kw">use </span><span class="kw">super</span>::traits::Int;
 
-<span class="comment">// extended Euclid algorithm</span>
-<span class="comment">// precondition: a is odd</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">modular_inverse</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Int</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="ident">T</span>) -&gt; <span class="ident">T</span> {
-    <span class="kw">let</span> <span class="ident">zero</span> <span class="op">=</span> <span class="ident">T::zero</span>();
-    <span class="kw">let</span> <span class="ident">one</span> <span class="op">=</span> <span class="ident">T::one</span>();
-    <span class="macro">debug_assert!</span>(<span class="ident">a</span> <span class="op">%</span> (<span class="ident">one</span> <span class="op">+</span> <span class="ident">one</span>) <span class="op">==</span> <span class="ident">one</span>, <span class="string">&quot;{:?} is not odd&quot;</span>, <span class="ident">a</span>);
+<span class="comment">// extended Euclid algorithm
+// precondition: a is odd
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>modular_inverse&lt;T: Int&gt;(a: T) -&gt; T {
+    <span class="kw">let </span>zero = T::zero();
+    <span class="kw">let </span>one = T::one();
+    <span class="macro">debug_assert!</span>(a % (one + one) == one, <span class="string">&quot;{:?} is not odd&quot;</span>, a);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">zero</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_t</span> <span class="op">=</span> <span class="ident">one</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">zero</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_r</span> <span class="op">=</span> <span class="ident">a</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>t = zero;
+    <span class="kw">let </span><span class="kw-2">mut </span>new_t = one;
+    <span class="kw">let </span><span class="kw-2">mut </span>r = zero;
+    <span class="kw">let </span><span class="kw-2">mut </span>new_r = a;
 
-    <span class="kw">while</span> <span class="ident">new_r</span> <span class="op">!</span><span class="op">=</span> <span class="ident">zero</span> {
-        <span class="kw">let</span> <span class="ident">quot</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">r</span> <span class="op">==</span> <span class="ident">zero</span> {
-            <span class="comment">// special case when we&#39;re just starting out</span>
-            <span class="comment">// This works because we know that</span>
-            <span class="comment">// a does not divide 2^64, so floor(2^64 / a) == floor((2^64-1) / a);</span>
-            <span class="ident">T::max_value</span>()
-        } <span class="kw">else</span> {
-            <span class="ident">r</span>
-        } <span class="op">/</span> <span class="ident">new_r</span>;
+    <span class="kw">while </span>new_r != zero {
+        <span class="kw">let </span>quot = <span class="kw">if </span>r == zero {
+            <span class="comment">// special case when we&#39;re just starting out
+            // This works because we know that
+            // a does not divide 2^64, so floor(2^64 / a) == floor((2^64-1) / a);
+            </span>T::max_value()
+        } <span class="kw">else </span>{
+            r
+        } / new_r;
 
-        <span class="kw">let</span> <span class="ident">new_tp</span> <span class="op">=</span> <span class="ident">t</span>.<span class="ident">wrapping_sub</span>(<span class="kw-2">&amp;</span><span class="ident">quot</span>.<span class="ident">wrapping_mul</span>(<span class="kw-2">&amp;</span><span class="ident">new_t</span>));
-        <span class="ident">t</span> <span class="op">=</span> <span class="ident">new_t</span>;
-        <span class="ident">new_t</span> <span class="op">=</span> <span class="ident">new_tp</span>;
+        <span class="kw">let </span>new_tp = t.wrapping_sub(<span class="kw-2">&amp;</span>quot.wrapping_mul(<span class="kw-2">&amp;</span>new_t));
+        t = new_t;
+        new_t = new_tp;
 
-        <span class="kw">let</span> <span class="ident">new_rp</span> <span class="op">=</span> <span class="ident">r</span>.<span class="ident">wrapping_sub</span>(<span class="kw-2">&amp;</span><span class="ident">quot</span>.<span class="ident">wrapping_mul</span>(<span class="kw-2">&amp;</span><span class="ident">new_r</span>));
-        <span class="ident">r</span> <span class="op">=</span> <span class="ident">new_r</span>;
-        <span class="ident">new_r</span> <span class="op">=</span> <span class="ident">new_rp</span>;
+        <span class="kw">let </span>new_rp = r.wrapping_sub(<span class="kw-2">&amp;</span>quot.wrapping_mul(<span class="kw-2">&amp;</span>new_r));
+        r = new_r;
+        new_r = new_rp;
     }
 
-    <span class="macro">debug_assert_eq!</span>(<span class="ident">r</span>, <span class="ident">one</span>);
-    <span class="ident">t</span>
+    <span class="macro">debug_assert_eq!</span>(r, one);
+    t
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident"><span class="kw">super</span>::traits::Int</span>, <span class="kw-2">*</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::parametrized_check</span>;
-    <span class="kw">use</span> <span class="ident">quickcheck::quickcheck</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::{<span class="kw">super</span>::traits::Int, <span class="kw-2">*</span>};
+    <span class="kw">use </span><span class="kw">crate</span>::parametrized_check;
+    <span class="kw">use </span>quickcheck::quickcheck;
 
-    <span class="kw">fn</span> <span class="ident">small_values</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Int</span><span class="op">&gt;</span>() {
-        <span class="comment">// All odd integers from 1 to 20 000</span>
-        <span class="kw">let</span> <span class="ident">one</span> <span class="op">=</span> <span class="ident">T::from</span>(<span class="number">1</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">two</span> <span class="op">=</span> <span class="ident">T::from</span>(<span class="number">2</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">test_values</span> <span class="op">=</span> (<span class="number">0</span>..<span class="number">10_000</span>)
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">T::from</span>(<span class="ident">i</span>).<span class="ident">unwrap</span>())
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">two</span> <span class="op">*</span> <span class="ident">i</span> <span class="op">+</span> <span class="ident">one</span>);
+    <span class="kw">fn </span>small_values&lt;T: Int&gt;() {
+        <span class="comment">// All odd integers from 1 to 20 000
+        </span><span class="kw">let </span>one = T::from(<span class="number">1</span>).unwrap();
+        <span class="kw">let </span>two = T::from(<span class="number">2</span>).unwrap();
+        <span class="kw">let </span><span class="kw-2">mut </span>test_values = (<span class="number">0</span>..<span class="number">10_000</span>)
+            .map(|i| T::from(i).unwrap())
+            .map(|i| two * i + one);
 
-        <span class="macro">assert!</span>(<span class="ident">test_values</span>.<span class="ident">all</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">wrapping_mul</span>(<span class="kw-2">&amp;</span><span class="ident">modular_inverse</span>(<span class="ident">x</span>)) <span class="op">==</span> <span class="ident">one</span>));
+        <span class="macro">assert!</span>(test_values.all(|x| x.wrapping_mul(<span class="kw-2">&amp;</span>modular_inverse(x)) == one));
     }
-    <span class="macro">parametrized_check!</span>(<span class="ident">small_values</span>);
+    <span class="macro">parametrized_check!</span>(small_values);
 
-    <span class="macro">quickcheck!</span> {
-        <span class="kw">fn</span> <span class="ident">random_values_u32</span>(<span class="ident">n</span>: <span class="ident">u32</span>) -&gt; <span class="ident">bool</span> {
-            <span class="kw">match</span> <span class="number">2_u32</span>.<span class="ident">checked_mul</span>(<span class="ident">n</span>) {
-                <span class="prelude-val">Some</span>(<span class="ident">n</span>) =&gt; <span class="ident">modular_inverse</span>(<span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>).<span class="ident">wrapping_mul</span>(<span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>) <span class="op">==</span> <span class="number">1</span>,
-                <span class="kw">_</span> =&gt; <span class="bool-val">true</span>,
+    <span class="macro">quickcheck! </span>{
+        <span class="kw">fn </span>random_values_u32(n: u32) -&gt; bool {
+            <span class="kw">match </span><span class="number">2_u32</span>.checked_mul(n) {
+                <span class="prelude-val">Some</span>(n) =&gt; modular_inverse(n + <span class="number">1</span>).wrapping_mul(n + <span class="number">1</span>) == <span class="number">1</span>,
+                <span class="kw">_ </span>=&gt; <span class="bool-val">true</span>,
             }
         }
 
-        <span class="kw">fn</span> <span class="ident">random_values_u64</span>(<span class="ident">n</span>: <span class="ident">u64</span>) -&gt; <span class="ident">bool</span> {
-            <span class="kw">match</span> <span class="number">2_u64</span>.<span class="ident">checked_mul</span>(<span class="ident">n</span>) {
-                <span class="prelude-val">Some</span>(<span class="ident">n</span>) =&gt; <span class="ident">modular_inverse</span>(<span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>).<span class="ident">wrapping_mul</span>(<span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>) <span class="op">==</span> <span class="number">1</span>,
-                <span class="kw">_</span> =&gt; <span class="bool-val">true</span>,
+        <span class="kw">fn </span>random_values_u64(n: u64) -&gt; bool {
+            <span class="kw">match </span><span class="number">2_u64</span>.checked_mul(n) {
+                <span class="prelude-val">Some</span>(n) =&gt; modular_inverse(n + <span class="number">1</span>).wrapping_mul(n + <span class="number">1</span>) == <span class="number">1</span>,
+                <span class="kw">_ </span>=&gt; <span class="bool-val">true</span>,
             }
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uu_factor" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uu_factor" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

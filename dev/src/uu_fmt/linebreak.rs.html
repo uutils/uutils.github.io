@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/fmt/src/linebreak.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>linebreak.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uu_fmt/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../uu_fmt/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uu_fmt/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/fmt/src/linebreak.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>linebreak.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uu_fmt/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../uu_fmt/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uu_fmt/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -519,526 +519,526 @@
 <span id="519">519</span>
 <span id="520">520</span>
 <span id="521">521</span>
-</pre><pre class="rust"><code><span class="comment">//  * This file is part of `fmt` from the uutils coreutils package.</span>
-<span class="comment">//  *</span>
-<span class="comment">//  * (c) kwantam &lt;kwantam@gmail.com&gt;</span>
-<span class="comment">//  *</span>
-<span class="comment">//  * For the full copyright and license information, please view the LICENSE</span>
-<span class="comment">//  * file that was distributed with this source code.</span>
+</pre><pre class="rust"><code><span class="comment">//  * This file is part of `fmt` from the uutils coreutils package.
+//  *
+//  * (c) kwantam &lt;kwantam@gmail.com&gt;
+//  *
+//  * For the full copyright and license information, please view the LICENSE
+//  * file that was distributed with this source code.
 
-<span class="comment">// spell-checker:ignore (ToDO) INFTY MULT accum breakwords linebreak linebreaking linebreaks linelen maxlength minlength nchars ostream overlen parasplit plass posn powf punct signum slen sstart tabwidth tlen underlen winfo wlen wordlen</span>
+// spell-checker:ignore (ToDO) INFTY MULT accum breakwords linebreak linebreaking linebreaks linelen maxlength minlength nchars ostream overlen parasplit plass posn powf punct signum slen sstart tabwidth tlen underlen winfo wlen wordlen
 
-<span class="kw">use</span> <span class="ident">std::cmp</span>;
-<span class="kw">use</span> <span class="ident">std::i64</span>;
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">BufWriter</span>, <span class="ident">Stdout</span>, <span class="ident">Write</span>};
-<span class="kw">use</span> <span class="ident">std::mem</span>;
+</span><span class="kw">use </span>std::cmp;
+<span class="kw">use </span>std::i64;
+<span class="kw">use </span>std::io::{BufWriter, Stdout, Write};
+<span class="kw">use </span>std::mem;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::parasplit</span>::{<span class="ident">ParaWords</span>, <span class="ident">Paragraph</span>, <span class="ident">WordInfo</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::FmtOptions</span>;
+<span class="kw">use </span><span class="kw">crate</span>::parasplit::{ParaWords, Paragraph, WordInfo};
+<span class="kw">use </span><span class="kw">crate</span>::FmtOptions;
 
-<span class="kw">struct</span> <span class="ident">BreakArgs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">opts</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">FmtOptions</span>,
-    <span class="ident">init_len</span>: <span class="ident">usize</span>,
-    <span class="ident">indent_str</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
-    <span class="ident">indent_len</span>: <span class="ident">usize</span>,
-    <span class="ident">uniform</span>: <span class="ident">bool</span>,
-    <span class="ident">ostream</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span>,
+<span class="kw">struct </span>BreakArgs&lt;<span class="lifetime">&#39;a</span>&gt; {
+    opts: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>FmtOptions,
+    init_len: usize,
+    indent_str: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
+    indent_len: usize,
+    uniform: bool,
+    ostream: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>BufWriter&lt;Stdout&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">BreakArgs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">compute_width</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">winfo</span>: <span class="kw-2">&amp;</span><span class="ident">WordInfo</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span>, <span class="ident">posn</span>: <span class="ident">usize</span>, <span class="ident">fresh</span>: <span class="ident">bool</span>) -&gt; <span class="ident">usize</span> {
-        <span class="kw">if</span> <span class="ident">fresh</span> {
-            <span class="number">0</span>
-        } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">post</span> <span class="op">=</span> <span class="ident">winfo</span>.<span class="ident">after_tab</span>;
-            <span class="kw">match</span> <span class="ident">winfo</span>.<span class="ident">before_tab</span> {
-                <span class="prelude-val">None</span> =&gt; <span class="ident">post</span>,
-                <span class="prelude-val">Some</span>(<span class="ident">pre</span>) =&gt; {
-                    <span class="ident">post</span> <span class="op">+</span> ((<span class="ident">pre</span> <span class="op">+</span> <span class="ident">posn</span>) <span class="op">/</span> <span class="self">self</span>.<span class="ident">opts</span>.<span class="ident">tabwidth</span> <span class="op">+</span> <span class="number">1</span>) <span class="op">*</span> <span class="self">self</span>.<span class="ident">opts</span>.<span class="ident">tabwidth</span> <span class="op">-</span> <span class="ident">posn</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; BreakArgs&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">fn </span>compute_width&lt;<span class="lifetime">&#39;b</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, winfo: <span class="kw-2">&amp;</span>WordInfo&lt;<span class="lifetime">&#39;b</span>&gt;, posn: usize, fresh: bool) -&gt; usize {
+        <span class="kw">if </span>fresh {
+            <span class="number">0
+        </span>} <span class="kw">else </span>{
+            <span class="kw">let </span>post = winfo.after_tab;
+            <span class="kw">match </span>winfo.before_tab {
+                <span class="prelude-val">None </span>=&gt; post,
+                <span class="prelude-val">Some</span>(pre) =&gt; {
+                    post + ((pre + posn) / <span class="self">self</span>.opts.tabwidth + <span class="number">1</span>) * <span class="self">self</span>.opts.tabwidth - posn
                 }
             }
         }
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">break_lines</span>(
-    <span class="ident">para</span>: <span class="kw-2">&amp;</span><span class="ident">Paragraph</span>,
-    <span class="ident">opts</span>: <span class="kw-2">&amp;</span><span class="ident">FmtOptions</span>,
-    <span class="ident">ostream</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span>,
-) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="comment">// indent</span>
-    <span class="kw">let</span> <span class="ident">p_indent</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">para</span>.<span class="ident">indent_str</span>[..];
-    <span class="kw">let</span> <span class="ident">p_indent_len</span> <span class="op">=</span> <span class="ident">para</span>.<span class="ident">indent_len</span>;
+<span class="kw">pub fn </span>break_lines(
+    para: <span class="kw-2">&amp;</span>Paragraph,
+    opts: <span class="kw-2">&amp;</span>FmtOptions,
+    ostream: <span class="kw-2">&amp;mut </span>BufWriter&lt;Stdout&gt;,
+) -&gt; std::io::Result&lt;()&gt; {
+    <span class="comment">// indent
+    </span><span class="kw">let </span>p_indent = <span class="kw-2">&amp;</span>para.indent_str[..];
+    <span class="kw">let </span>p_indent_len = para.indent_len;
 
-    <span class="comment">// words</span>
-    <span class="kw">let</span> <span class="ident">p_words</span> <span class="op">=</span> <span class="ident">ParaWords::new</span>(<span class="ident">opts</span>, <span class="ident">para</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">p_words_words</span> <span class="op">=</span> <span class="ident">p_words</span>.<span class="ident">words</span>();
+    <span class="comment">// words
+    </span><span class="kw">let </span>p_words = ParaWords::new(opts, para);
+    <span class="kw">let </span><span class="kw-2">mut </span>p_words_words = p_words.words();
 
-    <span class="comment">// the first word will *always* appear on the first line</span>
-    <span class="comment">// make sure of this here</span>
-    <span class="kw">let</span> (<span class="ident">w</span>, <span class="ident">w_len</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">p_words_words</span>.<span class="ident">next</span>() {
-        <span class="prelude-val">Some</span>(<span class="ident">winfo</span>) =&gt; (<span class="ident">winfo</span>.<span class="ident">word</span>, <span class="ident">winfo</span>.<span class="ident">word_nchars</span>),
-        <span class="prelude-val">None</span> =&gt; {
-            <span class="kw">return</span> <span class="ident">ostream</span>.<span class="ident">write_all</span>(<span class="string">b&quot;\n&quot;</span>);
+    <span class="comment">// the first word will *always* appear on the first line
+    // make sure of this here
+    </span><span class="kw">let </span>(w, w_len) = <span class="kw">match </span>p_words_words.next() {
+        <span class="prelude-val">Some</span>(winfo) =&gt; (winfo.word, winfo.word_nchars),
+        <span class="prelude-val">None </span>=&gt; {
+            <span class="kw">return </span>ostream.write_all(<span class="string">b&quot;\n&quot;</span>);
         }
     };
-    <span class="comment">// print the init, if it exists, and get its length</span>
-    <span class="kw">let</span> <span class="ident">p_init_len</span> <span class="op">=</span> <span class="ident">w_len</span>
-        <span class="op">+</span> <span class="kw">if</span> <span class="ident">opts</span>.<span class="ident">crown</span> <span class="op">|</span><span class="op">|</span> <span class="ident">opts</span>.<span class="ident">tagged</span> {
-            <span class="comment">// handle &quot;init&quot; portion</span>
-            <span class="ident">ostream</span>.<span class="ident">write_all</span>(<span class="ident">para</span>.<span class="ident">init_str</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
-            <span class="ident">para</span>.<span class="ident">init_len</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">para</span>.<span class="ident">mail_header</span> {
-            <span class="comment">// for non-(crown, tagged) that&#39;s the same as a normal indent</span>
-            <span class="ident">ostream</span>.<span class="ident">write_all</span>(<span class="ident">p_indent</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
-            <span class="ident">p_indent_len</span>
-        } <span class="kw">else</span> {
-            <span class="comment">// except that mail headers get no indent at all</span>
-            <span class="number">0</span>
-        };
-    <span class="comment">// write first word after writing init</span>
-    <span class="ident">ostream</span>.<span class="ident">write_all</span>(<span class="ident">w</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
+    <span class="comment">// print the init, if it exists, and get its length
+    </span><span class="kw">let </span>p_init_len = w_len
+        + <span class="kw">if </span>opts.crown || opts.tagged {
+            <span class="comment">// handle &quot;init&quot; portion
+            </span>ostream.write_all(para.init_str.as_bytes())<span class="question-mark">?</span>;
+            para.init_len
+        } <span class="kw">else if </span>!para.mail_header {
+            <span class="comment">// for non-(crown, tagged) that&#39;s the same as a normal indent
+            </span>ostream.write_all(p_indent.as_bytes())<span class="question-mark">?</span>;
+            p_indent_len
+        } <span class="kw">else </span>{
+            <span class="comment">// except that mail headers get no indent at all
+            </span><span class="number">0
+        </span>};
+    <span class="comment">// write first word after writing init
+    </span>ostream.write_all(w.as_bytes())<span class="question-mark">?</span>;
 
-    <span class="comment">// does this paragraph require uniform spacing?</span>
-    <span class="kw">let</span> <span class="ident">uniform</span> <span class="op">=</span> <span class="ident">para</span>.<span class="ident">mail_header</span> <span class="op">|</span><span class="op">|</span> <span class="ident">opts</span>.<span class="ident">uniform</span>;
+    <span class="comment">// does this paragraph require uniform spacing?
+    </span><span class="kw">let </span>uniform = para.mail_header || opts.uniform;
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">break_args</span> <span class="op">=</span> <span class="ident">BreakArgs</span> {
-        <span class="ident">opts</span>,
-        <span class="ident">init_len</span>: <span class="ident">p_init_len</span>,
-        <span class="ident">indent_str</span>: <span class="ident">p_indent</span>,
-        <span class="ident">indent_len</span>: <span class="ident">p_indent_len</span>,
-        <span class="ident">uniform</span>,
-        <span class="ident">ostream</span>,
+    <span class="kw">let </span><span class="kw-2">mut </span>break_args = BreakArgs {
+        opts,
+        init_len: p_init_len,
+        indent_str: p_indent,
+        indent_len: p_indent_len,
+        uniform,
+        ostream,
     };
 
-    <span class="kw">if</span> <span class="ident">opts</span>.<span class="ident">quick</span> <span class="op">|</span><span class="op">|</span> <span class="ident">para</span>.<span class="ident">mail_header</span> {
-        <span class="ident">break_simple</span>(<span class="ident">p_words_words</span>, <span class="kw-2">&amp;mut</span> <span class="ident">break_args</span>)
-    } <span class="kw">else</span> {
-        <span class="ident">break_knuth_plass</span>(<span class="ident">p_words_words</span>, <span class="kw-2">&amp;mut</span> <span class="ident">break_args</span>)
+    <span class="kw">if </span>opts.quick || para.mail_header {
+        break_simple(p_words_words, <span class="kw-2">&amp;mut </span>break_args)
+    } <span class="kw">else </span>{
+        break_knuth_plass(p_words_words, <span class="kw-2">&amp;mut </span>break_args)
     }
 }
 
-<span class="comment">// break_simple implements a &quot;greedy&quot; breaking algorithm: print words until</span>
-<span class="comment">// maxlength would be exceeded, then print a linebreak and indent and continue.</span>
-<span class="kw">fn</span> <span class="ident">break_simple</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">WordInfo</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="kw-2">mut</span> <span class="ident">iter</span>: <span class="ident">T</span>,
-    <span class="ident">args</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BreakArgs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">iter</span>.<span class="ident">try_fold</span>((<span class="ident">args</span>.<span class="ident">init_len</span>, <span class="bool-val">false</span>), <span class="op">|</span><span class="ident">l</span>, <span class="ident">winfo</span><span class="op">|</span> {
-        <span class="ident">accum_words_simple</span>(<span class="ident">args</span>, <span class="ident">l</span>, <span class="ident">winfo</span>)
+<span class="comment">// break_simple implements a &quot;greedy&quot; breaking algorithm: print words until
+// maxlength would be exceeded, then print a linebreak and indent and continue.
+</span><span class="kw">fn </span>break_simple&lt;<span class="lifetime">&#39;a</span>, T: Iterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>WordInfo&lt;<span class="lifetime">&#39;a</span>&gt;&gt;&gt;(
+    <span class="kw-2">mut </span>iter: T,
+    args: <span class="kw-2">&amp;mut </span>BreakArgs&lt;<span class="lifetime">&#39;a</span>&gt;,
+) -&gt; std::io::Result&lt;()&gt; {
+    iter.try_fold((args.init_len, <span class="bool-val">false</span>), |l, winfo| {
+        accum_words_simple(args, l, winfo)
     })<span class="question-mark">?</span>;
-    <span class="ident">args</span>.<span class="ident">ostream</span>.<span class="ident">write_all</span>(<span class="string">b&quot;\n&quot;</span>)
+    args.ostream.write_all(<span class="string">b&quot;\n&quot;</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">accum_words_simple</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
-    <span class="ident">args</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BreakArgs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    (<span class="ident">l</span>, <span class="ident">prev_punct</span>): (<span class="ident">usize</span>, <span class="ident">bool</span>),
-    <span class="ident">winfo</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">WordInfo</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">bool</span>)<span class="op">&gt;</span> {
-    <span class="comment">// compute the length of this word, considering how tabs will expand at this position on the line</span>
-    <span class="kw">let</span> <span class="ident">wlen</span> <span class="op">=</span> <span class="ident">winfo</span>.<span class="ident">word_nchars</span> <span class="op">+</span> <span class="ident">args</span>.<span class="ident">compute_width</span>(<span class="ident">winfo</span>, <span class="ident">l</span>, <span class="bool-val">false</span>);
+<span class="kw">fn </span>accum_words_simple&lt;<span class="lifetime">&#39;a</span>&gt;(
+    args: <span class="kw-2">&amp;mut </span>BreakArgs&lt;<span class="lifetime">&#39;a</span>&gt;,
+    (l, prev_punct): (usize, bool),
+    winfo: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>WordInfo&lt;<span class="lifetime">&#39;a</span>&gt;,
+) -&gt; std::io::Result&lt;(usize, bool)&gt; {
+    <span class="comment">// compute the length of this word, considering how tabs will expand at this position on the line
+    </span><span class="kw">let </span>wlen = winfo.word_nchars + args.compute_width(winfo, l, <span class="bool-val">false</span>);
 
-    <span class="kw">let</span> <span class="ident">slen</span> <span class="op">=</span> <span class="ident">compute_slen</span>(
-        <span class="ident">args</span>.<span class="ident">uniform</span>,
-        <span class="ident">winfo</span>.<span class="ident">new_line</span>,
-        <span class="ident">winfo</span>.<span class="ident">sentence_start</span>,
-        <span class="ident">prev_punct</span>,
+    <span class="kw">let </span>slen = compute_slen(
+        args.uniform,
+        winfo.new_line,
+        winfo.sentence_start,
+        prev_punct,
     );
 
-    <span class="kw">if</span> <span class="ident">l</span> <span class="op">+</span> <span class="ident">wlen</span> <span class="op">+</span> <span class="ident">slen</span> <span class="op">&gt;</span> <span class="ident">args</span>.<span class="ident">opts</span>.<span class="ident">width</span> {
-        <span class="ident">write_newline</span>(<span class="ident">args</span>.<span class="ident">indent_str</span>, <span class="ident">args</span>.<span class="ident">ostream</span>)<span class="question-mark">?</span>;
-        <span class="ident">write_with_spaces</span>(<span class="kw-2">&amp;</span><span class="ident">winfo</span>.<span class="ident">word</span>[<span class="ident">winfo</span>.<span class="ident">word_start</span>..], <span class="number">0</span>, <span class="ident">args</span>.<span class="ident">ostream</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>((<span class="ident">args</span>.<span class="ident">indent_len</span> <span class="op">+</span> <span class="ident">winfo</span>.<span class="ident">word_nchars</span>, <span class="ident">winfo</span>.<span class="ident">ends_punct</span>))
-    } <span class="kw">else</span> {
-        <span class="ident">write_with_spaces</span>(<span class="ident">winfo</span>.<span class="ident">word</span>, <span class="ident">slen</span>, <span class="ident">args</span>.<span class="ident">ostream</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>((<span class="ident">l</span> <span class="op">+</span> <span class="ident">wlen</span> <span class="op">+</span> <span class="ident">slen</span>, <span class="ident">winfo</span>.<span class="ident">ends_punct</span>))
+    <span class="kw">if </span>l + wlen + slen &gt; args.opts.width {
+        write_newline(args.indent_str, args.ostream)<span class="question-mark">?</span>;
+        write_with_spaces(<span class="kw-2">&amp;</span>winfo.word[winfo.word_start..], <span class="number">0</span>, args.ostream)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>((args.indent_len + winfo.word_nchars, winfo.ends_punct))
+    } <span class="kw">else </span>{
+        write_with_spaces(winfo.word, slen, args.ostream)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>((l + wlen + slen, winfo.ends_punct))
     }
 }
 
-<span class="comment">// break_knuth_plass implements an &quot;optimal&quot; breaking algorithm in the style of</span>
-<span class="comment">//    Knuth, D.E., and Plass, M.F. &quot;Breaking Paragraphs into Lines.&quot; in Software,</span>
-<span class="comment">//    Practice and Experience. Vol. 11, No. 11, November 1981.</span>
-<span class="comment">//    http://onlinelibrary.wiley.com/doi/10.1002/spe.4380111102/pdf</span>
-<span class="kw">fn</span> <span class="ident">break_knuth_plass</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">WordInfo</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="kw-2">mut</span> <span class="ident">iter</span>: <span class="ident">T</span>,
-    <span class="ident">args</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BreakArgs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="comment">// run the algorithm to get the breakpoints</span>
-    <span class="kw">let</span> <span class="ident">breakpoints</span> <span class="op">=</span> <span class="ident">find_kp_breakpoints</span>(<span class="ident">iter</span>.<span class="ident">clone</span>(), <span class="ident">args</span>);
+<span class="comment">// break_knuth_plass implements an &quot;optimal&quot; breaking algorithm in the style of
+//    Knuth, D.E., and Plass, M.F. &quot;Breaking Paragraphs into Lines.&quot; in Software,
+//    Practice and Experience. Vol. 11, No. 11, November 1981.
+//    http://onlinelibrary.wiley.com/doi/10.1002/spe.4380111102/pdf
+</span><span class="kw">fn </span>break_knuth_plass&lt;<span class="lifetime">&#39;a</span>, T: Clone + Iterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>WordInfo&lt;<span class="lifetime">&#39;a</span>&gt;&gt;&gt;(
+    <span class="kw-2">mut </span>iter: T,
+    args: <span class="kw-2">&amp;mut </span>BreakArgs&lt;<span class="lifetime">&#39;a</span>&gt;,
+) -&gt; std::io::Result&lt;()&gt; {
+    <span class="comment">// run the algorithm to get the breakpoints
+    </span><span class="kw">let </span>breakpoints = find_kp_breakpoints(iter.clone(), args);
 
-    <span class="comment">// iterate through the breakpoints (note that breakpoints is in reverse break order, so we .rev() it</span>
-    <span class="kw">let</span> <span class="ident">result</span>: <span class="ident">std::io::Result</span><span class="op">&lt;</span>(<span class="ident">bool</span>, <span class="ident">bool</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">breakpoints</span>.<span class="ident">iter</span>().<span class="ident">rev</span>().<span class="ident">try_fold</span>(
+    <span class="comment">// iterate through the breakpoints (note that breakpoints is in reverse break order, so we .rev() it
+    </span><span class="kw">let </span>result: std::io::Result&lt;(bool, bool)&gt; = breakpoints.iter().rev().try_fold(
         (<span class="bool-val">false</span>, <span class="bool-val">false</span>),
-        <span class="op">|</span>(<span class="kw-2">mut</span> <span class="ident">prev_punct</span>, <span class="kw-2">mut</span> <span class="ident">fresh</span>), <span class="kw-2">&amp;</span>(<span class="ident">next_break</span>, <span class="ident">break_before</span>)<span class="op">|</span> {
-            <span class="kw">if</span> <span class="ident">fresh</span> {
-                <span class="ident">write_newline</span>(<span class="ident">args</span>.<span class="ident">indent_str</span>, <span class="ident">args</span>.<span class="ident">ostream</span>)<span class="question-mark">?</span>;
+        |(<span class="kw-2">mut </span>prev_punct, <span class="kw-2">mut </span>fresh), <span class="kw-2">&amp;</span>(next_break, break_before)| {
+            <span class="kw">if </span>fresh {
+                write_newline(args.indent_str, args.ostream)<span class="question-mark">?</span>;
             }
-            <span class="comment">// at each breakpoint, keep emitting words until we find the word matching this breakpoint</span>
-            <span class="kw">for</span> <span class="ident">winfo</span> <span class="kw">in</span> <span class="kw-2">&amp;mut</span> <span class="ident">iter</span> {
-                <span class="kw">let</span> (<span class="ident">slen</span>, <span class="ident">word</span>) <span class="op">=</span> <span class="ident">slice_if_fresh</span>(
-                    <span class="ident">fresh</span>,
-                    <span class="ident">winfo</span>.<span class="ident">word</span>,
-                    <span class="ident">winfo</span>.<span class="ident">word_start</span>,
-                    <span class="ident">args</span>.<span class="ident">uniform</span>,
-                    <span class="ident">winfo</span>.<span class="ident">new_line</span>,
-                    <span class="ident">winfo</span>.<span class="ident">sentence_start</span>,
-                    <span class="ident">prev_punct</span>,
+            <span class="comment">// at each breakpoint, keep emitting words until we find the word matching this breakpoint
+            </span><span class="kw">for </span>winfo <span class="kw">in </span><span class="kw-2">&amp;mut </span>iter {
+                <span class="kw">let </span>(slen, word) = slice_if_fresh(
+                    fresh,
+                    winfo.word,
+                    winfo.word_start,
+                    args.uniform,
+                    winfo.new_line,
+                    winfo.sentence_start,
+                    prev_punct,
                 );
-                <span class="ident">fresh</span> <span class="op">=</span> <span class="bool-val">false</span>;
-                <span class="ident">prev_punct</span> <span class="op">=</span> <span class="ident">winfo</span>.<span class="ident">ends_punct</span>;
+                fresh = <span class="bool-val">false</span>;
+                prev_punct = winfo.ends_punct;
 
-                <span class="comment">// We find identical breakpoints here by comparing addresses of the references.</span>
-                <span class="comment">// This is OK because the backing vector is not mutating once we are linebreaking.</span>
-                <span class="kw">let</span> <span class="ident">winfo_ptr</span> <span class="op">=</span> <span class="ident">winfo</span> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="kw">_</span>;
-                <span class="kw">let</span> <span class="ident">next_break_ptr</span> <span class="op">=</span> <span class="ident">next_break</span> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="kw">_</span>;
-                <span class="kw">if</span> <span class="ident">winfo_ptr</span> <span class="op">==</span> <span class="ident">next_break_ptr</span> {
-                    <span class="comment">// OK, we found the matching word</span>
-                    <span class="kw">if</span> <span class="ident">break_before</span> {
-                        <span class="ident">write_newline</span>(<span class="ident">args</span>.<span class="ident">indent_str</span>, <span class="ident">args</span>.<span class="ident">ostream</span>)<span class="question-mark">?</span>;
-                        <span class="ident">write_with_spaces</span>(<span class="kw-2">&amp;</span><span class="ident">winfo</span>.<span class="ident">word</span>[<span class="ident">winfo</span>.<span class="ident">word_start</span>..], <span class="number">0</span>, <span class="ident">args</span>.<span class="ident">ostream</span>)<span class="question-mark">?</span>;
-                    } <span class="kw">else</span> {
-                        <span class="comment">// breaking after this word, so that means &quot;fresh&quot; is true for the next iteration</span>
-                        <span class="ident">write_with_spaces</span>(<span class="ident">word</span>, <span class="ident">slen</span>, <span class="ident">args</span>.<span class="ident">ostream</span>)<span class="question-mark">?</span>;
-                        <span class="ident">fresh</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                <span class="comment">// We find identical breakpoints here by comparing addresses of the references.
+                // This is OK because the backing vector is not mutating once we are linebreaking.
+                </span><span class="kw">let </span>winfo_ptr = winfo <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>;
+                <span class="kw">let </span>next_break_ptr = next_break <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>;
+                <span class="kw">if </span>winfo_ptr == next_break_ptr {
+                    <span class="comment">// OK, we found the matching word
+                    </span><span class="kw">if </span>break_before {
+                        write_newline(args.indent_str, args.ostream)<span class="question-mark">?</span>;
+                        write_with_spaces(<span class="kw-2">&amp;</span>winfo.word[winfo.word_start..], <span class="number">0</span>, args.ostream)<span class="question-mark">?</span>;
+                    } <span class="kw">else </span>{
+                        <span class="comment">// breaking after this word, so that means &quot;fresh&quot; is true for the next iteration
+                        </span>write_with_spaces(word, slen, args.ostream)<span class="question-mark">?</span>;
+                        fresh = <span class="bool-val">true</span>;
                     }
                     <span class="kw">break</span>;
-                } <span class="kw">else</span> {
-                    <span class="ident">write_with_spaces</span>(<span class="ident">word</span>, <span class="ident">slen</span>, <span class="ident">args</span>.<span class="ident">ostream</span>)<span class="question-mark">?</span>;
+                } <span class="kw">else </span>{
+                    write_with_spaces(word, slen, args.ostream)<span class="question-mark">?</span>;
                 }
             }
-            <span class="prelude-val">Ok</span>((<span class="ident">prev_punct</span>, <span class="ident">fresh</span>))
+            <span class="prelude-val">Ok</span>((prev_punct, fresh))
         },
     );
-    <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">prev_punct</span>, <span class="kw-2">mut</span> <span class="ident">fresh</span>) <span class="op">=</span> <span class="ident">result</span><span class="question-mark">?</span>;
+    <span class="kw">let </span>(<span class="kw-2">mut </span>prev_punct, <span class="kw-2">mut </span>fresh) = result<span class="question-mark">?</span>;
 
-    <span class="comment">// after the last linebreak, write out the rest of the final line.</span>
-    <span class="kw">for</span> <span class="ident">winfo</span> <span class="kw">in</span> <span class="ident">iter</span> {
-        <span class="kw">if</span> <span class="ident">fresh</span> {
-            <span class="ident">write_newline</span>(<span class="ident">args</span>.<span class="ident">indent_str</span>, <span class="ident">args</span>.<span class="ident">ostream</span>)<span class="question-mark">?</span>;
+    <span class="comment">// after the last linebreak, write out the rest of the final line.
+    </span><span class="kw">for </span>winfo <span class="kw">in </span>iter {
+        <span class="kw">if </span>fresh {
+            write_newline(args.indent_str, args.ostream)<span class="question-mark">?</span>;
         }
-        <span class="kw">let</span> (<span class="ident">slen</span>, <span class="ident">word</span>) <span class="op">=</span> <span class="ident">slice_if_fresh</span>(
-            <span class="ident">fresh</span>,
-            <span class="ident">winfo</span>.<span class="ident">word</span>,
-            <span class="ident">winfo</span>.<span class="ident">word_start</span>,
-            <span class="ident">args</span>.<span class="ident">uniform</span>,
-            <span class="ident">winfo</span>.<span class="ident">new_line</span>,
-            <span class="ident">winfo</span>.<span class="ident">sentence_start</span>,
-            <span class="ident">prev_punct</span>,
+        <span class="kw">let </span>(slen, word) = slice_if_fresh(
+            fresh,
+            winfo.word,
+            winfo.word_start,
+            args.uniform,
+            winfo.new_line,
+            winfo.sentence_start,
+            prev_punct,
         );
-        <span class="ident">prev_punct</span> <span class="op">=</span> <span class="ident">winfo</span>.<span class="ident">ends_punct</span>;
-        <span class="ident">fresh</span> <span class="op">=</span> <span class="bool-val">false</span>;
-        <span class="ident">write_with_spaces</span>(<span class="ident">word</span>, <span class="ident">slen</span>, <span class="ident">args</span>.<span class="ident">ostream</span>)<span class="question-mark">?</span>;
+        prev_punct = winfo.ends_punct;
+        fresh = <span class="bool-val">false</span>;
+        write_with_spaces(word, slen, args.ostream)<span class="question-mark">?</span>;
     }
-    <span class="ident">args</span>.<span class="ident">ostream</span>.<span class="ident">write_all</span>(<span class="string">b&quot;\n&quot;</span>)
+    args.ostream.write_all(<span class="string">b&quot;\n&quot;</span>)
 }
 
-<span class="kw">struct</span> <span class="ident">LineBreak</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">prev</span>: <span class="ident">usize</span>,
-    <span class="ident">linebreak</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">WordInfo</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">break_before</span>: <span class="ident">bool</span>,
-    <span class="ident">demerits</span>: <span class="ident">i64</span>,
-    <span class="ident">prev_rat</span>: <span class="ident">f32</span>,
-    <span class="ident">length</span>: <span class="ident">usize</span>,
-    <span class="ident">fresh</span>: <span class="ident">bool</span>,
+<span class="kw">struct </span>LineBreak&lt;<span class="lifetime">&#39;a</span>&gt; {
+    prev: usize,
+    linebreak: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>WordInfo&lt;<span class="lifetime">&#39;a</span>&gt;&gt;,
+    break_before: bool,
+    demerits: i64,
+    prev_rat: f32,
+    length: usize,
+    fresh: bool,
 }
 
-<span class="kw">fn</span> <span class="ident">find_kp_breakpoints</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">WordInfo</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">iter</span>: <span class="ident">T</span>,
-    <span class="ident">args</span>: <span class="kw-2">&amp;</span><span class="ident">BreakArgs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">WordInfo</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="ident">bool</span>)<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">peekable</span>();
-    <span class="comment">// set up the initial null linebreak</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">linebreaks</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">LineBreak</span> {
-        <span class="ident">prev</span>: <span class="number">0</span>,
-        <span class="ident">linebreak</span>: <span class="prelude-val">None</span>,
-        <span class="ident">break_before</span>: <span class="bool-val">false</span>,
-        <span class="ident">demerits</span>: <span class="number">0</span>,
-        <span class="ident">prev_rat</span>: <span class="number">0.0f32</span>,
-        <span class="ident">length</span>: <span class="ident">args</span>.<span class="ident">init_len</span>,
-        <span class="ident">fresh</span>: <span class="bool-val">false</span>,
+<span class="kw">fn </span>find_kp_breakpoints&lt;<span class="lifetime">&#39;a</span>, T: Iterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>WordInfo&lt;<span class="lifetime">&#39;a</span>&gt;&gt;&gt;(
+    iter: T,
+    args: <span class="kw-2">&amp;</span>BreakArgs&lt;<span class="lifetime">&#39;a</span>&gt;,
+) -&gt; Vec&lt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>WordInfo&lt;<span class="lifetime">&#39;a</span>&gt;, bool)&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>iter = iter.peekable();
+    <span class="comment">// set up the initial null linebreak
+    </span><span class="kw">let </span><span class="kw-2">mut </span>linebreaks = <span class="macro">vec!</span>[LineBreak {
+        prev: <span class="number">0</span>,
+        linebreak: <span class="prelude-val">None</span>,
+        break_before: <span class="bool-val">false</span>,
+        demerits: <span class="number">0</span>,
+        prev_rat: <span class="number">0.0f32</span>,
+        length: args.init_len,
+        fresh: <span class="bool-val">false</span>,
     }];
-    <span class="comment">// this vec holds the current active linebreaks; next_ holds the breaks that will be active for</span>
-    <span class="comment">// the next word</span>
-    <span class="kw">let</span> <span class="ident">active_breaks</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="macro">vec!</span>[<span class="number">0</span>];
-    <span class="kw">let</span> <span class="ident">next_active_breaks</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="macro">vec!</span>[];
+    <span class="comment">// this vec holds the current active linebreaks; next_ holds the breaks that will be active for
+    // the next word
+    </span><span class="kw">let </span>active_breaks = <span class="kw-2">&amp;mut </span><span class="macro">vec!</span>[<span class="number">0</span>];
+    <span class="kw">let </span>next_active_breaks = <span class="kw-2">&amp;mut </span><span class="macro">vec!</span>[];
 
-    <span class="kw">let</span> <span class="ident">stretch</span> <span class="op">=</span> (<span class="ident">args</span>.<span class="ident">opts</span>.<span class="ident">width</span> <span class="op">-</span> <span class="ident">args</span>.<span class="ident">opts</span>.<span class="ident">goal</span>) <span class="kw">as</span> <span class="ident">isize</span>;
-    <span class="kw">let</span> <span class="ident">minlength</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">opts</span>.<span class="ident">goal</span> <span class="op">-</span> <span class="ident">stretch</span> <span class="kw">as</span> <span class="ident">usize</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_linebreaks</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">is_sentence_start</span> <span class="op">=</span> <span class="bool-val">false</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">least_demerits</span> <span class="op">=</span> <span class="number">0</span>;
-    <span class="kw">loop</span> {
-        <span class="kw">let</span> <span class="ident">w</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">iter</span>.<span class="ident">next</span>() {
-            <span class="prelude-val">None</span> =&gt; <span class="kw">break</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">w</span>) =&gt; <span class="ident">w</span>,
+    <span class="kw">let </span>stretch = (args.opts.width - args.opts.goal) <span class="kw">as </span>isize;
+    <span class="kw">let </span>minlength = args.opts.goal - stretch <span class="kw">as </span>usize;
+    <span class="kw">let </span><span class="kw-2">mut </span>new_linebreaks = <span class="macro">vec!</span>[];
+    <span class="kw">let </span><span class="kw-2">mut </span>is_sentence_start = <span class="bool-val">false</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>least_demerits = <span class="number">0</span>;
+    <span class="kw">loop </span>{
+        <span class="kw">let </span>w = <span class="kw">match </span>iter.next() {
+            <span class="prelude-val">None </span>=&gt; <span class="kw">break</span>,
+            <span class="prelude-val">Some</span>(w) =&gt; w,
         };
 
-        <span class="comment">// if this is the last word, we don&#39;t add additional demerits for this break</span>
-        <span class="kw">let</span> (<span class="ident">is_last_word</span>, <span class="ident">is_sentence_end</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">iter</span>.<span class="ident">peek</span>() {
-            <span class="prelude-val">None</span> =&gt; (<span class="bool-val">true</span>, <span class="bool-val">true</span>),
-            <span class="prelude-val">Some</span>(<span class="op">&amp;&amp;</span><span class="ident">WordInfo</span> {
-                <span class="ident">sentence_start</span>: <span class="ident">st</span>,
-                <span class="ident">new_line</span>: <span class="ident">nl</span>,
+        <span class="comment">// if this is the last word, we don&#39;t add additional demerits for this break
+        </span><span class="kw">let </span>(is_last_word, is_sentence_end) = <span class="kw">match </span>iter.peek() {
+            <span class="prelude-val">None </span>=&gt; (<span class="bool-val">true</span>, <span class="bool-val">true</span>),
+            <span class="prelude-val">Some</span>(&amp;&amp;WordInfo {
+                sentence_start: st,
+                new_line: nl,
                 ..
-            }) =&gt; (<span class="bool-val">false</span>, <span class="ident">st</span> <span class="op">|</span><span class="op">|</span> (<span class="ident">nl</span> <span class="op">&amp;&amp;</span> <span class="ident">w</span>.<span class="ident">ends_punct</span>)),
+            }) =&gt; (<span class="bool-val">false</span>, st || (nl &amp;&amp; w.ends_punct)),
         };
 
-        <span class="comment">// should we be adding extra space at the beginning of the next sentence?</span>
-        <span class="kw">let</span> <span class="ident">slen</span> <span class="op">=</span> <span class="ident">compute_slen</span>(<span class="ident">args</span>.<span class="ident">uniform</span>, <span class="ident">w</span>.<span class="ident">new_line</span>, <span class="ident">is_sentence_start</span>, <span class="bool-val">false</span>);
+        <span class="comment">// should we be adding extra space at the beginning of the next sentence?
+        </span><span class="kw">let </span>slen = compute_slen(args.uniform, w.new_line, is_sentence_start, <span class="bool-val">false</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ld_new</span> <span class="op">=</span> <span class="ident">i64::MAX</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ld_next</span> <span class="op">=</span> <span class="ident">i64::MAX</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ld_idx</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="ident">new_linebreaks</span>.<span class="ident">clear</span>();
-        <span class="ident">next_active_breaks</span>.<span class="ident">clear</span>();
-        <span class="comment">// go through each active break, extending it and possibly adding a new active</span>
-        <span class="comment">// break if we are above the minimum required length</span>
-        <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">i</span> <span class="kw">in</span> <span class="ident">active_breaks</span>.<span class="ident">iter</span>() {
-            <span class="kw">let</span> <span class="ident">active</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="ident">linebreaks</span>[<span class="ident">i</span>];
-            <span class="comment">// normalize demerits to avoid overflow, and record if this is the least</span>
-            <span class="ident">active</span>.<span class="ident">demerits</span> <span class="op">-</span><span class="op">=</span> <span class="ident">least_demerits</span>;
-            <span class="kw">if</span> <span class="ident">active</span>.<span class="ident">demerits</span> <span class="op">&lt;</span> <span class="ident">ld_next</span> {
-                <span class="ident">ld_next</span> <span class="op">=</span> <span class="ident">active</span>.<span class="ident">demerits</span>;
-                <span class="ident">ld_idx</span> <span class="op">=</span> <span class="ident">i</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>ld_new = i64::MAX;
+        <span class="kw">let </span><span class="kw-2">mut </span>ld_next = i64::MAX;
+        <span class="kw">let </span><span class="kw-2">mut </span>ld_idx = <span class="number">0</span>;
+        new_linebreaks.clear();
+        next_active_breaks.clear();
+        <span class="comment">// go through each active break, extending it and possibly adding a new active
+        // break if we are above the minimum required length
+        </span><span class="kw">for </span><span class="kw-2">&amp;</span>i <span class="kw">in </span>active_breaks.iter() {
+            <span class="kw">let </span>active = <span class="kw-2">&amp;mut </span>linebreaks[i];
+            <span class="comment">// normalize demerits to avoid overflow, and record if this is the least
+            </span>active.demerits -= least_demerits;
+            <span class="kw">if </span>active.demerits &lt; ld_next {
+                ld_next = active.demerits;
+                ld_idx = i;
             }
 
-            <span class="comment">// get the new length</span>
-            <span class="kw">let</span> <span class="ident">tlen</span> <span class="op">=</span> <span class="ident">w</span>.<span class="ident">word_nchars</span>
-                <span class="op">+</span> <span class="ident">args</span>.<span class="ident">compute_width</span>(<span class="ident">w</span>, <span class="ident">active</span>.<span class="ident">length</span>, <span class="ident">active</span>.<span class="ident">fresh</span>)
-                <span class="op">+</span> <span class="ident">slen</span>
-                <span class="op">+</span> <span class="ident">active</span>.<span class="ident">length</span>;
+            <span class="comment">// get the new length
+            </span><span class="kw">let </span>tlen = w.word_nchars
+                + args.compute_width(w, active.length, active.fresh)
+                + slen
+                + active.length;
 
-            <span class="comment">// if tlen is longer than args.opts.width, we drop this break from the active list</span>
-            <span class="comment">// otherwise, we extend the break, and possibly add a new break at this point</span>
-            <span class="kw">if</span> <span class="ident">tlen</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">args</span>.<span class="ident">opts</span>.<span class="ident">width</span> {
-                <span class="comment">// this break will still be active next time</span>
-                <span class="ident">next_active_breaks</span>.<span class="ident">push</span>(<span class="ident">i</span>);
-                <span class="comment">// we can put this word on this line</span>
-                <span class="ident">active</span>.<span class="ident">fresh</span> <span class="op">=</span> <span class="bool-val">false</span>;
-                <span class="ident">active</span>.<span class="ident">length</span> <span class="op">=</span> <span class="ident">tlen</span>;
+            <span class="comment">// if tlen is longer than args.opts.width, we drop this break from the active list
+            // otherwise, we extend the break, and possibly add a new break at this point
+            </span><span class="kw">if </span>tlen &lt;= args.opts.width {
+                <span class="comment">// this break will still be active next time
+                </span>next_active_breaks.push(i);
+                <span class="comment">// we can put this word on this line
+                </span>active.fresh = <span class="bool-val">false</span>;
+                active.length = tlen;
 
-                <span class="comment">// if we&#39;re above the minlength, we can also consider breaking here</span>
-                <span class="kw">if</span> <span class="ident">tlen</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">minlength</span> {
-                    <span class="kw">let</span> (<span class="ident">new_demerits</span>, <span class="ident">new_ratio</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">is_last_word</span> {
-                        <span class="comment">// there is no penalty for the final line&#39;s length</span>
-                        (<span class="number">0</span>, <span class="number">0.0</span>)
-                    } <span class="kw">else</span> {
-                        <span class="ident">compute_demerits</span>(
-                            <span class="ident">args</span>.<span class="ident">opts</span>.<span class="ident">goal</span> <span class="kw">as</span> <span class="ident">isize</span> <span class="op">-</span> <span class="ident">tlen</span> <span class="kw">as</span> <span class="ident">isize</span>,
-                            <span class="ident">stretch</span>,
-                            <span class="ident">w</span>.<span class="ident">word_nchars</span> <span class="kw">as</span> <span class="ident">isize</span>,
-                            <span class="ident">active</span>.<span class="ident">prev_rat</span>,
+                <span class="comment">// if we&#39;re above the minlength, we can also consider breaking here
+                </span><span class="kw">if </span>tlen &gt;= minlength {
+                    <span class="kw">let </span>(new_demerits, new_ratio) = <span class="kw">if </span>is_last_word {
+                        <span class="comment">// there is no penalty for the final line&#39;s length
+                        </span>(<span class="number">0</span>, <span class="number">0.0</span>)
+                    } <span class="kw">else </span>{
+                        compute_demerits(
+                            args.opts.goal <span class="kw">as </span>isize - tlen <span class="kw">as </span>isize,
+                            stretch,
+                            w.word_nchars <span class="kw">as </span>isize,
+                            active.prev_rat,
                         )
                     };
 
-                    <span class="comment">// do not even consider adding a line that has too many demerits</span>
-                    <span class="comment">// also, try to detect overflow by checking signum</span>
-                    <span class="kw">let</span> <span class="ident">total_demerits</span> <span class="op">=</span> <span class="ident">new_demerits</span> <span class="op">+</span> <span class="ident">active</span>.<span class="ident">demerits</span>;
-                    <span class="kw">if</span> <span class="ident">new_demerits</span> <span class="op">&lt;</span> <span class="ident">BAD_INFTY_SQ</span>
-                        <span class="op">&amp;&amp;</span> <span class="ident">total_demerits</span> <span class="op">&lt;</span> <span class="ident">ld_new</span>
-                        <span class="op">&amp;&amp;</span> <span class="ident">active</span>.<span class="ident">demerits</span>.<span class="ident">signum</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="ident">new_demerits</span>.<span class="ident">signum</span>()
+                    <span class="comment">// do not even consider adding a line that has too many demerits
+                    // also, try to detect overflow by checking signum
+                    </span><span class="kw">let </span>total_demerits = new_demerits + active.demerits;
+                    <span class="kw">if </span>new_demerits &lt; BAD_INFTY_SQ
+                        &amp;&amp; total_demerits &lt; ld_new
+                        &amp;&amp; active.demerits.signum() &lt;= new_demerits.signum()
                     {
-                        <span class="ident">ld_new</span> <span class="op">=</span> <span class="ident">total_demerits</span>;
-                        <span class="ident">new_linebreaks</span>.<span class="ident">push</span>(<span class="ident">LineBreak</span> {
-                            <span class="ident">prev</span>: <span class="ident">i</span>,
-                            <span class="ident">linebreak</span>: <span class="prelude-val">Some</span>(<span class="ident">w</span>),
-                            <span class="ident">break_before</span>: <span class="bool-val">false</span>,
-                            <span class="ident">demerits</span>: <span class="ident">total_demerits</span>,
-                            <span class="ident">prev_rat</span>: <span class="ident">new_ratio</span>,
-                            <span class="ident">length</span>: <span class="ident">args</span>.<span class="ident">indent_len</span>,
-                            <span class="ident">fresh</span>: <span class="bool-val">true</span>,
+                        ld_new = total_demerits;
+                        new_linebreaks.push(LineBreak {
+                            prev: i,
+                            linebreak: <span class="prelude-val">Some</span>(w),
+                            break_before: <span class="bool-val">false</span>,
+                            demerits: total_demerits,
+                            prev_rat: new_ratio,
+                            length: args.indent_len,
+                            fresh: <span class="bool-val">true</span>,
                         });
                     }
                 }
             }
         }
 
-        <span class="comment">// if we generated any new linebreaks, add the last one to the list</span>
-        <span class="comment">// the last one is always the best because we don&#39;t add to new_linebreaks unless</span>
-        <span class="comment">// it&#39;s better than the best one so far</span>
-        <span class="kw">match</span> <span class="ident">new_linebreaks</span>.<span class="ident">pop</span>() {
-            <span class="prelude-val">None</span> =&gt; (),
-            <span class="prelude-val">Some</span>(<span class="ident">lb</span>) =&gt; {
-                <span class="ident">next_active_breaks</span>.<span class="ident">push</span>(<span class="ident">linebreaks</span>.<span class="ident">len</span>());
-                <span class="ident">linebreaks</span>.<span class="ident">push</span>(<span class="ident">lb</span>);
+        <span class="comment">// if we generated any new linebreaks, add the last one to the list
+        // the last one is always the best because we don&#39;t add to new_linebreaks unless
+        // it&#39;s better than the best one so far
+        </span><span class="kw">match </span>new_linebreaks.pop() {
+            <span class="prelude-val">None </span>=&gt; (),
+            <span class="prelude-val">Some</span>(lb) =&gt; {
+                next_active_breaks.push(linebreaks.len());
+                linebreaks.push(lb);
             }
         }
 
-        <span class="kw">if</span> <span class="ident">next_active_breaks</span>.<span class="ident">is_empty</span>() {
-            <span class="comment">// every potential linebreak is too long! choose the linebreak with the least demerits, ld_idx</span>
-            <span class="kw">let</span> <span class="ident">new_break</span> <span class="op">=</span>
-                <span class="ident">restart_active_breaks</span>(<span class="ident">args</span>, <span class="kw-2">&amp;</span><span class="ident">linebreaks</span>[<span class="ident">ld_idx</span>], <span class="ident">ld_idx</span>, <span class="ident">w</span>, <span class="ident">slen</span>, <span class="ident">minlength</span>);
-            <span class="ident">next_active_breaks</span>.<span class="ident">push</span>(<span class="ident">linebreaks</span>.<span class="ident">len</span>());
-            <span class="ident">linebreaks</span>.<span class="ident">push</span>(<span class="ident">new_break</span>);
-            <span class="ident">least_demerits</span> <span class="op">=</span> <span class="number">0</span>;
-        } <span class="kw">else</span> {
-            <span class="comment">// next time around, normalize out the demerits fields</span>
-            <span class="comment">// on active linebreaks to make overflow less likely</span>
-            <span class="ident">least_demerits</span> <span class="op">=</span> <span class="ident">cmp::max</span>(<span class="ident">ld_next</span>, <span class="number">0</span>);
+        <span class="kw">if </span>next_active_breaks.is_empty() {
+            <span class="comment">// every potential linebreak is too long! choose the linebreak with the least demerits, ld_idx
+            </span><span class="kw">let </span>new_break =
+                restart_active_breaks(args, <span class="kw-2">&amp;</span>linebreaks[ld_idx], ld_idx, w, slen, minlength);
+            next_active_breaks.push(linebreaks.len());
+            linebreaks.push(new_break);
+            least_demerits = <span class="number">0</span>;
+        } <span class="kw">else </span>{
+            <span class="comment">// next time around, normalize out the demerits fields
+            // on active linebreaks to make overflow less likely
+            </span>least_demerits = cmp::max(ld_next, <span class="number">0</span>);
         }
-        <span class="comment">// swap in new list of active breaks</span>
-        <span class="ident">mem::swap</span>(<span class="ident">active_breaks</span>, <span class="ident">next_active_breaks</span>);
-        <span class="comment">// If this was the last word in a sentence, the next one must be the first in the next.</span>
-        <span class="ident">is_sentence_start</span> <span class="op">=</span> <span class="ident">is_sentence_end</span>;
+        <span class="comment">// swap in new list of active breaks
+        </span>mem::swap(active_breaks, next_active_breaks);
+        <span class="comment">// If this was the last word in a sentence, the next one must be the first in the next.
+        </span>is_sentence_start = is_sentence_end;
     }
 
-    <span class="comment">// return the best path</span>
-    <span class="ident">build_best_path</span>(<span class="kw-2">&amp;</span><span class="ident">linebreaks</span>, <span class="ident">active_breaks</span>)
+    <span class="comment">// return the best path
+    </span>build_best_path(<span class="kw-2">&amp;</span>linebreaks, active_breaks)
 }
 
-<span class="kw">fn</span> <span class="ident">build_best_path</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">paths</span>: <span class="kw-2">&amp;</span>[<span class="ident">LineBreak</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>], <span class="ident">active</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>]) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">WordInfo</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="ident">bool</span>)<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">breakwords</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="comment">// of the active paths, we select the one with the fewest demerits</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">best_idx</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">active</span>.<span class="ident">iter</span>().<span class="ident">min_by_key</span>(<span class="op">|</span><span class="op">&amp;&amp;</span><span class="ident">a</span><span class="op">|</span> <span class="ident">paths</span>[<span class="ident">a</span>].<span class="ident">demerits</span>) {
-        <span class="prelude-val">None</span> =&gt; <span class="macro">crash!</span>(
+<span class="kw">fn </span>build_best_path&lt;<span class="lifetime">&#39;a</span>&gt;(paths: <span class="kw-2">&amp;</span>[LineBreak&lt;<span class="lifetime">&#39;a</span>&gt;], active: <span class="kw-2">&amp;</span>[usize]) -&gt; Vec&lt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>WordInfo&lt;<span class="lifetime">&#39;a</span>&gt;, bool)&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>breakwords = <span class="macro">vec!</span>[];
+    <span class="comment">// of the active paths, we select the one with the fewest demerits
+    </span><span class="kw">let </span><span class="kw-2">mut </span>best_idx = <span class="kw">match </span>active.iter().min_by_key(|&amp;&amp;a| paths[a].demerits) {
+        <span class="prelude-val">None </span>=&gt; <span class="macro">crash!</span>(
             <span class="number">1</span>,
-            <span class="string">&quot;Failed to find a k-p linebreak solution. This should never happen.&quot;</span>
-        ),
-        <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>) =&gt; <span class="ident">s</span>,
+            <span class="string">&quot;Failed to find a k-p linebreak solution. This should never happen.&quot;
+        </span>),
+        <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>s) =&gt; s,
     };
 
-    <span class="comment">// now, chase the pointers back through the break list, recording</span>
-    <span class="comment">// the words at which we should break</span>
-    <span class="kw">loop</span> {
-        <span class="kw">let</span> <span class="ident">next_best</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">paths</span>[<span class="ident">best_idx</span>];
-        <span class="kw">match</span> <span class="ident">next_best</span>.<span class="ident">linebreak</span> {
-            <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="ident">breakwords</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">prev</span>) =&gt; {
-                <span class="ident">breakwords</span>.<span class="ident">push</span>((<span class="ident">prev</span>, <span class="ident">next_best</span>.<span class="ident">break_before</span>));
-                <span class="ident">best_idx</span> <span class="op">=</span> <span class="ident">next_best</span>.<span class="ident">prev</span>;
+    <span class="comment">// now, chase the pointers back through the break list, recording
+    // the words at which we should break
+    </span><span class="kw">loop </span>{
+        <span class="kw">let </span>next_best = <span class="kw-2">&amp;</span>paths[best_idx];
+        <span class="kw">match </span>next_best.linebreak {
+            <span class="prelude-val">None </span>=&gt; <span class="kw">return </span>breakwords,
+            <span class="prelude-val">Some</span>(prev) =&gt; {
+                breakwords.push((prev, next_best.break_before));
+                best_idx = next_best.prev;
             }
         }
     }
 }
 
-<span class="comment">// &quot;infinite&quot; badness is more like (1+BAD_INFTY)^2 because of how demerits are computed</span>
-<span class="kw">const</span> <span class="ident">BAD_INFTY</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">10_000_000</span>;
-<span class="kw">const</span> <span class="ident">BAD_INFTY_SQ</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="ident">BAD_INFTY</span> <span class="op">*</span> <span class="ident">BAD_INFTY</span>;
-<span class="comment">// badness = BAD_MULT * abs(r) ^ 3</span>
-<span class="kw">const</span> <span class="ident">BAD_MULT</span>: <span class="ident">f32</span> <span class="op">=</span> <span class="number">100.0</span>;
-<span class="comment">// DR_MULT is multiplier for delta-R between lines</span>
-<span class="kw">const</span> <span class="ident">DR_MULT</span>: <span class="ident">f32</span> <span class="op">=</span> <span class="number">600.0</span>;
-<span class="comment">// DL_MULT is penalty multiplier for short words at end of line</span>
-<span class="kw">const</span> <span class="ident">DL_MULT</span>: <span class="ident">f32</span> <span class="op">=</span> <span class="number">300.0</span>;
+<span class="comment">// &quot;infinite&quot; badness is more like (1+BAD_INFTY)^2 because of how demerits are computed
+</span><span class="kw">const </span>BAD_INFTY: i64 = <span class="number">10_000_000</span>;
+<span class="kw">const </span>BAD_INFTY_SQ: i64 = BAD_INFTY * BAD_INFTY;
+<span class="comment">// badness = BAD_MULT * abs(r) ^ 3
+</span><span class="kw">const </span>BAD_MULT: f32 = <span class="number">100.0</span>;
+<span class="comment">// DR_MULT is multiplier for delta-R between lines
+</span><span class="kw">const </span>DR_MULT: f32 = <span class="number">600.0</span>;
+<span class="comment">// DL_MULT is penalty multiplier for short words at end of line
+</span><span class="kw">const </span>DL_MULT: f32 = <span class="number">300.0</span>;
 
-<span class="kw">fn</span> <span class="ident">compute_demerits</span>(<span class="ident">delta_len</span>: <span class="ident">isize</span>, <span class="ident">stretch</span>: <span class="ident">isize</span>, <span class="ident">wlen</span>: <span class="ident">isize</span>, <span class="ident">prev_rat</span>: <span class="ident">f32</span>) -&gt; (<span class="ident">i64</span>, <span class="ident">f32</span>) {
-    <span class="comment">// how much stretch are we using?</span>
-    <span class="kw">let</span> <span class="ident">ratio</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">delta_len</span> <span class="op">==</span> <span class="number">0</span> {
-        <span class="number">0.0f32</span>
-    } <span class="kw">else</span> {
-        <span class="ident">delta_len</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">/</span> <span class="ident">stretch</span> <span class="kw">as</span> <span class="ident">f32</span>
+<span class="kw">fn </span>compute_demerits(delta_len: isize, stretch: isize, wlen: isize, prev_rat: f32) -&gt; (i64, f32) {
+    <span class="comment">// how much stretch are we using?
+    </span><span class="kw">let </span>ratio = <span class="kw">if </span>delta_len == <span class="number">0 </span>{
+        <span class="number">0.0f32
+    </span>} <span class="kw">else </span>{
+        delta_len <span class="kw">as </span>f32 / stretch <span class="kw">as </span>f32
     };
 
-    <span class="comment">// compute badness given the stretch ratio</span>
-    <span class="kw">let</span> <span class="ident">bad_linelen</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">ratio</span>.<span class="ident">abs</span>() <span class="op">&gt;</span> <span class="number">1.0f32</span> {
-        <span class="ident">BAD_INFTY</span>
-    } <span class="kw">else</span> {
-        (<span class="ident">BAD_MULT</span> <span class="op">*</span> <span class="ident">ratio</span>.<span class="ident">powi</span>(<span class="number">3</span>).<span class="ident">abs</span>()) <span class="kw">as</span> <span class="ident">i64</span>
+    <span class="comment">// compute badness given the stretch ratio
+    </span><span class="kw">let </span>bad_linelen = <span class="kw">if </span>ratio.abs() &gt; <span class="number">1.0f32 </span>{
+        BAD_INFTY
+    } <span class="kw">else </span>{
+        (BAD_MULT * ratio.powi(<span class="number">3</span>).abs()) <span class="kw">as </span>i64
     };
 
-    <span class="comment">// we penalize lines ending in really short words</span>
-    <span class="kw">let</span> <span class="ident">bad_wordlen</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">wlen</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">stretch</span> {
-        <span class="number">0</span>
-    } <span class="kw">else</span> {
-        (<span class="ident">DL_MULT</span>
-            <span class="op">*</span> ((<span class="ident">stretch</span> <span class="op">-</span> <span class="ident">wlen</span>) <span class="kw">as</span> <span class="ident">f32</span> <span class="op">/</span> (<span class="ident">stretch</span> <span class="op">-</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">f32</span>)
-                .<span class="ident">powi</span>(<span class="number">3</span>)
-                .<span class="ident">abs</span>()) <span class="kw">as</span> <span class="ident">i64</span>
+    <span class="comment">// we penalize lines ending in really short words
+    </span><span class="kw">let </span>bad_wordlen = <span class="kw">if </span>wlen &gt;= stretch {
+        <span class="number">0
+    </span>} <span class="kw">else </span>{
+        (DL_MULT
+            * ((stretch - wlen) <span class="kw">as </span>f32 / (stretch - <span class="number">1</span>) <span class="kw">as </span>f32)
+                .powi(<span class="number">3</span>)
+                .abs()) <span class="kw">as </span>i64
     };
 
-    <span class="comment">// we penalize lines that have very different ratios from previous lines</span>
-    <span class="kw">let</span> <span class="ident">bad_delta_r</span> <span class="op">=</span> (<span class="ident">DR_MULT</span> <span class="op">*</span> (((<span class="ident">ratio</span> <span class="op">-</span> <span class="ident">prev_rat</span>) <span class="op">/</span> <span class="number">2.0</span>).<span class="ident">powi</span>(<span class="number">3</span>)).<span class="ident">abs</span>()) <span class="kw">as</span> <span class="ident">i64</span>;
+    <span class="comment">// we penalize lines that have very different ratios from previous lines
+    </span><span class="kw">let </span>bad_delta_r = (DR_MULT * (((ratio - prev_rat) / <span class="number">2.0</span>).powi(<span class="number">3</span>)).abs()) <span class="kw">as </span>i64;
 
-    <span class="kw">let</span> <span class="ident">demerits</span> <span class="op">=</span> <span class="ident">i64::pow</span>(<span class="number">1</span> <span class="op">+</span> <span class="ident">bad_linelen</span> <span class="op">+</span> <span class="ident">bad_wordlen</span> <span class="op">+</span> <span class="ident">bad_delta_r</span>, <span class="number">2</span>);
+    <span class="kw">let </span>demerits = i64::pow(<span class="number">1 </span>+ bad_linelen + bad_wordlen + bad_delta_r, <span class="number">2</span>);
 
-    (<span class="ident">demerits</span>, <span class="ident">ratio</span>)
+    (demerits, ratio)
 }
 
-<span class="kw">fn</span> <span class="ident">restart_active_breaks</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
-    <span class="ident">args</span>: <span class="kw-2">&amp;</span><span class="ident">BreakArgs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    <span class="ident">active</span>: <span class="kw-2">&amp;</span><span class="ident">LineBreak</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    <span class="ident">act_idx</span>: <span class="ident">usize</span>,
-    <span class="ident">w</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">WordInfo</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    <span class="ident">slen</span>: <span class="ident">usize</span>,
-    <span class="ident">min</span>: <span class="ident">usize</span>,
-) -&gt; <span class="ident">LineBreak</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> (<span class="ident">break_before</span>, <span class="ident">line_length</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">active</span>.<span class="ident">fresh</span> {
-        <span class="comment">// never break before a word if that word would be the first on a line</span>
-        (<span class="bool-val">false</span>, <span class="ident">args</span>.<span class="ident">indent_len</span>)
-    } <span class="kw">else</span> {
-        <span class="comment">// choose the lesser evil: breaking too early, or breaking too late</span>
-        <span class="kw">let</span> <span class="ident">wlen</span> <span class="op">=</span> <span class="ident">w</span>.<span class="ident">word_nchars</span> <span class="op">+</span> <span class="ident">args</span>.<span class="ident">compute_width</span>(<span class="ident">w</span>, <span class="ident">active</span>.<span class="ident">length</span>, <span class="ident">active</span>.<span class="ident">fresh</span>);
-        <span class="kw">let</span> <span class="ident">underlen</span> <span class="op">=</span> (<span class="ident">min</span> <span class="op">-</span> <span class="ident">active</span>.<span class="ident">length</span>) <span class="kw">as</span> <span class="ident">isize</span>;
-        <span class="kw">let</span> <span class="ident">overlen</span> <span class="op">=</span> ((<span class="ident">wlen</span> <span class="op">+</span> <span class="ident">slen</span> <span class="op">+</span> <span class="ident">active</span>.<span class="ident">length</span>) <span class="op">-</span> <span class="ident">args</span>.<span class="ident">opts</span>.<span class="ident">width</span>) <span class="kw">as</span> <span class="ident">isize</span>;
-        <span class="kw">if</span> <span class="ident">overlen</span> <span class="op">&gt;</span> <span class="ident">underlen</span> {
-            <span class="comment">// break early, put this word on the next line</span>
-            (<span class="bool-val">true</span>, <span class="ident">args</span>.<span class="ident">indent_len</span> <span class="op">+</span> <span class="ident">w</span>.<span class="ident">word_nchars</span>)
-        } <span class="kw">else</span> {
-            (<span class="bool-val">false</span>, <span class="ident">args</span>.<span class="ident">indent_len</span>)
+<span class="kw">fn </span>restart_active_breaks&lt;<span class="lifetime">&#39;a</span>&gt;(
+    args: <span class="kw-2">&amp;</span>BreakArgs&lt;<span class="lifetime">&#39;a</span>&gt;,
+    active: <span class="kw-2">&amp;</span>LineBreak&lt;<span class="lifetime">&#39;a</span>&gt;,
+    act_idx: usize,
+    w: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>WordInfo&lt;<span class="lifetime">&#39;a</span>&gt;,
+    slen: usize,
+    min: usize,
+) -&gt; LineBreak&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">let </span>(break_before, line_length) = <span class="kw">if </span>active.fresh {
+        <span class="comment">// never break before a word if that word would be the first on a line
+        </span>(<span class="bool-val">false</span>, args.indent_len)
+    } <span class="kw">else </span>{
+        <span class="comment">// choose the lesser evil: breaking too early, or breaking too late
+        </span><span class="kw">let </span>wlen = w.word_nchars + args.compute_width(w, active.length, active.fresh);
+        <span class="kw">let </span>underlen = (min - active.length) <span class="kw">as </span>isize;
+        <span class="kw">let </span>overlen = ((wlen + slen + active.length) - args.opts.width) <span class="kw">as </span>isize;
+        <span class="kw">if </span>overlen &gt; underlen {
+            <span class="comment">// break early, put this word on the next line
+            </span>(<span class="bool-val">true</span>, args.indent_len + w.word_nchars)
+        } <span class="kw">else </span>{
+            (<span class="bool-val">false</span>, args.indent_len)
         }
     };
 
-    <span class="comment">// restart the linebreak. This will be our only active path.</span>
-    <span class="ident">LineBreak</span> {
-        <span class="ident">prev</span>: <span class="ident">act_idx</span>,
-        <span class="ident">linebreak</span>: <span class="prelude-val">Some</span>(<span class="ident">w</span>),
-        <span class="ident">break_before</span>,
-        <span class="ident">demerits</span>: <span class="number">0</span>, <span class="comment">// this is the only active break, so we can reset the demerit count</span>
-        <span class="ident">prev_rat</span>: <span class="kw">if</span> <span class="ident">break_before</span> { <span class="number">1.0</span> } <span class="kw">else</span> { <span class="op">-</span><span class="number">1.0</span> },
-        <span class="ident">length</span>: <span class="ident">line_length</span>,
-        <span class="ident">fresh</span>: <span class="op">!</span><span class="ident">break_before</span>,
+    <span class="comment">// restart the linebreak. This will be our only active path.
+    </span>LineBreak {
+        prev: act_idx,
+        linebreak: <span class="prelude-val">Some</span>(w),
+        break_before,
+        demerits: <span class="number">0</span>, <span class="comment">// this is the only active break, so we can reset the demerit count
+        </span>prev_rat: <span class="kw">if </span>break_before { <span class="number">1.0 </span>} <span class="kw">else </span>{ -<span class="number">1.0 </span>},
+        length: line_length,
+        fresh: !break_before,
     }
 }
 
-<span class="comment">// Number of spaces to add before a word, based on mode, newline, sentence start.</span>
-<span class="kw">fn</span> <span class="ident">compute_slen</span>(<span class="ident">uniform</span>: <span class="ident">bool</span>, <span class="ident">newline</span>: <span class="ident">bool</span>, <span class="ident">start</span>: <span class="ident">bool</span>, <span class="ident">punct</span>: <span class="ident">bool</span>) -&gt; <span class="ident">usize</span> {
-    <span class="kw">if</span> <span class="ident">uniform</span> <span class="op">|</span><span class="op">|</span> <span class="ident">newline</span> {
-        <span class="kw">if</span> <span class="ident">start</span> <span class="op">|</span><span class="op">|</span> (<span class="ident">newline</span> <span class="op">&amp;&amp;</span> <span class="ident">punct</span>) {
-            <span class="number">2</span>
-        } <span class="kw">else</span> {
-            <span class="number">1</span>
-        }
-    } <span class="kw">else</span> {
-        <span class="number">0</span>
+<span class="comment">// Number of spaces to add before a word, based on mode, newline, sentence start.
+</span><span class="kw">fn </span>compute_slen(uniform: bool, newline: bool, start: bool, punct: bool) -&gt; usize {
+    <span class="kw">if </span>uniform || newline {
+        <span class="kw">if </span>start || (newline &amp;&amp; punct) {
+            <span class="number">2
+        </span>} <span class="kw">else </span>{
+            <span class="number">1
+        </span>}
+    } <span class="kw">else </span>{
+        <span class="number">0
+    </span>}
+}
+
+<span class="comment">// If we&#39;re on a fresh line, slen=0 and we slice off leading whitespace.
+// Otherwise, compute slen and leave whitespace alone.
+</span><span class="kw">fn </span>slice_if_fresh(
+    fresh: bool,
+    word: <span class="kw-2">&amp;</span>str,
+    start: usize,
+    uniform: bool,
+    newline: bool,
+    sstart: bool,
+    punct: bool,
+) -&gt; (usize, <span class="kw-2">&amp;</span>str) {
+    <span class="kw">if </span>fresh {
+        (<span class="number">0</span>, <span class="kw-2">&amp;</span>word[start..])
+    } <span class="kw">else </span>{
+        (compute_slen(uniform, newline, sstart, punct), word)
     }
 }
 
-<span class="comment">// If we&#39;re on a fresh line, slen=0 and we slice off leading whitespace.</span>
-<span class="comment">// Otherwise, compute slen and leave whitespace alone.</span>
-<span class="kw">fn</span> <span class="ident">slice_if_fresh</span>(
-    <span class="ident">fresh</span>: <span class="ident">bool</span>,
-    <span class="ident">word</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">start</span>: <span class="ident">usize</span>,
-    <span class="ident">uniform</span>: <span class="ident">bool</span>,
-    <span class="ident">newline</span>: <span class="ident">bool</span>,
-    <span class="ident">sstart</span>: <span class="ident">bool</span>,
-    <span class="ident">punct</span>: <span class="ident">bool</span>,
-) -&gt; (<span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-    <span class="kw">if</span> <span class="ident">fresh</span> {
-        (<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="ident">word</span>[<span class="ident">start</span>..])
-    } <span class="kw">else</span> {
-        (<span class="ident">compute_slen</span>(<span class="ident">uniform</span>, <span class="ident">newline</span>, <span class="ident">sstart</span>, <span class="ident">punct</span>), <span class="ident">word</span>)
-    }
+<span class="comment">// Write a newline and add the indent.
+</span><span class="kw">fn </span>write_newline(indent: <span class="kw-2">&amp;</span>str, ostream: <span class="kw-2">&amp;mut </span>BufWriter&lt;Stdout&gt;) -&gt; std::io::Result&lt;()&gt; {
+    ostream.write_all(<span class="string">b&quot;\n&quot;</span>)<span class="question-mark">?</span>;
+    ostream.write_all(indent.as_bytes())
 }
 
-<span class="comment">// Write a newline and add the indent.</span>
-<span class="kw">fn</span> <span class="ident">write_newline</span>(<span class="ident">indent</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">ostream</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span>) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">ostream</span>.<span class="ident">write_all</span>(<span class="string">b&quot;\n&quot;</span>)<span class="question-mark">?</span>;
-    <span class="ident">ostream</span>.<span class="ident">write_all</span>(<span class="ident">indent</span>.<span class="ident">as_bytes</span>())
-}
-
-<span class="comment">// Write the word, along with slen spaces.</span>
-<span class="kw">fn</span> <span class="ident">write_with_spaces</span>(
-    <span class="ident">word</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">slen</span>: <span class="ident">usize</span>,
-    <span class="ident">ostream</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span>,
-) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">slen</span> <span class="op">==</span> <span class="number">2</span> {
-        <span class="ident">ostream</span>.<span class="ident">write_all</span>(<span class="string">b&quot;  &quot;</span>)<span class="question-mark">?</span>;
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">slen</span> <span class="op">==</span> <span class="number">1</span> {
-        <span class="ident">ostream</span>.<span class="ident">write_all</span>(<span class="string">b&quot; &quot;</span>)<span class="question-mark">?</span>;
+<span class="comment">// Write the word, along with slen spaces.
+</span><span class="kw">fn </span>write_with_spaces(
+    word: <span class="kw-2">&amp;</span>str,
+    slen: usize,
+    ostream: <span class="kw-2">&amp;mut </span>BufWriter&lt;Stdout&gt;,
+) -&gt; std::io::Result&lt;()&gt; {
+    <span class="kw">if </span>slen == <span class="number">2 </span>{
+        ostream.write_all(<span class="string">b&quot;  &quot;</span>)<span class="question-mark">?</span>;
+    } <span class="kw">else if </span>slen == <span class="number">1 </span>{
+        ostream.write_all(<span class="string">b&quot; &quot;</span>)<span class="question-mark">?</span>;
     }
-    <span class="ident">ostream</span>.<span class="ident">write_all</span>(<span class="ident">word</span>.<span class="ident">as_bytes</span>())
+    ostream.write_all(word.as_bytes())
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_fmt" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_fmt" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/printf/src/printf.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>printf.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uu_printf/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../uu_printf/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uu_printf/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/printf/src/printf.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>printf.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uu_printf/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../uu_printf/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uu_printf/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -309,19 +309,19 @@
 <span id="309">309</span>
 <span id="310">310</span>
 <span id="311">311</span>
-</pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-<span class="comment">// spell-checker:ignore (change!) each&#39;s</span>
-<span class="comment">// spell-checker:ignore (ToDO) LONGHELP FORMATSTRING templating parameterizing formatstr</span>
+</pre><pre class="rust"><code><span class="attribute">#![allow(dead_code)]
+</span><span class="comment">// spell-checker:ignore (change!) each&#39;s
+// spell-checker:ignore (ToDO) LONGHELP FORMATSTRING templating parameterizing formatstr
 
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">crate_version</span>, <span class="ident">Arg</span>, <span class="ident">ArgAction</span>, <span class="ident">Command</span>};
-<span class="kw">use</span> <span class="ident">uucore::error</span>::{<span class="ident">UResult</span>, <span class="ident">UUsageError</span>};
-<span class="kw">use</span> <span class="ident">uucore</span>::{<span class="ident">format_usage</span>, <span class="ident">memo</span>};
+</span><span class="kw">use </span>clap::{crate_version, Arg, ArgAction, Command};
+<span class="kw">use </span>uucore::error::{UResult, UUsageError};
+<span class="kw">use </span>uucore::{format_usage, memo};
 
-<span class="kw">const</span> <span class="ident">VERSION</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;version&quot;</span>;
-<span class="kw">const</span> <span class="ident">HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;help&quot;</span>;
-<span class="kw">const</span> <span class="ident">USAGE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;{} FORMATSTRING [ARGUMENT]...&quot;</span>;
-<span class="kw">const</span> <span class="ident">ABOUT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Print output based off of the format string and proceeding arguments.&quot;</span>;
-<span class="kw">const</span> <span class="ident">AFTER_HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;
+<span class="kw">const </span>VERSION: <span class="kw-2">&amp;</span>str = <span class="string">&quot;version&quot;</span>;
+<span class="kw">const </span>HELP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;help&quot;</span>;
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;{} FORMATSTRING [ARGUMENT]...&quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Print output based off of the format string and proceeding arguments.&quot;</span>;
+<span class="kw">const </span>AFTER_HELP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;
 basic anonymous string templating:
 
 prints format string at least once, repeating as long as there are remaining arguments
@@ -574,51 +574,51 @@ COPYRIGHT :
 
 &quot;</span>;
 
-<span class="kw">mod</span> <span class="ident">options</span> {
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FORMATSTRING</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;FORMATSTRING&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ARGUMENT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;ARGUMENT&quot;</span>;
+<span class="kw">mod </span>options {
+    <span class="kw">pub const </span>FORMATSTRING: <span class="kw-2">&amp;</span>str = <span class="string">&quot;FORMATSTRING&quot;</span>;
+    <span class="kw">pub const </span>ARGUMENT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;ARGUMENT&quot;</span>;
 }
 
-<span class="attribute">#[<span class="ident">uucore::main</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uumain</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">uucore::Args</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">collect_ignore</span>();
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">uu_app</span>().<span class="ident">get_matches_from</span>(<span class="ident">args</span>);
+<span class="attribute">#[uucore::main]
+</span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
+    <span class="kw">let </span>args = args.collect_ignore();
+    <span class="kw">let </span>matches = uu_app().get_matches_from(args);
 
-    <span class="kw">let</span> <span class="ident">format_string</span> <span class="op">=</span> <span class="ident">matches</span>
-        .<span class="ident">get_one</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::FORMATSTRING</span>)
-        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">UUsageError::new</span>(<span class="number">1</span>, <span class="string">&quot;missing operand&quot;</span>))<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">values</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">get_many</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::ARGUMENT</span>) {
-        <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_string</span>()).<span class="ident">collect</span>(),
-        <span class="prelude-val">None</span> =&gt; <span class="macro">vec!</span>[],
+    <span class="kw">let </span>format_string = matches
+        .get_one::&lt;String&gt;(options::FORMATSTRING)
+        .ok_or_else(|| UUsageError::new(<span class="number">1</span>, <span class="string">&quot;missing operand&quot;</span>))<span class="question-mark">?</span>;
+    <span class="kw">let </span>values: Vec&lt;String&gt; = <span class="kw">match </span>matches.get_many::&lt;String&gt;(options::ARGUMENT) {
+        <span class="prelude-val">Some</span>(s) =&gt; s.map(|s| s.to_string()).collect(),
+        <span class="prelude-val">None </span>=&gt; <span class="macro">vec!</span>[],
     };
 
-    <span class="ident">memo::Memo::run_all</span>(<span class="ident">format_string</span>, <span class="kw-2">&amp;</span><span class="ident">values</span>[..])<span class="question-mark">?</span>;
+    memo::Memo::run_all(format_string, <span class="kw-2">&amp;</span>values[..])<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uu_app</span>() -&gt; <span class="ident">Command</span> {
-    <span class="ident">Command::new</span>(<span class="ident">uucore::util_name</span>())
-        .<span class="ident">allow_hyphen_values</span>(<span class="bool-val">true</span>)
-        .<span class="ident">version</span>(<span class="macro">crate_version!</span>())
-        .<span class="ident">about</span>(<span class="ident">ABOUT</span>)
-        .<span class="ident">after_help</span>(<span class="ident">AFTER_HELP</span>)
-        .<span class="ident">override_usage</span>(<span class="ident">format_usage</span>(<span class="ident">USAGE</span>))
-        .<span class="ident">disable_help_flag</span>(<span class="bool-val">true</span>)
-        .<span class="ident">disable_version_flag</span>(<span class="bool-val">true</span>)
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">HELP</span>)
-                .<span class="ident">long</span>(<span class="ident">HELP</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Print help information&quot;</span>)
-                .<span class="ident">action</span>(<span class="ident">ArgAction::Help</span>),
+<span class="kw">pub fn </span>uu_app() -&gt; Command {
+    Command::new(uucore::util_name())
+        .allow_hyphen_values(<span class="bool-val">true</span>)
+        .version(<span class="macro">crate_version!</span>())
+        .about(ABOUT)
+        .after_help(AFTER_HELP)
+        .override_usage(format_usage(USAGE))
+        .disable_help_flag(<span class="bool-val">true</span>)
+        .disable_version_flag(<span class="bool-val">true</span>)
+        .arg(
+            Arg::new(HELP)
+                .long(HELP)
+                .help(<span class="string">&quot;Print help information&quot;</span>)
+                .action(ArgAction::Help),
         )
-        .<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">VERSION</span>)
-                .<span class="ident">long</span>(<span class="ident">VERSION</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Print version information&quot;</span>)
-                .<span class="ident">action</span>(<span class="ident">ArgAction::Version</span>),
+        .arg(
+            Arg::new(VERSION)
+                .long(VERSION)
+                .help(<span class="string">&quot;Print version information&quot;</span>)
+                .action(ArgAction::Version),
         )
-        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::FORMATSTRING</span>))
-        .<span class="ident">arg</span>(<span class="ident">Arg::new</span>(<span class="ident">options::ARGUMENT</span>).<span class="ident">action</span>(<span class="ident">ArgAction::Append</span>))
+        .arg(Arg::new(options::FORMATSTRING))
+        .arg(Arg::new(options::ARGUMENT).action(ArgAction::Append))
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_printf" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_printf" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

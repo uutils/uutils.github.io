@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/split/src/platform/unix.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>unix.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uu_split/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../uu_split/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uu_split/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uu/split/src/platform/unix.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>unix.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uu_split/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../uu_split/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uu_split/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -141,148 +141,148 @@
 <span id="141">141</span>
 <span id="142">142</span>
 <span id="143">143</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::env</span>;
-<span class="kw">use</span> <span class="ident">std::io::Write</span>;
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">BufWriter</span>, <span class="ident">Error</span>, <span class="ident">ErrorKind</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">std::path::Path</span>;
-<span class="kw">use</span> <span class="ident">std::process</span>::{<span class="ident">Child</span>, <span class="ident">Command</span>, <span class="ident">Stdio</span>};
-<span class="kw">use</span> <span class="ident">uucore::crash</span>;
-<span class="kw">use</span> <span class="ident">uucore::fs</span>;
-<span class="kw">use</span> <span class="ident">uucore::fs::FileInformation</span>;
+</pre><pre class="rust"><code><span class="kw">use </span>std::env;
+<span class="kw">use </span>std::io::Write;
+<span class="kw">use </span>std::io::{BufWriter, Error, ErrorKind, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>std::path::Path;
+<span class="kw">use </span>std::process::{Child, Command, Stdio};
+<span class="kw">use </span>uucore::crash;
+<span class="kw">use </span>uucore::fs;
+<span class="kw">use </span>uucore::fs::FileInformation;
 
-<span class="doccomment">/// A writer that writes to a shell_process&#39; stdin</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// We use a shell process (not directly calling a sub-process) so we can forward the name of the</span>
-<span class="doccomment">/// corresponding output file (xaa, xab, xac… ). This is the way it was implemented in GNU split.</span>
-<span class="kw">struct</span> <span class="ident">FilterWriter</span> {
-    <span class="doccomment">/// Running shell process</span>
-    <span class="ident">shell_process</span>: <span class="ident">Child</span>,
+<span class="doccomment">/// A writer that writes to a shell_process&#39; stdin
+///
+/// We use a shell process (not directly calling a sub-process) so we can forward the name of the
+/// corresponding output file (xaa, xab, xac… ). This is the way it was implemented in GNU split.
+</span><span class="kw">struct </span>FilterWriter {
+    <span class="doccomment">/// Running shell process
+    </span>shell_process: Child,
 }
 
-<span class="kw">impl</span> <span class="ident">Write</span> <span class="kw">for</span> <span class="ident">FilterWriter</span> {
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">shell_process</span>
-            .<span class="ident">stdin</span>
-            .<span class="ident">as_mut</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;failed to get shell stdin&quot;</span>)
-            .<span class="ident">write</span>(<span class="ident">buf</span>)
+<span class="kw">impl </span>Write <span class="kw">for </span>FilterWriter {
+    <span class="kw">fn </span>write(<span class="kw-2">&amp;mut </span><span class="self">self</span>, buf: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;usize&gt; {
+        <span class="self">self</span>.shell_process
+            .stdin
+            .as_mut()
+            .expect(<span class="string">&quot;failed to get shell stdin&quot;</span>)
+            .write(buf)
     }
-    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">shell_process</span>
-            .<span class="ident">stdin</span>
-            .<span class="ident">as_mut</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;failed to get shell stdin&quot;</span>)
-            .<span class="ident">flush</span>()
+    <span class="kw">fn </span>flush(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="self">self</span>.shell_process
+            .stdin
+            .as_mut()
+            .expect(<span class="string">&quot;failed to get shell stdin&quot;</span>)
+            .flush()
     }
 }
 
-<span class="doccomment">/// Have an environment variable set at a value during this lifetime</span>
-<span class="kw">struct</span> <span class="ident">WithEnvVarSet</span> {
-    <span class="doccomment">/// Env var key</span>
-    <span class="ident">_previous_var_key</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// Previous value set to this key</span>
-    <span class="ident">_previous_var_value</span>: <span class="ident">std::result::Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">env::VarError</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Have an environment variable set at a value during this lifetime
+</span><span class="kw">struct </span>WithEnvVarSet {
+    <span class="doccomment">/// Env var key
+    </span>_previous_var_key: String,
+    <span class="doccomment">/// Previous value set to this key
+    </span>_previous_var_value: std::result::Result&lt;String, env::VarError&gt;,
 }
-<span class="kw">impl</span> <span class="ident">WithEnvVarSet</span> {
-    <span class="doccomment">/// Save previous value assigned to key, set key=value</span>
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">previous_env_value</span> <span class="op">=</span> <span class="ident">env::var</span>(<span class="ident">key</span>);
-        <span class="ident">env::set_var</span>(<span class="ident">key</span>, <span class="ident">value</span>);
-        <span class="self">Self</span> {
-            <span class="ident">_previous_var_key</span>: <span class="ident">String::from</span>(<span class="ident">key</span>),
-            <span class="ident">_previous_var_value</span>: <span class="ident">previous_env_value</span>,
+<span class="kw">impl </span>WithEnvVarSet {
+    <span class="doccomment">/// Save previous value assigned to key, set key=value
+    </span><span class="kw">fn </span>new(key: <span class="kw-2">&amp;</span>str, value: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>previous_env_value = env::var(key);
+        env::set_var(key, value);
+        <span class="self">Self </span>{
+            _previous_var_key: String::from(key),
+            _previous_var_value: previous_env_value,
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">WithEnvVarSet</span> {
-    <span class="doccomment">/// Restore previous value now that this is being dropped by context</span>
-    <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="kw-2">ref</span> <span class="ident">prev_value</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">_previous_var_value</span> {
-            <span class="ident">env::set_var</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">_previous_var_key</span>, <span class="ident">prev_value</span>);
-        } <span class="kw">else</span> {
-            <span class="ident">env::remove_var</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">_previous_var_key</span>);
+<span class="kw">impl </span>Drop <span class="kw">for </span>WithEnvVarSet {
+    <span class="doccomment">/// Restore previous value now that this is being dropped by context
+    </span><span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="kw">if let </span><span class="prelude-val">Ok</span>(<span class="kw-2">ref </span>prev_value) = <span class="self">self</span>._previous_var_value {
+            env::set_var(<span class="kw-2">&amp;</span><span class="self">self</span>._previous_var_key, prev_value);
+        } <span class="kw">else </span>{
+            env::remove_var(<span class="kw-2">&amp;</span><span class="self">self</span>._previous_var_key);
         }
     }
 }
-<span class="kw">impl</span> <span class="ident">FilterWriter</span> {
-    <span class="doccomment">/// Create a new filter running a command with $FILE pointing at the output name</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// #Arguments</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `command` - The shell command to execute</span>
-    <span class="doccomment">/// * `filepath` - Path of the output file (forwarded to command as $FILE)</span>
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">command</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">filepath</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="comment">// set $FILE, save previous value (if there was one)</span>
-        <span class="kw">let</span> <span class="ident">_with_env_var_set</span> <span class="op">=</span> <span class="ident">WithEnvVarSet::new</span>(<span class="string">&quot;FILE&quot;</span>, <span class="ident">filepath</span>);
+<span class="kw">impl </span>FilterWriter {
+    <span class="doccomment">/// Create a new filter running a command with $FILE pointing at the output name
+    ///
+    /// #Arguments
+    ///
+    /// * `command` - The shell command to execute
+    /// * `filepath` - Path of the output file (forwarded to command as $FILE)
+    </span><span class="kw">fn </span>new(command: <span class="kw-2">&amp;</span>str, filepath: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="comment">// set $FILE, save previous value (if there was one)
+        </span><span class="kw">let </span>_with_env_var_set = WithEnvVarSet::new(<span class="string">&quot;FILE&quot;</span>, filepath);
 
-        <span class="kw">let</span> <span class="ident">shell_process</span> <span class="op">=</span>
-            <span class="ident">Command::new</span>(<span class="ident">env::var</span>(<span class="string">&quot;SHELL&quot;</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;/bin/sh&quot;</span>.<span class="ident">to_owned</span>()))
-                .<span class="ident">arg</span>(<span class="string">&quot;-c&quot;</span>)
-                .<span class="ident">arg</span>(<span class="ident">command</span>)
-                .<span class="ident">stdin</span>(<span class="ident">Stdio::piped</span>())
-                .<span class="ident">spawn</span>()<span class="question-mark">?</span>;
+        <span class="kw">let </span>shell_process =
+            Command::new(env::var(<span class="string">&quot;SHELL&quot;</span>).unwrap_or_else(|<span class="kw">_</span>| <span class="string">&quot;/bin/sh&quot;</span>.to_owned()))
+                .arg(<span class="string">&quot;-c&quot;</span>)
+                .arg(command)
+                .stdin(Stdio::piped())
+                .spawn()<span class="question-mark">?</span>;
 
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">shell_process</span> })
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ shell_process })
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">FilterWriter</span> {
-    <span class="doccomment">/// flush stdin, close it and wait on `shell_process` before dropping self</span>
-    <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
+<span class="kw">impl </span>Drop <span class="kw">for </span>FilterWriter {
+    <span class="doccomment">/// flush stdin, close it and wait on `shell_process` before dropping self
+    </span><span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
         {
-            <span class="comment">// close stdin by dropping it</span>
-            <span class="kw">let</span> <span class="ident">_stdin</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">shell_process</span>.<span class="ident">stdin</span>.<span class="ident">as_mut</span>();
+            <span class="comment">// close stdin by dropping it
+            </span><span class="kw">let </span>_stdin = <span class="self">self</span>.shell_process.stdin.as_mut();
         }
-        <span class="kw">let</span> <span class="ident">exit_status</span> <span class="op">=</span> <span class="self">self</span>
-            .<span class="ident">shell_process</span>
-            .<span class="ident">wait</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;Couldn&#39;t wait for child process&quot;</span>);
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">return_code</span>) <span class="op">=</span> <span class="ident">exit_status</span>.<span class="ident">code</span>() {
-            <span class="kw">if</span> <span class="ident">return_code</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-                <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;Shell process returned {}&quot;</span>, <span class="ident">return_code</span>);
+        <span class="kw">let </span>exit_status = <span class="self">self
+            </span>.shell_process
+            .wait()
+            .expect(<span class="string">&quot;Couldn&#39;t wait for child process&quot;</span>);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(return_code) = exit_status.code() {
+            <span class="kw">if </span>return_code != <span class="number">0 </span>{
+                <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;Shell process returned {}&quot;</span>, return_code);
             }
-        } <span class="kw">else</span> {
+        } <span class="kw">else </span>{
             <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;Shell process terminated by signal&quot;</span>)
         }
     }
 }
 
-<span class="doccomment">/// Instantiate either a file writer or a &quot;write to shell process&#39;s stdin&quot; writer</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">instantiate_current_writer</span>(
-    <span class="ident">filter</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="ident">filename</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BufWriter</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Write</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">filter</span> {
-        <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">BufWriter::new</span>(<span class="ident">Box::new</span>(
-            <span class="comment">// write to the next file</span>
-            <span class="ident">std::fs::OpenOptions::new</span>()
-                .<span class="ident">write</span>(<span class="bool-val">true</span>)
-                .<span class="ident">create</span>(<span class="bool-val">true</span>)
-                .<span class="ident">truncate</span>(<span class="bool-val">true</span>)
-                .<span class="ident">open</span>(<span class="ident">std::path::Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">filename</span>))
-                .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
-                    <span class="ident">Error::new</span>(
-                        <span class="ident">ErrorKind::Other</span>,
-                        <span class="macro">format!</span>(<span class="string">&quot;unable to open &#39;{}&#39;; aborting&quot;</span>, <span class="ident">filename</span>),
+<span class="doccomment">/// Instantiate either a file writer or a &quot;write to shell process&#39;s stdin&quot; writer
+</span><span class="kw">pub fn </span>instantiate_current_writer(
+    filter: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;String&gt;,
+    filename: <span class="kw-2">&amp;</span>str,
+) -&gt; <span class="prelude-ty">Result</span>&lt;BufWriter&lt;Box&lt;<span class="kw">dyn </span>Write&gt;&gt;&gt; {
+    <span class="kw">match </span>filter {
+        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(BufWriter::new(Box::new(
+            <span class="comment">// write to the next file
+            </span>std::fs::OpenOptions::new()
+                .write(<span class="bool-val">true</span>)
+                .create(<span class="bool-val">true</span>)
+                .truncate(<span class="bool-val">true</span>)
+                .open(std::path::Path::new(<span class="kw-2">&amp;</span>filename))
+                .map_err(|<span class="kw">_</span>| {
+                    Error::new(
+                        ErrorKind::Other,
+                        <span class="macro">format!</span>(<span class="string">&quot;unable to open &#39;{}&#39;; aborting&quot;</span>, filename),
                     )
                 })<span class="question-mark">?</span>,
-        ) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Write</span><span class="op">&gt;</span>)),
-        <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">filter_command</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">BufWriter::new</span>(<span class="ident">Box::new</span>(
-            <span class="comment">// spawn a shell command and write to it</span>
-            <span class="ident">FilterWriter::new</span>(<span class="ident">filter_command</span>, <span class="ident">filename</span>)<span class="question-mark">?</span>,
-        ) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Write</span><span class="op">&gt;</span>)),
+        ) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Write&gt;)),
+        <span class="prelude-val">Some</span>(<span class="kw-2">ref </span>filter_command) =&gt; <span class="prelude-val">Ok</span>(BufWriter::new(Box::new(
+            <span class="comment">// spawn a shell command and write to it
+            </span>FilterWriter::new(filter_command, filename)<span class="question-mark">?</span>,
+        ) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Write&gt;)),
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">paths_refer_to_same_file</span>(<span class="ident">p1</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">p2</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">bool</span> {
-    <span class="comment">// We have to take symlinks and relative paths into account.</span>
-    <span class="kw">let</span> <span class="ident">p1</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">p1</span> <span class="op">==</span> <span class="string">&quot;-&quot;</span> {
-        <span class="ident">FileInformation::from_file</span>(<span class="kw-2">&amp;</span><span class="ident">std::io::stdin</span>())
-    } <span class="kw">else</span> {
-        <span class="ident">FileInformation::from_path</span>(<span class="ident">Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">p1</span>), <span class="bool-val">true</span>)
+<span class="kw">pub fn </span>paths_refer_to_same_file(p1: <span class="kw-2">&amp;</span>str, p2: <span class="kw-2">&amp;</span>str) -&gt; bool {
+    <span class="comment">// We have to take symlinks and relative paths into account.
+    </span><span class="kw">let </span>p1 = <span class="kw">if </span>p1 == <span class="string">&quot;-&quot; </span>{
+        FileInformation::from_file(<span class="kw-2">&amp;</span>std::io::stdin())
+    } <span class="kw">else </span>{
+        FileInformation::from_path(Path::new(<span class="kw-2">&amp;</span>p1), <span class="bool-val">true</span>)
     };
-    <span class="ident">fs::infos_refer_to_same_file</span>(<span class="ident">p1</span>, <span class="ident">FileInformation::from_path</span>(<span class="ident">Path::new</span>(<span class="ident">p2</span>), <span class="bool-val">true</span>))
+    fs::infos_refer_to_same_file(p1, FileInformation::from_path(Path::new(p2), <span class="bool-val">true</span>))
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uu_split" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uu_split" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uucore/src/lib/features/perms.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>perms.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uucore/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/uucore/src/lib/features/perms.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>perms.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../uucore/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uucore/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -526,533 +526,533 @@
 <span id="526">526</span>
 <span id="527">527</span>
 <span id="528">528</span>
-</pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.</span>
-<span class="comment">//</span>
-<span class="comment">// For the full copyright and license information, please view the LICENSE</span>
-<span class="comment">// file that was distributed with this source code.</span>
+</pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
+//
+// For the full copyright and license information, please view the LICENSE
+// file that was distributed with this source code.
 
-<span class="doccomment">//! Common functions to manage permissions</span>
+</span><span class="doccomment">//! Common functions to manage permissions
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::display::Quotable</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error::strip_errno</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error::UResult</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error::USimpleError</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::features::entries</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::fs::resolve_relative_path</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::show_error</span>;
-<span class="kw">use</span> <span class="ident">clap::Arg</span>;
-<span class="kw">use</span> <span class="ident">clap::ArgMatches</span>;
-<span class="kw">use</span> <span class="ident">clap::Command</span>;
-<span class="kw">use</span> <span class="ident">libc</span>::{<span class="self">self</span>, <span class="ident">gid_t</span>, <span class="ident">uid_t</span>};
-<span class="kw">use</span> <span class="ident">walkdir::WalkDir</span>;
+</span><span class="kw">use </span><span class="kw">crate</span>::display::Quotable;
+<span class="kw">use </span><span class="kw">crate</span>::error::strip_errno;
+<span class="kw">use </span><span class="kw">crate</span>::error::UResult;
+<span class="kw">use </span><span class="kw">crate</span>::error::USimpleError;
+<span class="kw">pub use </span><span class="kw">crate</span>::features::entries;
+<span class="kw">use </span><span class="kw">crate</span>::fs::resolve_relative_path;
+<span class="kw">use </span><span class="kw">crate</span>::show_error;
+<span class="kw">use </span>clap::Arg;
+<span class="kw">use </span>clap::ArgMatches;
+<span class="kw">use </span>clap::Command;
+<span class="kw">use </span>libc::{<span class="self">self</span>, gid_t, uid_t};
+<span class="kw">use </span>walkdir::WalkDir;
 
-<span class="kw">use</span> <span class="ident">std::io::Error</span> <span class="kw">as</span> <span class="ident">IOError</span>;
-<span class="kw">use</span> <span class="ident">std::io::Result</span> <span class="kw">as</span> <span class="ident">IOResult</span>;
+<span class="kw">use </span>std::io::Error <span class="kw">as </span>IOError;
+<span class="kw">use </span>std::io::Result <span class="kw">as </span>IOResult;
 
-<span class="kw">use</span> <span class="ident">std::ffi::CString</span>;
-<span class="kw">use</span> <span class="ident">std::fs::Metadata</span>;
-<span class="kw">use</span> <span class="ident">std::os::unix::fs::MetadataExt</span>;
+<span class="kw">use </span>std::ffi::CString;
+<span class="kw">use </span>std::fs::Metadata;
+<span class="kw">use </span>std::os::unix::fs::MetadataExt;
 
-<span class="kw">use</span> <span class="ident">std::os::unix::ffi::OsStrExt</span>;
-<span class="kw">use</span> <span class="ident">std::path::Path</span>;
+<span class="kw">use </span>std::os::unix::ffi::OsStrExt;
+<span class="kw">use </span>std::path::Path;
 
-<span class="doccomment">/// The various level of verbosity</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">VerbosityLevel</span> {
-    <span class="ident">Silent</span>,
-    <span class="ident">Changes</span>,
-    <span class="ident">Verbose</span>,
-    <span class="ident">Normal</span>,
+<span class="doccomment">/// The various level of verbosity
+</span><span class="attribute">#[derive(PartialEq, Eq, Clone, Debug)]
+</span><span class="kw">pub enum </span>VerbosityLevel {
+    Silent,
+    Changes,
+    Verbose,
+    Normal,
 }
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Verbosity</span> {
-    <span class="kw">pub</span> <span class="ident">groups_only</span>: <span class="ident">bool</span>,
-    <span class="kw">pub</span> <span class="ident">level</span>: <span class="ident">VerbosityLevel</span>,
+<span class="attribute">#[derive(PartialEq, Eq, Clone, Debug)]
+</span><span class="kw">pub struct </span>Verbosity {
+    <span class="kw">pub </span>groups_only: bool,
+    <span class="kw">pub </span>level: VerbosityLevel,
 }
 
-<span class="doccomment">/// Actually perform the change of owner on a path</span>
-<span class="kw">fn</span> <span class="ident">chown</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">path</span>: <span class="ident">P</span>, <span class="ident">uid</span>: <span class="ident">uid_t</span>, <span class="ident">gid</span>: <span class="ident">gid_t</span>, <span class="ident">follow</span>: <span class="ident">bool</span>) -&gt; <span class="ident">IOResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">as_ref</span>();
-    <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">CString::new</span>(<span class="ident">path</span>.<span class="ident">as_os_str</span>().<span class="ident">as_bytes</span>()).<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> {
-        <span class="kw">if</span> <span class="ident">follow</span> {
-            <span class="ident">libc::chown</span>(<span class="ident">s</span>.<span class="ident">as_ptr</span>(), <span class="ident">uid</span>, <span class="ident">gid</span>)
-        } <span class="kw">else</span> {
-            <span class="ident">libc::lchown</span>(<span class="ident">s</span>.<span class="ident">as_ptr</span>(), <span class="ident">uid</span>, <span class="ident">gid</span>)
+<span class="doccomment">/// Actually perform the change of owner on a path
+</span><span class="kw">fn </span>chown&lt;P: AsRef&lt;Path&gt;&gt;(path: P, uid: uid_t, gid: gid_t, follow: bool) -&gt; IOResult&lt;()&gt; {
+    <span class="kw">let </span>path = path.as_ref();
+    <span class="kw">let </span>s = CString::new(path.as_os_str().as_bytes()).unwrap();
+    <span class="kw">let </span>ret = <span class="kw">unsafe </span>{
+        <span class="kw">if </span>follow {
+            libc::chown(s.as_ptr(), uid, gid)
+        } <span class="kw">else </span>{
+            libc::lchown(s.as_ptr(), uid, gid)
         }
     };
-    <span class="kw">if</span> <span class="ident">ret</span> <span class="op">==</span> <span class="number">0</span> {
+    <span class="kw">if </span>ret == <span class="number">0 </span>{
         <span class="prelude-val">Ok</span>(())
-    } <span class="kw">else</span> {
-        <span class="prelude-val">Err</span>(<span class="ident">IOError::last_os_error</span>())
+    } <span class="kw">else </span>{
+        <span class="prelude-val">Err</span>(IOError::last_os_error())
     }
 }
 
-<span class="doccomment">/// Perform the change of owner on a path</span>
-<span class="doccomment">/// with the various options</span>
-<span class="doccomment">/// and error messages management</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrap_chown</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">path</span>: <span class="ident">P</span>,
-    <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span>,
-    <span class="ident">dest_uid</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
-    <span class="ident">dest_gid</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
-    <span class="ident">follow</span>: <span class="ident">bool</span>,
-    <span class="ident">verbosity</span>: <span class="ident">Verbosity</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">dest_uid</span> <span class="op">=</span> <span class="ident">dest_uid</span>.<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">meta</span>.<span class="ident">uid</span>());
-    <span class="kw">let</span> <span class="ident">dest_gid</span> <span class="op">=</span> <span class="ident">dest_gid</span>.<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">meta</span>.<span class="ident">gid</span>());
-    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">as_ref</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">String::new</span>();
+<span class="doccomment">/// Perform the change of owner on a path
+/// with the various options
+/// and error messages management
+</span><span class="kw">pub fn </span>wrap_chown&lt;P: AsRef&lt;Path&gt;&gt;(
+    path: P,
+    meta: <span class="kw-2">&amp;</span>Metadata,
+    dest_uid: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    dest_gid: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    follow: bool,
+    verbosity: Verbosity,
+) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
+    <span class="kw">let </span>dest_uid = dest_uid.unwrap_or_else(|| meta.uid());
+    <span class="kw">let </span>dest_gid = dest_gid.unwrap_or_else(|| meta.gid());
+    <span class="kw">let </span>path = path.as_ref();
+    <span class="kw">let </span><span class="kw-2">mut </span>out: String = String::new();
 
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">chown</span>(<span class="ident">path</span>, <span class="ident">dest_uid</span>, <span class="ident">dest_gid</span>, <span class="ident">follow</span>) {
-        <span class="kw">match</span> <span class="ident">verbosity</span>.<span class="ident">level</span> {
-            <span class="ident">VerbosityLevel::Silent</span> =&gt; (),
-            <span class="ident">level</span> =&gt; {
-                <span class="ident">out</span> <span class="op">=</span> <span class="macro">format!</span>(
+    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = chown(path, dest_uid, dest_gid, follow) {
+        <span class="kw">match </span>verbosity.level {
+            VerbosityLevel::Silent =&gt; (),
+            level =&gt; {
+                out = <span class="macro">format!</span>(
                     <span class="string">&quot;changing {} of {}: {}&quot;</span>,
-                    <span class="kw">if</span> <span class="ident">verbosity</span>.<span class="ident">groups_only</span> {
-                        <span class="string">&quot;group&quot;</span>
-                    } <span class="kw">else</span> {
-                        <span class="string">&quot;ownership&quot;</span>
-                    },
-                    <span class="ident">path</span>.<span class="ident">quote</span>(),
-                    <span class="ident">e</span>
+                    <span class="kw">if </span>verbosity.groups_only {
+                        <span class="string">&quot;group&quot;
+                    </span>} <span class="kw">else </span>{
+                        <span class="string">&quot;ownership&quot;
+                    </span>},
+                    path.quote(),
+                    e
                 );
-                <span class="kw">if</span> <span class="ident">level</span> <span class="op">==</span> <span class="ident">VerbosityLevel::Verbose</span> {
-                    <span class="ident">out</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">verbosity</span>.<span class="ident">groups_only</span> {
-                        <span class="kw">let</span> <span class="ident">gid</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">gid</span>();
+                <span class="kw">if </span>level == VerbosityLevel::Verbose {
+                    out = <span class="kw">if </span>verbosity.groups_only {
+                        <span class="kw">let </span>gid = meta.gid();
                         <span class="macro">format!</span>(
                             <span class="string">&quot;{}\nfailed to change group of {} from {} to {}&quot;</span>,
-                            <span class="ident">out</span>,
-                            <span class="ident">path</span>.<span class="ident">quote</span>(),
-                            <span class="ident">entries::gid2grp</span>(<span class="ident">gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">gid</span>.<span class="ident">to_string</span>()),
-                            <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">dest_gid</span>.<span class="ident">to_string</span>())
+                            out,
+                            path.quote(),
+                            entries::gid2grp(gid).unwrap_or_else(|<span class="kw">_</span>| gid.to_string()),
+                            entries::gid2grp(dest_gid).unwrap_or_else(|<span class="kw">_</span>| dest_gid.to_string())
                         )
-                    } <span class="kw">else</span> {
-                        <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">uid</span>();
-                        <span class="kw">let</span> <span class="ident">gid</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">gid</span>();
+                    } <span class="kw">else </span>{
+                        <span class="kw">let </span>uid = meta.uid();
+                        <span class="kw">let </span>gid = meta.gid();
                         <span class="macro">format!</span>(
                             <span class="string">&quot;{}\nfailed to change ownership of {} from {}:{} to {}:{}&quot;</span>,
-                            <span class="ident">out</span>,
-                            <span class="ident">path</span>.<span class="ident">quote</span>(),
-                            <span class="ident">entries::uid2usr</span>(<span class="ident">uid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">uid</span>.<span class="ident">to_string</span>()),
-                            <span class="ident">entries::gid2grp</span>(<span class="ident">gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">gid</span>.<span class="ident">to_string</span>()),
-                            <span class="ident">entries::uid2usr</span>(<span class="ident">dest_uid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">dest_uid</span>.<span class="ident">to_string</span>()),
-                            <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">dest_gid</span>.<span class="ident">to_string</span>())
+                            out,
+                            path.quote(),
+                            entries::uid2usr(uid).unwrap_or_else(|<span class="kw">_</span>| uid.to_string()),
+                            entries::gid2grp(gid).unwrap_or_else(|<span class="kw">_</span>| gid.to_string()),
+                            entries::uid2usr(dest_uid).unwrap_or_else(|<span class="kw">_</span>| dest_uid.to_string()),
+                            entries::gid2grp(dest_gid).unwrap_or_else(|<span class="kw">_</span>| dest_gid.to_string())
                         )
                     };
                 };
             }
         }
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">out</span>);
-    } <span class="kw">else</span> {
-        <span class="kw">let</span> <span class="ident">changed</span> <span class="op">=</span> <span class="ident">dest_uid</span> <span class="op">!</span><span class="op">=</span> <span class="ident">meta</span>.<span class="ident">uid</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">dest_gid</span> <span class="op">!</span><span class="op">=</span> <span class="ident">meta</span>.<span class="ident">gid</span>();
-        <span class="kw">if</span> <span class="ident">changed</span> {
-            <span class="kw">match</span> <span class="ident">verbosity</span>.<span class="ident">level</span> {
-                <span class="ident">VerbosityLevel::Changes</span> <span class="op">|</span> <span class="ident">VerbosityLevel::Verbose</span> =&gt; {
-                    <span class="kw">let</span> <span class="ident">gid</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">gid</span>();
-                    <span class="ident">out</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">verbosity</span>.<span class="ident">groups_only</span> {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(out);
+    } <span class="kw">else </span>{
+        <span class="kw">let </span>changed = dest_uid != meta.uid() || dest_gid != meta.gid();
+        <span class="kw">if </span>changed {
+            <span class="kw">match </span>verbosity.level {
+                VerbosityLevel::Changes | VerbosityLevel::Verbose =&gt; {
+                    <span class="kw">let </span>gid = meta.gid();
+                    out = <span class="kw">if </span>verbosity.groups_only {
                         <span class="macro">format!</span>(
                             <span class="string">&quot;changed group of {} from {} to {}&quot;</span>,
-                            <span class="ident">path</span>.<span class="ident">quote</span>(),
-                            <span class="ident">entries::gid2grp</span>(<span class="ident">gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">gid</span>.<span class="ident">to_string</span>()),
-                            <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">dest_gid</span>.<span class="ident">to_string</span>())
+                            path.quote(),
+                            entries::gid2grp(gid).unwrap_or_else(|<span class="kw">_</span>| gid.to_string()),
+                            entries::gid2grp(dest_gid).unwrap_or_else(|<span class="kw">_</span>| dest_gid.to_string())
                         )
-                    } <span class="kw">else</span> {
-                        <span class="kw">let</span> <span class="ident">gid</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">gid</span>();
-                        <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">uid</span>();
+                    } <span class="kw">else </span>{
+                        <span class="kw">let </span>gid = meta.gid();
+                        <span class="kw">let </span>uid = meta.uid();
                         <span class="macro">format!</span>(
                             <span class="string">&quot;changed ownership of {} from {}:{} to {}:{}&quot;</span>,
-                            <span class="ident">path</span>.<span class="ident">quote</span>(),
-                            <span class="ident">entries::uid2usr</span>(<span class="ident">uid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">uid</span>.<span class="ident">to_string</span>()),
-                            <span class="ident">entries::gid2grp</span>(<span class="ident">gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">gid</span>.<span class="ident">to_string</span>()),
-                            <span class="ident">entries::uid2usr</span>(<span class="ident">dest_uid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">dest_uid</span>.<span class="ident">to_string</span>()),
-                            <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">dest_gid</span>.<span class="ident">to_string</span>())
+                            path.quote(),
+                            entries::uid2usr(uid).unwrap_or_else(|<span class="kw">_</span>| uid.to_string()),
+                            entries::gid2grp(gid).unwrap_or_else(|<span class="kw">_</span>| gid.to_string()),
+                            entries::uid2usr(dest_uid).unwrap_or_else(|<span class="kw">_</span>| dest_uid.to_string()),
+                            entries::gid2grp(dest_gid).unwrap_or_else(|<span class="kw">_</span>| dest_gid.to_string())
                         )
                     };
                 }
-                <span class="kw">_</span> =&gt; (),
+                <span class="kw">_ </span>=&gt; (),
             };
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">verbosity</span>.<span class="ident">level</span> <span class="op">==</span> <span class="ident">VerbosityLevel::Verbose</span> {
-            <span class="ident">out</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">verbosity</span>.<span class="ident">groups_only</span> {
+        } <span class="kw">else if </span>verbosity.level == VerbosityLevel::Verbose {
+            out = <span class="kw">if </span>verbosity.groups_only {
                 <span class="macro">format!</span>(
                     <span class="string">&quot;group of {} retained as {}&quot;</span>,
-                    <span class="ident">path</span>.<span class="ident">quote</span>(),
-                    <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap_or_default</span>()
+                    path.quote(),
+                    entries::gid2grp(dest_gid).unwrap_or_default()
                 )
-            } <span class="kw">else</span> {
+            } <span class="kw">else </span>{
                 <span class="macro">format!</span>(
                     <span class="string">&quot;ownership of {} retained as {}:{}&quot;</span>,
-                    <span class="ident">path</span>.<span class="ident">quote</span>(),
-                    <span class="ident">entries::uid2usr</span>(<span class="ident">dest_uid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">dest_uid</span>.<span class="ident">to_string</span>()),
-                    <span class="ident">entries::gid2grp</span>(<span class="ident">dest_gid</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">dest_gid</span>.<span class="ident">to_string</span>())
+                    path.quote(),
+                    entries::uid2usr(dest_uid).unwrap_or_else(|<span class="kw">_</span>| dest_uid.to_string()),
+                    entries::gid2grp(dest_gid).unwrap_or_else(|<span class="kw">_</span>| dest_gid.to_string())
                 )
             };
         }
     }
-    <span class="prelude-val">Ok</span>(<span class="ident">out</span>)
+    <span class="prelude-val">Ok</span>(out)
 }
 
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">IfFrom</span> {
-    <span class="ident">All</span>,
-    <span class="ident">User</span>(<span class="ident">u32</span>),
-    <span class="ident">Group</span>(<span class="ident">u32</span>),
-    <span class="ident">UserGroup</span>(<span class="ident">u32</span>, <span class="ident">u32</span>),
+<span class="kw">pub enum </span>IfFrom {
+    All,
+    User(u32),
+    Group(u32),
+    UserGroup(u32, u32),
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">TraverseSymlinks</span> {
+<span class="attribute">#[derive(PartialEq, Eq)]
+</span><span class="kw">pub enum </span>TraverseSymlinks {
     <span class="prelude-val">None</span>,
-    <span class="ident">First</span>,
-    <span class="ident">All</span>,
+    First,
+    All,
 }
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ChownExecutor</span> {
-    <span class="kw">pub</span> <span class="ident">dest_uid</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">dest_gid</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">traverse_symlinks</span>: <span class="ident">TraverseSymlinks</span>,
-    <span class="kw">pub</span> <span class="ident">verbosity</span>: <span class="ident">Verbosity</span>,
-    <span class="kw">pub</span> <span class="ident">filter</span>: <span class="ident">IfFrom</span>,
-    <span class="kw">pub</span> <span class="ident">files</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">recursive</span>: <span class="ident">bool</span>,
-    <span class="kw">pub</span> <span class="ident">preserve_root</span>: <span class="ident">bool</span>,
-    <span class="kw">pub</span> <span class="ident">dereference</span>: <span class="ident">bool</span>,
+<span class="kw">pub struct </span>ChownExecutor {
+    <span class="kw">pub </span>dest_uid: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    <span class="kw">pub </span>dest_gid: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    <span class="kw">pub </span>traverse_symlinks: TraverseSymlinks,
+    <span class="kw">pub </span>verbosity: Verbosity,
+    <span class="kw">pub </span>filter: IfFrom,
+    <span class="kw">pub </span>files: Vec&lt;String&gt;,
+    <span class="kw">pub </span>recursive: bool,
+    <span class="kw">pub </span>preserve_root: bool,
+    <span class="kw">pub </span>dereference: bool,
 }
 
-<span class="kw">impl</span> <span class="ident">ChownExecutor</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exec</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">for</span> <span class="ident">f</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">files</span> {
-            <span class="ident">ret</span> <span class="op">|</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">traverse</span>(<span class="ident">f</span>);
+<span class="kw">impl </span>ChownExecutor {
+    <span class="kw">pub fn </span>exec(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; UResult&lt;()&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="number">0</span>;
+        <span class="kw">for </span>f <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.files {
+            ret |= <span class="self">self</span>.traverse(f);
         }
-        <span class="kw">if</span> <span class="ident">ret</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ret</span>.<span class="ident">into</span>());
+        <span class="kw">if </span>ret != <span class="number">0 </span>{
+            <span class="kw">return </span><span class="prelude-val">Err</span>(ret.into());
         }
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">traverse</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">root</span>: <span class="ident">P</span>) -&gt; <span class="ident">i32</span> {
-        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">root</span>.<span class="ident">as_ref</span>();
-        <span class="kw">let</span> <span class="ident">meta</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">obtain_meta</span>(<span class="ident">path</span>, <span class="self">self</span>.<span class="ident">dereference</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">m</span>) =&gt; <span class="ident">m</span>,
-            <span class="kw">_</span> =&gt; <span class="kw">return</span> <span class="number">1</span>,
+    <span class="kw">fn </span>traverse&lt;P: AsRef&lt;Path&gt;&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, root: P) -&gt; i32 {
+        <span class="kw">let </span>path = root.as_ref();
+        <span class="kw">let </span>meta = <span class="kw">match </span><span class="self">self</span>.obtain_meta(path, <span class="self">self</span>.dereference) {
+            <span class="prelude-val">Some</span>(m) =&gt; m,
+            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="number">1</span>,
         };
 
-        <span class="comment">// Prohibit only if:</span>
-        <span class="comment">// (--preserve-root and -R present) &amp;&amp;</span>
-        <span class="comment">// (</span>
-        <span class="comment">//     (argument is not symlink &amp;&amp; resolved to be &#39;/&#39;) ||</span>
-        <span class="comment">//     (argument is symlink &amp;&amp; should follow argument &amp;&amp; resolved to be &#39;/&#39;)</span>
-        <span class="comment">// )</span>
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">recursive</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">preserve_root</span> {
-            <span class="kw">let</span> <span class="ident">may_exist</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">dereference</span> {
-                <span class="ident">path</span>.<span class="ident">canonicalize</span>().<span class="ident">ok</span>()
-            } <span class="kw">else</span> {
-                <span class="kw">let</span> <span class="ident">real</span> <span class="op">=</span> <span class="ident">resolve_relative_path</span>(<span class="ident">path</span>);
-                <span class="kw">if</span> <span class="ident">real</span>.<span class="ident">is_dir</span>() {
-                    <span class="prelude-val">Some</span>(<span class="ident">real</span>.<span class="ident">canonicalize</span>().<span class="ident">expect</span>(<span class="string">&quot;failed to get real path&quot;</span>))
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">real</span>.<span class="ident">into_owned</span>())
+        <span class="comment">// Prohibit only if:
+        // (--preserve-root and -R present) &amp;&amp;
+        // (
+        //     (argument is not symlink &amp;&amp; resolved to be &#39;/&#39;) ||
+        //     (argument is symlink &amp;&amp; should follow argument &amp;&amp; resolved to be &#39;/&#39;)
+        // )
+        </span><span class="kw">if </span><span class="self">self</span>.recursive &amp;&amp; <span class="self">self</span>.preserve_root {
+            <span class="kw">let </span>may_exist = <span class="kw">if </span><span class="self">self</span>.dereference {
+                path.canonicalize().ok()
+            } <span class="kw">else </span>{
+                <span class="kw">let </span>real = resolve_relative_path(path);
+                <span class="kw">if </span>real.is_dir() {
+                    <span class="prelude-val">Some</span>(real.canonicalize().expect(<span class="string">&quot;failed to get real path&quot;</span>))
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">Some</span>(real.into_owned())
                 }
             };
 
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">p</span>) <span class="op">=</span> <span class="ident">may_exist</span> {
-                <span class="kw">if</span> <span class="ident">p</span>.<span class="ident">parent</span>().<span class="ident">is_none</span>() {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(p) = may_exist {
+                <span class="kw">if </span>p.parent().is_none() {
                     <span class="macro">show_error!</span>(<span class="string">&quot;it is dangerous to operate recursively on &#39;/&#39;&quot;</span>);
                     <span class="macro">show_error!</span>(<span class="string">&quot;use --no-preserve-root to override this failsafe&quot;</span>);
-                    <span class="kw">return</span> <span class="number">1</span>;
+                    <span class="kw">return </span><span class="number">1</span>;
                 }
             }
         }
 
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">matched</span>(<span class="ident">meta</span>.<span class="ident">uid</span>(), <span class="ident">meta</span>.<span class="ident">gid</span>()) {
-            <span class="kw">match</span> <span class="ident">wrap_chown</span>(
-                <span class="ident">path</span>,
-                <span class="kw-2">&amp;</span><span class="ident">meta</span>,
-                <span class="self">self</span>.<span class="ident">dest_uid</span>,
-                <span class="self">self</span>.<span class="ident">dest_gid</span>,
-                <span class="self">self</span>.<span class="ident">dereference</span>,
-                <span class="self">self</span>.<span class="ident">verbosity</span>.<span class="ident">clone</span>(),
+        <span class="kw">let </span>ret = <span class="kw">if </span><span class="self">self</span>.matched(meta.uid(), meta.gid()) {
+            <span class="kw">match </span>wrap_chown(
+                path,
+                <span class="kw-2">&amp;</span>meta,
+                <span class="self">self</span>.dest_uid,
+                <span class="self">self</span>.dest_gid,
+                <span class="self">self</span>.dereference,
+                <span class="self">self</span>.verbosity.clone(),
             ) {
-                <span class="prelude-val">Ok</span>(<span class="ident">n</span>) =&gt; {
-                    <span class="kw">if</span> <span class="op">!</span><span class="ident">n</span>.<span class="ident">is_empty</span>() {
-                        <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">n</span>);
+                <span class="prelude-val">Ok</span>(n) =&gt; {
+                    <span class="kw">if </span>!n.is_empty() {
+                        <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, n);
                     }
-                    <span class="number">0</span>
-                }
-                <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
-                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">verbosity</span>.<span class="ident">level</span> <span class="op">!</span><span class="op">=</span> <span class="ident">VerbosityLevel::Silent</span> {
-                        <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>);
+                    <span class="number">0
+                </span>}
+                <span class="prelude-val">Err</span>(e) =&gt; {
+                    <span class="kw">if </span><span class="self">self</span>.verbosity.level != VerbosityLevel::Silent {
+                        <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, e);
                     }
-                    <span class="number">1</span>
-                }
+                    <span class="number">1
+                </span>}
             }
-        } <span class="kw">else</span> {
-            <span class="number">0</span>
-        };
+        } <span class="kw">else </span>{
+            <span class="number">0
+        </span>};
 
-        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">recursive</span> {
-            <span class="ident">ret</span>
-        } <span class="kw">else</span> {
-            <span class="ident">ret</span> <span class="op">|</span> <span class="self">self</span>.<span class="ident">dive_into</span>(<span class="kw-2">&amp;</span><span class="ident">root</span>)
+        <span class="kw">if </span>!<span class="self">self</span>.recursive {
+            ret
+        } <span class="kw">else </span>{
+            ret | <span class="self">self</span>.dive_into(<span class="kw-2">&amp;</span>root)
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">dive_into</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">root</span>: <span class="ident">P</span>) -&gt; <span class="ident">i32</span> {
-        <span class="kw">let</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">root</span>.<span class="ident">as_ref</span>();
+    <span class="kw">fn </span>dive_into&lt;P: AsRef&lt;Path&gt;&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, root: P) -&gt; i32 {
+        <span class="kw">let </span>root = root.as_ref();
 
-        <span class="comment">// walkdir always dereferences the root directory, so we have to check it ourselves</span>
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">traverse_symlinks</span> <span class="op">==</span> <span class="ident">TraverseSymlinks::None</span> <span class="op">&amp;&amp;</span> <span class="ident">root</span>.<span class="ident">is_symlink</span>() {
-            <span class="kw">return</span> <span class="number">0</span>;
+        <span class="comment">// walkdir always dereferences the root directory, so we have to check it ourselves
+        </span><span class="kw">if </span><span class="self">self</span>.traverse_symlinks == TraverseSymlinks::None &amp;&amp; root.is_symlink() {
+            <span class="kw">return </span><span class="number">0</span>;
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iterator</span> <span class="op">=</span> <span class="ident">WalkDir::new</span>(<span class="ident">root</span>)
-            .<span class="ident">follow_links</span>(<span class="self">self</span>.<span class="ident">traverse_symlinks</span> <span class="op">==</span> <span class="ident">TraverseSymlinks::All</span>)
-            .<span class="ident">min_depth</span>(<span class="number">1</span>)
-            .<span class="ident">into_iter</span>();
-        <span class="comment">// We can&#39;t use a for loop because we need to manipulate the iterator inside the loop.</span>
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">entry</span>) <span class="op">=</span> <span class="ident">iterator</span>.<span class="ident">next</span>() {
-            <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">entry</span> {
-                <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
-                    <span class="ident">ret</span> <span class="op">=</span> <span class="number">1</span>;
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">path</span>) <span class="op">=</span> <span class="ident">e</span>.<span class="ident">path</span>() {
+        <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="number">0</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>iterator = WalkDir::new(root)
+            .follow_links(<span class="self">self</span>.traverse_symlinks == TraverseSymlinks::All)
+            .min_depth(<span class="number">1</span>)
+            .into_iter();
+        <span class="comment">// We can&#39;t use a for loop because we need to manipulate the iterator inside the loop.
+        </span><span class="kw">while let </span><span class="prelude-val">Some</span>(entry) = iterator.next() {
+            <span class="kw">let </span>entry = <span class="kw">match </span>entry {
+                <span class="prelude-val">Err</span>(e) =&gt; {
+                    ret = <span class="number">1</span>;
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(path) = e.path() {
                         <span class="macro">show_error!</span>(
                             <span class="string">&quot;cannot access &#39;{}&#39;: {}&quot;</span>,
-                            <span class="ident">path</span>.<span class="ident">display</span>(),
-                            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">error</span>) <span class="op">=</span> <span class="ident">e</span>.<span class="ident">io_error</span>() {
-                                <span class="ident">strip_errno</span>(<span class="ident">error</span>)
-                            } <span class="kw">else</span> {
-                                <span class="string">&quot;Too many levels of symbolic links&quot;</span>.<span class="ident">into</span>()
+                            path.display(),
+                            <span class="kw">if let </span><span class="prelude-val">Some</span>(error) = e.io_error() {
+                                strip_errno(error)
+                            } <span class="kw">else </span>{
+                                <span class="string">&quot;Too many levels of symbolic links&quot;</span>.into()
                             }
                         );
-                    } <span class="kw">else</span> {
-                        <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>);
+                    } <span class="kw">else </span>{
+                        <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, e);
                     }
                     <span class="kw">continue</span>;
                 }
-                <span class="prelude-val">Ok</span>(<span class="ident">entry</span>) =&gt; <span class="ident">entry</span>,
+                <span class="prelude-val">Ok</span>(entry) =&gt; entry,
             };
-            <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">entry</span>.<span class="ident">path</span>();
-            <span class="kw">let</span> <span class="ident">meta</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">obtain_meta</span>(<span class="ident">path</span>, <span class="self">self</span>.<span class="ident">dereference</span>) {
-                <span class="prelude-val">Some</span>(<span class="ident">m</span>) =&gt; <span class="ident">m</span>,
-                <span class="kw">_</span> =&gt; {
-                    <span class="ident">ret</span> <span class="op">=</span> <span class="number">1</span>;
-                    <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">file_type</span>().<span class="ident">is_dir</span>() {
-                        <span class="comment">// Instruct walkdir to skip this directory to avoid getting another error</span>
-                        <span class="comment">// when walkdir tries to query the children of this directory.</span>
-                        <span class="ident">iterator</span>.<span class="ident">skip_current_dir</span>();
+            <span class="kw">let </span>path = entry.path();
+            <span class="kw">let </span>meta = <span class="kw">match </span><span class="self">self</span>.obtain_meta(path, <span class="self">self</span>.dereference) {
+                <span class="prelude-val">Some</span>(m) =&gt; m,
+                <span class="kw">_ </span>=&gt; {
+                    ret = <span class="number">1</span>;
+                    <span class="kw">if </span>entry.file_type().is_dir() {
+                        <span class="comment">// Instruct walkdir to skip this directory to avoid getting another error
+                        // when walkdir tries to query the children of this directory.
+                        </span>iterator.skip_current_dir();
                     }
                     <span class="kw">continue</span>;
                 }
             };
 
-            <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">matched</span>(<span class="ident">meta</span>.<span class="ident">uid</span>(), <span class="ident">meta</span>.<span class="ident">gid</span>()) {
+            <span class="kw">if </span>!<span class="self">self</span>.matched(meta.uid(), meta.gid()) {
                 <span class="kw">continue</span>;
             }
 
-            <span class="ident">ret</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">wrap_chown</span>(
-                <span class="ident">path</span>,
-                <span class="kw-2">&amp;</span><span class="ident">meta</span>,
-                <span class="self">self</span>.<span class="ident">dest_uid</span>,
-                <span class="self">self</span>.<span class="ident">dest_gid</span>,
-                <span class="self">self</span>.<span class="ident">dereference</span>,
-                <span class="self">self</span>.<span class="ident">verbosity</span>.<span class="ident">clone</span>(),
+            ret = <span class="kw">match </span>wrap_chown(
+                path,
+                <span class="kw-2">&amp;</span>meta,
+                <span class="self">self</span>.dest_uid,
+                <span class="self">self</span>.dest_gid,
+                <span class="self">self</span>.dereference,
+                <span class="self">self</span>.verbosity.clone(),
             ) {
-                <span class="prelude-val">Ok</span>(<span class="ident">n</span>) =&gt; {
-                    <span class="kw">if</span> <span class="op">!</span><span class="ident">n</span>.<span class="ident">is_empty</span>() {
-                        <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">n</span>);
+                <span class="prelude-val">Ok</span>(n) =&gt; {
+                    <span class="kw">if </span>!n.is_empty() {
+                        <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, n);
                     }
-                    <span class="number">0</span>
-                }
-                <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
-                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">verbosity</span>.<span class="ident">level</span> <span class="op">!</span><span class="op">=</span> <span class="ident">VerbosityLevel::Silent</span> {
-                        <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>);
+                    <span class="number">0
+                </span>}
+                <span class="prelude-val">Err</span>(e) =&gt; {
+                    <span class="kw">if </span><span class="self">self</span>.verbosity.level != VerbosityLevel::Silent {
+                        <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, e);
                     }
-                    <span class="number">1</span>
-                }
+                    <span class="number">1
+                </span>}
             }
         }
-        <span class="ident">ret</span>
+        ret
     }
 
-    <span class="kw">fn</span> <span class="ident">obtain_meta</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="ident">P</span>, <span class="ident">follow</span>: <span class="ident">bool</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Metadata</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">as_ref</span>();
-        <span class="kw">let</span> <span class="ident">meta</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">follow</span> {
-            <span class="ident">path</span>.<span class="ident">metadata</span>()
-        } <span class="kw">else</span> {
-            <span class="ident">path</span>.<span class="ident">symlink_metadata</span>()
+    <span class="kw">fn </span>obtain_meta&lt;P: AsRef&lt;Path&gt;&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, path: P, follow: bool) -&gt; <span class="prelude-ty">Option</span>&lt;Metadata&gt; {
+        <span class="kw">let </span>path = path.as_ref();
+        <span class="kw">let </span>meta = <span class="kw">if </span>follow {
+            path.metadata()
+        } <span class="kw">else </span>{
+            path.symlink_metadata()
         };
-        <span class="kw">match</span> <span class="ident">meta</span> {
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
-                <span class="kw">match</span> <span class="self">self</span>.<span class="ident">verbosity</span>.<span class="ident">level</span> {
-                    <span class="ident">VerbosityLevel::Silent</span> =&gt; (),
-                    <span class="kw">_</span> =&gt; <span class="macro">show_error!</span>(
+        <span class="kw">match </span>meta {
+            <span class="prelude-val">Err</span>(e) =&gt; {
+                <span class="kw">match </span><span class="self">self</span>.verbosity.level {
+                    VerbosityLevel::Silent =&gt; (),
+                    <span class="kw">_ </span>=&gt; <span class="macro">show_error!</span>(
                         <span class="string">&quot;cannot {} {}: {}&quot;</span>,
-                        <span class="kw">if</span> <span class="ident">follow</span> { <span class="string">&quot;dereference&quot;</span> } <span class="kw">else</span> { <span class="string">&quot;access&quot;</span> },
-                        <span class="ident">path</span>.<span class="ident">quote</span>(),
-                        <span class="ident">strip_errno</span>(<span class="kw-2">&amp;</span><span class="ident">e</span>)
+                        <span class="kw">if </span>follow { <span class="string">&quot;dereference&quot; </span>} <span class="kw">else </span>{ <span class="string">&quot;access&quot; </span>},
+                        path.quote(),
+                        strip_errno(<span class="kw-2">&amp;</span>e)
                     ),
                 }
-                <span class="prelude-val">None</span>
-            }
-            <span class="prelude-val">Ok</span>(<span class="ident">meta</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">meta</span>),
+                <span class="prelude-val">None
+            </span>}
+            <span class="prelude-val">Ok</span>(meta) =&gt; <span class="prelude-val">Some</span>(meta),
         }
     }
 
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">matched</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">uid</span>: <span class="ident">uid_t</span>, <span class="ident">gid</span>: <span class="ident">gid_t</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">filter</span> {
-            <span class="ident">IfFrom::All</span> =&gt; <span class="bool-val">true</span>,
-            <span class="ident">IfFrom::User</span>(<span class="ident">u</span>) =&gt; <span class="ident">u</span> <span class="op">==</span> <span class="ident">uid</span>,
-            <span class="ident">IfFrom::Group</span>(<span class="ident">g</span>) =&gt; <span class="ident">g</span> <span class="op">==</span> <span class="ident">gid</span>,
-            <span class="ident">IfFrom::UserGroup</span>(<span class="ident">u</span>, <span class="ident">g</span>) =&gt; <span class="ident">u</span> <span class="op">==</span> <span class="ident">uid</span> <span class="op">&amp;&amp;</span> <span class="ident">g</span> <span class="op">==</span> <span class="ident">gid</span>,
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>matched(<span class="kw-2">&amp;</span><span class="self">self</span>, uid: uid_t, gid: gid_t) -&gt; bool {
+        <span class="kw">match </span><span class="self">self</span>.filter {
+            IfFrom::All =&gt; <span class="bool-val">true</span>,
+            IfFrom::User(u) =&gt; u == uid,
+            IfFrom::Group(g) =&gt; g == gid,
+            IfFrom::UserGroup(u, g) =&gt; u == uid &amp;&amp; g == gid,
         }
     }
 }
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">options</span> {
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">HELP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;help&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">verbosity</span> {
-        <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">CHANGES</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;changes&quot;</span>;
-        <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">QUIET</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;quiet&quot;</span>;
-        <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SILENT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;silent&quot;</span>;
-        <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VERBOSE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;verbose&quot;</span>;
+<span class="kw">pub mod </span>options {
+    <span class="kw">pub const </span>HELP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;help&quot;</span>;
+    <span class="kw">pub mod </span>verbosity {
+        <span class="kw">pub const </span>CHANGES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;changes&quot;</span>;
+        <span class="kw">pub const </span>QUIET: <span class="kw-2">&amp;</span>str = <span class="string">&quot;quiet&quot;</span>;
+        <span class="kw">pub const </span>SILENT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;silent&quot;</span>;
+        <span class="kw">pub const </span>VERBOSE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;verbose&quot;</span>;
     }
-    <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">preserve_root</span> {
-        <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PRESERVE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;preserve-root&quot;</span>;
-        <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NO_PRESERVE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;no-preserve-root&quot;</span>;
+    <span class="kw">pub mod </span>preserve_root {
+        <span class="kw">pub const </span>PRESERVE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;preserve-root&quot;</span>;
+        <span class="kw">pub const </span>NO_PRESERVE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;no-preserve-root&quot;</span>;
     }
-    <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">dereference</span> {
-        <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">DEREFERENCE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;dereference&quot;</span>;
-        <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NO_DEREFERENCE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;no-dereference&quot;</span>;
+    <span class="kw">pub mod </span>dereference {
+        <span class="kw">pub const </span>DEREFERENCE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;dereference&quot;</span>;
+        <span class="kw">pub const </span>NO_DEREFERENCE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;no-dereference&quot;</span>;
     }
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FROM</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;from&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RECURSIVE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;recursive&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">traverse</span> {
-        <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TRAVERSE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;H&quot;</span>;
-        <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NO_TRAVERSE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;P&quot;</span>;
-        <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">EVERY</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;L&quot;</span>;
+    <span class="kw">pub const </span>FROM: <span class="kw-2">&amp;</span>str = <span class="string">&quot;from&quot;</span>;
+    <span class="kw">pub const </span>RECURSIVE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;recursive&quot;</span>;
+    <span class="kw">pub mod </span>traverse {
+        <span class="kw">pub const </span>TRAVERSE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;H&quot;</span>;
+        <span class="kw">pub const </span>NO_TRAVERSE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;P&quot;</span>;
+        <span class="kw">pub const </span>EVERY: <span class="kw-2">&amp;</span>str = <span class="string">&quot;L&quot;</span>;
     }
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">REFERENCE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;reference&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ARG_OWNER</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;OWNER&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ARG_GROUP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;GROUP&quot;</span>;
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ARG_FILES</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;FILE&quot;</span>;
+    <span class="kw">pub const </span>REFERENCE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;reference&quot;</span>;
+    <span class="kw">pub const </span>ARG_OWNER: <span class="kw-2">&amp;</span>str = <span class="string">&quot;OWNER&quot;</span>;
+    <span class="kw">pub const </span>ARG_GROUP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;GROUP&quot;</span>;
+    <span class="kw">pub const </span>ARG_FILES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;FILE&quot;</span>;
 }
 
-<span class="kw">type</span> <span class="ident">GidUidFilterParser</span> <span class="op">=</span> <span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="ident">ArgMatches</span>) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">IfFrom</span>)<span class="op">&gt;</span>;
+<span class="kw">type </span>GidUidFilterParser = <span class="kw">fn</span>(<span class="kw-2">&amp;</span>ArgMatches) -&gt; UResult&lt;(<span class="prelude-ty">Option</span>&lt;u32&gt;, <span class="prelude-ty">Option</span>&lt;u32&gt;, IfFrom)&gt;;
 
-<span class="doccomment">/// Base implementation for `chgrp` and `chown`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// An argument called `add_arg_if_not_reference` will be added to `command` if</span>
-<span class="doccomment">/// `args` does not contain the `--reference` option.</span>
-<span class="doccomment">/// `parse_gid_uid_and_filter` will be called to obtain the target gid and uid, and the filter,</span>
-<span class="doccomment">/// from `ArgMatches`.</span>
-<span class="doccomment">/// `groups_only` determines whether verbose output will only mention the group.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">chown_base</span>(
-    <span class="kw-2">mut</span> <span class="ident">command</span>: <span class="ident">Command</span>,
-    <span class="ident">args</span>: <span class="kw">impl</span> <span class="ident"><span class="kw">crate</span>::Args</span>,
-    <span class="ident">add_arg_if_not_reference</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>,
-    <span class="ident">parse_gid_uid_and_filter</span>: <span class="ident">GidUidFilterParser</span>,
-    <span class="ident">groups_only</span>: <span class="ident">bool</span>,
-) -&gt; <span class="ident">UResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">collect</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">reference</span> <span class="op">=</span> <span class="bool-val">false</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">help</span> <span class="op">=</span> <span class="bool-val">false</span>;
-    <span class="comment">// stop processing options on --</span>
-    <span class="kw">for</span> <span class="ident">arg</span> <span class="kw">in</span> <span class="ident">args</span>.<span class="ident">iter</span>().<span class="ident">take_while</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">s</span> <span class="op">!</span><span class="op">=</span> <span class="string">&quot;--&quot;</span>) {
-        <span class="kw">if</span> <span class="ident">arg</span>.<span class="ident">to_string_lossy</span>().<span class="ident">starts_with</span>(<span class="string">&quot;--reference=&quot;</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">arg</span> <span class="op">==</span> <span class="string">&quot;--reference&quot;</span> {
-            <span class="ident">reference</span> <span class="op">=</span> <span class="bool-val">true</span>;
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">arg</span> <span class="op">==</span> <span class="string">&quot;--help&quot;</span> {
-            <span class="comment">// we stop processing once we see --help,</span>
-            <span class="comment">// as it doesn&#39;t matter if we&#39;ve seen reference or not</span>
-            <span class="ident">help</span> <span class="op">=</span> <span class="bool-val">true</span>;
+<span class="doccomment">/// Base implementation for `chgrp` and `chown`.
+///
+/// An argument called `add_arg_if_not_reference` will be added to `command` if
+/// `args` does not contain the `--reference` option.
+/// `parse_gid_uid_and_filter` will be called to obtain the target gid and uid, and the filter,
+/// from `ArgMatches`.
+/// `groups_only` determines whether verbose output will only mention the group.
+</span><span class="kw">pub fn </span>chown_base(
+    <span class="kw-2">mut </span>command: Command,
+    args: <span class="kw">impl </span><span class="kw">crate</span>::Args,
+    add_arg_if_not_reference: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+    parse_gid_uid_and_filter: GidUidFilterParser,
+    groups_only: bool,
+) -&gt; UResult&lt;()&gt; {
+    <span class="kw">let </span>args: Vec&lt;<span class="kw">_</span>&gt; = args.collect();
+    <span class="kw">let </span><span class="kw-2">mut </span>reference = <span class="bool-val">false</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>help = <span class="bool-val">false</span>;
+    <span class="comment">// stop processing options on --
+    </span><span class="kw">for </span>arg <span class="kw">in </span>args.iter().take_while(|s| <span class="kw-2">*</span>s != <span class="string">&quot;--&quot;</span>) {
+        <span class="kw">if </span>arg.to_string_lossy().starts_with(<span class="string">&quot;--reference=&quot;</span>) || arg == <span class="string">&quot;--reference&quot; </span>{
+            reference = <span class="bool-val">true</span>;
+        } <span class="kw">else if </span>arg == <span class="string">&quot;--help&quot; </span>{
+            <span class="comment">// we stop processing once we see --help,
+            // as it doesn&#39;t matter if we&#39;ve seen reference or not
+            </span>help = <span class="bool-val">true</span>;
             <span class="kw">break</span>;
         }
     }
 
-    <span class="kw">if</span> <span class="ident">help</span> <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">reference</span> {
-        <span class="comment">// add both positional arguments</span>
-        <span class="comment">// arg_group is only required if</span>
-        <span class="ident">command</span> <span class="op">=</span> <span class="ident">command</span>.<span class="ident">arg</span>(
-            <span class="ident">Arg::new</span>(<span class="ident">add_arg_if_not_reference</span>)
-                .<span class="ident">value_name</span>(<span class="ident">add_arg_if_not_reference</span>)
-                .<span class="ident">required</span>(<span class="bool-val">true</span>),
+    <span class="kw">if </span>help || !reference {
+        <span class="comment">// add both positional arguments
+        // arg_group is only required if
+        </span>command = command.arg(
+            Arg::new(add_arg_if_not_reference)
+                .value_name(add_arg_if_not_reference)
+                .required(<span class="bool-val">true</span>),
         );
     }
-    <span class="ident">command</span> <span class="op">=</span> <span class="ident">command</span>.<span class="ident">arg</span>(
-        <span class="ident">Arg::new</span>(<span class="ident">options::ARG_FILES</span>)
-            .<span class="ident">value_name</span>(<span class="ident">options::ARG_FILES</span>)
-            .<span class="ident">value_hint</span>(<span class="ident">clap::ValueHint::FilePath</span>)
-            .<span class="ident">action</span>(<span class="ident">clap::ArgAction::Append</span>)
-            .<span class="ident">required</span>(<span class="bool-val">true</span>)
-            .<span class="ident">num_args</span>(<span class="number">1</span>..),
+    command = command.arg(
+        Arg::new(options::ARG_FILES)
+            .value_name(options::ARG_FILES)
+            .value_hint(clap::ValueHint::FilePath)
+            .action(clap::ArgAction::Append)
+            .required(<span class="bool-val">true</span>)
+            .num_args(<span class="number">1</span>..),
     );
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">command</span>.<span class="ident">try_get_matches_from</span>(<span class="ident">args</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>matches = command.try_get_matches_from(args)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">files</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">matches</span>
-        .<span class="ident">get_many</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="ident">options::ARG_FILES</span>)
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">map</span>(<span class="ident">ToString::to_string</span>).<span class="ident">collect</span>())
-        .<span class="ident">unwrap_or_default</span>();
+    <span class="kw">let </span>files: Vec&lt;String&gt; = matches
+        .get_many::&lt;String&gt;(options::ARG_FILES)
+        .map(|v| v.map(ToString::to_string).collect())
+        .unwrap_or_default();
 
-    <span class="kw">let</span> <span class="ident">preserve_root</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::preserve_root::PRESERVE</span>);
+    <span class="kw">let </span>preserve_root = matches.get_flag(options::preserve_root::PRESERVE);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dereference</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::dereference::DEREFERENCE</span>) {
+    <span class="kw">let </span><span class="kw-2">mut </span>dereference = <span class="kw">if </span>matches.get_flag(options::dereference::DEREFERENCE) {
         <span class="prelude-val">Some</span>(<span class="bool-val">true</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::dereference::NO_DEREFERENCE</span>) {
+    } <span class="kw">else if </span>matches.get_flag(options::dereference::NO_DEREFERENCE) {
         <span class="prelude-val">Some</span>(<span class="bool-val">false</span>)
-    } <span class="kw">else</span> {
-        <span class="prelude-val">None</span>
+    } <span class="kw">else </span>{
+        <span class="prelude-val">None
+    </span>};
+
+    <span class="kw">let </span><span class="kw-2">mut </span>traverse_symlinks = <span class="kw">if </span>matches.get_flag(options::traverse::TRAVERSE) {
+        TraverseSymlinks::First
+    } <span class="kw">else if </span>matches.get_flag(options::traverse::EVERY) {
+        TraverseSymlinks::All
+    } <span class="kw">else </span>{
+        TraverseSymlinks::None
     };
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">traverse_symlinks</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::traverse::TRAVERSE</span>) {
-        <span class="ident">TraverseSymlinks::First</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::traverse::EVERY</span>) {
-        <span class="ident">TraverseSymlinks::All</span>
-    } <span class="kw">else</span> {
-        <span class="ident">TraverseSymlinks::None</span>
-    };
-
-    <span class="kw">let</span> <span class="ident">recursive</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::RECURSIVE</span>);
-    <span class="kw">if</span> <span class="ident">recursive</span> {
-        <span class="kw">if</span> <span class="ident">traverse_symlinks</span> <span class="op">==</span> <span class="ident">TraverseSymlinks::None</span> {
-            <span class="kw">if</span> <span class="ident">dereference</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">USimpleError::new</span>(<span class="number">1</span>, <span class="string">&quot;-R --dereference requires -H or -L&quot;</span>));
+    <span class="kw">let </span>recursive = matches.get_flag(options::RECURSIVE);
+    <span class="kw">if </span>recursive {
+        <span class="kw">if </span>traverse_symlinks == TraverseSymlinks::None {
+            <span class="kw">if </span>dereference == <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, <span class="string">&quot;-R --dereference requires -H or -L&quot;</span>));
             }
-            <span class="ident">dereference</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="bool-val">false</span>);
+            dereference = <span class="prelude-val">Some</span>(<span class="bool-val">false</span>);
         }
-    } <span class="kw">else</span> {
-        <span class="ident">traverse_symlinks</span> <span class="op">=</span> <span class="ident">TraverseSymlinks::None</span>;
+    } <span class="kw">else </span>{
+        traverse_symlinks = TraverseSymlinks::None;
     }
 
-    <span class="kw">let</span> <span class="ident">verbosity_level</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::verbosity::CHANGES</span>) {
-        <span class="ident">VerbosityLevel::Changes</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::verbosity::SILENT</span>)
-        <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::verbosity::QUIET</span>)
+    <span class="kw">let </span>verbosity_level = <span class="kw">if </span>matches.get_flag(options::verbosity::CHANGES) {
+        VerbosityLevel::Changes
+    } <span class="kw">else if </span>matches.get_flag(options::verbosity::SILENT)
+        || matches.get_flag(options::verbosity::QUIET)
     {
-        <span class="ident">VerbosityLevel::Silent</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">get_flag</span>(<span class="ident">options::verbosity::VERBOSE</span>) {
-        <span class="ident">VerbosityLevel::Verbose</span>
-    } <span class="kw">else</span> {
-        <span class="ident">VerbosityLevel::Normal</span>
+        VerbosityLevel::Silent
+    } <span class="kw">else if </span>matches.get_flag(options::verbosity::VERBOSE) {
+        VerbosityLevel::Verbose
+    } <span class="kw">else </span>{
+        VerbosityLevel::Normal
     };
-    <span class="kw">let</span> (<span class="ident">dest_gid</span>, <span class="ident">dest_uid</span>, <span class="ident">filter</span>) <span class="op">=</span> <span class="ident">parse_gid_uid_and_filter</span>(<span class="kw-2">&amp;</span><span class="ident">matches</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>(dest_gid, dest_uid, filter) = parse_gid_uid_and_filter(<span class="kw-2">&amp;</span>matches)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">executor</span> <span class="op">=</span> <span class="ident">ChownExecutor</span> {
-        <span class="ident">traverse_symlinks</span>,
-        <span class="ident">dest_gid</span>,
-        <span class="ident">dest_uid</span>,
-        <span class="ident">verbosity</span>: <span class="ident">Verbosity</span> {
-            <span class="ident">groups_only</span>,
-            <span class="ident">level</span>: <span class="ident">verbosity_level</span>,
+    <span class="kw">let </span>executor = ChownExecutor {
+        traverse_symlinks,
+        dest_gid,
+        dest_uid,
+        verbosity: Verbosity {
+            groups_only,
+            level: verbosity_level,
         },
-        <span class="ident">recursive</span>,
-        <span class="ident">dereference</span>: <span class="ident">dereference</span>.<span class="ident">unwrap_or</span>(<span class="bool-val">true</span>),
-        <span class="ident">preserve_root</span>,
-        <span class="ident">files</span>,
-        <span class="ident">filter</span>,
+        recursive,
+        dereference: dereference.unwrap_or(<span class="bool-val">true</span>),
+        preserve_root,
+        files,
+        filter,
     };
-    <span class="ident">executor</span>.<span class="ident">exec</span>()
+    executor.exec()
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uucore" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uucore" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>
