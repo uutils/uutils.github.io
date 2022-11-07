@@ -108,6 +108,29 @@
 <span id="108">108</span>
 <span id="109">109</span>
 <span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
@@ -131,29 +154,39 @@
     </span>};
 }
 
+<span class="doccomment">/// The fallback behavior for [`clone`] on failed system call.
+</span><span class="attribute">#[derive(Clone, Copy)]
+</span><span class="kw">enum </span>CloneFallback {
+    <span class="doccomment">/// Raise an error.
+    </span>Error,
+
+    <span class="doccomment">/// Use [`std::io::copy`].
+    </span>IOCopy,
+
+    <span class="doccomment">/// Use [`std::fs::copy`].
+    </span>FSCopy,
+}
+
 <span class="doccomment">/// Use the Linux `ioctl_ficlone` API to do a copy-on-write clone.
 ///
-/// If `fallback` is true and there is a failure performing the clone,
-/// then this function performs a standard [`std::fs::copy`]. Otherwise,
-/// this function returns an error.
+/// `fallback` controls what to do if the system call fails.
 </span><span class="attribute">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;android&quot;</span>))]
-</span><span class="kw">fn </span>clone&lt;P&gt;(source: P, dest: P, fallback: bool) -&gt; std::io::Result&lt;()&gt;
+</span><span class="kw">fn </span>clone&lt;P&gt;(source: P, dest: P, fallback: CloneFallback) -&gt; std::io::Result&lt;()&gt;
 <span class="kw">where
     </span>P: AsRef&lt;Path&gt;,
 {
-    <span class="kw">let </span>src_file = File::open(<span class="kw-2">&amp;</span>source)<span class="question-mark">?</span>;
-    <span class="kw">let </span>dst_file = File::create(<span class="kw-2">&amp;</span>dest)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>src_file = File::open(<span class="kw-2">&amp;</span>source)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>dst_file = File::create(<span class="kw-2">&amp;</span>dest)<span class="question-mark">?</span>;
     <span class="kw">let </span>src_fd = src_file.as_raw_fd();
     <span class="kw">let </span>dst_fd = dst_file.as_raw_fd();
     <span class="kw">let </span>result = <span class="kw">unsafe </span>{ libc::ioctl(dst_fd, <span class="macro">FICLONE!</span>(), src_fd) };
-    <span class="kw">if </span>result != <span class="number">0 </span>{
-        <span class="kw">if </span>fallback {
-            std::fs::copy(source, dest).map(|<span class="kw">_</span>| ())
-        } <span class="kw">else </span>{
-            <span class="prelude-val">Err</span>(std::io::Error::last_os_error())
-        }
-    } <span class="kw">else </span>{
-        <span class="prelude-val">Ok</span>(())
+    <span class="kw">if </span>result == <span class="number">0 </span>{
+        <span class="kw">return </span><span class="prelude-val">Ok</span>(());
+    }
+    <span class="kw">match </span>fallback {
+        CloneFallback::Error =&gt; <span class="prelude-val">Err</span>(std::io::Error::last_os_error()),
+        CloneFallback::IOCopy =&gt; std::io::copy(<span class="kw-2">&amp;mut </span>src_file, <span class="kw-2">&amp;mut </span>dst_file).map(|<span class="kw">_</span>| ()),
+        CloneFallback::FSCopy =&gt; std::fs::copy(source, dest).map(|<span class="kw">_</span>| ()),
     }
 }
 
@@ -199,18 +232,31 @@
 }
 
 <span class="doccomment">/// Copies `source` to `dest` using copy-on-write if possible.
+///
+/// The `source_is_fifo` flag must be set to `true` if and only if
+/// `source` is a FIFO (also known as a named pipe). In this case,
+/// copy-on-write is not possible, so we copy the contents using
+/// [`std::io::copy`].
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>copy_on_write(
     source: <span class="kw-2">&amp;</span>Path,
     dest: <span class="kw-2">&amp;</span>Path,
     reflink_mode: ReflinkMode,
     sparse_mode: SparseMode,
     context: <span class="kw-2">&amp;</span>str,
+    source_is_fifo: bool,
 ) -&gt; CopyResult&lt;()&gt; {
     <span class="kw">let </span>result = <span class="kw">match </span>(reflink_mode, sparse_mode) {
         (ReflinkMode::Never, <span class="kw">_</span>) =&gt; std::fs::copy(source, dest).map(|<span class="kw">_</span>| ()),
         (ReflinkMode::Auto, SparseMode::Always) =&gt; sparse_copy(source, dest),
-        (ReflinkMode::Auto, <span class="kw">_</span>) =&gt; clone(source, dest, <span class="bool-val">true</span>),
-        (ReflinkMode::Always, SparseMode::Auto) =&gt; clone(source, dest, <span class="bool-val">false</span>),
+
+        (ReflinkMode::Auto, <span class="kw">_</span>) =&gt; {
+            <span class="kw">if </span>source_is_fifo {
+                clone(source, dest, CloneFallback::IOCopy)
+            } <span class="kw">else </span>{
+                clone(source, dest, CloneFallback::FSCopy)
+            }
+        }
+        (ReflinkMode::Always, SparseMode::Auto) =&gt; clone(source, dest, CloneFallback::Error),
         (ReflinkMode::Always, <span class="kw">_</span>) =&gt; {
             <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">&quot;`--reflink=always` can be used only with --sparse=auto&quot;</span>.into())
         }

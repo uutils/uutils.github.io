@@ -75,6 +75,11 @@
 <span id="75">75</span>
 <span id="76">76</span>
 <span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Jordi Boggiano &lt;j.boggiano@seld.be&gt;
@@ -117,16 +122,21 @@
         <span class="kw">return </span><span class="prelude-val">Ok</span>(());
     }
 
-    <span class="kw">let </span><span class="kw-2">mut </span>not_found = <span class="bool-val">false</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>error_found = <span class="bool-val">false</span>;
     <span class="kw">for </span>env_var <span class="kw">in </span>variables {
+        <span class="comment">// we silently ignore a=b as variable but we trigger an error
+        </span><span class="kw">if </span>env_var.contains(<span class="string">&#39;=&#39;</span>) {
+            error_found = <span class="bool-val">true</span>;
+            <span class="kw">continue</span>;
+        }
         <span class="kw">if let </span><span class="prelude-val">Ok</span>(var) = env::var(env_var) {
             <span class="macro">print!</span>(<span class="string">&quot;{}{}&quot;</span>, var, separator);
         } <span class="kw">else </span>{
-            not_found = <span class="bool-val">true</span>;
+            error_found = <span class="bool-val">true</span>;
         }
     }
 
-    <span class="kw">if </span>not_found {
+    <span class="kw">if </span>error_found {
         <span class="prelude-val">Err</span>(<span class="number">1</span>.into())
     } <span class="kw">else </span>{
         <span class="prelude-val">Ok</span>(())
