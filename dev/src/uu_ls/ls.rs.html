@@ -3050,6 +3050,9 @@
 <span id="3050">3050</span>
 <span id="3051">3051</span>
 <span id="3052">3052</span>
+<span id="3053">3053</span>
+<span id="3054">3054</span>
+<span id="3055">3055</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Jeremiah Peschka &lt;jeremiah.peschka@gmail.com&gt;
@@ -3091,6 +3094,13 @@
 };
 <span class="kw">use </span>term_grid::{Cell, Direction, Filling, Grid, GridOptions};
 <span class="kw">use </span>unicode_width::UnicodeWidthStr;
+<span class="attribute">#[cfg(any(
+    target_os = <span class="string">&quot;linux&quot;</span>,
+    target_os = <span class="string">&quot;macos&quot;</span>,
+    target_os = <span class="string">&quot;android&quot;</span>,
+    target_os = <span class="string">&quot;ios&quot;
+</span>))]
+</span><span class="kw">use </span>uucore::libc::{dev_t, major, minor};
 <span class="attribute">#[cfg(unix)]
 </span><span class="kw">use </span>uucore::libc::{S_IXGRP, S_IXOTH, S_IXUSR};
 <span class="kw">use </span>uucore::parse_glob;
@@ -3115,7 +3125,6 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
 <span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;{} [OPTION]... [FILE]...&quot;</span>;
 
 <span class="kw">pub mod </span>options {
-
     <span class="kw">pub mod </span>format {
         <span class="kw">pub static </span>ONE_LINE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;1&quot;</span>;
         <span class="kw">pub static </span>LONG: <span class="kw-2">&amp;</span>str = <span class="string">&quot;long&quot;</span>;
@@ -3406,6 +3415,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
         <span class="prelude-val">Ok</span>(TimeStyle::Locale)
     }
 }
+
 <span class="kw">enum </span>Dereference {
     <span class="prelude-val">None</span>,
     DirArgs,
@@ -5435,7 +5445,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                             padding
                                 .size
                                 .saturating_sub(padding.minor.saturating_add(<span class="number">2usize</span>))
-                        )
+                        ),
                     ),
                     pad_left(
                         <span class="kw-2">&amp;</span>minor,
@@ -5695,23 +5705,19 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
 }
 
 <span class="kw">fn </span>display_len_or_rdev(metadata: <span class="kw-2">&amp;</span>Metadata, config: <span class="kw-2">&amp;</span>Config) -&gt; SizeOrDeviceId {
-    <span class="attribute">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;ios&quot;</span>))]
+    <span class="attribute">#[cfg(any(
+        target_os = <span class="string">&quot;linux&quot;</span>,
+        target_os = <span class="string">&quot;macos&quot;</span>,
+        target_os = <span class="string">&quot;android&quot;</span>,
+        target_os = <span class="string">&quot;ios&quot;
+    </span>))]
     </span>{
         <span class="kw">let </span>ft = metadata.file_type();
         <span class="kw">if </span>ft.is_char_device() || ft.is_block_device() {
-            <span class="kw">let </span>dev: u64 = metadata.rdev();
-            <span class="kw">let </span>major = (dev &gt;&gt; <span class="number">24</span>) <span class="kw">as </span>u8;
-            <span class="kw">let </span>minor = (dev &amp; <span class="number">0xff</span>) <span class="kw">as </span>u8;
-            <span class="kw">return </span>SizeOrDeviceId::Device(major.to_string(), minor.to_string());
-        }
-    }
-    <span class="attribute">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;android&quot;</span>))]
-    </span>{
-        <span class="kw">let </span>ft = metadata.file_type();
-        <span class="kw">if </span>ft.is_char_device() || ft.is_block_device() {
-            <span class="kw">let </span>dev: u64 = metadata.rdev();
-            <span class="kw">let </span>major = (dev &gt;&gt; <span class="number">8</span>) <span class="kw">as </span>u8;
-            <span class="kw">let </span>minor = (dev &amp; <span class="number">0xff</span>) <span class="kw">as </span>u8;
+            <span class="comment">// A type cast is needed here as the `dev_t` type varies across OSes.
+            </span><span class="kw">let </span>dev = metadata.rdev() <span class="kw">as </span>dev_t;
+            <span class="kw">let </span>major = <span class="kw">unsafe </span>{ major(dev) };
+            <span class="kw">let </span>minor = <span class="kw">unsafe </span>{ minor(dev) };
             <span class="kw">return </span>SizeOrDeviceId::Device(major.to_string(), minor.to_string());
         }
     }
