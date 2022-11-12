@@ -383,6 +383,13 @@
 <span id="383">383</span>
 <span id="384">384</span>
 <span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
@@ -399,6 +406,7 @@
 <span class="kw">use </span>std::io;
 <span class="kw">use </span>std::path::{Path, PathBuf, StripPrefixError};
 
+<span class="kw">use </span>indicatif::ProgressBar;
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::UIoError;
 <span class="kw">use </span>uucore::fs::{canonicalize, FileInformation, MissingHandling, ResolveMode};
@@ -555,6 +563,7 @@
 
 <span class="doccomment">/// Copy a single entry during a directory traversal.
 </span><span class="kw">fn </span>copy_direntry(
+    progress_bar: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;ProgressBar&gt;,
     entry: Entry,
     options: <span class="kw-2">&amp;</span>Options,
     symlinked_files: <span class="kw-2">&amp;mut </span>HashSet&lt;FileInformation&gt;,
@@ -598,6 +607,7 @@
             preserve_hardlinks(hard_links, <span class="kw-2">&amp;</span>source_absolute, <span class="kw-2">&amp;</span>dest, <span class="kw-2">&amp;mut </span>found_hard_link)<span class="question-mark">?</span>;
             <span class="kw">if </span>!found_hard_link {
                 <span class="kw">match </span>copy_file(
+                    progress_bar,
                     <span class="kw-2">&amp;</span>source_absolute,
                     local_to_target.as_path(),
                     options,
@@ -625,6 +635,7 @@
             // TODO What other kinds of errors, if any, should
             // cause us to continue walking the directory?
             </span><span class="kw">match </span>copy_file(
+                progress_bar,
                 <span class="kw-2">&amp;</span>source_absolute,
                 local_to_target.as_path(),
                 options,
@@ -657,6 +668,7 @@
 /// Any errors encountered copying files in the tree will be logged but
 /// will not cause a short-circuit.
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>copy_directory(
+    progress_bar: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;ProgressBar&gt;,
     root: <span class="kw-2">&amp;</span>Path,
     target: <span class="kw-2">&amp;</span>TargetSlice,
     options: <span class="kw-2">&amp;</span>Options,
@@ -670,6 +682,7 @@
     <span class="comment">// if no-dereference is enabled and this is a symlink, copy it as a file
     </span><span class="kw">if </span>!options.dereference(source_in_command_line) &amp;&amp; root.is_symlink() {
         <span class="kw">return </span>copy_file(
+            progress_bar,
             root,
             target,
             options,
@@ -729,6 +742,7 @@
             <span class="prelude-val">Ok</span>(direntry) =&gt; {
                 <span class="kw">let </span>entry = Entry::new(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>direntry)<span class="question-mark">?</span>;
                 copy_direntry(
+                    progress_bar,
                     entry,
                     options,
                     symlinked_files,

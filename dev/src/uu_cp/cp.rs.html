@@ -1583,6 +1583,93 @@
 <span id="1583">1583</span>
 <span id="1584">1584</span>
 <span id="1585">1585</span>
+<span id="1586">1586</span>
+<span id="1587">1587</span>
+<span id="1588">1588</span>
+<span id="1589">1589</span>
+<span id="1590">1590</span>
+<span id="1591">1591</span>
+<span id="1592">1592</span>
+<span id="1593">1593</span>
+<span id="1594">1594</span>
+<span id="1595">1595</span>
+<span id="1596">1596</span>
+<span id="1597">1597</span>
+<span id="1598">1598</span>
+<span id="1599">1599</span>
+<span id="1600">1600</span>
+<span id="1601">1601</span>
+<span id="1602">1602</span>
+<span id="1603">1603</span>
+<span id="1604">1604</span>
+<span id="1605">1605</span>
+<span id="1606">1606</span>
+<span id="1607">1607</span>
+<span id="1608">1608</span>
+<span id="1609">1609</span>
+<span id="1610">1610</span>
+<span id="1611">1611</span>
+<span id="1612">1612</span>
+<span id="1613">1613</span>
+<span id="1614">1614</span>
+<span id="1615">1615</span>
+<span id="1616">1616</span>
+<span id="1617">1617</span>
+<span id="1618">1618</span>
+<span id="1619">1619</span>
+<span id="1620">1620</span>
+<span id="1621">1621</span>
+<span id="1622">1622</span>
+<span id="1623">1623</span>
+<span id="1624">1624</span>
+<span id="1625">1625</span>
+<span id="1626">1626</span>
+<span id="1627">1627</span>
+<span id="1628">1628</span>
+<span id="1629">1629</span>
+<span id="1630">1630</span>
+<span id="1631">1631</span>
+<span id="1632">1632</span>
+<span id="1633">1633</span>
+<span id="1634">1634</span>
+<span id="1635">1635</span>
+<span id="1636">1636</span>
+<span id="1637">1637</span>
+<span id="1638">1638</span>
+<span id="1639">1639</span>
+<span id="1640">1640</span>
+<span id="1641">1641</span>
+<span id="1642">1642</span>
+<span id="1643">1643</span>
+<span id="1644">1644</span>
+<span id="1645">1645</span>
+<span id="1646">1646</span>
+<span id="1647">1647</span>
+<span id="1648">1648</span>
+<span id="1649">1649</span>
+<span id="1650">1650</span>
+<span id="1651">1651</span>
+<span id="1652">1652</span>
+<span id="1653">1653</span>
+<span id="1654">1654</span>
+<span id="1655">1655</span>
+<span id="1656">1656</span>
+<span id="1657">1657</span>
+<span id="1658">1658</span>
+<span id="1659">1659</span>
+<span id="1660">1660</span>
+<span id="1661">1661</span>
+<span id="1662">1662</span>
+<span id="1663">1663</span>
+<span id="1664">1664</span>
+<span id="1665">1665</span>
+<span id="1666">1666</span>
+<span id="1667">1667</span>
+<span id="1668">1668</span>
+<span id="1669">1669</span>
+<span id="1670">1670</span>
+<span id="1671">1671</span>
+<span id="1672">1672</span>
 </pre><pre class="rust"><code><span class="attribute">#![allow(clippy::missing_safety_doc)]
 #![allow(clippy::extra_unused_lifetimes)]
 
@@ -1594,7 +1681,7 @@
 // For the full copyright and license information, please view the LICENSE file
 // that was distributed with this source code.
 
-// spell-checker:ignore (ToDO) copydir ficlone ftruncate linkgs lstat nlink nlinks pathbuf pwrite reflink strs xattrs symlinked fiemap
+// spell-checker:ignore (ToDO) copydir ficlone fiemap ftruncate linkgs lstat nlink nlinks pathbuf pwrite reflink strs xattrs symlinked deduplicated advcpmv
 
 </span><span class="attribute">#[macro_use]
 </span><span class="kw">extern crate </span>quick_error;
@@ -1618,6 +1705,7 @@
 
 <span class="kw">use </span>clap::{crate_version, Arg, ArgAction, ArgMatches, Command};
 <span class="kw">use </span>filetime::FileTime;
+<span class="kw">use </span>indicatif::{ProgressBar, ProgressStyle};
 <span class="attribute">#[cfg(unix)]
 </span><span class="kw">use </span>libc::mkfifo;
 <span class="kw">use </span>quick_error::ResultExt;
@@ -1799,6 +1887,7 @@
     target_dir: <span class="prelude-ty">Option</span>&lt;String&gt;,
     update: bool,
     verbose: bool,
+    progress_bar: bool,
 }
 
 <span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.&quot;</span>;
@@ -1829,6 +1918,7 @@
     <span class="kw">pub const </span>PARENT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;parent&quot;</span>;
     <span class="kw">pub const </span>PARENTS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;parents&quot;</span>;
     <span class="kw">pub const </span>PATHS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;paths&quot;</span>;
+    <span class="kw">pub const </span>PROGRESS_BAR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;progress&quot;</span>;
     <span class="kw">pub const </span>PRESERVE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;preserve&quot;</span>;
     <span class="kw">pub const </span>PRESERVE_DEFAULT_ATTRIBUTES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;preserve-default-attributes&quot;</span>;
     <span class="kw">pub const </span>RECURSIVE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;recursive&quot;</span>;
@@ -2124,6 +2214,18 @@
         )
         <span class="comment">// END TODO
         </span>.arg(
+            <span class="comment">// The &#39;g&#39; short flag is modeled after advcpmv
+            // See this repo: https://github.com/jarun/advcpmv
+            </span>Arg::new(options::PROGRESS_BAR)
+                .long(options::PROGRESS_BAR)
+                .short(<span class="string">&#39;g&#39;</span>)
+                .action(clap::ArgAction::SetTrue)
+                .help(
+                    <span class="string">&quot;Display a progress bar. \n\
+                Note: this feature is not supported by GNU coreutils.&quot;</span>,
+                ),
+        )
+        .arg(
             Arg::new(options::PATHS)
                 .action(ArgAction::Append)
                 .value_hint(clap::ValueHint::AnyPath),
@@ -2402,6 +2504,7 @@
             preserve_attributes,
             recursive,
             target_dir,
+            progress_bar: matches.get_flag(options::PROGRESS_BAR),
         };
 
         <span class="prelude-val">Ok</span>(options)
@@ -2520,7 +2623,7 @@
 /// `Err(Error::NotAllFilesCopied)` if at least one non-fatal error was
 /// encountered.
 ///
-/// Behavior depends on `options`, see [`Options`] for details.
+/// Behavior depends on path`options`, see [`Options`] for details.
 ///
 /// [`Options`]: ./struct.Options.html
 </span><span class="kw">fn </span>copy(sources: <span class="kw-2">&amp;</span>[Source], target: <span class="kw-2">&amp;</span>TargetSlice, options: <span class="kw-2">&amp;</span>Options) -&gt; CopyResult&lt;()&gt; {
@@ -2534,7 +2637,23 @@
     <span class="kw">let </span><span class="kw-2">mut </span>non_fatal_errors = <span class="bool-val">false</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>seen_sources = HashSet::with_capacity(sources.len());
     <span class="kw">let </span><span class="kw-2">mut </span>symlinked_files = HashSet::new();
-    <span class="kw">for </span>source <span class="kw">in </span>sources {
+
+    <span class="kw">let </span>progress_bar = <span class="kw">if </span>options.progress_bar {
+        <span class="prelude-val">Some</span>(
+            ProgressBar::new(disk_usage(sources, options.recursive)<span class="question-mark">?</span>)
+                .with_style(
+                    ProgressStyle::with_template(
+                        <span class="string">&quot;{msg}: [{elapsed_precise}] {wide_bar} {bytes:&gt;7}/{total_bytes:7}&quot;</span>,
+                    )
+                    .unwrap(),
+                )
+                .with_message(uucore::util_name()),
+        )
+    } <span class="kw">else </span>{
+        <span class="prelude-val">None
+    </span>};
+
+    <span class="kw">for </span>source <span class="kw">in </span>sources.iter() {
         <span class="kw">if </span>seen_sources.contains(source) {
             <span class="comment">// FIXME: compare sources by the actual file they point to, not their path. (e.g. dir/file == dir/../dir/file in most cases)
             </span><span class="macro">show_warning!</span>(<span class="string">&quot;source {} specified more than once&quot;</span>, source.quote());
@@ -2545,9 +2664,14 @@
                 preserve_hardlinks(<span class="kw-2">&amp;mut </span>hard_links, source, <span class="kw-2">&amp;</span>dest, <span class="kw-2">&amp;mut </span>found_hard_link)<span class="question-mark">?</span>;
             }
             <span class="kw">if </span>!found_hard_link {
-                <span class="kw">if let </span><span class="prelude-val">Err</span>(error) =
-                    copy_source(source, target, <span class="kw-2">&amp;</span>target_type, options, <span class="kw-2">&amp;mut </span>symlinked_files)
-                {
+                <span class="kw">if let </span><span class="prelude-val">Err</span>(error) = copy_source(
+                    <span class="kw-2">&amp;</span>progress_bar,
+                    source,
+                    target,
+                    <span class="kw-2">&amp;</span>target_type,
+                    options,
+                    <span class="kw-2">&amp;mut </span>symlinked_files,
+                ) {
                     <span class="kw">match </span>error {
                         <span class="comment">// When using --no-clobber, we don&#39;t want to show
                         // an error message
@@ -2602,6 +2726,7 @@
 }
 
 <span class="kw">fn </span>copy_source(
+    progress_bar: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;ProgressBar&gt;,
     source: <span class="kw-2">&amp;</span>SourceSlice,
     target: <span class="kw-2">&amp;</span>TargetSlice,
     target_type: <span class="kw-2">&amp;</span>TargetType,
@@ -2611,11 +2736,18 @@
     <span class="kw">let </span>source_path = Path::new(<span class="kw-2">&amp;</span>source);
     <span class="kw">if </span>source_path.is_dir() {
         <span class="comment">// Copy as directory
-        </span>copy_directory(source, target, options, symlinked_files, <span class="bool-val">true</span>)
+        </span>copy_directory(progress_bar, source, target, options, symlinked_files, <span class="bool-val">true</span>)
     } <span class="kw">else </span>{
         <span class="comment">// Copy as file
         </span><span class="kw">let </span>dest = construct_dest_path(source_path, target, target_type, options)<span class="question-mark">?</span>;
-        copy_file(source_path, dest.as_path(), options, symlinked_files, <span class="bool-val">true</span>)
+        copy_file(
+            progress_bar,
+            source_path,
+            dest.as_path(),
+            options,
+            symlinked_files,
+            <span class="bool-val">true</span>,
+        )
     }
 }
 
@@ -2862,6 +2994,7 @@
 /// The original permissions of `source` will be copied to `dest`
 /// after a successful copy.
 </span><span class="kw">fn </span>copy_file(
+    progress_bar: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;ProgressBar&gt;,
     source: <span class="kw-2">&amp;</span>Path,
     dest: <span class="kw-2">&amp;</span>Path,
     options: <span class="kw-2">&amp;</span>Options,
@@ -3037,6 +3170,11 @@
         </span>fs::set_permissions(dest, dest_permissions).ok();
     }
     copy_attributes(source, dest, <span class="kw-2">&amp;</span>options.preserve_attributes)<span class="question-mark">?</span>;
+
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(progress_bar) = progress_bar {
+        progress_bar.inc(fs::metadata(source)<span class="question-mark">?</span>.len());
+    }
+
     <span class="prelude-val">Ok</span>(())
 }
 
@@ -3154,6 +3292,42 @@
 </span><span class="kw">pub fn </span>localize_to_target(root: <span class="kw-2">&amp;</span>Path, source: <span class="kw-2">&amp;</span>Path, target: <span class="kw-2">&amp;</span>Path) -&gt; CopyResult&lt;PathBuf&gt; {
     <span class="kw">let </span>local_to_root = source.strip_prefix(root)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(target.join(local_to_root))
+}
+
+<span class="doccomment">/// Get the total size of a slice of files and directories.
+///
+/// This function is much like the `du` utility, by recursively getting the sizes of files in directories.
+/// Files are not deduplicated when appearing in multiple sources. If `recursive` is set to `false`, the
+/// directories in `paths` will be ignored.
+</span><span class="kw">fn </span>disk_usage(paths: <span class="kw-2">&amp;</span>[PathBuf], recursive: bool) -&gt; io::Result&lt;u64&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>total = <span class="number">0</span>;
+    <span class="kw">for </span>p <span class="kw">in </span>paths {
+        <span class="kw">let </span>md = fs::metadata(p)<span class="question-mark">?</span>;
+        <span class="kw">if </span>md.file_type().is_dir() {
+            <span class="kw">if </span>recursive {
+                total += disk_usage_directory(p)<span class="question-mark">?</span>;
+            }
+        } <span class="kw">else </span>{
+            total += md.len();
+        }
+    }
+    <span class="prelude-val">Ok</span>(total)
+}
+
+<span class="doccomment">/// A helper for `disk_usage` specialized for directories.
+</span><span class="kw">fn </span>disk_usage_directory(p: <span class="kw-2">&amp;</span>Path) -&gt; io::Result&lt;u64&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>total = <span class="number">0</span>;
+
+    <span class="kw">for </span>entry <span class="kw">in </span>fs::read_dir(p)<span class="question-mark">? </span>{
+        <span class="kw">let </span>entry = entry<span class="question-mark">?</span>;
+        <span class="kw">if </span>entry.file_type()<span class="question-mark">?</span>.is_dir() {
+            total += disk_usage_directory(<span class="kw-2">&amp;</span>entry.path())<span class="question-mark">?</span>;
+        } <span class="kw">else </span>{
+            total += entry.metadata()<span class="question-mark">?</span>.len();
+        }
+    }
+
+    <span class="prelude-val">Ok</span>(total)
 }
 
 <span class="attribute">#[test]
