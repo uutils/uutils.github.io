@@ -581,37 +581,6 @@
 <span id="581">581</span>
 <span id="582">582</span>
 <span id="583">583</span>
-<span id="584">584</span>
-<span id="585">585</span>
-<span id="586">586</span>
-<span id="587">587</span>
-<span id="588">588</span>
-<span id="589">589</span>
-<span id="590">590</span>
-<span id="591">591</span>
-<span id="592">592</span>
-<span id="593">593</span>
-<span id="594">594</span>
-<span id="595">595</span>
-<span id="596">596</span>
-<span id="597">597</span>
-<span id="598">598</span>
-<span id="599">599</span>
-<span id="600">600</span>
-<span id="601">601</span>
-<span id="602">602</span>
-<span id="603">603</span>
-<span id="604">604</span>
-<span id="605">605</span>
-<span id="606">606</span>
-<span id="607">607</span>
-<span id="608">608</span>
-<span id="609">609</span>
-<span id="610">610</span>
-<span id="611">611</span>
-<span id="612">612</span>
-<span id="613">613</span>
-<span id="614">614</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Alex Lyon &lt;arcterus@mail.com&gt;
@@ -621,19 +590,16 @@
 
 // spell-checker:ignore (path) eacces
 
-</span><span class="attribute">#[macro_use]
-</span><span class="kw">extern crate </span>uucore;
-
-<span class="kw">use </span>clap::{crate_version, parser::ValueSource, Arg, ArgAction, Command};
+</span><span class="kw">use </span>clap::{crate_version, parser::ValueSource, Arg, ArgAction, Command};
 <span class="kw">use </span>remove_dir_all::remove_dir_all;
 <span class="kw">use </span>std::collections::VecDeque;
 <span class="kw">use </span>std::fs::{<span class="self">self</span>, File, Metadata};
-<span class="kw">use </span>std::io::{stderr, stdin, BufRead, ErrorKind, Write};
+<span class="kw">use </span>std::io::ErrorKind;
 <span class="kw">use </span>std::ops::BitOr;
 <span class="kw">use </span>std::path::{Path, PathBuf};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{UResult, USimpleError, UUsageError};
-<span class="kw">use </span>uucore::format_usage;
+<span class="kw">use </span>uucore::{format_usage, prompt_yes, show_error};
 <span class="kw">use </span>walkdir::{DirEntry, WalkDir};
 
 <span class="attribute">#[derive(Eq, PartialEq, Clone, Copy)]
@@ -750,11 +716,11 @@
         };
         <span class="kw">if </span>options.interactive == InteractiveMode::Once &amp;&amp; (options.recursive || files.len() &gt; <span class="number">3</span>) {
             <span class="kw">let </span>msg = <span class="kw">if </span>options.recursive {
-                <span class="string">&quot;Remove all arguments recursively? &quot;
+                <span class="string">&quot;Remove all arguments recursively?&quot;
             </span>} <span class="kw">else </span>{
-                <span class="string">&quot;Remove all arguments? &quot;
+                <span class="string">&quot;Remove all arguments?&quot;
             </span>};
-            <span class="kw">if </span>!prompt(msg) {
+            <span class="kw">if </span>!<span class="macro">prompt_yes!</span>(<span class="string">&quot;{}&quot;</span>, msg) {
                 <span class="kw">return </span><span class="prelude-val">Ok</span>(());
             }
         }
@@ -1068,7 +1034,7 @@
     </span><span class="kw">if </span>options.interactive == InteractiveMode::Always {
         <span class="kw">if let </span><span class="prelude-val">Ok</span>(metadata) = fs::symlink_metadata(path) {
             <span class="kw">if </span>metadata.is_symlink() {
-                <span class="kw">return </span>prompt(<span class="kw-2">&amp;</span>(<span class="macro">format!</span>(<span class="string">&quot;remove symbolic link {}? &quot;</span>, path.quote())));
+                <span class="kw">return </span><span class="macro">prompt_yes!</span>(<span class="string">&quot;remove symbolic link {}?&quot;</span>, path.quote());
             }
         }
     }
@@ -1087,25 +1053,18 @@
                 <span class="kw">if let </span><span class="prelude-val">Ok</span>(metadata) = file.metadata() {
                     <span class="kw">if </span>metadata.permissions().readonly() {
                         <span class="kw">if </span>metadata.len() == <span class="number">0 </span>{
-                            prompt(
-                                <span class="kw-2">&amp;</span>(<span class="macro">format!</span>(
-                                    <span class="string">&quot;remove write-protected regular empty file {}? &quot;</span>,
-                                    path.quote()
-                                )),
+                            <span class="macro">prompt_yes!</span>(
+                                <span class="string">&quot;remove write-protected regular empty file {}?&quot;</span>,
+                                path.quote()
                             )
                         } <span class="kw">else </span>{
-                            prompt(
-                                <span class="kw-2">&amp;</span>(<span class="macro">format!</span>(
-                                    <span class="string">&quot;remove write-protected regular file {}? &quot;</span>,
-                                    path.quote()
-                                )),
-                            )
+                            <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove write-protected regular file {}?&quot;</span>, path.quote())
                         }
                     } <span class="kw">else if </span>options.interactive == InteractiveMode::Always {
                         <span class="kw">if </span>metadata.len() == <span class="number">0 </span>{
-                            prompt(<span class="kw-2">&amp;</span>(<span class="macro">format!</span>(<span class="string">&quot;remove regular empty file {}? &quot;</span>, path.quote())))
+                            <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove regular empty file {}?&quot;</span>, path.quote())
                         } <span class="kw">else </span>{
-                            prompt(<span class="kw-2">&amp;</span>(<span class="macro">format!</span>(<span class="string">&quot;remove file {}? &quot;</span>, path.quote())))
+                            <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove file {}?&quot;</span>, path.quote())
                         }
                     } <span class="kw">else </span>{
                         <span class="bool-val">true
@@ -1118,22 +1077,15 @@
                 <span class="kw">if </span>err.kind() == ErrorKind::PermissionDenied {
                     <span class="kw">if let </span><span class="prelude-val">Ok</span>(metadata) = fs::metadata(path) {
                         <span class="kw">if </span>metadata.len() == <span class="number">0 </span>{
-                            prompt(
-                                <span class="kw-2">&amp;</span>(<span class="macro">format!</span>(
-                                    <span class="string">&quot;remove write-protected regular empty file {}? &quot;</span>,
-                                    path.quote()
-                                )),
+                            <span class="macro">prompt_yes!</span>(
+                                <span class="string">&quot;remove write-protected regular empty file {}?&quot;</span>,
+                                path.quote()
                             )
                         } <span class="kw">else </span>{
-                            prompt(
-                                <span class="kw-2">&amp;</span>(<span class="macro">format!</span>(
-                                    <span class="string">&quot;remove write-protected regular file {}? &quot;</span>,
-                                    path.quote()
-                                )),
-                            )
+                            <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove write-protected regular file {}?&quot;</span>, path.quote())
                         }
                     } <span class="kw">else </span>{
-                        prompt(<span class="kw-2">&amp;</span>(<span class="macro">format!</span>(<span class="string">&quot;remove write-protected regular file {}? &quot;</span>, path.quote())))
+                        <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove write-protected regular file {}?&quot;</span>, path.quote())
                     }
                 } <span class="kw">else </span>{
                     <span class="bool-val">true
@@ -1153,9 +1105,9 @@
     // Why is S_IWUSR showing up as a u16 on macos?
     </span><span class="kw">let </span>user_writable = (mode &amp; (libc::S_IWUSR <span class="kw">as </span>u32)) != <span class="number">0</span>;
     <span class="kw">if </span>!user_writable {
-        prompt(<span class="kw-2">&amp;</span>(<span class="macro">format!</span>(<span class="string">&quot;remove write-protected directory {}? &quot;</span>, path.quote())))
+        <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove write-protected directory {}?&quot;</span>, path.quote())
     } <span class="kw">else if </span>options.interactive == InteractiveMode::Always {
-        prompt(<span class="kw-2">&amp;</span>(<span class="macro">format!</span>(<span class="string">&quot;remove directory {}? &quot;</span>, path.quote())))
+        <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove directory {}?&quot;</span>, path.quote())
     } <span class="kw">else </span>{
         <span class="bool-val">true
     </span>}
@@ -1168,9 +1120,9 @@
     <span class="kw">use </span>windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_READONLY;
     <span class="kw">let </span>not_user_writable = (metadata.file_attributes() &amp; FILE_ATTRIBUTE_READONLY) != <span class="number">0</span>;
     <span class="kw">if </span>not_user_writable {
-        prompt(<span class="kw-2">&amp;</span>(<span class="macro">format!</span>(<span class="string">&quot;remove write-protected directory {}? &quot;</span>, path.quote())))
+        <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove write-protected directory {}?&quot;</span>, path.quote())
     } <span class="kw">else if </span>options.interactive == InteractiveMode::Always {
-        prompt(<span class="kw-2">&amp;</span>(<span class="macro">format!</span>(<span class="string">&quot;remove directory {}? &quot;</span>, path.quote())))
+        <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove directory {}?&quot;</span>, path.quote())
     } <span class="kw">else </span>{
         <span class="bool-val">true
     </span>}
@@ -1181,14 +1133,14 @@
 #[cfg(not(unix))]
 </span><span class="kw">fn </span>handle_writable_directory(path: <span class="kw-2">&amp;</span>Path, options: <span class="kw-2">&amp;</span>Options, metadata: <span class="kw-2">&amp;</span>Metadata) -&gt; bool {
     <span class="kw">if </span>options.interactive == InteractiveMode::Always {
-        prompt(<span class="kw-2">&amp;</span>(<span class="macro">format!</span>(<span class="string">&quot;remove directory {}? &quot;</span>, path.quote())))
+        <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove directory {}?&quot;</span>, path.quote())
     } <span class="kw">else </span>{
         <span class="bool-val">true
     </span>}
 }
 
 <span class="kw">fn </span>prompt_descend(path: <span class="kw-2">&amp;</span>Path) -&gt; bool {
-    prompt(<span class="kw-2">&amp;</span>(<span class="macro">format!</span>(<span class="string">&quot;descend into directory {}? &quot;</span>, path.quote())))
+    <span class="macro">prompt_yes!</span>(<span class="string">&quot;descend into directory {}?&quot;</span>, path.quote())
 }
 
 <span class="kw">fn </span>normalize(path: <span class="kw-2">&amp;</span>Path) -&gt; PathBuf {
@@ -1197,20 +1149,6 @@
     // for std impl progress see rfc https://github.com/rust-lang/rfcs/issues/2208
     // TODO: replace this once that lands
     </span>uucore::fs::normalize_path(path)
-}
-
-<span class="kw">fn </span>prompt(msg: <span class="kw-2">&amp;</span>str) -&gt; bool {
-    <span class="kw">let _ </span>= stderr().write_all(<span class="macro">format!</span>(<span class="string">&quot;{}: {}&quot;</span>, uucore::util_name(), msg).as_bytes());
-    <span class="kw">let _ </span>= stderr().flush();
-
-    <span class="kw">let </span><span class="kw-2">mut </span>buf = Vec::new();
-    <span class="kw">let </span>stdin = stdin();
-    <span class="kw">let </span><span class="kw-2">mut </span>stdin = stdin.lock();
-    <span class="kw">let </span>read = stdin.read_until(<span class="string">b&#39;\n&#39;</span>, <span class="kw-2">&amp;mut </span>buf);
-    <span class="kw">match </span>read {
-        <span class="prelude-val">Ok</span>(x) <span class="kw">if </span>x &gt; <span class="number">0 </span>=&gt; <span class="macro">matches!</span>(buf[<span class="number">0</span>], <span class="string">b&#39;y&#39; </span>| <span class="string">b&#39;Y&#39;</span>),
-        <span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
-    }
 }
 
 <span class="attribute">#[cfg(not(windows))]

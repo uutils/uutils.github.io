@@ -490,22 +490,6 @@
 <span id="490">490</span>
 <span id="491">491</span>
 <span id="492">492</span>
-<span id="493">493</span>
-<span id="494">494</span>
-<span id="495">495</span>
-<span id="496">496</span>
-<span id="497">497</span>
-<span id="498">498</span>
-<span id="499">499</span>
-<span id="500">500</span>
-<span id="501">501</span>
-<span id="502">502</span>
-<span id="503">503</span>
-<span id="504">504</span>
-<span id="505">505</span>
-<span id="506">506</span>
-<span id="507">507</span>
-<span id="508">508</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Joseph Crail &lt;jbcrail@gmail.com&gt;
@@ -515,14 +499,11 @@
 
 // spell-checker:ignore (ToDO) srcpath targetpath EEXIST
 
-</span><span class="attribute">#[macro_use]
-</span><span class="kw">extern crate </span>uucore;
-
-<span class="kw">use </span>clap::{crate_version, Arg, ArgAction, Command};
+</span><span class="kw">use </span>clap::{crate_version, Arg, ArgAction, Command};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{FromIo, UError, UResult};
-<span class="kw">use </span>uucore::format_usage;
 <span class="kw">use </span>uucore::fs::{make_path_relative_to, paths_refer_to_same_file};
+<span class="kw">use </span>uucore::{format_usage, prompt_yes, show_error};
 
 <span class="kw">use </span>std::borrow::Cow;
 <span class="kw">use </span>std::error::Error;
@@ -530,7 +511,6 @@
 <span class="kw">use </span>std::fmt::Display;
 <span class="kw">use </span>std::fs;
 
-<span class="kw">use </span>std::io::stdin;
 <span class="attribute">#[cfg(any(unix, target_os = <span class="string">&quot;redox&quot;</span>))]
 </span><span class="kw">use </span>std::os::unix::fs::symlink;
 <span class="attribute">#[cfg(windows)]
@@ -921,8 +901,7 @@
         <span class="kw">match </span>settings.overwrite {
             OverwriteMode::NoClobber =&gt; {}
             OverwriteMode::Interactive =&gt; {
-                <span class="macro">print!</span>(<span class="string">&quot;{}: overwrite {}? &quot;</span>, uucore::util_name(), dst.quote());
-                <span class="kw">if </span>!read_yes() {
+                <span class="kw">if </span>!<span class="macro">prompt_yes!</span>(<span class="string">&quot;overwrite {}?&quot;</span>, dst.quote()) {
                     <span class="kw">return </span><span class="prelude-val">Ok</span>(());
                 }
 
@@ -968,17 +947,6 @@
         }
     }
     <span class="prelude-val">Ok</span>(())
-}
-
-<span class="kw">fn </span>read_yes() -&gt; bool {
-    <span class="kw">let </span><span class="kw-2">mut </span>s = String::new();
-    <span class="kw">match </span>stdin().read_line(<span class="kw-2">&amp;mut </span>s) {
-        <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="kw">match </span>s.char_indices().next() {
-            <span class="prelude-val">Some</span>((<span class="kw">_</span>, x)) =&gt; x == <span class="string">&#39;y&#39; </span>|| x == <span class="string">&#39;Y&#39;</span>,
-            <span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
-        },
-        <span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
-    }
 }
 
 <span class="kw">fn </span>simple_backup_path(path: <span class="kw-2">&amp;</span>Path, suffix: <span class="kw-2">&amp;</span>str) -&gt; PathBuf {

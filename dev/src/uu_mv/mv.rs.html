@@ -498,22 +498,6 @@
 <span id="498">498</span>
 <span id="499">499</span>
 <span id="500">500</span>
-<span id="501">501</span>
-<span id="502">502</span>
-<span id="503">503</span>
-<span id="504">504</span>
-<span id="505">505</span>
-<span id="506">506</span>
-<span id="507">507</span>
-<span id="508">508</span>
-<span id="509">509</span>
-<span id="510">510</span>
-<span id="511">511</span>
-<span id="512">512</span>
-<span id="513">513</span>
-<span id="514">514</span>
-<span id="515">515</span>
-<span id="516">516</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Orvar Segerström &lt;orvarsegerstrom@gmail.com&gt;
@@ -526,15 +510,12 @@
 
 </span><span class="kw">mod </span>error;
 
-<span class="attribute">#[macro_use]
-</span><span class="kw">extern crate </span>uucore;
-
 <span class="kw">use </span>clap::builder::ValueParser;
 <span class="kw">use </span>clap::{crate_version, error::ErrorKind, Arg, ArgAction, ArgMatches, Command};
 <span class="kw">use </span>std::env;
 <span class="kw">use </span>std::ffi::OsString;
 <span class="kw">use </span>std::fs;
-<span class="kw">use </span>std::io::{<span class="self">self</span>, stdin};
+<span class="kw">use </span>std::io;
 <span class="attribute">#[cfg(unix)]
 </span><span class="kw">use </span>std::os::unix;
 <span class="attribute">#[cfg(windows)]
@@ -543,7 +524,7 @@
 <span class="kw">use </span>uucore::backup_control::{<span class="self">self</span>, BackupMode};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{FromIo, UError, UResult, USimpleError, UUsageError};
-<span class="kw">use </span>uucore::format_usage;
+<span class="kw">use </span>uucore::{format_usage, prompt_yes, show, show_if_err};
 
 <span class="kw">use </span>fs_extra::dir::{move_dir, CopyOptions <span class="kw">as </span>DirCopyOptions};
 
@@ -801,8 +782,7 @@
                 <span class="kw">match </span>b.overwrite {
                     OverwriteMode::NoClobber =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
                     OverwriteMode::Interactive =&gt; {
-                        <span class="macro">println!</span>(<span class="string">&quot;{}: overwrite {}? &quot;</span>, uucore::util_name(), target.quote());
-                        <span class="kw">if </span>!read_yes() {
+                        <span class="kw">if </span>!<span class="macro">prompt_yes!</span>(<span class="string">&quot;overwrite {}? &quot;</span>, target.quote()) {
                             <span class="kw">return </span><span class="prelude-val">Ok</span>(());
                         }
                     }
@@ -896,8 +876,7 @@
         <span class="kw">match </span>b.overwrite {
             OverwriteMode::NoClobber =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
             OverwriteMode::Interactive =&gt; {
-                <span class="macro">println!</span>(<span class="string">&quot;{}: overwrite {}? &quot;</span>, uucore::util_name(), to.quote());
-                <span class="kw">if </span>!read_yes() {
+                <span class="kw">if </span>!<span class="macro">prompt_yes!</span>(<span class="string">&quot;overwrite {}?&quot;</span>, to.quote()) {
                     <span class="kw">return </span><span class="prelude-val">Ok</span>(());
                 }
             }
@@ -1011,17 +990,6 @@
         ));
     }
     <span class="prelude-val">Ok</span>(())
-}
-
-<span class="kw">fn </span>read_yes() -&gt; bool {
-    <span class="kw">let </span><span class="kw-2">mut </span>s = String::new();
-    <span class="kw">match </span>stdin().read_line(<span class="kw-2">&amp;mut </span>s) {
-        <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="kw">match </span>s.chars().next() {
-            <span class="prelude-val">Some</span>(x) =&gt; x == <span class="string">&#39;y&#39; </span>|| x == <span class="string">&#39;Y&#39;</span>,
-            <span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
-        },
-        <span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
-    }
 }
 
 <span class="kw">fn </span>is_empty_dir(path: <span class="kw-2">&amp;</span>Path) -&gt; bool {
