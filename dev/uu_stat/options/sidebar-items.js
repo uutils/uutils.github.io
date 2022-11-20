@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"static":[["DEREFERENCE",""],["FILE_SYSTEM",""],["FORMAT",""],["PRINTF",""],["TERSE",""]]};

@@ -988,101 +988,6 @@
 <span id="988">988</span>
 <span id="989">989</span>
 <span id="990">990</span>
-<span id="991">991</span>
-<span id="992">992</span>
-<span id="993">993</span>
-<span id="994">994</span>
-<span id="995">995</span>
-<span id="996">996</span>
-<span id="997">997</span>
-<span id="998">998</span>
-<span id="999">999</span>
-<span id="1000">1000</span>
-<span id="1001">1001</span>
-<span id="1002">1002</span>
-<span id="1003">1003</span>
-<span id="1004">1004</span>
-<span id="1005">1005</span>
-<span id="1006">1006</span>
-<span id="1007">1007</span>
-<span id="1008">1008</span>
-<span id="1009">1009</span>
-<span id="1010">1010</span>
-<span id="1011">1011</span>
-<span id="1012">1012</span>
-<span id="1013">1013</span>
-<span id="1014">1014</span>
-<span id="1015">1015</span>
-<span id="1016">1016</span>
-<span id="1017">1017</span>
-<span id="1018">1018</span>
-<span id="1019">1019</span>
-<span id="1020">1020</span>
-<span id="1021">1021</span>
-<span id="1022">1022</span>
-<span id="1023">1023</span>
-<span id="1024">1024</span>
-<span id="1025">1025</span>
-<span id="1026">1026</span>
-<span id="1027">1027</span>
-<span id="1028">1028</span>
-<span id="1029">1029</span>
-<span id="1030">1030</span>
-<span id="1031">1031</span>
-<span id="1032">1032</span>
-<span id="1033">1033</span>
-<span id="1034">1034</span>
-<span id="1035">1035</span>
-<span id="1036">1036</span>
-<span id="1037">1037</span>
-<span id="1038">1038</span>
-<span id="1039">1039</span>
-<span id="1040">1040</span>
-<span id="1041">1041</span>
-<span id="1042">1042</span>
-<span id="1043">1043</span>
-<span id="1044">1044</span>
-<span id="1045">1045</span>
-<span id="1046">1046</span>
-<span id="1047">1047</span>
-<span id="1048">1048</span>
-<span id="1049">1049</span>
-<span id="1050">1050</span>
-<span id="1051">1051</span>
-<span id="1052">1052</span>
-<span id="1053">1053</span>
-<span id="1054">1054</span>
-<span id="1055">1055</span>
-<span id="1056">1056</span>
-<span id="1057">1057</span>
-<span id="1058">1058</span>
-<span id="1059">1059</span>
-<span id="1060">1060</span>
-<span id="1061">1061</span>
-<span id="1062">1062</span>
-<span id="1063">1063</span>
-<span id="1064">1064</span>
-<span id="1065">1065</span>
-<span id="1066">1066</span>
-<span id="1067">1067</span>
-<span id="1068">1068</span>
-<span id="1069">1069</span>
-<span id="1070">1070</span>
-<span id="1071">1071</span>
-<span id="1072">1072</span>
-<span id="1073">1073</span>
-<span id="1074">1074</span>
-<span id="1075">1075</span>
-<span id="1076">1076</span>
-<span id="1077">1077</span>
-<span id="1078">1078</span>
-<span id="1079">1079</span>
-<span id="1080">1080</span>
-<span id="1081">1081</span>
-<span id="1082">1082</span>
-<span id="1083">1083</span>
-<span id="1084">1084</span>
-<span id="1085">1085</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;
@@ -1098,42 +1003,42 @@
     pretty_filetype, pretty_fstype, pretty_time, read_fs_list, statfs, BirthTime, FsMeta,
 };
 <span class="kw">use </span>uucore::libc::mode_t;
-<span class="kw">use </span>uucore::{entries, format_usage, has, show_error, show_warning};
+<span class="kw">use </span>uucore::{entries, format_usage, show_error, show_warning};
 
 <span class="kw">use </span>clap::{crate_version, Arg, ArgAction, ArgMatches, Command};
 <span class="kw">use </span>std::borrow::Cow;
 <span class="kw">use </span>std::convert::AsRef;
 <span class="kw">use </span>std::ffi::{OsStr, OsString};
+<span class="kw">use </span>std::fs;
 <span class="kw">use </span>std::os::unix::fs::{FileTypeExt, MetadataExt};
 <span class="kw">use </span>std::os::unix::prelude::OsStrExt;
 <span class="kw">use </span>std::path::Path;
-<span class="kw">use </span>std::{cmp, fs, iter};
 
-<span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Display file or file system status.&quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Display file or file system status.&quot;</span>;
 <span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;{} [OPTION]... FILE...&quot;</span>;
 
-<span class="kw">pub mod </span>options {
-    <span class="kw">pub static </span>DEREFERENCE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;dereference&quot;</span>;
-    <span class="kw">pub static </span>FILE_SYSTEM: <span class="kw-2">&amp;</span>str = <span class="string">&quot;file-system&quot;</span>;
-    <span class="kw">pub static </span>FORMAT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;format&quot;</span>;
-    <span class="kw">pub static </span>PRINTF: <span class="kw-2">&amp;</span>str = <span class="string">&quot;printf&quot;</span>;
-    <span class="kw">pub static </span>TERSE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;terse&quot;</span>;
+<span class="kw">mod </span>options {
+    <span class="kw">pub const </span>DEREFERENCE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;dereference&quot;</span>;
+    <span class="kw">pub const </span>FILE_SYSTEM: <span class="kw-2">&amp;</span>str = <span class="string">&quot;file-system&quot;</span>;
+    <span class="kw">pub const </span>FORMAT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;format&quot;</span>;
+    <span class="kw">pub const </span>PRINTF: <span class="kw-2">&amp;</span>str = <span class="string">&quot;printf&quot;</span>;
+    <span class="kw">pub const </span>TERSE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;terse&quot;</span>;
+    <span class="kw">pub const </span>FILES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;files&quot;</span>;
 }
 
-<span class="kw">static </span>ARG_FILES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;files&quot;</span>;
-
-<span class="kw">pub const </span>F_ALTER: u8 = <span class="number">1</span>;
-<span class="kw">pub const </span>F_ZERO: u8 = <span class="number">1 </span>&lt;&lt; <span class="number">1</span>;
-<span class="kw">pub const </span>F_LEFT: u8 = <span class="number">1 </span>&lt;&lt; <span class="number">2</span>;
-<span class="kw">pub const </span>F_SPACE: u8 = <span class="number">1 </span>&lt;&lt; <span class="number">3</span>;
-<span class="kw">pub const </span>F_SIGN: u8 = <span class="number">1 </span>&lt;&lt; <span class="number">4</span>;
-<span class="comment">// unused at present
-</span><span class="kw">pub const </span>F_GROUP: u8 = <span class="number">1 </span>&lt;&lt; <span class="number">5</span>;
+<span class="attribute">#[derive(Default, Debug, PartialEq, Eq, Clone, Copy)]
+</span><span class="kw">struct </span>Flags {
+    alter: bool,
+    zero: bool,
+    left: bool,
+    space: bool,
+    sign: bool,
+    group: bool,
+}
 
 <span class="doccomment">/// checks if the string is within the specified bound,
 /// if it gets out of bound, error out by printing sub-string from index `beg` to`end`,
 /// where `beg` &amp; `end` is the beginning and end index of sub-string, respectively
-///
 </span><span class="kw">fn </span>check_bound(slice: <span class="kw-2">&amp;</span>str, bound: usize, beg: usize, end: usize) -&gt; UResult&lt;()&gt; {
     <span class="kw">if </span>end &gt;= bound {
         <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
@@ -1142,23 +1047,6 @@
         ));
     }
     <span class="prelude-val">Ok</span>(())
-}
-
-<span class="doccomment">/// pads the string with zeroes if supplied min is greater
-/// then the length of the string, else returns the original string
-///
-</span><span class="kw">fn </span>extend_digits(string: <span class="kw-2">&amp;</span>str, min: usize) -&gt; Cow&lt;<span class="lifetime">&#39;_</span>, str&gt; {
-    <span class="kw">if </span>min &gt; string.len() {
-        <span class="kw">let </span><span class="kw-2">mut </span>pad = String::with_capacity(min);
-        iter::repeat(<span class="string">&#39;0&#39;</span>)
-            .take(min - string.len())
-            .map(|<span class="kw">_</span>| pad.push(<span class="string">&#39;0&#39;</span>))
-            .all(|<span class="kw">_</span>| <span class="bool-val">true</span>);
-        pad.push_str(string);
-        pad.into()
-    } <span class="kw">else </span>{
-        string.into()
-    }
 }
 
 <span class="kw">enum </span>Padding {
@@ -1174,8 +1062,7 @@
 /// ```
 /// currently only supports &#39;0&#39; &amp; &#39; &#39; as the padding character
 /// because the format specification of print! does not support general
-/// fill characters
-///
+/// fill characters.
 </span><span class="kw">fn </span>pad_and_print(result: <span class="kw-2">&amp;</span>str, left: bool, width: usize, padding: Padding) {
     <span class="kw">match </span>(left, padding) {
         (<span class="bool-val">false</span>, Padding::Zero) =&gt; <span class="macro">print!</span>(<span class="string">&quot;{result:0&gt;width$}&quot;</span>),
@@ -1185,54 +1072,28 @@
     };
 }
 
-<span class="doccomment">/// prints the adjusted string after padding
-/// `left` flag specifies the type of alignment of the string
-/// `width` is the supplied padding width of the string needed
-/// `prefix` &amp; `need_prefix` are Optional, which adjusts the `field_width` accordingly, where
-/// `field_width` is the max of supplied `width` and size of string
-/// `padding`, specifies type of padding, which is &#39;0&#39; or &#39; &#39; in this case.
-</span><span class="kw">fn </span>print_adjusted(
-    s: <span class="kw-2">&amp;</span>str,
-    left: bool,
-    need_prefix: <span class="prelude-ty">Option</span>&lt;bool&gt;,
-    prefix: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
-    width: usize,
-    padding: Padding,
-) {
-    <span class="kw">let </span><span class="kw-2">mut </span>field_width = cmp::max(width, s.len());
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(p) = prefix {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(prefix_flag) = need_prefix {
-            <span class="kw">if </span>prefix_flag {
-                field_width -= p.len();
-            }
-        }
-        pad_and_print(s, left, field_width, padding);
-    } <span class="kw">else </span>{
-        pad_and_print(s, left, field_width, padding);
-    }
-}
-<span class="attribute">#[derive(Debug, PartialEq, Eq)]
+<span class="attribute">#[derive(Debug)]
 </span><span class="kw">pub enum </span>OutputType {
-    Str,
-    Integer,
-    Unsigned,
-    UnsignedHex,
-    UnsignedOct,
+    Str(String),
+    Integer(i64),
+    Unsigned(u64),
+    UnsignedHex(u64),
+    UnsignedOct(u32),
     Unknown,
 }
 
 <span class="attribute">#[derive(Debug, PartialEq, Eq)]
-</span><span class="kw">pub enum </span>Token {
+</span><span class="kw">enum </span>Token {
     Char(char),
     Directive {
-        flag: u8,
+        flag: Flags,
         width: usize,
-        precision: i32,
+        precision: <span class="prelude-ty">Option</span>&lt;usize&gt;,
         format: char,
     },
 }
 
-<span class="kw">pub trait </span>ScanUtil {
+<span class="kw">trait </span>ScanUtil {
     <span class="kw">fn </span>scan_num&lt;F&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(F, usize)&gt;
     <span class="kw">where
         </span>F: std::str::FromStr;
@@ -1247,7 +1108,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>chars = <span class="self">self</span>.chars();
         <span class="kw">let </span><span class="kw-2">mut </span>i = <span class="number">0</span>;
         <span class="kw">match </span>chars.next() {
-            <span class="prelude-val">Some</span>(<span class="string">&#39;-&#39;</span>) | <span class="prelude-val">Some</span>(<span class="string">&#39;+&#39;</span>) | <span class="prelude-val">Some</span>(<span class="string">&#39;0&#39;</span>..=<span class="string">&#39;9&#39;</span>) =&gt; i += <span class="number">1</span>,
+            <span class="prelude-val">Some</span>(<span class="string">&#39;-&#39; </span>| <span class="string">&#39;+&#39; </span>| <span class="string">&#39;0&#39;</span>..=<span class="string">&#39;9&#39;</span>) =&gt; i += <span class="number">1</span>,
             <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">None</span>,
         }
         <span class="kw">for </span>c <span class="kw">in </span>chars {
@@ -1265,13 +1126,13 @@
 
     <span class="kw">fn </span>scan_char(<span class="kw-2">&amp;</span><span class="self">self</span>, radix: u32) -&gt; <span class="prelude-ty">Option</span>&lt;(char, usize)&gt; {
         <span class="kw">let </span>count = <span class="kw">match </span>radix {
-            <span class="number">8 </span>=&gt; <span class="number">3_usize</span>,
+            <span class="number">8 </span>=&gt; <span class="number">3</span>,
             <span class="number">16 </span>=&gt; <span class="number">2</span>,
             <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">None</span>,
         };
         <span class="kw">let </span>chars = <span class="self">self</span>.chars().enumerate();
-        <span class="kw">let </span><span class="kw-2">mut </span>res = <span class="number">0_u32</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>offset = <span class="number">0_usize</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>res = <span class="number">0</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>offset = <span class="number">0</span>;
         <span class="kw">for </span>(i, c) <span class="kw">in </span>chars {
             <span class="kw">if </span>i &gt;= count {
                 <span class="kw">break</span>;
@@ -1297,7 +1158,7 @@
     }
 }
 
-<span class="kw">pub fn </span>group_num(s: <span class="kw-2">&amp;</span>str) -&gt; Cow&lt;str&gt; {
+<span class="kw">fn </span>group_num(s: <span class="kw-2">&amp;</span>str) -&gt; Cow&lt;str&gt; {
     <span class="kw">let </span>is_negative = s.starts_with(<span class="string">&#39;-&#39;</span>);
     <span class="macro">assert!</span>(is_negative || s.chars().take(<span class="number">1</span>).all(|c| c.is_ascii_digit()));
     <span class="macro">assert!</span>(s.chars().skip(<span class="number">1</span>).all(|c| c.is_ascii_digit()));
@@ -1321,7 +1182,7 @@
     res.into()
 }
 
-<span class="kw">pub struct </span>Stater {
+<span class="kw">struct </span>Stater {
     follow: bool,
     show_fs: bool,
     from_user: bool,
@@ -1332,7 +1193,7 @@
 }
 
 <span class="attribute">#[allow(clippy::cognitive_complexity)]
-</span><span class="kw">fn </span>print_it(arg: <span class="kw-2">&amp;</span>str, output_type: <span class="kw-2">&amp;</span>OutputType, flag: u8, width: usize, precision: i32) {
+</span><span class="kw">fn </span>print_it(output: <span class="kw-2">&amp;</span>OutputType, flags: Flags, width: usize, precision: <span class="prelude-ty">Option</span>&lt;usize&gt;) {
     <span class="comment">// If the precision is given as just &#39;.&#39;, the precision is taken to be zero.
     // A negative precision is taken as if the precision were omitted.
     // This gives the minimum number of digits to appear for d, i, o, u, x, and X conversions,
@@ -1363,111 +1224,76 @@
     // By default, a sign  is  used only for negative numbers.
     // A + overrides a space if both are used.
 
-    </span><span class="kw">if </span>output_type == <span class="kw-2">&amp;</span>OutputType::Unknown {
-        <span class="kw">return </span><span class="macro">print!</span>(<span class="string">&quot;?&quot;</span>);
-    }
-
-    <span class="kw">let </span>left_align = <span class="macro">has!</span>(flag, F_LEFT);
-    <span class="kw">let </span>padding_char: Padding = <span class="kw">if </span><span class="macro">has!</span>(flag, F_ZERO) &amp;&amp; !left_align &amp;&amp; precision == -<span class="number">1 </span>{
+    </span><span class="kw">let </span>padding_char = <span class="kw">if </span>flags.zero &amp;&amp; !flags.left &amp;&amp; precision.is_none() {
         Padding::Zero
     } <span class="kw">else </span>{
         Padding::Space
     };
 
-    <span class="kw">let </span>has_sign = <span class="macro">has!</span>(flag, F_SIGN) || <span class="macro">has!</span>(flag, F_SPACE);
-
-    <span class="kw">let </span>should_alter = <span class="macro">has!</span>(flag, F_ALTER);
-    <span class="kw">let </span>prefix = <span class="kw">match </span>output_type {
-        OutputType::UnsignedOct =&gt; <span class="string">&quot;0&quot;</span>,
-        OutputType::UnsignedHex =&gt; <span class="string">&quot;0x&quot;</span>,
-        OutputType::Integer =&gt; {
-            <span class="kw">if </span><span class="macro">has!</span>(flag, F_SIGN) {
+    <span class="kw">match </span>output {
+        OutputType::Str(s) =&gt; {
+            <span class="kw">let </span>s = <span class="kw">match </span>precision {
+                <span class="prelude-val">Some</span>(p) <span class="kw">if </span>p &lt; s.len() =&gt; <span class="kw-2">&amp;</span>s[..p],
+                <span class="kw">_ </span>=&gt; s,
+            };
+            pad_and_print(s, flags.left, width, Padding::Space);
+        }
+        OutputType::Integer(num) =&gt; {
+            <span class="kw">let </span>num = num.to_string();
+            <span class="kw">let </span>arg = <span class="kw">if </span>flags.group {
+                group_num(<span class="kw-2">&amp;</span>num)
+            } <span class="kw">else </span>{
+                Cow::Borrowed(num.as_str())
+            };
+            <span class="kw">let </span>prefix = <span class="kw">if </span>flags.sign {
                 <span class="string">&quot;+&quot;
-            </span>} <span class="kw">else </span>{
+            </span>} <span class="kw">else if </span>flags.space {
                 <span class="string">&quot; &quot;
-            </span>}
+            </span>} <span class="kw">else </span>{
+                <span class="string">&quot;&quot;
+            </span>};
+            <span class="kw">let </span>extended = <span class="macro">format!</span>(
+                <span class="string">&quot;{prefix}{arg:0&gt;precision$}&quot;</span>,
+                precision = precision.unwrap_or(<span class="number">0</span>)
+            );
+            pad_and_print(<span class="kw-2">&amp;</span>extended, flags.left, width, padding_char);
         }
-        <span class="kw">_ </span>=&gt; <span class="string">&quot;&quot;</span>,
-    };
-
-    <span class="kw">match </span>output_type {
-        OutputType::Str =&gt; {
-            <span class="kw">let </span>limit = cmp::min(precision, arg.len() <span class="kw">as </span>i32);
-            <span class="kw">let </span>s: <span class="kw-2">&amp;</span>str = <span class="kw">if </span>limit &gt;= <span class="number">0 </span>{
-                <span class="kw-2">&amp;</span>arg[..limit <span class="kw">as </span>usize]
+        OutputType::Unsigned(num) =&gt; {
+            <span class="kw">let </span>num = num.to_string();
+            <span class="kw">let </span>s = <span class="kw">if </span>flags.group {
+                group_num(<span class="kw-2">&amp;</span>num)
             } <span class="kw">else </span>{
-                arg
+                Cow::Borrowed(num.as_str())
             };
-            print_adjusted(s, left_align, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, width, Padding::Space);
+            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;{s:0&gt;precision$}&quot;</span>, precision = precision.unwrap_or(<span class="number">0</span>));
+            pad_and_print(<span class="kw-2">&amp;</span>s, flags.left, width, padding_char);
         }
-        OutputType::Integer =&gt; {
-            <span class="kw">let </span>arg = <span class="kw">if </span><span class="macro">has!</span>(flag, F_GROUP) {
-                group_num(arg)
-            } <span class="kw">else </span>{
-                Cow::Borrowed(arg)
-            };
-            <span class="kw">let </span>min_digits = cmp::max(precision, arg.len() <span class="kw">as </span>i32) <span class="kw">as </span>usize;
-            <span class="kw">let </span>extended: Cow&lt;str&gt; = extend_digits(arg.as_ref(), min_digits);
-            print_adjusted(
-                extended.as_ref(),
-                left_align,
-                <span class="prelude-val">Some</span>(has_sign),
-                <span class="prelude-val">Some</span>(prefix),
-                width,
-                padding_char,
+        OutputType::UnsignedOct(num) =&gt; {
+            <span class="kw">let </span>prefix = <span class="kw">if </span>flags.alter { <span class="string">&quot;0&quot; </span>} <span class="kw">else </span>{ <span class="string">&quot;&quot; </span>};
+            <span class="kw">let </span>s = <span class="macro">format!</span>(
+                <span class="string">&quot;{prefix}{num:0&gt;precision$o}&quot;</span>,
+                precision = precision.unwrap_or(<span class="number">0</span>)
             );
+            pad_and_print(<span class="kw-2">&amp;</span>s, flags.left, width, padding_char);
         }
-        OutputType::Unsigned =&gt; {
-            <span class="kw">let </span>arg = <span class="kw">if </span><span class="macro">has!</span>(flag, F_GROUP) {
-                group_num(arg)
-            } <span class="kw">else </span>{
-                Cow::Borrowed(arg)
-            };
-            <span class="kw">let </span>min_digits = cmp::max(precision, arg.len() <span class="kw">as </span>i32) <span class="kw">as </span>usize;
-            <span class="kw">let </span>extended: Cow&lt;str&gt; = extend_digits(arg.as_ref(), min_digits);
-            print_adjusted(
-                extended.as_ref(),
-                left_align,
-                <span class="prelude-val">None</span>,
-                <span class="prelude-val">None</span>,
-                width,
-                padding_char,
+        OutputType::UnsignedHex(num) =&gt; {
+            <span class="kw">let </span>prefix = <span class="kw">if </span>flags.alter { <span class="string">&quot;0x&quot; </span>} <span class="kw">else </span>{ <span class="string">&quot;&quot; </span>};
+            <span class="kw">let </span>s = <span class="macro">format!</span>(
+                <span class="string">&quot;{prefix}{num:0&gt;precision$x}&quot;</span>,
+                precision = precision.unwrap_or(<span class="number">0</span>)
             );
+            pad_and_print(<span class="kw-2">&amp;</span>s, flags.left, width, padding_char);
         }
-        OutputType::UnsignedOct =&gt; {
-            <span class="kw">let </span>min_digits = cmp::max(precision, arg.len() <span class="kw">as </span>i32) <span class="kw">as </span>usize;
-            <span class="kw">let </span>extended: Cow&lt;str&gt; = extend_digits(arg, min_digits);
-            print_adjusted(
-                extended.as_ref(),
-                left_align,
-                <span class="prelude-val">Some</span>(should_alter),
-                <span class="prelude-val">Some</span>(prefix),
-                width,
-                padding_char,
-            );
-        }
-        OutputType::UnsignedHex =&gt; {
-            <span class="kw">let </span>min_digits = cmp::max(precision, arg.len() <span class="kw">as </span>i32) <span class="kw">as </span>usize;
-            <span class="kw">let </span>extended: Cow&lt;str&gt; = extend_digits(arg, min_digits);
-            print_adjusted(
-                extended.as_ref(),
-                left_align,
-                <span class="prelude-val">Some</span>(should_alter),
-                <span class="prelude-val">Some</span>(prefix),
-                width,
-                padding_char,
-            );
-        }
-        <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(),
+        OutputType::Unknown =&gt; <span class="macro">print!</span>(<span class="string">&quot;?&quot;</span>),
     }
 }
 
 <span class="kw">impl </span>Stater {
-    <span class="kw">pub fn </span>generate_tokens(format_str: <span class="kw-2">&amp;</span>str, use_printf: bool) -&gt; UResult&lt;Vec&lt;Token&gt;&gt; {
+    <span class="kw">fn </span>generate_tokens(format_str: <span class="kw-2">&amp;</span>str, use_printf: bool) -&gt; UResult&lt;Vec&lt;Token&gt;&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>tokens = Vec::new();
         <span class="kw">let </span>bound = format_str.len();
         <span class="kw">let </span>chars = format_str.chars().collect::&lt;Vec&lt;char&gt;&gt;();
-        <span class="kw">let </span><span class="kw-2">mut </span>i = <span class="number">0_usize</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>i = <span class="number">0</span>;
         <span class="kw">while </span>i &lt; bound {
             <span class="kw">match </span>chars[i] {
                 <span class="string">&#39;%&#39; </span>=&gt; {
@@ -1484,16 +1310,16 @@
                         <span class="kw">continue</span>;
                     }
 
-                    <span class="kw">let </span><span class="kw-2">mut </span>flag: u8 = <span class="number">0</span>;
+                    <span class="kw">let </span><span class="kw-2">mut </span>flag = Flags::default();
 
                     <span class="kw">while </span>i &lt; bound {
                         <span class="kw">match </span>chars[i] {
-                            <span class="string">&#39;#&#39; </span>=&gt; flag |= F_ALTER,
-                            <span class="string">&#39;0&#39; </span>=&gt; flag |= F_ZERO,
-                            <span class="string">&#39;-&#39; </span>=&gt; flag |= F_LEFT,
-                            <span class="string">&#39; &#39; </span>=&gt; flag |= F_SPACE,
-                            <span class="string">&#39;+&#39; </span>=&gt; flag |= F_SIGN,
-                            <span class="string">&#39;\&#39;&#39; </span>=&gt; flag |= F_GROUP,
+                            <span class="string">&#39;#&#39; </span>=&gt; flag.alter = <span class="bool-val">true</span>,
+                            <span class="string">&#39;0&#39; </span>=&gt; flag.zero = <span class="bool-val">true</span>,
+                            <span class="string">&#39;-&#39; </span>=&gt; flag.left = <span class="bool-val">true</span>,
+                            <span class="string">&#39; &#39; </span>=&gt; flag.space = <span class="bool-val">true</span>,
+                            <span class="string">&#39;+&#39; </span>=&gt; flag.sign = <span class="bool-val">true</span>,
+                            <span class="string">&#39;\&#39;&#39; </span>=&gt; flag.group = <span class="bool-val">true</span>,
                             <span class="string">&#39;I&#39; </span>=&gt; <span class="macro">unimplemented!</span>(),
                             <span class="kw">_ </span>=&gt; <span class="kw">break</span>,
                         }
@@ -1501,8 +1327,8 @@
                     }
                     check_bound(format_str, bound, old, i)<span class="question-mark">?</span>;
 
-                    <span class="kw">let </span><span class="kw-2">mut </span>width = <span class="number">0_usize</span>;
-                    <span class="kw">let </span><span class="kw-2">mut </span>precision = -<span class="number">1_i32</span>;
+                    <span class="kw">let </span><span class="kw-2">mut </span>width = <span class="number">0</span>;
+                    <span class="kw">let </span><span class="kw-2">mut </span>precision = <span class="prelude-val">None</span>;
                     <span class="kw">let </span><span class="kw-2">mut </span>j = i;
 
                     <span class="kw">if let </span><span class="prelude-val">Some</span>((field_width, offset)) = format_str[j..].scan_num::&lt;usize&gt;() {
@@ -1518,11 +1344,11 @@
                         <span class="kw">match </span>format_str[j..].scan_num::&lt;i32&gt;() {
                             <span class="prelude-val">Some</span>((value, offset)) =&gt; {
                                 <span class="kw">if </span>value &gt;= <span class="number">0 </span>{
-                                    precision = value;
+                                    precision = <span class="prelude-val">Some</span>(value <span class="kw">as </span>usize);
                                 }
                                 j += offset;
                             }
-                            <span class="prelude-val">None </span>=&gt; precision = <span class="number">0</span>,
+                            <span class="prelude-val">None </span>=&gt; precision = <span class="prelude-val">Some</span>(<span class="number">0</span>),
                         }
                         check_bound(format_str, bound, old, j)<span class="question-mark">?</span>;
                     }
@@ -1590,7 +1416,7 @@
 
     <span class="kw">fn </span>new(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; UResult&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>files = matches
-            .get_many::&lt;OsString&gt;(ARG_FILES)
+            .get_many::&lt;OsString&gt;(options::FILES)
             .map(|v| v.map(OsString::from).collect())
             .unwrap_or_default();
         <span class="kw">let </span>format_str = <span class="kw">if </span>matches.contains_id(options::PRINTF) {
@@ -1643,15 +1469,11 @@
     }
 
     <span class="kw">fn </span>find_mount_point&lt;P: AsRef&lt;Path&gt;&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, p: P) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
-        <span class="kw">let </span>path = <span class="kw">match </span>p.as_ref().canonicalize() {
-            <span class="prelude-val">Ok</span>(s) =&gt; s,
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="prelude-val">None</span>,
-        };
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>mount_list) = <span class="self">self</span>.mount_list {
-            <span class="kw">for </span>root <span class="kw">in </span>mount_list.iter() {
-                <span class="kw">if </span>path.starts_with(root) {
-                    <span class="kw">return </span><span class="prelude-val">Some</span>(root.clone());
-                }
+        <span class="kw">let </span>path = p.as_ref().canonicalize().ok()<span class="question-mark">?</span>;
+
+        <span class="kw">for </span>root <span class="kw">in </span><span class="self">self</span>.mount_list.as_ref()<span class="question-mark">? </span>{
+            <span class="kw">if </span>path.starts_with(root) {
+                <span class="kw">return </span><span class="prelude-val">Some</span>(root.clone());
             }
         }
         <span class="prelude-val">None
@@ -1674,7 +1496,7 @@
 
     <span class="kw">fn </span>do_stat(<span class="kw-2">&amp;</span><span class="self">self</span>, file: <span class="kw-2">&amp;</span>OsStr, stdin_is_fifo: bool) -&gt; i32 {
         <span class="kw">let </span>display_name = file.to_string_lossy();
-        <span class="kw">let </span>file: OsString = <span class="kw">if </span><span class="macro">cfg!</span>(unix) &amp;&amp; display_name.eq(<span class="string">&quot;-&quot;</span>) {
+        <span class="kw">let </span>file = <span class="kw">if </span><span class="macro">cfg!</span>(unix) &amp;&amp; display_name == <span class="string">&quot;-&quot; </span>{
             <span class="kw">if let </span><span class="prelude-val">Ok</span>(p) = Path::new(<span class="string">&quot;/dev/stdin&quot;</span>).canonicalize() {
                 p.into_os_string()
             } <span class="kw">else </span>{
@@ -1685,7 +1507,7 @@
         };
 
         <span class="kw">if </span>!<span class="self">self</span>.show_fs {
-            <span class="kw">let </span>result = <span class="kw">if </span><span class="self">self</span>.follow || stdin_is_fifo &amp;&amp; display_name.eq(<span class="string">&quot;-&quot;</span>) {
+            <span class="kw">let </span>result = <span class="kw">if </span><span class="self">self</span>.follow || stdin_is_fifo &amp;&amp; display_name == <span class="string">&quot;-&quot; </span>{
                 fs::metadata(<span class="kw-2">&amp;</span>file)
             } <span class="kw">else </span>{
                 fs::symlink_metadata(<span class="kw-2">&amp;</span>file)
@@ -1710,92 +1532,49 @@
                                 precision,
                                 format,
                             } =&gt; {
-                                <span class="kw">let </span>arg: String;
-                                <span class="kw">let </span>output_type: OutputType;
-
-                                <span class="kw">match </span>format {
+                                <span class="kw">let </span>output = <span class="kw">match </span>format {
                                     <span class="comment">// access rights in octal
-                                    </span><span class="string">&#39;a&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{:o}&quot;</span>, <span class="number">0o7777 </span>&amp; meta.mode());
-                                        output_type = OutputType::UnsignedOct;
-                                    }
+                                    </span><span class="string">&#39;a&#39; </span>=&gt; OutputType::UnsignedOct(<span class="number">0o7777 </span>&amp; meta.mode()),
                                     <span class="comment">// access rights in human readable form
-                                    </span><span class="string">&#39;A&#39; </span>=&gt; {
-                                        arg = display_permissions(<span class="kw-2">&amp;</span>meta, <span class="bool-val">true</span>);
-                                        output_type = OutputType::Str;
-                                    }
+                                    </span><span class="string">&#39;A&#39; </span>=&gt; OutputType::Str(display_permissions(<span class="kw-2">&amp;</span>meta, <span class="bool-val">true</span>)),
                                     <span class="comment">// number of blocks allocated (see %B)
-                                    </span><span class="string">&#39;b&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.blocks());
-                                        output_type = OutputType::Unsigned;
-                                    }
+                                    </span><span class="string">&#39;b&#39; </span>=&gt; OutputType::Unsigned(meta.blocks()),
 
                                     <span class="comment">// the size in bytes of each block reported by %b
                                     // FIXME: blocksize differs on various platform
                                     // See coreutils/gnulib/lib/stat-size.h ST_NBLOCKSIZE // spell-checker:disable-line
-                                    </span><span class="string">&#39;B&#39; </span>=&gt; {
-                                        <span class="comment">// the size in bytes of each block reported by %b
-                                        </span>arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="number">512</span>);
-                                        output_type = OutputType::Unsigned;
-                                    }
+                                    </span><span class="string">&#39;B&#39; </span>=&gt; OutputType::Unsigned(<span class="number">512</span>),
 
                                     <span class="comment">// device number in decimal
-                                    </span><span class="string">&#39;d&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.dev());
-                                        output_type = OutputType::Unsigned;
-                                    }
+                                    </span><span class="string">&#39;d&#39; </span>=&gt; OutputType::Unsigned(meta.dev()),
                                     <span class="comment">// device number in hex
-                                    </span><span class="string">&#39;D&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{:x}&quot;</span>, meta.dev());
-                                        output_type = OutputType::UnsignedHex;
-                                    }
+                                    </span><span class="string">&#39;D&#39; </span>=&gt; OutputType::UnsignedHex(meta.dev()),
                                     <span class="comment">// raw mode in hex
-                                    </span><span class="string">&#39;f&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{:x}&quot;</span>, meta.mode());
-                                        output_type = OutputType::UnsignedHex;
-                                    }
+                                    </span><span class="string">&#39;f&#39; </span>=&gt; OutputType::UnsignedHex(meta.mode() <span class="kw">as </span>u64),
                                     <span class="comment">// file type
-                                    </span><span class="string">&#39;F&#39; </span>=&gt; {
-                                        arg = pretty_filetype(meta.mode() <span class="kw">as </span>mode_t, meta.len())
-                                            .to_owned();
-                                        output_type = OutputType::Str;
-                                    }
+                                    </span><span class="string">&#39;F&#39; </span>=&gt; OutputType::Str(
+                                        pretty_filetype(meta.mode() <span class="kw">as </span>mode_t, meta.len())
+                                            .to_owned(),
+                                    ),
                                     <span class="comment">// group ID of owner
-                                    </span><span class="string">&#39;g&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.gid());
-                                        output_type = OutputType::Unsigned;
-                                    }
+                                    </span><span class="string">&#39;g&#39; </span>=&gt; OutputType::Unsigned(meta.gid() <span class="kw">as </span>u64),
                                     <span class="comment">// group name of owner
                                     </span><span class="string">&#39;G&#39; </span>=&gt; {
-                                        arg = entries::gid2grp(meta.gid())
+                                        <span class="kw">let </span>group_name = entries::gid2grp(meta.gid())
                                             .unwrap_or_else(|<span class="kw">_</span>| <span class="string">&quot;UNKNOWN&quot;</span>.to_owned());
-                                        output_type = OutputType::Str;
+                                        OutputType::Str(group_name)
                                     }
                                     <span class="comment">// number of hard links
-                                    </span><span class="string">&#39;h&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.nlink());
-                                        output_type = OutputType::Unsigned;
-                                    }
+                                    </span><span class="string">&#39;h&#39; </span>=&gt; OutputType::Unsigned(meta.nlink()),
                                     <span class="comment">// inode number
-                                    </span><span class="string">&#39;i&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.ino());
-                                        output_type = OutputType::Unsigned;
-                                    }
-
+                                    </span><span class="string">&#39;i&#39; </span>=&gt; OutputType::Unsigned(meta.ino()),
                                     <span class="comment">// mount point
-                                    </span><span class="string">&#39;m&#39; </span>=&gt; {
-                                        arg = <span class="self">self</span>.find_mount_point(<span class="kw-2">&amp;</span>file).unwrap();
-                                        output_type = OutputType::Str;
-                                    }
-
+                                    </span><span class="string">&#39;m&#39; </span>=&gt; OutputType::Str(<span class="self">self</span>.find_mount_point(<span class="kw-2">&amp;</span>file).unwrap()),
                                     <span class="comment">// file name
-                                    </span><span class="string">&#39;n&#39; </span>=&gt; {
-                                        arg = display_name.to_string();
-                                        output_type = OutputType::Str;
-                                    }
+                                    </span><span class="string">&#39;n&#39; </span>=&gt; OutputType::Str(display_name.to_string()),
                                     <span class="comment">// quoted file name with dereference if symbolic link
                                     </span><span class="string">&#39;N&#39; </span>=&gt; {
-                                        <span class="kw">if </span>file_type.is_symlink() {
+                                        <span class="kw">let </span>file_name = <span class="kw">if </span>file_type.is_symlink() {
                                             <span class="kw">let </span>dst = <span class="kw">match </span>fs::read_link(<span class="kw-2">&amp;</span>file) {
                                                 <span class="prelude-val">Ok</span>(path) =&gt; path,
                                                 <span class="prelude-val">Err</span>(e) =&gt; {
@@ -1803,99 +1582,62 @@
                                                     <span class="kw">return </span><span class="number">1</span>;
                                                 }
                                             };
-                                            arg = <span class="macro">format!</span>(
-                                                <span class="string">&quot;{} -&gt; {}&quot;</span>,
-                                                display_name.quote(),
-                                                dst.quote()
-                                            );
+                                            <span class="macro">format!</span>(<span class="string">&quot;{} -&gt; {}&quot;</span>, display_name.quote(), dst.quote())
                                         } <span class="kw">else </span>{
-                                            arg = display_name.to_string();
-                                        }
-                                        output_type = OutputType::Str;
+                                            display_name.to_string()
+                                        };
+                                        OutputType::Str(file_name)
                                     }
                                     <span class="comment">// optimal I/O transfer size hint
-                                    </span><span class="string">&#39;o&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.blksize());
-                                        output_type = OutputType::Unsigned;
-                                    }
+                                    </span><span class="string">&#39;o&#39; </span>=&gt; OutputType::Unsigned(meta.blksize()),
                                     <span class="comment">// total size, in bytes
-                                    </span><span class="string">&#39;s&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.len());
-                                        output_type = OutputType::Integer;
-                                    }
+                                    </span><span class="string">&#39;s&#39; </span>=&gt; OutputType::Integer(meta.len() <span class="kw">as </span>i64),
                                     <span class="comment">// major device type in hex, for character/block device special
                                     // files
-                                    </span><span class="string">&#39;t&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{:x}&quot;</span>, meta.rdev() &gt;&gt; <span class="number">8</span>);
-                                        output_type = OutputType::UnsignedHex;
-                                    }
+                                    </span><span class="string">&#39;t&#39; </span>=&gt; OutputType::UnsignedHex(meta.rdev() &gt;&gt; <span class="number">8</span>),
                                     <span class="comment">// minor device type in hex, for character/block device special
                                     // files
-                                    </span><span class="string">&#39;T&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{:x}&quot;</span>, meta.rdev() &amp; <span class="number">0xff</span>);
-                                        output_type = OutputType::UnsignedHex;
-                                    }
+                                    </span><span class="string">&#39;T&#39; </span>=&gt; OutputType::UnsignedHex(meta.rdev() &amp; <span class="number">0xff</span>),
                                     <span class="comment">// user ID of owner
-                                    </span><span class="string">&#39;u&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.uid());
-                                        output_type = OutputType::Unsigned;
-                                    }
+                                    </span><span class="string">&#39;u&#39; </span>=&gt; OutputType::Unsigned(meta.uid() <span class="kw">as </span>u64),
                                     <span class="comment">// user name of owner
                                     </span><span class="string">&#39;U&#39; </span>=&gt; {
-                                        arg = entries::uid2usr(meta.uid())
+                                        <span class="kw">let </span>user_name = entries::uid2usr(meta.uid())
                                             .unwrap_or_else(|<span class="kw">_</span>| <span class="string">&quot;UNKNOWN&quot;</span>.to_owned());
-                                        output_type = OutputType::Str;
+                                        OutputType::Str(user_name)
                                     }
 
                                     <span class="comment">// time of file birth, human-readable; - if unknown
-                                    </span><span class="string">&#39;w&#39; </span>=&gt; {
-                                        arg = meta.pretty_birth();
-                                        output_type = OutputType::Str;
-                                    }
+                                    </span><span class="string">&#39;w&#39; </span>=&gt; OutputType::Str(meta.pretty_birth()),
 
                                     <span class="comment">// time of file birth, seconds since Epoch; 0 if unknown
-                                    </span><span class="string">&#39;W&#39; </span>=&gt; {
-                                        arg = meta.birth();
-                                        output_type = OutputType::Integer;
-                                    }
+                                    </span><span class="string">&#39;W&#39; </span>=&gt; OutputType::Unsigned(meta.birth()),
 
                                     <span class="comment">// time of last access, human-readable
-                                    </span><span class="string">&#39;x&#39; </span>=&gt; {
-                                        arg = pretty_time(meta.atime(), meta.atime_nsec());
-                                        output_type = OutputType::Str;
-                                    }
+                                    </span><span class="string">&#39;x&#39; </span>=&gt; OutputType::Str(pretty_time(
+                                        meta.atime(),
+                                        meta.atime_nsec(),
+                                    )),
                                     <span class="comment">// time of last access, seconds since Epoch
-                                    </span><span class="string">&#39;X&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.atime());
-                                        output_type = OutputType::Integer;
-                                    }
+                                    </span><span class="string">&#39;X&#39; </span>=&gt; OutputType::Integer(meta.atime()),
                                     <span class="comment">// time of last data modification, human-readable
-                                    </span><span class="string">&#39;y&#39; </span>=&gt; {
-                                        arg = pretty_time(meta.mtime(), meta.mtime_nsec());
-                                        output_type = OutputType::Str;
-                                    }
+                                    </span><span class="string">&#39;y&#39; </span>=&gt; OutputType::Str(pretty_time(
+                                        meta.mtime(),
+                                        meta.mtime_nsec(),
+                                    )),
                                     <span class="comment">// time of last data modification, seconds since Epoch
-                                    </span><span class="string">&#39;Y&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.mtime());
-                                        output_type = OutputType::Str;
-                                    }
+                                    </span><span class="string">&#39;Y&#39; </span>=&gt; OutputType::Integer(meta.mtime()),
                                     <span class="comment">// time of last status change, human-readable
-                                    </span><span class="string">&#39;z&#39; </span>=&gt; {
-                                        arg = pretty_time(meta.ctime(), meta.ctime_nsec());
-                                        output_type = OutputType::Str;
-                                    }
+                                    </span><span class="string">&#39;z&#39; </span>=&gt; OutputType::Str(pretty_time(
+                                        meta.ctime(),
+                                        meta.ctime_nsec(),
+                                    )),
                                     <span class="comment">// time of last status change, seconds since Epoch
-                                    </span><span class="string">&#39;Z&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.ctime());
-                                        output_type = OutputType::Integer;
-                                    }
+                                    </span><span class="string">&#39;Z&#39; </span>=&gt; OutputType::Integer(meta.ctime()),
 
-                                    <span class="kw">_ </span>=&gt; {
-                                        arg = <span class="string">&quot;?&quot;</span>.to_owned();
-                                        output_type = OutputType::Unknown;
-                                    }
-                                }
-                                print_it(<span class="kw-2">&amp;</span>arg, <span class="kw-2">&amp;</span>output_type, flag, width, precision);
+                                    <span class="kw">_ </span>=&gt; OutputType::Unknown,
+                                };
+                                print_it(<span class="kw-2">&amp;</span>output, flag, width, precision);
                             }
                         }
                     }
@@ -1923,76 +1665,35 @@
                                 precision,
                                 format,
                             } =&gt; {
-                                <span class="kw">let </span>arg: String;
-                                <span class="kw">let </span>output_type: OutputType;
-                                <span class="kw">match </span>format {
+                                <span class="kw">let </span>output = <span class="kw">match </span>format {
                                     <span class="comment">// free blocks available to non-superuser
-                                    </span><span class="string">&#39;a&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.avail_blocks());
-                                        output_type = OutputType::Integer;
-                                    }
+                                    </span><span class="string">&#39;a&#39; </span>=&gt; OutputType::Unsigned(meta.avail_blocks()),
                                     <span class="comment">// total data blocks in file system
-                                    </span><span class="string">&#39;b&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.total_blocks());
-                                        output_type = OutputType::Integer;
-                                    }
+                                    </span><span class="string">&#39;b&#39; </span>=&gt; OutputType::Unsigned(meta.total_blocks()),
                                     <span class="comment">// total file nodes in file system
-                                    </span><span class="string">&#39;c&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.total_file_nodes());
-                                        output_type = OutputType::Unsigned;
-                                    }
+                                    </span><span class="string">&#39;c&#39; </span>=&gt; OutputType::Unsigned(meta.total_file_nodes()),
                                     <span class="comment">// free file nodes in file system
-                                    </span><span class="string">&#39;d&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.free_file_nodes());
-                                        output_type = OutputType::Integer;
-                                    }
+                                    </span><span class="string">&#39;d&#39; </span>=&gt; OutputType::Unsigned(meta.free_file_nodes()),
                                     <span class="comment">// free blocks in file system
-                                    </span><span class="string">&#39;f&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.free_blocks());
-                                        output_type = OutputType::Integer;
-                                    }
+                                    </span><span class="string">&#39;f&#39; </span>=&gt; OutputType::Unsigned(meta.free_blocks()),
                                     <span class="comment">// file system ID in hex
-                                    </span><span class="string">&#39;i&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{:x}&quot;</span>, meta.fsid());
-                                        output_type = OutputType::UnsignedHex;
-                                    }
+                                    </span><span class="string">&#39;i&#39; </span>=&gt; OutputType::UnsignedHex(meta.fsid()),
                                     <span class="comment">// maximum length of filenames
-                                    </span><span class="string">&#39;l&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.namelen());
-                                        output_type = OutputType::Unsigned;
-                                    }
+                                    </span><span class="string">&#39;l&#39; </span>=&gt; OutputType::Unsigned(meta.namelen()),
                                     <span class="comment">// file name
-                                    </span><span class="string">&#39;n&#39; </span>=&gt; {
-                                        arg = display_name.to_string();
-                                        output_type = OutputType::Str;
-                                    }
+                                    </span><span class="string">&#39;n&#39; </span>=&gt; OutputType::Str(display_name.to_string()),
                                     <span class="comment">// block size (for faster transfers)
-                                    </span><span class="string">&#39;s&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.io_size());
-                                        output_type = OutputType::Unsigned;
-                                    }
+                                    </span><span class="string">&#39;s&#39; </span>=&gt; OutputType::Unsigned(meta.io_size()),
                                     <span class="comment">// fundamental block size (for block counts)
-                                    </span><span class="string">&#39;S&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, meta.block_size());
-                                        output_type = OutputType::Unsigned;
-                                    }
+                                    </span><span class="string">&#39;S&#39; </span>=&gt; OutputType::Integer(meta.block_size()),
                                     <span class="comment">// file system type in hex
-                                    </span><span class="string">&#39;t&#39; </span>=&gt; {
-                                        arg = <span class="macro">format!</span>(<span class="string">&quot;{:x}&quot;</span>, meta.fs_type());
-                                        output_type = OutputType::UnsignedHex;
-                                    }
+                                    </span><span class="string">&#39;t&#39; </span>=&gt; OutputType::UnsignedHex(meta.fs_type() <span class="kw">as </span>u64),
                                     <span class="comment">// file system type in human readable form
-                                    </span><span class="string">&#39;T&#39; </span>=&gt; {
-                                        arg = pretty_fstype(meta.fs_type()).into_owned();
-                                        output_type = OutputType::Str;
-                                    }
-                                    <span class="kw">_ </span>=&gt; {
-                                        arg = <span class="string">&quot;?&quot;</span>.to_owned();
-                                        output_type = OutputType::Unknown;
-                                    }
-                                }
+                                    </span><span class="string">&#39;T&#39; </span>=&gt; OutputType::Str(pretty_fstype(meta.fs_type()).into()),
+                                    <span class="kw">_ </span>=&gt; OutputType::Unknown,
+                                };
 
-                                print_it(<span class="kw-2">&amp;</span>arg, <span class="kw-2">&amp;</span>output_type, flag, width, precision);
+                                print_it(<span class="kw-2">&amp;</span>output, flag, width, precision);
                             }
                         }
                     }
@@ -2013,37 +1714,35 @@
     <span class="kw">fn </span>default_format(show_fs: bool, terse: bool, show_dev_type: bool) -&gt; String {
         <span class="comment">// SELinux related format is *ignored*
 
-        </span><span class="kw">let </span><span class="kw-2">mut </span>format_str = String::with_capacity(<span class="number">36</span>);
-        <span class="kw">if </span>show_fs {
+        </span><span class="kw">if </span>show_fs {
             <span class="kw">if </span>terse {
-                format_str.push_str(<span class="string">&quot;%n %i %l %t %s %S %b %f %a %c %d\n&quot;</span>);
+                <span class="string">&quot;%n %i %l %t %s %S %b %f %a %c %d\n&quot;</span>.into()
             } <span class="kw">else </span>{
-                format_str.push_str(
-                    <span class="string">&quot;  File: \&quot;%n\&quot;\n    ID: %-8i Namelen: %-7l Type: %T\nBlock \
-                     size: %-10s Fundamental block size: %S\nBlocks: Total: %-10b \
-                     Free: %-10f Available: %a\nInodes: Total: %-10c Free: %d\n&quot;</span>,
-                );
+                <span class="string">&quot;  File: \&quot;%n\&quot;\n    ID: %-8i Namelen: %-7l Type: %T\nBlock \
+                 size: %-10s Fundamental block size: %S\nBlocks: Total: %-10b \
+                 Free: %-10f Available: %a\nInodes: Total: %-10c Free: %d\n&quot;
+                    </span>.into()
             }
         } <span class="kw">else if </span>terse {
-            format_str.push_str(<span class="string">&quot;%n %s %b %f %u %g %D %i %h %t %T %X %Y %Z %W %o\n&quot;</span>);
+            <span class="string">&quot;%n %s %b %f %u %g %D %i %h %t %T %X %Y %Z %W %o\n&quot;</span>.into()
         } <span class="kw">else </span>{
-            format_str.push_str(<span class="string">&quot;  File: %N\n  Size: %-10s\tBlocks: %-10b IO Block: %-6o %F\n&quot;</span>);
-            <span class="kw">if </span>show_dev_type {
-                format_str
-                    .push_str(<span class="string">&quot;Device: %Dh/%dd\tInode: %-10i  Links: %-5h Device type: %t,%T\n&quot;</span>);
-            } <span class="kw">else </span>{
-                format_str.push_str(<span class="string">&quot;Device: %Dh/%dd\tInode: %-10i  Links: %h\n&quot;</span>);
-            }
-            format_str.push_str(<span class="string">&quot;Access: (%04a/%10.10A)  Uid: (%5u/%8U)   Gid: (%5g/%8G)\n&quot;</span>);
-            format_str.push_str(<span class="string">&quot;Access: %x\nModify: %y\nChange: %z\n Birth: %w\n&quot;</span>);
+            [
+                <span class="string">&quot;  File: %N\n  Size: %-10s\tBlocks: %-10b IO Block: %-6o %F\n&quot;</span>,
+                <span class="kw">if </span>show_dev_type {
+                    <span class="string">&quot;Device: %Dh/%dd\tInode: %-10i  Links: %-5h Device type: %t,%T\n&quot;
+                </span>} <span class="kw">else </span>{
+                    <span class="string">&quot;Device: %Dh/%dd\tInode: %-10i  Links: %h\n&quot;
+                </span>},
+                <span class="string">&quot;Access: (%04a/%10.10A)  Uid: (%5u/%8U)   Gid: (%5g/%8G)\n&quot;</span>,
+                <span class="string">&quot;Access: %x\nModify: %y\nChange: %z\n Birth: %w\n&quot;</span>,
+            ]
+            .join(<span class="string">&quot;&quot;</span>)
         }
-        format_str
     }
 }
 
-<span class="kw">fn </span>get_long_usage() -&gt; String {
-    String::from(
-        <span class="string">&quot;
+<span class="kw">fn </span>get_long_usage() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+    <span class="string">&quot;
 The valid format sequences for files (without --file-system):
 
   %a   access rights in octal (note &#39;#&#39; and &#39;0&#39; printf flags)
@@ -2095,9 +1794,8 @@ Valid format sequences for file systems:
 NOTE: your shell may have its own version of stat, which usually supersedes
 the version described here.  Please refer to your shell&#39;s documentation
 for details about the options it supports.
-&quot;</span>,
-    )
-}
+&quot;
+</span>}
 
 <span class="attribute">#[uucore::main]
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
@@ -2162,11 +1860,123 @@ for details about the options it supports.
                 ),
         )
         .arg(
-            Arg::new(ARG_FILES)
+            Arg::new(options::FILES)
                 .action(ArgAction::Append)
                 .value_parser(ValueParser::os_string())
                 .value_hint(clap::ValueHint::FilePath),
         )
+}
+
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::{group_num, Flags, ScanUtil, Stater, Token};
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_scanners() {
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((-<span class="number">5</span>, <span class="number">2</span>)), <span class="string">&quot;-5zxc&quot;</span>.scan_num::&lt;i32&gt;());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="number">51</span>, <span class="number">2</span>)), <span class="string">&quot;51zxc&quot;</span>.scan_num::&lt;u32&gt;());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="number">192</span>, <span class="number">4</span>)), <span class="string">&quot;+192zxc&quot;</span>.scan_num::&lt;i32&gt;());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="string">&quot;z192zxc&quot;</span>.scan_num::&lt;i32&gt;());
+
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="string">&#39;a&#39;</span>, <span class="number">3</span>)), <span class="string">&quot;141zxc&quot;</span>.scan_char(<span class="number">8</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="string">&#39;\n&#39;</span>, <span class="number">2</span>)), <span class="string">&quot;12qzxc&quot;</span>.scan_char(<span class="number">8</span>)); <span class="comment">// spell-checker:disable-line
+        </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="string">&#39;\r&#39;</span>, <span class="number">1</span>)), <span class="string">&quot;dqzxc&quot;</span>.scan_char(<span class="number">16</span>)); <span class="comment">// spell-checker:disable-line
+        </span><span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="string">&quot;z2qzxc&quot;</span>.scan_char(<span class="number">8</span>)); <span class="comment">// spell-checker:disable-line
+    </span>}
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_group_num() {
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;12,379,821,234&quot;</span>, group_num(<span class="string">&quot;12379821234&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;21,234&quot;</span>, group_num(<span class="string">&quot;21234&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;821,234&quot;</span>, group_num(<span class="string">&quot;821234&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;1,821,234&quot;</span>, group_num(<span class="string">&quot;1821234&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;1,234&quot;</span>, group_num(<span class="string">&quot;1234&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;234&quot;</span>, group_num(<span class="string">&quot;234&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;24&quot;</span>, group_num(<span class="string">&quot;24&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;4&quot;</span>, group_num(<span class="string">&quot;4&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;&quot;</span>, group_num(<span class="string">&quot;&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;-5&quot;</span>, group_num(<span class="string">&quot;-5&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;-1,234&quot;</span>, group_num(<span class="string">&quot;-1234&quot;</span>));
+    }
+
+    <span class="attribute">#[test]
+    #[should_panic]
+    </span><span class="kw">fn </span>test_group_num_panic_if_invalid_numeric_characters() {
+        group_num(<span class="string">&quot;³³³³³&quot;</span>);
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>normal_format() {
+        <span class="kw">let </span>s = <span class="string">&quot;%&#39;010.2ac%-#5.w\n&quot;</span>;
+        <span class="kw">let </span>expected = <span class="macro">vec!</span>[
+            Token::Directive {
+                flag: Flags {
+                    group: <span class="bool-val">true</span>,
+                    zero: <span class="bool-val">true</span>,
+                    ..Default::default()
+                },
+                width: <span class="number">10</span>,
+                precision: <span class="prelude-val">Some</span>(<span class="number">2</span>),
+                format: <span class="string">&#39;a&#39;</span>,
+            },
+            Token::Char(<span class="string">&#39;c&#39;</span>),
+            Token::Directive {
+                flag: Flags {
+                    left: <span class="bool-val">true</span>,
+                    alter: <span class="bool-val">true</span>,
+                    ..Default::default()
+                },
+                width: <span class="number">5</span>,
+                precision: <span class="prelude-val">Some</span>(<span class="number">0</span>),
+                format: <span class="string">&#39;w&#39;</span>,
+            },
+            Token::Char(<span class="string">&#39;\n&#39;</span>),
+        ];
+        <span class="macro">assert_eq!</span>(<span class="kw-2">&amp;</span>expected, <span class="kw-2">&amp;</span>Stater::generate_tokens(s, <span class="bool-val">false</span>).unwrap());
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>printf_format() {
+        <span class="kw">let </span>s = <span class="string">r#&quot;%-# 15a\t\r\&quot;\\\a\b\e\f\v%+020.-23w\x12\167\132\112\n&quot;#</span>;
+        <span class="kw">let </span>expected = <span class="macro">vec!</span>[
+            Token::Directive {
+                flag: Flags {
+                    left: <span class="bool-val">true</span>,
+                    alter: <span class="bool-val">true</span>,
+                    space: <span class="bool-val">true</span>,
+                    ..Default::default()
+                },
+                width: <span class="number">15</span>,
+                precision: <span class="prelude-val">None</span>,
+                format: <span class="string">&#39;a&#39;</span>,
+            },
+            Token::Char(<span class="string">&#39;\t&#39;</span>),
+            Token::Char(<span class="string">&#39;\r&#39;</span>),
+            Token::Char(<span class="string">&#39;&quot;&#39;</span>),
+            Token::Char(<span class="string">&#39;\\&#39;</span>),
+            Token::Char(<span class="string">&#39;\x07&#39;</span>),
+            Token::Char(<span class="string">&#39;\x08&#39;</span>),
+            Token::Char(<span class="string">&#39;\x1B&#39;</span>),
+            Token::Char(<span class="string">&#39;\x0C&#39;</span>),
+            Token::Char(<span class="string">&#39;\x0B&#39;</span>),
+            Token::Directive {
+                flag: Flags {
+                    sign: <span class="bool-val">true</span>,
+                    zero: <span class="bool-val">true</span>,
+                    ..Default::default()
+                },
+                width: <span class="number">20</span>,
+                precision: <span class="prelude-val">None</span>,
+                format: <span class="string">&#39;w&#39;</span>,
+            },
+            Token::Char(<span class="string">&#39;\x12&#39;</span>),
+            Token::Char(<span class="string">&#39;w&#39;</span>),
+            Token::Char(<span class="string">&#39;Z&#39;</span>),
+            Token::Char(<span class="string">&#39;J&#39;</span>),
+            Token::Char(<span class="string">&#39;\n&#39;</span>),
+        ];
+        <span class="macro">assert_eq!</span>(<span class="kw-2">&amp;</span>expected, <span class="kw-2">&amp;</span>Stater::generate_tokens(s, <span class="bool-val">true</span>).unwrap());
+    }
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_stat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

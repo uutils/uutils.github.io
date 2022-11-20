@@ -900,100 +900,6 @@
 <span id="900">900</span>
 <span id="901">901</span>
 <span id="902">902</span>
-<span id="903">903</span>
-<span id="904">904</span>
-<span id="905">905</span>
-<span id="906">906</span>
-<span id="907">907</span>
-<span id="908">908</span>
-<span id="909">909</span>
-<span id="910">910</span>
-<span id="911">911</span>
-<span id="912">912</span>
-<span id="913">913</span>
-<span id="914">914</span>
-<span id="915">915</span>
-<span id="916">916</span>
-<span id="917">917</span>
-<span id="918">918</span>
-<span id="919">919</span>
-<span id="920">920</span>
-<span id="921">921</span>
-<span id="922">922</span>
-<span id="923">923</span>
-<span id="924">924</span>
-<span id="925">925</span>
-<span id="926">926</span>
-<span id="927">927</span>
-<span id="928">928</span>
-<span id="929">929</span>
-<span id="930">930</span>
-<span id="931">931</span>
-<span id="932">932</span>
-<span id="933">933</span>
-<span id="934">934</span>
-<span id="935">935</span>
-<span id="936">936</span>
-<span id="937">937</span>
-<span id="938">938</span>
-<span id="939">939</span>
-<span id="940">940</span>
-<span id="941">941</span>
-<span id="942">942</span>
-<span id="943">943</span>
-<span id="944">944</span>
-<span id="945">945</span>
-<span id="946">946</span>
-<span id="947">947</span>
-<span id="948">948</span>
-<span id="949">949</span>
-<span id="950">950</span>
-<span id="951">951</span>
-<span id="952">952</span>
-<span id="953">953</span>
-<span id="954">954</span>
-<span id="955">955</span>
-<span id="956">956</span>
-<span id="957">957</span>
-<span id="958">958</span>
-<span id="959">959</span>
-<span id="960">960</span>
-<span id="961">961</span>
-<span id="962">962</span>
-<span id="963">963</span>
-<span id="964">964</span>
-<span id="965">965</span>
-<span id="966">966</span>
-<span id="967">967</span>
-<span id="968">968</span>
-<span id="969">969</span>
-<span id="970">970</span>
-<span id="971">971</span>
-<span id="972">972</span>
-<span id="973">973</span>
-<span id="974">974</span>
-<span id="975">975</span>
-<span id="976">976</span>
-<span id="977">977</span>
-<span id="978">978</span>
-<span id="979">979</span>
-<span id="980">980</span>
-<span id="981">981</span>
-<span id="982">982</span>
-<span id="983">983</span>
-<span id="984">984</span>
-<span id="985">985</span>
-<span id="986">986</span>
-<span id="987">987</span>
-<span id="988">988</span>
-<span id="989">989</span>
-<span id="990">990</span>
-<span id="991">991</span>
-<span id="992">992</span>
-<span id="993">993</span>
-<span id="994">994</span>
-<span id="995">995</span>
-<span id="996">996</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Tyler Steele &lt;tyler.steele@protonmail.com&gt;
@@ -1021,7 +927,7 @@
 <span class="kw">use </span>std::env;
 <span class="kw">use </span>std::ffi::OsString;
 <span class="kw">use </span>std::fs::{File, OpenOptions};
-<span class="kw">use </span>std::io::{<span class="self">self</span>, Read, Seek, SeekFrom, Write};
+<span class="kw">use </span>std::io::{<span class="self">self</span>, Read, Seek, SeekFrom, Stdout, Write};
 <span class="attribute">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;android&quot;</span>))]
 </span><span class="kw">use </span>std::os::unix::fs::OpenOptionsExt;
 <span class="kw">use </span>std::path::Path;
@@ -1276,51 +1182,161 @@
     }
 }
 
-<span class="kw">trait </span>OutputTrait: Sized + Write {
-    <span class="kw">fn </span>fsync(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt;;
-    <span class="kw">fn </span>fdatasync(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt;;
+<span class="kw">enum </span>Density {
+    Sparse,
+    Dense,
 }
 
-<span class="kw">struct </span>Output&lt;<span class="lifetime">&#39;a</span>, W: Write&gt; {
-    dst: W,
-    settings: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Settings,
+<span class="doccomment">/// Data destinations.
+</span><span class="kw">enum </span>Dest {
+    <span class="doccomment">/// Output to stdout.
+    </span>Stdout(Stdout),
+
+    <span class="doccomment">/// Output to a file.
+    ///
+    /// The [`Density`] component indicates whether to attempt to
+    /// write a sparse file when all-zero blocks are encountered.
+    </span>File(File, Density),
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Output&lt;<span class="lifetime">&#39;a</span>, io::Stdout&gt; {
-    <span class="kw">fn </span>new(settings: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Settings) -&gt; UResult&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>dst = io::stdout();
-
-        <span class="comment">// stdout is not seekable, so we just write null bytes.
-        </span><span class="kw">if </span>settings.seek &gt; <span class="number">0 </span>{
-            io::copy(<span class="kw-2">&amp;mut </span>io::repeat(<span class="number">0u8</span>).take(settings.seek <span class="kw">as </span>u64), <span class="kw-2">&amp;mut </span>dst)
-                .map_err_context(|| String::from(<span class="string">&quot;write error&quot;</span>))<span class="question-mark">?</span>;
-        }
-
-        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ dst, settings })
-    }
-}
-
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; OutputTrait <span class="kw">for </span>Output&lt;<span class="lifetime">&#39;a</span>, io::Stdout&gt; {
+<span class="kw">impl </span>Dest {
     <span class="kw">fn </span>fsync(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
-        <span class="self">self</span>.dst.flush()
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::Stdout(stdout) =&gt; stdout.flush(),
+            <span class="self">Self</span>::File(f, <span class="kw">_</span>) =&gt; {
+                f.flush()<span class="question-mark">?</span>;
+                f.sync_all()
+            }
+        }
     }
 
     <span class="kw">fn </span>fdatasync(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
-        <span class="self">self</span>.dst.flush()
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::Stdout(stdout) =&gt; stdout.flush(),
+            <span class="self">Self</span>::File(f, <span class="kw">_</span>) =&gt; {
+                f.flush()<span class="question-mark">?</span>;
+                f.sync_data()
+            }
+        }
+    }
+
+    <span class="kw">fn </span>seek(<span class="kw-2">&amp;mut </span><span class="self">self</span>, n: u64) -&gt; io::Result&lt;u64&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::Stdout(stdout) =&gt; io::copy(<span class="kw-2">&amp;mut </span>io::repeat(<span class="number">0</span>).take(n), stdout),
+            <span class="self">Self</span>::File(f, <span class="kw">_</span>) =&gt; f.seek(io::SeekFrom::Start(n)),
+        }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, W: Write&gt; Output&lt;<span class="lifetime">&#39;a</span>, W&gt;
-<span class="kw">where
-    </span><span class="self">Self</span>: OutputTrait,
-{
-    <span class="kw">fn </span>write_blocks(<span class="kw-2">&amp;mut </span><span class="self">self</span>, buf: <span class="kw-2">&amp;</span>[u8]) -&gt; io::Result&lt;WriteStat&gt; {
+<span class="doccomment">/// Decide whether the given buffer is all zeros.
+</span><span class="kw">fn </span>is_sparse(buf: <span class="kw-2">&amp;</span>[u8]) -&gt; bool {
+    buf.iter().all(|<span class="kw-2">&amp;</span>e| e == <span class="number">0u8</span>)
+}
+
+<span class="kw">impl </span>Write <span class="kw">for </span>Dest {
+    <span class="kw">fn </span>write(<span class="kw-2">&amp;mut </span><span class="self">self</span>, buf: <span class="kw-2">&amp;</span>[u8]) -&gt; io::Result&lt;usize&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::File(f, Density::Sparse) <span class="kw">if </span>is_sparse(buf) =&gt; {
+                <span class="kw">let </span>seek_amt: i64 = buf
+                    .len()
+                    .try_into()
+                    .expect(<span class="string">&quot;Internal dd Error: Seek amount greater than signed 64-bit integer&quot;</span>);
+                f.seek(io::SeekFrom::Current(seek_amt))<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(buf.len())
+            }
+            <span class="self">Self</span>::File(f, <span class="kw">_</span>) =&gt; f.write(buf),
+            <span class="self">Self</span>::Stdout(stdout) =&gt; stdout.write(buf),
+        }
+    }
+
+    <span class="kw">fn </span>flush(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::Stdout(stdout) =&gt; stdout.flush(),
+            <span class="self">Self</span>::File(f, <span class="kw">_</span>) =&gt; f.flush(),
+        }
+    }
+}
+
+<span class="doccomment">/// The destination of the data, configured with the given settings.
+///
+/// Use the [`Output::new_stdout`] or [`Output::new_file`] functions
+/// to construct a new instance of this struct. Then use the
+/// [`Output::dd_out`] function to execute the main copy operation for
+/// `dd`.
+</span><span class="kw">struct </span>Output&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="doccomment">/// The destination to which bytes will be written.
+    </span>dst: Dest,
+
+    <span class="doccomment">/// Configuration settings for how to read and write the data.
+    </span>settings: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Settings,
+}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Output&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="doccomment">/// Instantiate this struct with stdout as a destination.
+    </span><span class="kw">fn </span>new_stdout(settings: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Settings) -&gt; UResult&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>dst = Dest::Stdout(io::stdout());
+        dst.seek(settings.seek)
+            .map_err_context(|| <span class="string">&quot;write error&quot;</span>.to_string())<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ dst, settings })
+    }
+
+    <span class="doccomment">/// Instantiate this struct with the named file as a destination.
+    </span><span class="kw">fn </span>new_file(filename: <span class="kw-2">&amp;</span>Path, settings: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Settings) -&gt; UResult&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">fn </span>open_dst(path: <span class="kw-2">&amp;</span>Path, cflags: <span class="kw-2">&amp;</span>OConvFlags, oflags: <span class="kw-2">&amp;</span>OFlags) -&gt; <span class="prelude-ty">Result</span>&lt;File, io::Error&gt; {
+            <span class="kw">let </span><span class="kw-2">mut </span>opts = OpenOptions::new();
+            opts.write(<span class="bool-val">true</span>)
+                .create(!cflags.nocreat)
+                .create_new(cflags.excl)
+                .append(oflags.append);
+
+            <span class="attribute">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;android&quot;</span>))]
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(libc_flags) = make_linux_oflags(oflags) {
+                opts.custom_flags(libc_flags);
+            }
+
+            opts.open(path)
+        }
+
+        <span class="kw">let </span>dst = open_dst(filename, <span class="kw-2">&amp;</span>settings.oconv, <span class="kw-2">&amp;</span>settings.oflags)
+            .map_err_context(|| <span class="macro">format!</span>(<span class="string">&quot;failed to open {}&quot;</span>, filename.quote()))<span class="question-mark">?</span>;
+
+        <span class="comment">// Seek to the index in the output file, truncating if requested.
+        //
+        // Calling `set_len()` may result in an error (for example,
+        // when calling it on `/dev/null`), but we don&#39;t want to
+        // terminate the process when that happens.  Instead, we
+        // suppress the error by calling `Result::ok()`. This matches
+        // the behavior of GNU `dd` when given the command-line
+        // argument `of=/dev/null`.
+
+        </span><span class="kw">if </span>!settings.oconv.notrunc {
+            dst.set_len(settings.seek).ok();
+        }
+        <span class="kw">let </span>density = <span class="kw">if </span>settings.oconv.sparse {
+            Density::Sparse
+        } <span class="kw">else </span>{
+            Density::Dense
+        };
+        <span class="kw">let </span><span class="kw-2">mut </span>dst = Dest::File(dst, density);
+        dst.seek(settings.seek)
+            .map_err_context(|| <span class="string">&quot;failed to seek in output file&quot;</span>.to_string())<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ dst, settings })
+    }
+
+    <span class="doccomment">/// Write the given bytes one block at a time.
+    ///
+    /// This may write partial blocks (for example, if the underlying
+    /// call to [`Write::write`] writes fewer than `buf.len()`
+    /// bytes). The returned [`WriteStat`] object will include the
+    /// number of partial and complete blocks written during execution
+    /// of this function.
+    </span><span class="kw">fn </span>write_blocks(<span class="kw-2">&amp;mut </span><span class="self">self</span>, buf: <span class="kw-2">&amp;</span>[u8]) -&gt; io::Result&lt;WriteStat&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>writes_complete = <span class="number">0</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>writes_partial = <span class="number">0</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>bytes_total = <span class="number">0</span>;
 
         <span class="kw">for </span>chunk <span class="kw">in </span>buf.chunks(<span class="self">self</span>.settings.obs) {
-            <span class="kw">let </span>wlen = <span class="self">self</span>.write(chunk)<span class="question-mark">?</span>;
+            <span class="kw">let </span>wlen = <span class="self">self</span>.dst.write(chunk)<span class="question-mark">?</span>;
             <span class="kw">if </span>wlen &lt; <span class="self">self</span>.settings.obs {
                 writes_partial += <span class="number">1</span>;
             } <span class="kw">else </span>{
@@ -1339,9 +1355,9 @@
     <span class="doccomment">/// Flush the output to disk, if configured to do so.
     </span><span class="kw">fn </span>sync(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; std::io::Result&lt;()&gt; {
         <span class="kw">if </span><span class="self">self</span>.settings.oconv.fsync {
-            <span class="self">self</span>.fsync()
+            <span class="self">self</span>.dst.fsync()
         } <span class="kw">else if </span><span class="self">self</span>.settings.oconv.fdatasync {
-            <span class="self">self</span>.fdatasync()
+            <span class="self">self</span>.dst.fdatasync()
         } <span class="kw">else </span>{
             <span class="comment">// Intentionally do nothing in this case.
             </span><span class="prelude-val">Ok</span>(())
@@ -1507,96 +1523,6 @@
     </span>}
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Output&lt;<span class="lifetime">&#39;a</span>, File&gt; {
-    <span class="kw">fn </span>new(filename: <span class="kw-2">&amp;</span>Path, settings: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Settings) -&gt; UResult&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">fn </span>open_dst(path: <span class="kw-2">&amp;</span>Path, cflags: <span class="kw-2">&amp;</span>OConvFlags, oflags: <span class="kw-2">&amp;</span>OFlags) -&gt; <span class="prelude-ty">Result</span>&lt;File, io::Error&gt; {
-            <span class="kw">let </span><span class="kw-2">mut </span>opts = OpenOptions::new();
-            opts.write(<span class="bool-val">true</span>)
-                .create(!cflags.nocreat)
-                .create_new(cflags.excl)
-                .append(oflags.append);
-
-            <span class="attribute">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;android&quot;</span>))]
-            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(libc_flags) = make_linux_oflags(oflags) {
-                opts.custom_flags(libc_flags);
-            }
-
-            opts.open(path)
-        }
-
-        <span class="kw">let </span><span class="kw-2">mut </span>dst = open_dst(filename, <span class="kw-2">&amp;</span>settings.oconv, <span class="kw-2">&amp;</span>settings.oflags)
-            .map_err_context(|| <span class="macro">format!</span>(<span class="string">&quot;failed to open {}&quot;</span>, filename.quote()))<span class="question-mark">?</span>;
-
-        <span class="comment">// Seek to the index in the output file, truncating if requested.
-        //
-        // Calling `set_len()` may result in an error (for example,
-        // when calling it on `/dev/null`), but we don&#39;t want to
-        // terminate the process when that happens.  Instead, we
-        // suppress the error by calling `Result::ok()`. This matches
-        // the behavior of GNU `dd` when given the command-line
-        // argument `of=/dev/null`.
-
-        </span><span class="kw">if </span>!settings.oconv.notrunc {
-            dst.set_len(settings.seek).ok();
-        }
-        dst.seek(io::SeekFrom::Start(settings.seek))
-            .map_err_context(|| <span class="string">&quot;failed to seek in output file&quot;</span>.to_string())<span class="question-mark">?</span>;
-
-        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ dst, settings })
-    }
-}
-
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; OutputTrait <span class="kw">for </span>Output&lt;<span class="lifetime">&#39;a</span>, File&gt; {
-    <span class="kw">fn </span>fsync(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
-        <span class="self">self</span>.dst.flush()<span class="question-mark">?</span>;
-        <span class="self">self</span>.dst.sync_all()
-    }
-
-    <span class="kw">fn </span>fdatasync(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
-        <span class="self">self</span>.dst.flush()<span class="question-mark">?</span>;
-        <span class="self">self</span>.dst.sync_data()
-    }
-}
-
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Seek <span class="kw">for </span>Output&lt;<span class="lifetime">&#39;a</span>, File&gt; {
-    <span class="kw">fn </span>seek(<span class="kw-2">&amp;mut </span><span class="self">self</span>, pos: io::SeekFrom) -&gt; io::Result&lt;u64&gt; {
-        <span class="self">self</span>.dst.seek(pos)
-    }
-}
-
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Write <span class="kw">for </span>Output&lt;<span class="lifetime">&#39;a</span>, File&gt; {
-    <span class="kw">fn </span>write(<span class="kw-2">&amp;mut </span><span class="self">self</span>, buf: <span class="kw-2">&amp;</span>[u8]) -&gt; io::Result&lt;usize&gt; {
-        <span class="kw">fn </span>is_sparse(buf: <span class="kw-2">&amp;</span>[u8]) -&gt; bool {
-            buf.iter().all(|<span class="kw-2">&amp;</span>e| e == <span class="number">0u8</span>)
-        }
-        <span class="comment">// -----------------------------
-        </span><span class="kw">if </span><span class="self">self</span>.settings.oconv.sparse &amp;&amp; is_sparse(buf) {
-            <span class="kw">let </span>seek_amt: i64 = buf
-                .len()
-                .try_into()
-                .expect(<span class="string">&quot;Internal dd Error: Seek amount greater than signed 64-bit integer&quot;</span>);
-            <span class="self">self</span>.dst.seek(io::SeekFrom::Current(seek_amt))<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(buf.len())
-        } <span class="kw">else </span>{
-            <span class="self">self</span>.dst.write(buf)
-        }
-    }
-
-    <span class="kw">fn </span>flush(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
-        <span class="self">self</span>.dst.flush()
-    }
-}
-
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Write <span class="kw">for </span>Output&lt;<span class="lifetime">&#39;a</span>, io::Stdout&gt; {
-    <span class="kw">fn </span>write(<span class="kw-2">&amp;mut </span><span class="self">self</span>, buf: <span class="kw-2">&amp;</span>[u8]) -&gt; io::Result&lt;usize&gt; {
-        <span class="self">self</span>.dst.write(buf)
-    }
-
-    <span class="kw">fn </span>flush(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
-        <span class="self">self</span>.dst.flush()
-    }
-}
-
 <span class="doccomment">/// Read helper performs read operations common to all dd reads, and dispatches the buffer to relevant helper functions as dictated by the operations requested by the user.
 </span><span class="kw">fn </span>read_helper&lt;R: Read&gt;(
     i: <span class="kw-2">&amp;mut </span>Input&lt;R&gt;,
@@ -1749,22 +1675,22 @@
     <span class="kw">match </span>(<span class="kw-2">&amp;</span>settings.infile, <span class="kw-2">&amp;</span>settings.outfile) {
         (<span class="prelude-val">Some</span>(infile), <span class="prelude-val">Some</span>(outfile)) =&gt; {
             <span class="kw">let </span>i = Input::&lt;File&gt;::new(Path::new(<span class="kw-2">&amp;</span>infile), <span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>;
-            <span class="kw">let </span>o = Output::&lt;File&gt;::new(Path::new(<span class="kw-2">&amp;</span>outfile), <span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>;
+            <span class="kw">let </span>o = Output::new_file(Path::new(<span class="kw-2">&amp;</span>outfile), <span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>;
             o.dd_out(i).map_err_context(|| <span class="string">&quot;IO error&quot;</span>.to_string())
         }
         (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(outfile)) =&gt; {
             <span class="kw">let </span>i = Input::&lt;io::Stdin&gt;::new(<span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>;
-            <span class="kw">let </span>o = Output::&lt;File&gt;::new(Path::new(<span class="kw-2">&amp;</span>outfile), <span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>;
+            <span class="kw">let </span>o = Output::new_file(Path::new(<span class="kw-2">&amp;</span>outfile), <span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>;
             o.dd_out(i).map_err_context(|| <span class="string">&quot;IO error&quot;</span>.to_string())
         }
         (<span class="prelude-val">Some</span>(infile), <span class="prelude-val">None</span>) =&gt; {
             <span class="kw">let </span>i = Input::&lt;File&gt;::new(Path::new(<span class="kw-2">&amp;</span>infile), <span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>;
             <span class="kw">if </span>is_stdout_redirected_to_seekable_file() {
                 <span class="kw">let </span>filename = stdout_canonicalized();
-                <span class="kw">let </span>o = Output::&lt;File&gt;::new(Path::new(<span class="kw-2">&amp;</span>filename), <span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>;
+                <span class="kw">let </span>o = Output::new_file(Path::new(<span class="kw-2">&amp;</span>filename), <span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>;
                 o.dd_out(i).map_err_context(|| <span class="string">&quot;IO error&quot;</span>.to_string())
             } <span class="kw">else </span>{
-                <span class="kw">let </span>o = Output::&lt;io::Stdout&gt;::new(<span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>;
+                <span class="kw">let </span>o = Output::new_stdout(<span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>;
                 o.dd_out(i).map_err_context(|| <span class="string">&quot;IO error&quot;</span>.to_string())
             }
         }
@@ -1772,10 +1698,10 @@
             <span class="kw">let </span>i = Input::&lt;io::Stdin&gt;::new(<span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>;
             <span class="kw">if </span>is_stdout_redirected_to_seekable_file() {
                 <span class="kw">let </span>filename = stdout_canonicalized();
-                <span class="kw">let </span>o = Output::&lt;File&gt;::new(Path::new(<span class="kw-2">&amp;</span>filename), <span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>;
+                <span class="kw">let </span>o = Output::new_file(Path::new(<span class="kw-2">&amp;</span>filename), <span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>;
                 o.dd_out(i).map_err_context(|| <span class="string">&quot;IO error&quot;</span>.to_string())
             } <span class="kw">else </span>{
-                <span class="kw">let </span>o = Output::&lt;io::Stdout&gt;::new(<span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>;
+                <span class="kw">let </span>o = Output::new_stdout(<span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>;
                 o.dd_out(i).map_err_context(|| <span class="string">&quot;IO error&quot;</span>.to_string())
             }
         }
@@ -1793,26 +1719,9 @@
 
 <span class="attribute">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
-    <span class="kw">use </span><span class="kw">crate</span>::datastructures::{IConvFlags, IFlags};
-    <span class="kw">use crate</span>::{calc_bsize, Input, Output, Parser, Settings};
+    <span class="kw">use crate</span>::{calc_bsize, Output, Parser};
 
-    <span class="kw">use </span>std::cmp;
-    <span class="kw">use </span>std::fs;
-    <span class="kw">use </span>std::fs::File;
-    <span class="kw">use </span>std::io;
-    <span class="kw">use </span>std::io::{BufReader, Read};
     <span class="kw">use </span>std::path::Path;
-
-    <span class="kw">struct </span>LazyReader&lt;R: Read&gt; {
-        src: R,
-    }
-
-    <span class="kw">impl</span>&lt;R: Read&gt; Read <span class="kw">for </span>LazyReader&lt;R&gt; {
-        <span class="kw">fn </span>read(<span class="kw-2">&amp;mut </span><span class="self">self</span>, buf: <span class="kw-2">&amp;mut </span>[u8]) -&gt; io::Result&lt;usize&gt; {
-            <span class="kw">let </span>reduced = cmp::max(buf.len() / <span class="number">2</span>, <span class="number">1</span>);
-            <span class="self">self</span>.src.read(<span class="kw-2">&amp;mut </span>buf[..reduced])
-        }
-    }
 
     <span class="attribute">#[test]
     </span><span class="kw">fn </span>bsize_test_primes() {
@@ -1889,105 +1798,8 @@
         <span class="kw">let </span>args = <span class="kw-2">&amp;</span>[<span class="string">&quot;conv=nocreat&quot;</span>, <span class="string">&quot;of=not-a-real.file&quot;</span>];
         <span class="kw">let </span>settings = Parser::new().parse(args).unwrap();
         <span class="macro">assert!</span>(
-            Output::&lt;File&gt;::new(Path::new(settings.outfile.as_ref().unwrap()), <span class="kw-2">&amp;</span>settings).is_err()
+            Output::new_file(Path::new(settings.outfile.as_ref().unwrap()), <span class="kw-2">&amp;</span>settings).is_err()
         );
-    }
-
-    <span class="attribute">#[test]
-    </span><span class="kw">fn </span>test_deadbeef_16_delayed() {
-        <span class="kw">let </span>settings = Settings {
-            ibs: <span class="number">16</span>,
-            obs: <span class="number">32</span>,
-            count: <span class="prelude-val">None</span>,
-            iconv: IConvFlags {
-                sync: <span class="prelude-val">Some</span>(<span class="number">0</span>),
-                ..Default::default()
-            },
-            ..Default::default()
-        };
-        <span class="kw">let </span>input = Input {
-            src: LazyReader {
-                src: File::open(<span class="string">&quot;./test-resources/deadbeef-16.test&quot;</span>).unwrap(),
-            },
-            settings: <span class="kw-2">&amp;</span>settings,
-        };
-
-        <span class="kw">let </span>output = Output {
-            dst: File::create(<span class="string">&quot;./test-resources/FAILED-deadbeef-16-delayed.test&quot;</span>).unwrap(),
-            settings: <span class="kw-2">&amp;</span>settings,
-        };
-
-        output.dd_out(input).unwrap();
-
-        <span class="kw">let </span>tmp_fname = <span class="string">&quot;./test-resources/FAILED-deadbeef-16-delayed.test&quot;</span>;
-        <span class="kw">let </span>spec = File::open(<span class="string">&quot;./test-resources/deadbeef-16.spec&quot;</span>).unwrap();
-
-        <span class="kw">let </span>res = File::open(tmp_fname).unwrap();
-        <span class="comment">// Check test file isn&#39;t empty (unless spec file is too)
-        </span><span class="macro">assert_eq!</span>(
-            res.metadata().unwrap().len(),
-            spec.metadata().unwrap().len()
-        );
-
-        <span class="kw">let </span>spec = BufReader::new(spec);
-        <span class="kw">let </span>res = BufReader::new(res);
-
-        <span class="comment">// Check all bytes match
-        </span><span class="kw">for </span>(b_res, b_spec) <span class="kw">in </span>res.bytes().zip(spec.bytes()) {
-            <span class="macro">assert_eq!</span>(b_res.unwrap(), b_spec.unwrap());
-        }
-
-        fs::remove_file(tmp_fname).unwrap();
-    }
-
-    <span class="attribute">#[test]
-    </span><span class="kw">fn </span>test_random_73k_test_lazy_fullblock() {
-        <span class="kw">let </span>settings = Settings {
-            ibs: <span class="number">521</span>,
-            obs: <span class="number">1031</span>,
-            count: <span class="prelude-val">None</span>,
-            iflags: IFlags {
-                fullblock: <span class="bool-val">true</span>,
-                ..IFlags::default()
-            },
-            ..Default::default()
-        };
-        <span class="kw">let </span>input = Input {
-            src: LazyReader {
-                src: File::open(<span class="string">&quot;./test-resources/random-5828891cb1230748e146f34223bbd3b5.test&quot;</span>)
-                    .unwrap(),
-            },
-            settings: <span class="kw-2">&amp;</span>settings,
-        };
-
-        <span class="kw">let </span>output = Output {
-            dst: File::create(<span class="string">&quot;./test-resources/FAILED-random_73k_test_lazy_fullblock.test&quot;</span>)
-                .unwrap(),
-            settings: <span class="kw-2">&amp;</span>settings,
-        };
-
-        output.dd_out(input).unwrap();
-
-        <span class="kw">let </span>tmp_fname = <span class="string">&quot;./test-resources/FAILED-random_73k_test_lazy_fullblock.test&quot;</span>;
-        <span class="kw">let </span>spec =
-            File::open(<span class="string">&quot;./test-resources/random-5828891cb1230748e146f34223bbd3b5.test&quot;</span>).unwrap();
-
-        <span class="kw">let </span>res = File::open(tmp_fname).unwrap();
-        <span class="comment">// Check test file isn&#39;t empty (unless spec file is too)
-        </span><span class="macro">assert_eq!</span>(
-            res.metadata().unwrap().len(),
-            spec.metadata().unwrap().len()
-        );
-
-        <span class="kw">let </span>spec = BufReader::new(spec);
-        <span class="kw">let </span>res = BufReader::new(res);
-
-        <span class="comment">// Check all bytes match
-        </span><span class="kw">for </span>(b_res, b_spec) <span class="kw">in </span>res.bytes().zip(spec.bytes()) {
-            <span class="macro">assert_eq!</span>(b_res.unwrap(), b_spec.unwrap());
-        }
-
-        fs::remove_file(tmp_fname).unwrap();
     }
 }
 </code></pre></div>

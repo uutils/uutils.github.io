@@ -639,6 +639,9 @@
 <span id="639">639</span>
 <span id="640">640</span>
 <span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
+<span id="644">644</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Tyler Steele &lt;tyler.steele@protonmail.com&gt;
@@ -655,7 +658,7 @@
 <span class="kw">use </span>std::error::Error;
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::UError;
-<span class="kw">use </span>uucore::parse_size::ParseSizeError;
+<span class="kw">use </span>uucore::parse_size::{ParseSizeError, Parser <span class="kw">as </span>SizeParser};
 <span class="kw">use </span>uucore::show_warning;
 
 <span class="doccomment">/// Parser Errors describe errors with parser input
@@ -1140,8 +1143,11 @@
 /// assert_eq!(parse_bytes_no_x(&quot;2k&quot;, &quot;2k&quot;).unwrap(), 2 * 1024);
 /// ```
 </span><span class="kw">fn </span>parse_bytes_no_x(full: <span class="kw-2">&amp;</span>str, s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;u64, ParseError&gt; {
+    <span class="kw">let </span>parser = SizeParser {
+        capital_b_bytes: <span class="bool-val">true</span>,
+    };
     <span class="kw">let </span>(num, multiplier) = <span class="kw">match </span>(s.find(<span class="string">&#39;c&#39;</span>), s.rfind(<span class="string">&#39;w&#39;</span>), s.rfind(<span class="string">&#39;b&#39;</span>)) {
-        (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="kw">match </span>uucore::parse_size::parse_size(s) {
+        (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="kw">match </span>parser.parse(s) {
             <span class="prelude-val">Ok</span>(n) =&gt; (n, <span class="number">1</span>),
             <span class="prelude-val">Err</span>(ParseSizeError::InvalidSuffix(<span class="kw">_</span>)) | <span class="prelude-val">Err</span>(ParseSizeError::ParseFailure(<span class="kw">_</span>)) =&gt; {
                 <span class="kw">return </span><span class="prelude-val">Err</span>(ParseError::InvalidNumber(full.to_string()))
