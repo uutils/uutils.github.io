@@ -1653,6 +1653,13 @@
 <span id="1653">1653</span>
 <span id="1654">1654</span>
 <span id="1655">1655</span>
+<span id="1656">1656</span>
+<span id="1657">1657</span>
+<span id="1658">1658</span>
+<span id="1659">1659</span>
+<span id="1660">1660</span>
+<span id="1661">1661</span>
+<span id="1662">1662</span>
 </pre><pre class="rust"><code><span class="attribute">#![allow(clippy::missing_safety_doc)]
 #![allow(clippy::extra_unused_lifetimes)]
 
@@ -3005,7 +3012,14 @@
     }
 
     <span class="kw">if </span>options.verbose {
-        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, context_for(source, dest));
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(pb) = progress_bar {
+            <span class="comment">// Suspend (hide) the progress bar so the println won&#39;t overlap with the progress bar.
+            </span>pb.suspend(|| {
+                <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, context_for(source, dest));
+            });
+        } <span class="kw">else </span>{
+            <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, context_for(source, dest));
+        }
     }
 
     <span class="comment">// Calculate the context upfront before canonicalizing the path

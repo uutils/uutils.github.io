@@ -900,6 +900,28 @@
 <span id="900">900</span>
 <span id="901">901</span>
 <span id="902">902</span>
+<span id="903">903</span>
+<span id="904">904</span>
+<span id="905">905</span>
+<span id="906">906</span>
+<span id="907">907</span>
+<span id="908">908</span>
+<span id="909">909</span>
+<span id="910">910</span>
+<span id="911">911</span>
+<span id="912">912</span>
+<span id="913">913</span>
+<span id="914">914</span>
+<span id="915">915</span>
+<span id="916">916</span>
+<span id="917">917</span>
+<span id="918">918</span>
+<span id="919">919</span>
+<span id="920">920</span>
+<span id="921">921</span>
+<span id="922">922</span>
+<span id="923">923</span>
+<span id="924">924</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Tyler Steele &lt;tyler.steele@protonmail.com&gt;
@@ -1226,6 +1248,17 @@
             <span class="self">Self</span>::File(f, <span class="kw">_</span>) =&gt; f.seek(io::SeekFrom::Start(n)),
         }
     }
+
+    <span class="doccomment">/// Truncate the underlying file to the current stream position, if possible.
+    </span><span class="kw">fn </span>truncate(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::Stdout(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
+            <span class="self">Self</span>::File(f, <span class="kw">_</span>) =&gt; {
+                <span class="kw">let </span>pos = f.stream_position()<span class="question-mark">?</span>;
+                f.set_len(pos)
+            }
+        }
+    }
 }
 
 <span class="doccomment">/// Decide whether the given buffer is all zeros.
@@ -1308,7 +1341,6 @@
         // suppress the error by calling `Result::ok()`. This matches
         // the behavior of GNU `dd` when given the command-line
         // argument `of=/dev/null`.
-
         </span><span class="kw">if </span>!settings.oconv.notrunc {
             dst.set_len(settings.seek).ok();
         }
@@ -1471,6 +1503,18 @@
     ) -&gt; std::io::Result&lt;()&gt; {
         <span class="comment">// Flush the output, if configured to do so.
         </span><span class="self">self</span>.sync()<span class="question-mark">?</span>;
+
+        <span class="comment">// Truncate the file to the final cursor location.
+        //
+        // Calling `set_len()` may result in an error (for example,
+        // when calling it on `/dev/null`), but we don&#39;t want to
+        // terminate the process when that happens. Instead, we
+        // suppress the error by calling `Result::ok()`. This matches
+        // the behavior of GNU `dd` when given the command-line
+        // argument `of=/dev/null`.
+        </span><span class="kw">if </span>!<span class="self">self</span>.settings.oconv.notrunc {
+            <span class="self">self</span>.dst.truncate().ok();
+        }
 
         <span class="comment">// Print the final read/write statistics.
         </span><span class="kw">let </span>prog_update = ProgUpdate::new(rstat, wstat, start.elapsed(), <span class="bool-val">true</span>);
