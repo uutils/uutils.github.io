@@ -179,7 +179,7 @@
 <pre><code>expr [EXPRESSION]
 expr [OPTIONS]
 </code></pre>
-<p>Print the value of EXPRESSION to standard output</p>
+<p>Print the value of <code>EXPRESSION</code> to standard output</p>
 <h2 id="options"><a class="header" href="#options">Options</a></h2>
 <dl><dt><code>--version</code></dt>
 <dd>
@@ -193,6 +193,51 @@ expr [OPTIONS]
 <dd>
 </dd>
 </dl>
+<p>Print the value of <code>EXPRESSION</code> to standard output.  A blank line below
+separates increasing precedence groups. </p>
+<p><code>EXPRESSION</code> may be:</p>
+<pre><code>ARG1 | ARG2       ARG1 if it is neither null nor 0, otherwise ARG2
+
+ARG1 &amp; ARG2       ARG1 if neither argument is null or 0, otherwise 0
+
+ARG1 &lt; ARG2       ARG1 is less than ARG2
+ARG1 &lt;= ARG2      ARG1 is less than or equal to ARG2
+ARG1 = ARG2       ARG1 is equal to ARG2
+ARG1 != ARG2      ARG1 is unequal to ARG2
+ARG1 &gt;= ARG2      ARG1 is greater than or equal to ARG2
+ARG1 &gt; ARG2       ARG1 is greater than ARG2
+
+ARG1 + ARG2       arithmetic sum of ARG1 and ARG2
+ARG1 - ARG2       arithmetic difference of ARG1 and ARG2
+
+ARG1 * ARG2       arithmetic product of ARG1 and ARG2
+ARG1 / ARG2       arithmetic quotient of ARG1 divided by ARG2
+ARG1 % ARG2       arithmetic remainder of ARG1 divided by ARG2
+
+STRING : REGEXP   anchored pattern match of REGEXP in STRING
+
+match STRING REGEXP        same as STRING : REGEXP
+substr STRING POS LENGTH   substring of STRING, POS counted from 1
+index STRING CHARS         index in STRING where any CHARS is found, or 0
+length STRING              length of STRING
++ TOKEN                    interpret TOKEN as a string, even if it is a
+                             keyword like 'match' or an operator like '/'
+
+( EXPRESSION )             value of EXPRESSION
+</code></pre>
+<p>Beware that many operators need to be escaped or quoted for shells.
+Comparisons are arithmetic if both ARGs are numbers, else lexicographical.
+Pattern matches return the string matched between ( and ) or null; if
+( and ) are not used, they return the number of characters matched or 0.</p>
+<p>Exit status is <code>0</code> if <code>EXPRESSION</code> is neither null nor <code>0</code>, <code>1</code> if <code>EXPRESSION</code> is null
+or <code>0</code>, <code>2</code> if <code>EXPRESSION</code> is syntactically invalid, and <code>3</code> if an error occurred.</p>
+<p>Environment variables:</p>
+<ul>
+<li><code>EXPR_DEBUG_TOKENS=1</code>: dump expression's tokens</li>
+<li><code>EXPR_DEBUG_RPN=1</code>: dump expression represented in reverse polish notation</li>
+<li><code>EXPR_DEBUG_SYA_STEP=1</code>: dump each parser step</li>
+<li><code>EXPR_DEBUG_AST=1</code>: dump expression represented abstract syntax tree</li>
+</ul>
 <h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
 <p>Get string length:</p>
 <pre><code class="language-shell">expr length {{string}}

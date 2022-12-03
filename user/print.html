@@ -670,6 +670,7 @@ the regular arguments to the util can be passed.</p>
 <p>Print version information</p>
 </dd>
 </dl>
+<p>Determine architecture name for current machine.</p>
 <h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
 <p>Display the system's architecture:</p>
 <pre><code class="language-shell">arch
@@ -896,9 +897,9 @@ encoded stream.</p>
 </code></pre>
 <p>encode/decode data and print to standard output
 With no FILE, or when FILE is -, read standard input.</p>
-<p>The data are encoded as described for the base32 alphabet in RFC
-4648. When decoding, the input may contain newlines in addition
-to the bytes of the formal base32 alphabet. Use --ignore-garbage
+<p>The data are encoded as described for the base64 alphabet in RFC
+3548. When decoding, the input may contain newlines in addition
+to the bytes of the formal base64 alphabet. Use --ignore-garbage
 to attempt to recover from any other non-alphabet bytes in the
 encoded stream.</p>
 <h2 id="options-4"><a class="header" href="#options-4">Options</a></h2>
@@ -1921,6 +1922,7 @@ cp [OPTION]... -t DIRECTORY SOURCE...
 <p>Print version information</p>
 </dd>
 </dl>
+<p>Output pieces of FILE separated by PATTERN(s) to files 'xx00', 'xx01', ..., and output byte counts of each piece to standard output.</p>
 <h2 id="examples-14"><a class="header" href="#examples-14">Examples</a></h2>
 <p>Split a file at lines 5 and 23:</p>
 <pre><code class="language-shell">csplit {{file}} {{5}} {{23}}
@@ -1999,6 +2001,78 @@ cp [OPTION]... -t DIRECTORY SOURCE...
 <p>Print version information</p>
 </dd>
 </dl>
+<p>Each call must specify a mode (what to use for columns),
+a sequence (which columns to print), and provide a data source</p>
+<p>Specifying a mode</p>
+<pre><code>Use --bytes (-b) or --characters (-c) to specify byte mode
+
+Use --fields (-f) to specify field mode, where each line is broken into
+fields identified by a delimiter character. For example for a typical CSV
+you could use this in combination with setting comma as the delimiter
+</code></pre>
+<p>Specifying a sequence</p>
+<pre><code>A sequence is a group of 1 or more numbers or inclusive ranges separated
+by a commas.
+
+cut -f 2,5-7 some_file.txt
+will display the 2nd, 5th, 6th, and 7th field for each source line
+
+Ranges can extend to the end of the row by excluding the the second number
+
+cut -f 3- some_file.txt
+will display the 3rd field and all fields after for each source line
+
+The first number of a range can be excluded, and this is effectively the
+same as using 1 as the first number: it causes the range to begin at the
+first column. Ranges can also display a single column
+
+cut -f 1,3-5 some_file.txt
+will display the 1st, 3rd, 4th, and 5th field for each source line
+
+The --complement option, when used, inverts the effect of the sequence
+
+cut --complement -f 4-6 some_file.txt
+will display the every field but the 4th, 5th, and 6th
+</code></pre>
+<p>Specifying a data source</p>
+<pre><code>If no sourcefile arguments are specified, stdin is used as the source of
+lines to print
+
+If sourcefile arguments are specified, stdin is ignored and all files are
+read in consecutively if a sourcefile is not successfully read, a warning
+will print to stderr, and the eventual status code will be 1, but cut
+will continue to read through proceeding sourcefiles
+
+To print columns from both STDIN and a file argument, use - (dash) as a
+sourcefile argument to represent stdin.
+</code></pre>
+<p>Field Mode options</p>
+<pre><code>The fields in each line are identified by a delimiter (separator)
+
+Set the delimiter
+    Set the delimiter which separates fields in the file using the
+    --delimiter (-d) option. Setting the delimiter is optional.
+    If not set, a default delimiter of Tab will be used.
+
+Optionally Filter based on delimiter
+    If the --only-delimited (-s) flag is provided, only lines which
+    contain the delimiter will be printed
+
+Replace the delimiter
+    If the --output-delimiter option is provided, the argument used for
+    it will replace the delimiter character in each line printed. This is
+    useful for transforming tabular data - e.g. to convert a CSV to a
+    TSV (tab-separated file)
+</code></pre>
+<p>Line endings</p>
+<pre><code>When the --zero-terminated (-z) option is used, cut sees \0 (null) as the
+'line ending' character (both for the purposes of reading lines and
+separating printed lines) instead of \n (newline). This is useful for
+tabular data where some of the cells may contain newlines
+
+echo 'ab\0cd' | cut -z -c 1
+will result in 'a\0c\0'
+</code></pre>
 <h2 id="examples-15"><a class="header" href="#examples-15">Examples</a></h2>
 <p>Print a specific character/field range of each line:</p>
 <pre><code class="language-shell">{{command}} | cut --{{characters|fields}}={{1|1,10|1-10|1-|-10}}
@@ -2131,6 +2205,116 @@ date [OPTION]... [MMDDhhmm[[CC]YY][.ss]]
 <p>Print version information</p>
 </dd>
 </dl>
+<p>OPERANDS:</p>
+<pre><code>bs=BYTES        read and write up to BYTES bytes at a time (default: 512);
+                overwrites ibs and obs.
+cbs=BYTES       the 'conversion block size' in bytes. Applies to
+                the conv=block, and conv=unblock operations.
+conv=CONVS      a comma-separated list of conversion options or
+                (for legacy reasons) file flags.
+count=N         stop reading input after N ibs-sized read operations rather
+                than proceeding until EOF. See iflag=count_bytes if stopping 
+                after N bytes is preferred
+ibs=N           the size of buffer used for reads (default: 512)
+if=FILE         the file used for input. When not specified, stdin is used instead
+iflag=FLAGS     a comma-separated list of input flags which specify how the input
+                source is treated. FLAGS may be any of the input-flags or 
+                general-flags specified below.
+skip=N          (or iseek=N) skip N ibs-sized records into input before beginning 
+                copy/convert operations. See iflag=seek_bytes if seeking N bytes 
+                is preferred.
+obs=N           the size of buffer used for writes (default: 512)
+of=FILE         the file used for output. When not specified, stdout is used 
+                instead
+oflag=FLAGS     comma separated list of output flags which specify how the output 
+                source is treated. FLAGS may be any of the output flags or 
+                general flags specified below
+seek=N          (or oseek=N) seeks N obs-sized records into output before 
+                beginning copy/convert operations. See oflag=seek_bytes if 
+                seeking N bytes is preferred
+status=LEVEL    controls whether volume and performance stats are written to 
+                stderr.
+                         
+                When unspecified, dd will print stats upon completion. An example is below.
+                    6+0 records in
+                    16+0 records out
+                    8192 bytes (8.2 kB, 8.0 KiB) copied, 0.00057009 s, 14.4 MB/s
+                The first two lines are the 'volume' stats and the final line is 
+                the 'performance' stats.
+                The volume stats indicate the number of complete and partial 
+                ibs-sized reads, or obs-sized writes that took place during the 
+                copy. The format of the volume stats is
+                &lt;complete&gt;+&lt;partial&gt;. If records have been truncated (see 
+                conv=block), the volume stats will contain the number of 
+                truncated records.
+                
+                Possible LEVEL values are:
+                    progress: Print periodic performance stats as the copy 
+                        proceeds.
+                    noxfer: Print final volume stats, but not performance stats.
+                    none: Do not print any stats.
+
+                Printing performance stats is also triggered by the INFO signal 
+                (where supported), or the USR1 signal. Setting the 
+                POSIXLY_CORRECT environment variable to any value (including an
+                empty value) will cause the USR1 signal to be ignored.
+</code></pre>
+<p>CONVERSION OPTIONS:</p>
+<pre><code>ascii       convert from EBCDIC to ASCII. This is the inverse of the 'ebcdic'
+            option. Implies conv=unblock.
+ebcdic      convert from ASCII to EBCDIC. This is the inverse of the 'ascii'
+            option. Implies conv=block.
+ibm         convert from ASCII to EBCDIC, applying the conventions for '[', ']' 
+            and '~' specified in POSIX. Implies conv=block.
+
+ucase       convert from lower-case to upper-case
+lcase       converts from upper-case to lower-case.
+
+block       for each newline less than the size indicated by cbs=BYTES, remove 
+            the newline and pad with spaces up to cbs. Lines longer than cbs are 
+            truncated.
+unblock     for each block of input of the size indicated by cbs=BYTES, remove
+            right-trailing spaces and replace with a newline character.
+
+sparse      attempts to seek the output when an obs-sized block consists of only
+            zeros.
+swab        swaps each adjacent pair of bytes. If an odd number of bytes is
+            present, the final byte is omitted.
+sync        pad each ibs-sided block with zeros. If 'block' or 'unblock' is
+            specified, pad with spaces instead.
+excl        the output file must be created. Fail if the output file is already
+            present.
+nocreat     the output file will not be created. Fail if the output file in not
+            already present.
+notrunc     the output file will not be truncated. If this option is not
+            present, output will be truncated when opened.
+noerror     all read errors will be ignored. If this option is not present, dd
+            will only ignore Error::Interrupted.
+fdatasync   data will be written before finishing.
+fsync       data and metadata will be written before finishing.
+</code></pre>
+<p>INPUT FLAGS:</p>
+<pre><code>count_bytes     a value to count=N will be interpreted as bytes.
+skip_bytes      a value to skip=N will be interpreted as bytes.
+fullblock       wait for ibs bytes from each read. zero-length reads are still
+                considered EOF.
+</code></pre>
+<p>OUTPUT FLAGS:</p>
+<pre><code>append      open file in append mode. Consider setting conv=notrunc as well.
+seek_bytes  a value to seek=N will be interpreted as bytes.
+</code></pre>
+<p>GENERAL FLAGS:</p>
+<pre><code>direct      use direct I/O for data.
+directory   fail unless the given input (if used as an iflag) or output (if used 
+            as an oflag) is a directory.
+dsync       use synchronized I/O for data.
+sync        use synchronized I/O for data and metadata.
+nonblock    use non-blocking I/O.
+noatime     do not update access time.
+nocache     request that OS drop cache.
+noctty      do not assign a controlling tty.
+nofollow    do not follow system links.
+</code></pre>
 <h2 id="examples-17"><a class="header" href="#examples-17">Examples</a></h2>
 <p>Make a bootable USB drive from an isohybrid file (such like <code>archlinux-xxx.iso</code>) and show the progress:</p>
 <pre><code class="language-shell">dd if={{file.iso}} of=/dev/{{usb_drive}} status=progress
@@ -2244,6 +2428,12 @@ or all file systems by default.</p>
 <p>Print version information</p>
 </dd>
 </dl>
+<p>Display values are in units of the first available SIZE from --block-size,
+and the DF_BLOCK_SIZE, BLOCK_SIZE and BLOCKSIZE environment variables.
+Otherwise, units default to 1024 bytes (or 512 if POSIXLY_CORRECT is set).</p>
+<p>SIZE is an integer and optional unit (example: 10M is 10<em>1024</em>1024).
+Units are K, M, G, T, P, E, Z, Y (powers of 1024) or KB, MB,... (powers
+of 1000).</p>
 <h2 id="examples-18"><a class="header" href="#examples-18">Examples</a></h2>
 <p>Display all filesystems and their disk usage:</p>
 <pre><code class="language-shell">df
@@ -2514,6 +2704,7 @@ Ignore files and directories starting with a '.' by default</p>
 <p>Print version information</p>
 </dd>
 </dl>
+<p>The TIME_STYLE argument can be full-iso, long-iso, iso, locale or +FORMAT. FORMAT is interpreted like in date. Also the TIME_STYLE environment variable sets the default style to use.</p>
 <h2 id="examples-19"><a class="header" href="#examples-19">Examples</a></h2>
 <p>List all files, including hidden files:</p>
 <pre><code class="language-shell">dir -all
@@ -2576,6 +2767,9 @@ Ignore files and directories starting with a '.' by default</p>
 <p>Print version information</p>
 </dd>
 </dl>
+<p>If FILE is specified, read it to determine which colors to use for which
+file types and extensions.  Otherwise, a precompiled database is used.
+For details on the format of these files, run 'dircolors --print-database'</p>
 <h2 id="examples-20"><a class="header" href="#examples-20">Examples</a></h2>
 <p>Output commands to set LS_COLOR using default colors:</p>
 <pre><code class="language-shell">dircolors
@@ -2759,6 +2953,19 @@ du [OPTION]... --files0-from=F
 <p>Print version information</p>
 </dd>
 </dl>
+<p>Display values are in units of the first available SIZE from --block-size,
+and the DU_BLOCK_SIZE, BLOCK_SIZE and BLOCKSIZE environment variables.
+Otherwise, units default to 1024 bytes (or 512 if POSIXLY_CORRECT is set).</p>
+<p>SIZE is an integer and optional unit (example: 10M is 10<em>1024</em>1024).
+Units are K, M, G, T, P, E, Z, Y (powers of 1024) or KB, MB,... (powers
+of 1000).</p>
+<p>PATTERN allows some advanced exclusions. For example, the following syntaxes
+are supported:
+? will match only one character</p>
+<ul>
+<li>will match zero or more characters
+{a,b} will match a or b</li>
+</ul>
 <h2 id="examples-22"><a class="header" href="#examples-22">Examples</a></h2>
 <p>List the sizes of a directory and any subdirectories, in the given unit (B/KiB/MiB):</p>
 <pre><code class="language-shell">du -{{b|k|m}} {{path/to/directory}}
@@ -2820,6 +3027,20 @@ du [OPTION]... --files0-from=F
 <p>Print version information</p>
 </dd>
 </dl>
+<p>Echo the STRING(s) to standard output.</p>
+<p>If -e is in effect, the following sequences are recognized:</p>
+<p>\\      backslash
+\a      alert (BEL)
+\b      backspace
+\c      produce no further output
+\e      escape
+\f      form feed
+\n      new line
+\r      carriage return
+\t      horizontal tab
+\v      vertical tab
+\0NNN   byte with octal value NNN (1 to 3 digits)
+\xHH    byte with hexadecimal value HH (1 to 2 digits)</p>
 <h2 id="examples-23"><a class="header" href="#examples-23">Examples</a></h2>
 <p>Print a text message. Note: quotes are optional:</p>
 <pre><code class="language-shell">echo &quot;{{Hello World}}&quot;
@@ -2886,6 +3107,7 @@ du [OPTION]... --files0-from=F
 <p>Print version information</p>
 </dd>
 </dl>
+<p>A mere - implies -i. If no COMMAND, print the resulting environment.</p>
 <h2 id="examples-24"><a class="header" href="#examples-24">Examples</a></h2>
 <p>Show the environment:</p>
 <pre><code class="language-shell">env
@@ -2981,7 +3203,7 @@ With no FILE, or when FILE is -, read standard input.</p>
 <pre><code>expr [EXPRESSION]
 expr [OPTIONS]
 </code></pre>
-<p>Print the value of EXPRESSION to standard output</p>
+<p>Print the value of <code>EXPRESSION</code> to standard output</p>
 <h2 id="options-28"><a class="header" href="#options-28">Options</a></h2>
 <dl><dt><code>--version</code></dt>
 <dd>
@@ -2995,6 +3217,51 @@ expr [OPTIONS]
 <dd>
 </dd>
 </dl>
+<p>Print the value of <code>EXPRESSION</code> to standard output.  A blank line below
+separates increasing precedence groups. </p>
+<p><code>EXPRESSION</code> may be:</p>
+<pre><code>ARG1 | ARG2       ARG1 if it is neither null nor 0, otherwise ARG2
+
+ARG1 &amp; ARG2       ARG1 if neither argument is null or 0, otherwise 0
+
+ARG1 &lt; ARG2       ARG1 is less than ARG2
+ARG1 &lt;= ARG2      ARG1 is less than or equal to ARG2
+ARG1 = ARG2       ARG1 is equal to ARG2
+ARG1 != ARG2      ARG1 is unequal to ARG2
+ARG1 &gt;= ARG2      ARG1 is greater than or equal to ARG2
+ARG1 &gt; ARG2       ARG1 is greater than ARG2
+
+ARG1 + ARG2       arithmetic sum of ARG1 and ARG2
+ARG1 - ARG2       arithmetic difference of ARG1 and ARG2
+
+ARG1 * ARG2       arithmetic product of ARG1 and ARG2
+ARG1 / ARG2       arithmetic quotient of ARG1 divided by ARG2
+ARG1 % ARG2       arithmetic remainder of ARG1 divided by ARG2
+
+STRING : REGEXP   anchored pattern match of REGEXP in STRING
+
+match STRING REGEXP        same as STRING : REGEXP
+substr STRING POS LENGTH   substring of STRING, POS counted from 1
+index STRING CHARS         index in STRING where any CHARS is found, or 0
+length STRING              length of STRING
++ TOKEN                    interpret TOKEN as a string, even if it is a
+                             keyword like 'match' or an operator like '/'
+
+( EXPRESSION )             value of EXPRESSION
+</code></pre>
+<p>Beware that many operators need to be escaped or quoted for shells.
+Comparisons are arithmetic if both ARGs are numbers, else lexicographical.
+Pattern matches return the string matched between ( and ) or null; if
+( and ) are not used, they return the number of characters matched or 0.</p>
+<p>Exit status is <code>0</code> if <code>EXPRESSION</code> is neither null nor <code>0</code>, <code>1</code> if <code>EXPRESSION</code> is null
+or <code>0</code>, <code>2</code> if <code>EXPRESSION</code> is syntactically invalid, and <code>3</code> if an error occurred.</p>
+<p>Environment variables:</p>
+<ul>
+<li><code>EXPR_DEBUG_TOKENS=1</code>: dump expression's tokens</li>
+<li><code>EXPR_DEBUG_RPN=1</code>: dump expression represented in reverse polish notation</li>
+<li><code>EXPR_DEBUG_SYA_STEP=1</code>: dump each parser step</li>
+<li><code>EXPR_DEBUG_AST=1</code>: dump expression represented abstract syntax tree</li>
+</ul>
 <h2 id="examples-26"><a class="header" href="#examples-26">Examples</a></h2>
 <p>Get string length:</p>
 <pre><code class="language-shell">expr length {{string}}
@@ -4340,6 +4607,7 @@ Ignore files and directories starting with a '.' by default</p>
 <p>Print version information</p>
 </dd>
 </dl>
+<p>The TIME_STYLE argument can be full-iso, long-iso, iso, locale or +FORMAT. FORMAT is interpreted like in date. Also the TIME_STYLE environment variable sets the default style to use.</p>
 <h2 id="examples-42"><a class="header" href="#examples-42">Examples</a></h2>
 <p>List files one per line:</p>
 <pre><code class="language-shell">ls -1
@@ -4589,6 +4857,20 @@ Ignore files and directories starting with a '.' by default</p>
 <p>Print version information</p>
 </dd>
 </dl>
+<p>Mandatory arguments to long options are mandatory for short options too.
+-m, --mode=MODE    set file permission bits to MODE, not a=rw - umask
+--help     display this help and exit
+--version  output version information and exit</p>
+<p>Both MAJOR and MINOR must be specified when TYPE is b, c, or u, and they
+must be omitted when TYPE is p.  If MAJOR or MINOR begins with 0x or 0X,
+it is interpreted as hexadecimal; otherwise, if it begins with 0, as octal;
+otherwise, as decimal.  TYPE may be:</p>
+<p>b      create a block (buffered) special file
+c, u   create a character (unbuffered) special file
+p      create a FIFO</p>
+<p>NOTE: your shell may have its own version of mknod, which usually supersedes
+the version described here.  Please refer to your shell's documentation
+for details about the options it supports.</p>
 <h2 id="examples-46"><a class="header" href="#examples-46">Examples</a></h2>
 <p>Create a block device:</p>
 <pre><code class="language-shell">sudo mknod {{path/to/device_file}} b {{major_device_number}} {{minor_device_number}}
@@ -4975,6 +5257,10 @@ nohup FLAG
 <p>Print version information</p>
 </dd>
 </dl>
+<p>If standard input is terminal, it'll be replaced with /dev/null.
+If standard output is terminal, it'll be appended to nohup.out instead,
+or $HOME/nohup.out, if nohup.out open failed.
+If standard error is terminal, it'll be redirected to stdout.</p>
 <h2 id="examples-52"><a class="header" href="#examples-52">Examples</a></h2>
 <p>Run a process that can live beyond the terminal:</p>
 <pre><code class="language-shell">nohup {{command}} {{argument1 argument2 ...}}
@@ -5109,6 +5395,45 @@ they will determine the minimum and maximum returned value respectively.</p>
 <p>Print version information</p>
 </dd>
 </dl>
+<p><code>UNIT</code> options:</p>
+<ul>
+<li>
+<p><code>none</code>: no auto-scaling is done; suffixes will trigger an error</p>
+</li>
+<li>
+<p><code>auto</code>: accept optional single/two letter suffix:</p>
+<pre><code>1K = 1000, 1Ki = 1024, 1M = 1000000, 1Mi = 1048576,
+</code></pre>
+</li>
+<li>
+<p><code>si</code>: accept optional single letter suffix:</p>
+<pre><code>1K = 1000, 1M = 1000000, ...
+</code></pre>
+</li>
+<li>
+<p><code>iec</code>: accept optional single letter suffix:</p>
+<pre><code>1K = 1024, 1M = 1048576, ...
+</code></pre>
+</li>
+<li>
+<p><code>iec-i</code>: accept optional two-letter suffix:</p>
+<pre><code> 1Ki = 1024, 1Mi = 1048576, ...
+</code></pre>
+</li>
+</ul>
+<p><code>FIELDS</code> supports <code>cut(1)</code> style field ranges:</p>
+<pre><code>N    N'th field, counted from 1
+N-   from N'th field, to end of line
+N-M  from N'th to M'th field (inclusive)
+-M   from first to M'th field (inclusive)
+-    all fields
+</code></pre>
+<p>Multiple fields/ranges can be separated with commas</p>
+<p><code>FORMAT</code> must be suitable for printing one floating-point argument <code>%f</code>.
+Optional quote (<code>%'f</code>) will enable --grouping (if supported by current locale).
+Optional width value (<code>%10f</code>) will pad output. Optional zero (<code>%010f</code>) width
+will zero pad the number. Optional negative values (<code>%-10f</code>) will left align.
+Optional precision (<code>%.1f</code>) will override the input determined precision.</p>
 <h2 id="examples-54"><a class="header" href="#examples-54">Examples</a></h2>
 <p>Convert 1.5K (SI Units) to 1500:</p>
 <pre><code class="language-shell">numfmt --from={{si}} {{1.5K}}
@@ -5263,6 +5588,36 @@ od --traditional [OPTION]... [FILENAME] [[+][0x]OFFSET[.][b] [[+][0x]LABEL[.][b]
 <p>Print version information</p>
 </dd>
 </dl>
+<p>Displays data in various human-readable formats. If multiple formats are
+specified, the output will contain all formats in the order they appear on the
+command line. Each format will be printed on a new line. Only the line
+containing the first format will be prefixed with the offset.</p>
+<p>If no filename is specified, or it is &quot;-&quot;, stdin will be used. After a &quot;--&quot;, no
+more options will be recognized. This allows for filenames starting with a &quot;-&quot;.</p>
+<p>If a filename is a valid number which can be used as an offset in the second
+form, you can force it to be recognized as a filename if you include an option
+like &quot;-j0&quot;, which is only valid in the first form.</p>
+<p>RADIX is one of o,d,x,n for octal, decimal, hexadecimal or none.</p>
+<p>BYTES is decimal by default, octal if prefixed with a &quot;0&quot;, or hexadecimal if
+prefixed with &quot;0x&quot;. The suffixes b, KB, K, MB, M, GB, G, will multiply the
+number with 512, 1000, 1024, 1000^2, 1024^2, 1000^3, 1024^3, 1000^2, 1024^2.</p>
+<p>OFFSET and LABEL are octal by default, hexadecimal if prefixed with &quot;0x&quot; or
+decimal if a &quot;.&quot; suffix is added. The &quot;b&quot; suffix will multiply with 512.</p>
+<p>TYPE contains one or more format specifications consisting of:
+a       for printable 7-bits ASCII
+c       for utf-8 characters or octal for undefined characters
+d[SIZE] for signed decimal
+f[SIZE] for floating point
+o[SIZE] for octal
+u[SIZE] for unsigned decimal
+x[SIZE] for hexadecimal
+SIZE is the number of bytes which can be the number 1, 2, 4, 8 or 16,
+or C, I, S, L for 1, 2, 4, 8 bytes for integer types,
+or F, D, L for 4, 8, 16 bytes for floating point.
+Any type specification can have a &quot;z&quot; suffix, which will add a ASCII dump at
+the end of the line.</p>
+<p>If an error occurred, a diagnostic message will be printed to stderr, and the
+exitcode will be non-zero.</p>
 <h2 id="examples-55"><a class="header" href="#examples-55">Examples</a></h2>
 <p>Display file using default settings: octal format, 8 bytes per line, byte offsets in octal, and duplicate lines replaced with <code>*</code>:</p>
 <pre><code class="language-shell">od {{path/to/file}}
@@ -5581,6 +5936,27 @@ FILE, separated by TABs, to standard output.</p>
 <p>Print version information</p>
 </dd>
 </dl>
+<pre><code>+PAGE
+        Begin output at page number page of the formatted input.
+-COLUMN
+        Produce multi-column output. See --column
+</code></pre>
+<p>The pr utility is a printing and pagination filter
+for text files.  When multiple input files are specified,
+each is read, formatted, and written to standard
+output.  By default, the input is separated
+into 66-line pages, each with</p>
+<p>o   A 5-line header with the page number, date,
+time, and the pathname of the file.</p>
+<p>o   A 5-line trailer consisting of blank lines.</p>
+<p>If standard output is associated with a terminal,
+diagnostic messages are suppressed until the pr
+utility has completed processing.</p>
+<p>When multiple column output is specified, text columns
+are of equal width.  By default text columns
+are separated by at least one <blank>.  Input lines
+that do not fit into a text column are truncated.
+Lines are not truncated under single column output.</p>
 <h2 id="examples-59"><a class="header" href="#examples-59">Examples</a></h2>
 <p>Print multiple files with a default header and footer:</p>
 <pre><code class="language-shell">pr {{file1}} {{file2}} {{file3}}
@@ -5677,6 +6053,183 @@ FILE, separated by TABs, to standard output.</p>
 <dd>
 </dd>
 </dl>
+<p>basic anonymous string templating:</p>
+<p>prints format string at least once, repeating as long as there are remaining arguments
+output prints escaped literals in the format string as character literals
+output replaces anonymous fields with the next unused argument, formatted according to the field.</p>
+<p>Prints the , replacing escaped character sequences with character literals
+and substitution field sequences with passed arguments</p>
+<p>literally, with the exception of the below
+escaped character sequences, and the substitution sequences described further down.</p>
+<p>ESCAPE SEQUENCES</p>
+<p>The following escape sequences, organized here in alphabetical order,
+will print the corresponding character literal:</p>
+<p>&quot;   double quote</p>
+<p>\    backslash</p>
+<p>\a  alert (BEL)</p>
+<p>\b  backspace</p>
+<p>\c  End-of-Input</p>
+<p>\e  escape</p>
+<p>\f  form feed</p>
+<p>\n  new line</p>
+<p>\r  carriage return</p>
+<p>\t  horizontal tab</p>
+<p>\v  vertical tab</p>
+<p>\NNN byte with value expressed in octal value NNN (1 to 3 digits)
+values greater than 256 will be treated</p>
+<p>\xHH byte with value expressed in hexadecimal value NN (1 to 2 digits)</p>
+<p>\uHHHH Unicode (IEC 10646) character with value expressed in hexadecimal value HHHH (4 digits)</p>
+<p>\uHHHH Unicode character with value expressed in hexadecimal value HHHH (8 digits)</p>
+<p>%% a single %</p>
+<p>SUBSTITUTIONS</p>
+<p>SUBSTITUTION QUICK REFERENCE</p>
+<p>Fields</p>
+<p>%s - string
+%b - string parsed for literals
+second parameter is max length</p>
+<p>%c - char
+no second parameter</p>
+<p>%i or %d - 64-bit integer
+%u - 64 bit unsigned integer
+%x or %X - 64-bit unsigned integer as hex
+%o - 64-bit unsigned integer as octal
+second parameter is min-width, integer
+output below that width is padded with leading zeroes</p>
+<p>%f or %F - decimal floating point value
+%e or %E - scientific notation floating point value
+%g or %G - shorter of specially interpreted decimal or SciNote floating point value.
+second parameter is
+-max places after decimal point for floating point output
+-max number of significant digits for scientific notation output</p>
+<p>parameterizing fields</p>
+<p>examples:</p>
+<p>printf '%4.3i' 7
+has a first parameter of 4
+and a second parameter of 3
+will result in ' 007'</p>
+<p>printf '%.1s' abcde
+has no first parameter
+and a second parameter of 1
+will result in 'a'</p>
+<p>printf '%4c' q
+has a first parameter of 4
+and no second parameter
+will result in  '   q'</p>
+<p>The first parameter of a field is the minimum width to pad the output to
+if the output is less than this absolute value of this width,
+it will be padded with leading spaces, or, if the argument is negative,
+with trailing spaces. the default is zero.</p>
+<p>The second parameter of a field is particular to the output field type.
+defaults can be found in the full substitution help below</p>
+<p>special prefixes to numeric arguments
+0 (e.g. 010) - interpret argument as octal (integer output fields only)
+0x (e.g. 0xABC) - interpret argument as hex (numeric output fields only)
+' (e.g. 'a) - interpret argument as a character constant</p>
+<p>HOW TO USE SUBSTITUTIONS</p>
+<p>Substitutions are used to pass additional argument(s) into the FORMAT string, to be formatted a
+particular way. E.g.</p>
+<pre><code>printf 'the letter %X comes before the letter %X' 10 11
+</code></pre>
+<p>will print</p>
+<p>'the letter A comes before the letter B'</p>
+<p>because the substitution field %X means
+'take an integer argument and write it as a hexadecimal number'</p>
+<p>Passing more arguments than are in the format string will cause the format string to be
+repeated for the remaining substitutions</p>
+<p>printf 'it is %i F in %s 
+' 22 Portland 25 Boston 27 New York</p>
+<p>will print</p>
+<p>'it is 22 F in Portland
+it is 25 F in Boston
+it is 27 F in Boston
+'
+If a format string is printed but there are less arguments remaining
+than there are substitution fields, substitution fields without
+an argument will default to empty strings, or for numeric fields
+the value 0</p>
+<p>AVAILABLE SUBSTITUTIONS</p>
+<p>This program, like GNU coreutils printf,
+interprets a modified subset of the POSIX C printf spec,
+a quick reference to substitutions is below.</p>
+<p>STRING SUBSTITUTIONS
+All string fields have a 'max width' parameter
+%.3s means 'print no more than three characters of the original input'</p>
+<p>%s - string</p>
+<p>%b - escaped string - the string will be checked for any escaped literals from
+the escaped literal list above, and translate them to literal characters.
+e.g. \n will be transformed into a newline character.</p>
+<pre><code>  One special rule about %b mode is that octal literals are interpreted differently
+  In arguments passed by %b, pass octal-interpreted literals must be in the form of \0NNN
+  instead of \NNN. (Although, for legacy reasons, octal literals in the form of \NNN will
+  still be interpreted and not throw a warning, you will have problems if you use this for a
+  literal whose code begins with zero, as it will be viewed as in \0NNN form.)
+</code></pre>
+<p>CHAR SUBSTITUTIONS
+The character field does not have a secondary parameter.</p>
+<p>%c - a single character</p>
+<p>INTEGER SUBSTITUTIONS
+All integer fields have a 'pad with zero' parameter
+%.4i means an integer which if it is less than 4 digits in length,
+is padded with leading zeros until it is 4 digits in length.</p>
+<p>%d or %i - 64-bit integer</p>
+<p>%u - 64 bit unsigned integer</p>
+<p>%x or %X - 64 bit unsigned integer printed in Hexadecimal (base 16)
+%X instead of %x means to use uppercase letters for 'a' through 'f'</p>
+<p>%o - 64 bit unsigned integer printed in octal (base 8)</p>
+<p>FLOATING POINT SUBSTITUTIONS</p>
+<p>All floating point fields have a 'max decimal places / max significant digits' parameter
+%.10f means a decimal floating point with 7 decimal places past 0
+%.10e means a scientific notation number with 10 significant digits
+%.10g means the same behavior for decimal and Sci. Note, respectively, and provides the shorter
+of each's output.</p>
+<p>Like with GNU coreutils, the value after the decimal point is these outputs is parsed as a
+double first before being rendered to text. For both implementations do not expect meaningful
+precision past the 18th decimal place. When using a number of decimal places that is 18 or
+higher, you can expect variation in output between GNU coreutils printf and this printf at the
+18th decimal place of +/- 1</p>
+<p>%f - floating point value presented in decimal, truncated and displayed to 6 decimal places by
+default. There is not past-double behavior parity with Coreutils printf, values are not
+estimated or adjusted beyond input values.</p>
+<p>%e or %E - floating point value presented in scientific notation
+7 significant digits by default
+%E means use to use uppercase E for the mantissa.</p>
+<p>%g or %G - floating point value presented in the shorter of decimal and scientific notation
+behaves differently from %f and %E, please see posix printf spec for full details,
+some examples of different behavior:</p>
+<pre><code>      Sci Note has 6 significant digits by default
+      Trailing zeroes are removed
+      Instead of being truncated, digit after last is rounded
+</code></pre>
+<p>Like other behavior in this utility, the design choices of floating point
+behavior in this utility is selected to reproduce in exact
+the behavior of GNU coreutils' printf from an inputs and outputs standpoint.</p>
+<p>USING PARAMETERS
+Most substitution fields can be parameterized using up to 2 numbers that can
+be passed to the field, between the % sign and the field letter.</p>
+<p>The 1st parameter always indicates the minimum width of output, it is useful for creating
+columnar output. Any output that would be less than this minimum width is padded with
+leading spaces
+The 2nd parameter is proceeded by a dot.
+You do not have to use parameters</p>
+<p>SPECIAL FORMS OF INPUT
+For numeric input, the following additional forms of input are accepted besides decimal:</p>
+<p>Octal (only with integer): if the argument begins with a 0 the proceeding characters
+will be interpreted as octal (base 8) for integer fields</p>
+<p>Hexadecimal: if the argument begins with 0x the proceeding characters will be interpreted
+will be interpreted as hex (base 16) for any numeric fields
+for float fields, hexadecimal input results in a precision
+limit (in converting input past the decimal point) of 10^-15</p>
+<p>Character Constant: if the argument begins with a single quote character, the first byte
+of the next character will be interpreted as an 8-bit unsigned integer. If there are
+additional bytes, they will throw an error (unless the environment variable POSIXLY_CORRECT
+is set)</p>
+<p>WRITTEN BY :
+Nathan E. Ross, et al. for the uutils project</p>
+<p>MORE INFO :
+https://github.com/uutils/coreutils</p>
+<p>COPYRIGHT :
+Copyright 2015 uutils project.
+Licensed under the MIT License, please see LICENSE file for details</p>
 <h2 id="examples-61"><a class="header" href="#examples-61">Examples</a></h2>
 <p>Print a text message:</p>
 <pre><code class="language-shell">printf &quot;{{%s\n}}&quot; &quot;{{Hello world}}&quot;
@@ -6220,6 +6773,10 @@ runcon [-c] [-u USER] [-r ROLE] [-t TYPE] [-l RANGE] COMMAND [ARG...]
 <p>Print version information</p>
 </dd>
 </dl>
+<p>Run COMMAND with completely-specified CONTEXT, or with current or transitioned security context modified by one or more of LEVEL, ROLE, TYPE, and USER.</p>
+<p>If none of --compute, --type, --user, --role or --range is specified, then the first argument is used as the complete context.</p>
+<p>Note that only carefully-chosen contexts are likely to successfully run.</p>
+<p>With neither CONTEXT nor COMMAND are specified, then this prints the current security context.</p>
 <h2 id="examples-68"><a class="header" href="#examples-68">Examples</a></h2>
 <p>Determine the current domain:</p>
 <pre><code class="language-shell">runcon
@@ -7176,6 +7733,44 @@ for even very expensive hardware probing to recover the data.</p>
 <p>Print version information</p>
 </dd>
 </dl>
+<p>Delete FILE(s) if --remove (-u) is specified.  The default is not to remove
+the files because it is common to operate on device files like /dev/hda,
+and those files usually should not be removed.</p>
+<p>CAUTION: Note that shred relies on a very important assumption:
+that the file system overwrites data in place.  This is the traditional
+way to do things, but many modern file system designs do not satisfy this
+assumption.  The following are examples of file systems on which shred is
+not effective, or is not guaranteed to be effective in all file system modes:</p>
+<ul>
+<li>
+<p>log-structured or journal file systems, such as those supplied with
+AIX and Solaris (and JFS, ReiserFS, XFS, Ext3, etc.)</p>
+</li>
+<li>
+<p>file systems that write redundant data and carry on even if some writes
+fail, such as RAID-based file systems</p>
+</li>
+<li>
+<p>file systems that make snapshots, such as Network Appliance's NFS server</p>
+</li>
+<li>
+<p>file systems that cache in temporary locations, such as NFS
+version 3 clients</p>
+</li>
+<li>
+<p>compressed file systems</p>
+</li>
+</ul>
+<p>In the case of ext3 file systems, the above disclaimer applies
+and shred is thus of limited effectiveness) only in data=journal mode,
+which journals file data in addition to just metadata.  In both the
+data=ordered (default) and data=writeback modes, shred works as usual.
+Ext3 journal modes can be changed by adding the data=something option
+to the mount options for a particular file system in the /etc/fstab file,
+as documented in the mount man page (man mount).</p>
+<p>In addition, file system backups and remote mirrors may contain copies
+of the file that cannot be removed, and that will allow a shredded file
+to be recovered later.</p>
 <h2 id="examples-75"><a class="header" href="#examples-75">Examples</a></h2>
 <p>Overwrite a file:</p>
 <pre><code class="language-shell">shred {{file}}
@@ -7294,6 +7889,11 @@ sleep OPTION
 <p>Print version information</p>
 </dd>
 </dl>
+<p>Pause for NUMBER seconds.  SUFFIX may be 's' for seconds (the default),
+'m' for minutes, 'h' for hours or 'd' for days.  Unlike most implementations
+that require NUMBER be an integer, here NUMBER may be an arbitrary floating
+point number.  Given two or more arguments, pause for the amount of time
+specified by the sum of their values.</p>
 <h2 id="examples-77"><a class="header" href="#examples-77">Examples</a></h2>
 <p>Delay in seconds:</p>
 <pre><code class="language-shell">sleep {{seconds}}
@@ -7445,6 +8045,12 @@ sleep OPTION
 <dd>
 </dd>
 </dl>
+<p>The key format is FIELD[.CHAR][OPTIONS][,FIELD[.CHAR]][OPTIONS].</p>
+<p>Fields by default are separated by the first whitespace after a non-whitespace character. Use -t to specify a custom separator.
+In the default case, whitespace is appended at the beginning of each field. Custom separators however are not included in fields.</p>
+<p>FIELD and CHAR both start at 1 (i.e. they are 1-indexed). If there is no end specified after a comma, the end will be the end of the line.
+If CHAR is set 0, it means the end of the field. CHAR defaults to 1 for the start position and to 0 for the end position.</p>
+<p>Valid options are: MbdfhnRrV. They override the global options for this key.</p>
 <h2 id="examples-78"><a class="header" href="#examples-78">Examples</a></h2>
 <p>Sort a file in ascending order:</p>
 <pre><code class="language-shell">sort {{path/to/file}}
@@ -7553,6 +8159,7 @@ sleep OPTION
 <p>Print version information</p>
 </dd>
 </dl>
+<p>Output fixed-size pieces of INPUT to PREFIXaa, PREFIXab, ...; default size is 1000, and default PREFIX is 'x'. With no INPUT, or when INPUT is -, read standard input.</p>
 <h2 id="examples-79"><a class="header" href="#examples-79">Examples</a></h2>
 <p>Split a file, each split having 10 lines (except the last split):</p>
 <pre><code class="language-shell">split -l {{10}} {{filename}}
@@ -7676,6 +8283,14 @@ sleep OPTION
 <p>Print version information</p>
 </dd>
 </dl>
+<p>If MODE is 'L' the corresponding stream will be line buffered.
+This option is invalid with standard input.</p>
+<p>If MODE is '0' the corresponding stream will be unbuffered.</p>
+<p>Otherwise MODE is a number which may be followed by one of the following:</p>
+<p>KB 1000, K 1024, MB 1000<em>1000, M 1024</em>1024, and so on for G, T, P, E, Z, Y.
+In this case the corresponding stream will be fully buffered with the buffer size set to MODE bytes.</p>
+<p>NOTE: If COMMAND adjusts the buffering of its standard streams ('tee' does for e.g.) then that will override corresponding settings changed by 'stdbuf'.
+Also some filters (like 'dd' and 'cat' etc.) don't use streams for I/O, and are thus unaffected by 'stdbuf' settings.</p>
 <h2 id="examples-81"><a class="header" href="#examples-81">Examples</a></h2>
 <p>Change the standard input buffer size to 512 KiB:</p>
 <pre><code class="language-shell">stdbuf --input={{512K}} {{command}}
@@ -8044,6 +8659,7 @@ With no FILE, or when FILE is -, read standard input.</p>
 <p>Print version information</p>
 </dd>
 </dl>
+<p>If a FILE is -, it refers to a file named - .</p>
 <h2 id="examples-87"><a class="header" href="#examples-87">Examples</a></h2>
 <p>Copy standard input to each file, and also to standard output:</p>
 <pre><code class="language-shell">echo &quot;example&quot; | tee {{path/to/file}}
@@ -8088,6 +8704,57 @@ test
 <p>Print version information</p>
 </dd>
 </dl>
+<p>Exit with the status determined by EXPRESSION.</p>
+<p>An omitted EXPRESSION defaults to false.  Otherwise,
+EXPRESSION is true or false and sets exit status.  It is one of:</p>
+<p>( EXPRESSION )               EXPRESSION is true
+! EXPRESSION                 EXPRESSION is false
+EXPRESSION1 -a EXPRESSION2   both EXPRESSION1 and EXPRESSION2 are true
+EXPRESSION1 -o EXPRESSION2   either EXPRESSION1 or EXPRESSION2 is true</p>
+<p>-n STRING            the length of STRING is nonzero
+STRING               equivalent to -n STRING
+-z STRING            the length of STRING is zero
+STRING1 = STRING2    the strings are equal
+STRING1 != STRING2   the strings are not equal</p>
+<p>INTEGER1 -eq INTEGER2   INTEGER1 is equal to INTEGER2
+INTEGER1 -ge INTEGER2   INTEGER1 is greater than or equal to INTEGER2
+INTEGER1 -gt INTEGER2   INTEGER1 is greater than INTEGER2
+INTEGER1 -le INTEGER2   INTEGER1 is less than or equal to INTEGER2
+INTEGER1 -lt INTEGER2   INTEGER1 is less than INTEGER2
+INTEGER1 -ne INTEGER2   INTEGER1 is not equal to INTEGER2</p>
+<p>FILE1 -ef FILE2   FILE1 and FILE2 have the same device and inode numbers
+FILE1 -nt FILE2   FILE1 is newer (modification date) than FILE2
+FILE1 -ot FILE2   FILE1 is older than FILE2</p>
+<p>-b FILE     FILE exists and is block special
+-c FILE     FILE exists and is character special
+-d FILE     FILE exists and is a directory
+-e FILE     FILE exists
+-f FILE     FILE exists and is a regular file
+-g FILE     FILE exists and is set-group-ID
+-G FILE     FILE exists and is owned by the effective group ID
+-h FILE     FILE exists and is a symbolic link (same as -L)
+-k FILE     FILE exists and has its sticky bit set
+-L FILE     FILE exists and is a symbolic link (same as -h)
+-N FILE     FILE exists and has been modified since it was last read
+-O FILE     FILE exists and is owned by the effective user ID
+-p FILE     FILE exists and is a named pipe
+-r FILE     FILE exists and read permission is granted
+-s FILE     FILE exists and has a size greater than zero
+-S FILE     FILE exists and is a socket
+-t FD       file descriptor FD is opened on a terminal
+-u FILE     FILE exists and its set-user-ID bit is set
+-w FILE     FILE exists and write permission is granted
+-x FILE     FILE exists and execute (or search) permission is granted</p>
+<p>Except for -h and -L, all FILE-related tests dereference symbolic links.
+Beware that parentheses need to be escaped (e.g., by backslashes) for shells.
+INTEGER may also be -l STRING, which evaluates to the length of STRING.</p>
+<p>NOTE: Binary -a and -o are inherently ambiguous.  Use 'test EXPR1 &amp;&amp; test
+EXPR2' or 'test EXPR1 || test EXPR2' instead.</p>
+<p>NOTE: [ honors the --help and --version options, but test does not.
+test treats each of those as it treats any other nonempty STRING.</p>
+<p>NOTE: your shell may have its own version of test and/or [, which usually supersedes
+the version described here.  Please refer to your shell's documentation
+for details about the options it supports.</p>
 <h2 id="examples-88"><a class="header" href="#examples-88">Examples</a></h2>
 <p>Test if a given variable is equal to a given string:</p>
 <pre><code class="language-shell">test &quot;{{$MY_VAR}}&quot; == &quot;{{/bin/zsh}}&quot;
@@ -9072,6 +9739,7 @@ Ignore files and directories starting with a '.' by default</p>
 <p>Print version information</p>
 </dd>
 </dl>
+<p>The TIME_STYLE argument can be full-iso, long-iso, iso, locale or +FORMAT. FORMAT is interpreted like in date. Also the TIME_STYLE environment variable sets the default style to use.</p>
 <h2 id="examples-102"><a class="header" href="#examples-102">Examples</a></h2>
 <p>List files and directories in the current directory, one per line, with details:</p>
 <pre><code class="language-shell">vdir
