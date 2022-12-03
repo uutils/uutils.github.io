@@ -244,7 +244,23 @@
 <span id="244">244</span>
 <span id="245">245</span>
 <span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright (C) ~ Roy Ivy III &lt;rivy.dev@gmail.com&gt;; MIT license
+// spell-checker:ignore backticks
 
 </span><span class="kw">extern crate </span>proc_macro;
 <span class="kw">use </span>std::{fs::File, io::Read, path::PathBuf};
@@ -281,6 +297,19 @@
     );
 
     TokenStream::from(new)
+}
+
+<span class="comment">// FIXME: This is currently a stub. We could do much more here and could
+// even pull in a full markdown parser to get better results.
+</span><span class="doccomment">/// Render markdown into a format that&#39;s easier to read in the terminal.
+///
+/// For now, all this function does is remove backticks.
+/// Some ideas for future improvement:
+/// - Render headings as bold
+/// - Convert triple backticks to indented
+/// - Printing tables in a nice format
+</span><span class="kw">fn </span>render_markdown(s: <span class="kw-2">&amp;</span>str) -&gt; String {
+    s.replace(<span class="string">&#39;`&#39;</span>, <span class="string">&quot;&quot;</span>)
 }
 
 <span class="doccomment">/// Get the usage from the &quot;Usage&quot; section in the help file.
@@ -327,7 +356,8 @@
     <span class="kw">let </span>section = get_argument(<span class="kw-2">&amp;</span>input, <span class="number">0</span>, <span class="string">&quot;section&quot;</span>);
     <span class="kw">let </span>filename = get_argument(<span class="kw-2">&amp;</span>input, <span class="number">1</span>, <span class="string">&quot;filename&quot;</span>);
     <span class="kw">let </span>text = parse_help(<span class="kw-2">&amp;</span>section, <span class="kw-2">&amp;</span>filename);
-    TokenTree::Literal(Literal::string(<span class="kw-2">&amp;</span>text)).into()
+    <span class="kw">let </span>rendered = render_markdown(<span class="kw-2">&amp;</span>text);
+    TokenTree::Literal(Literal::string(<span class="kw-2">&amp;</span>rendered)).into()
 }
 
 <span class="doccomment">/// Get an argument from the input vector of `TokenTree`.
