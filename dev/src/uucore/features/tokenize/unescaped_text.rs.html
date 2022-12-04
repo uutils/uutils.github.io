@@ -277,6 +277,8 @@
 <span id="277">277</span>
 <span id="278">278</span>
 <span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
 </pre><pre class="rust"><code><span class="doccomment">//! UnescapedText is a tokenizer impl
 //! for tokenizing character literals,
 //! and escaped character literals (of allowed escapes),
@@ -286,13 +288,9 @@
 
 </span><span class="kw">use </span>itertools::PutBackN;
 <span class="kw">use </span>std::char::from_u32;
-<span class="kw">use </span>std::io::{stdout, Write};
-<span class="kw">use </span>std::iter::Peekable;
+<span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::process::exit;
-<span class="kw">use </span>std::slice::Iter;
 <span class="kw">use </span>std::str::Chars;
-
-<span class="kw">use </span><span class="kw">crate</span>::error::UResult;
 
 <span class="kw">use </span><span class="kw">super</span>::token;
 
@@ -301,19 +299,19 @@
 
 <span class="comment">// by default stdout only flushes
 // to console when a newline is passed.
-</span><span class="kw">fn </span>flush_char(c: char) {
-    <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, c);
-    <span class="kw">let _ </span>= stdout().flush();
+</span><span class="macro">macro_rules! </span>write_and_flush {
+    (<span class="macro-nonterminal">$writer</span>:expr, $(<span class="macro-nonterminal">$args</span>:tt)+) =&gt; ({
+        <span class="macro">write!</span>(<span class="macro-nonterminal">$writer</span>, <span class="string">&quot;{}&quot;</span>, $(<span class="macro-nonterminal">$args</span>)+).ok();
+        <span class="macro-nonterminal">$writer</span>.flush().ok();
+    })
 }
 
-<span class="kw">fn </span>flush_str(s: <span class="kw-2">&amp;</span>str) {
-    <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, s);
-    <span class="kw">let _ </span>= stdout().flush();
-}
-
-<span class="kw">fn </span>flush_bytes(bslice: <span class="kw-2">&amp;</span>[u8]) {
-    <span class="kw">let _ </span>= stdout().write(bslice);
-    <span class="kw">let _ </span>= stdout().flush();
+<span class="kw">fn </span>flush_bytes&lt;W&gt;(writer: <span class="kw-2">&amp;mut </span>W, bslice: <span class="kw-2">&amp;</span>[u8])
+<span class="kw">where
+    </span>W: Write,
+{
+    writer.write_all(bslice).ok();
+    writer.flush().ok();
 }
 
 <span class="attribute">#[derive(Default)]
@@ -385,7 +383,14 @@
     // adding the unescaped bytes
     // to the passed byte_vec
     // in subs_mode change octal behavior
-    </span><span class="kw">fn </span>handle_escaped(byte_vec: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;, it: <span class="kw-2">&amp;mut </span>PutBackN&lt;Chars&gt;, subs_mode: bool) {
+    </span><span class="kw">fn </span>handle_escaped&lt;W&gt;(
+        writer: <span class="kw-2">&amp;mut </span>W,
+        byte_vec: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;,
+        it: <span class="kw-2">&amp;mut </span>PutBackN&lt;Chars&gt;,
+        subs_mode: bool,
+    ) <span class="kw">where
+        </span>W: Write,
+    {
         <span class="kw">let </span>ch = it.next().unwrap_or(<span class="string">&#39;\\&#39;</span>);
         <span class="kw">match </span>ch {
             <span class="string">&#39;0&#39;</span>..=<span class="string">&#39;9&#39; </span>| <span class="string">&#39;x&#39; </span>=&gt; {
@@ -418,7 +423,7 @@
                     <span class="kw">let </span>val = (<span class="self">Self</span>::base_to_u32(min_len, max_len, base, it) % <span class="number">256</span>) <span class="kw">as </span>u8;
                     byte_vec.push(val);
                     <span class="kw">let </span>bvec = [val];
-                    flush_bytes(<span class="kw-2">&amp;</span>bvec);
+                    flush_bytes(writer, <span class="kw-2">&amp;</span>bvec);
                 } <span class="kw">else </span>{
                     byte_vec.push(ch <span class="kw">as </span>u8);
                 }
@@ -466,7 +471,7 @@
                     }
                 };
                 s.push(ch);
-                flush_str(<span class="kw-2">&amp;</span>s);
+                <span class="macro">write_and_flush!</span>(writer, <span class="kw-2">&amp;</span>s);
                 byte_vec.extend(s.bytes());
             }
         };
@@ -476,10 +481,14 @@
     // and return a wrapper around a Vec&lt;u8&gt; of unescaped bytes
     // break on encounter of sub symbol (&#39;%[^%]&#39;) unless called
     // through %b subst.
-    </span><span class="kw">pub fn </span>from_it_core(
+    </span><span class="kw">pub fn </span>from_it_core&lt;W&gt;(
+        writer: <span class="kw-2">&amp;mut </span>W,
         it: <span class="kw-2">&amp;mut </span>PutBackN&lt;Chars&gt;,
         subs_mode: bool,
-    ) -&gt; <span class="prelude-ty">Option</span>&lt;Box&lt;<span class="kw">dyn </span>token::Token&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;token::Token&gt;
+    <span class="kw">where
+        </span>W: Write,
+    {
         <span class="kw">let </span><span class="kw-2">mut </span>addchar = <span class="bool-val">false</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>new_text = <span class="self">Self</span>::new();
         <span class="kw">let </span><span class="kw-2">mut </span>tmp_str = String::new();
@@ -494,7 +503,7 @@
                         <span class="comment">// lazy branch eval
                         // remember this fn could be called
                         // many times in a single exec through %b
-                        </span>flush_char(ch);
+                        </span><span class="macro">write_and_flush!</span>(writer, ch);
                         tmp_str.push(ch);
                     }
                     <span class="string">&#39;\\&#39; </span>=&gt; {
@@ -509,12 +518,12 @@
                             new_vec.extend(tmp_str.bytes());
                             tmp_str = String::new();
                         }
-                        <span class="self">Self</span>::handle_escaped(new_vec, it, subs_mode);
+                        <span class="self">Self</span>::handle_escaped(writer, new_vec, it, subs_mode);
                     }
                     x <span class="kw">if </span>x == <span class="string">&#39;%&#39; </span>&amp;&amp; !subs_mode =&gt; {
                         <span class="kw">if let </span><span class="prelude-val">Some</span>(follow) = it.next() {
                             <span class="kw">if </span>follow == <span class="string">&#39;%&#39; </span>{
-                                flush_char(ch);
+                                <span class="macro">write_and_flush!</span>(writer, ch);
                                 tmp_str.push(ch);
                             } <span class="kw">else </span>{
                                 it.put_back(follow);
@@ -527,7 +536,7 @@
                         }
                     }
                     <span class="kw">_ </span>=&gt; {
-                        flush_char(ch);
+                        <span class="macro">write_and_flush!</span>(writer, ch);
                         tmp_str.push(ch);
                     }
                 }
@@ -537,23 +546,18 @@
             }
         }
         <span class="kw">if </span>addchar {
-            <span class="prelude-val">Some</span>(Box::new(new_text))
+            <span class="prelude-val">Some</span>(token::Token::UnescapedText(new_text))
         } <span class="kw">else </span>{
             <span class="prelude-val">None
         </span>}
     }
 }
-<span class="kw">impl </span>token::Tokenizer <span class="kw">for </span>UnescapedText {
-    <span class="kw">fn </span>from_it(
-        it: <span class="kw-2">&amp;mut </span>PutBackN&lt;Chars&gt;,
-        <span class="kw">_</span>: <span class="kw-2">&amp;mut </span>Peekable&lt;Iter&lt;String&gt;&gt;,
-    ) -&gt; UResult&lt;<span class="prelude-ty">Option</span>&lt;Box&lt;<span class="kw">dyn </span>token::Token&gt;&gt;&gt; {
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span>::from_it_core(it, <span class="bool-val">false</span>))
-    }
-}
-<span class="kw">impl </span>token::Token <span class="kw">for </span>UnescapedText {
-    <span class="kw">fn </span>print(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;mut </span>Peekable&lt;Iter&lt;String&gt;&gt;) {
-        flush_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>[..]);
+<span class="kw">impl </span>UnescapedText {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>write&lt;W&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, writer: <span class="kw-2">&amp;mut </span>W)
+    <span class="kw">where
+        </span>W: Write,
+    {
+        flush_bytes(writer, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>[..]);
     }
 }
 </code></pre></div>

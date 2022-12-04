@@ -636,11 +636,6 @@
 <span id="636">636</span>
 <span id="637">637</span>
 <span id="638">638</span>
-<span id="639">639</span>
-<span id="640">640</span>
-<span id="641">641</span>
-<span id="642">642</span>
-<span id="643">643</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
@@ -656,7 +651,7 @@
 <span class="kw">use </span>std::sync::mpsc;
 <span class="kw">use </span>std::time::Duration;
 
-<span class="kw">use </span>byte_unit::Byte;
+<span class="kw">use </span><span class="kw">crate</span>::numbers::{to_magnitude_and_suffix, SuffixType};
 
 <span class="comment">// On Linux, we register a signal handler that prints progress updates.
 </span><span class="attribute">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
@@ -772,22 +767,19 @@
     /// let mut cursor = Cursor::new(vec![]);
     /// let rewrite = false;
     /// prog_update.write_prog_line(&amp;mut cursor, rewrite).unwrap();
-    /// assert_eq!(cursor.get_ref(), b&quot;0 bytes copied, 1.0 s, 0 B/s\n&quot;);
+    /// assert_eq!(cursor.get_ref(), b&quot;0 bytes copied, 1.0 s, 0.0 B/s\n&quot;);
     /// ```
     </span><span class="kw">fn </span>write_prog_line(<span class="kw-2">&amp;</span><span class="self">self</span>, w: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>Write, rewrite: bool) -&gt; std::io::Result&lt;()&gt; {
-        <span class="kw">let </span>btotal_metric = Byte::from_bytes(<span class="self">self</span>.write_stat.bytes_total)
-            .get_appropriate_unit(<span class="bool-val">false</span>)
-            .format(<span class="number">0</span>);
-        <span class="kw">let </span>btotal_bin = Byte::from_bytes(<span class="self">self</span>.write_stat.bytes_total)
-            .get_appropriate_unit(<span class="bool-val">true</span>)
-            .format(<span class="number">0</span>);
-        <span class="kw">let </span>safe_millis = std::cmp::max(<span class="number">1</span>, <span class="self">self</span>.duration.as_millis());
-        <span class="kw">let </span>transfer_rate = Byte::from_bytes(<span class="number">1000 </span>* (<span class="self">self</span>.write_stat.bytes_total / safe_millis))
-            .get_appropriate_unit(<span class="bool-val">false</span>)
-            .format(<span class="number">1</span>);
+        <span class="comment">// The total number of bytes written as a string, in SI and IEC format.
+        </span><span class="kw">let </span>btotal = <span class="self">self</span>.write_stat.bytes_total;
+        <span class="kw">let </span>btotal_metric = to_magnitude_and_suffix(btotal, SuffixType::Si);
+        <span class="kw">let </span>btotal_bin = to_magnitude_and_suffix(btotal, SuffixType::Iec);
 
-        <span class="kw">let </span>btotal = <span class="self">self</span>.write_stat.bytes_total;
-        <span class="kw">let </span>duration = <span class="self">self</span>.duration.as_secs_f64();
+        <span class="comment">// Compute the throughput (bytes per second) as a string.
+        </span><span class="kw">let </span>duration = <span class="self">self</span>.duration.as_secs_f64();
+        <span class="kw">let </span>safe_millis = std::cmp::max(<span class="number">1</span>, <span class="self">self</span>.duration.as_millis());
+        <span class="kw">let </span>rate = <span class="number">1000 </span>* (btotal / safe_millis);
+        <span class="kw">let </span>transfer_rate = to_magnitude_and_suffix(rate, SuffixType::Si);
 
         <span class="comment">// If we are rewriting the progress line, do write a carriage
         // return (`\r`) at the beginning and don&#39;t write a newline
@@ -849,7 +841,7 @@
     /// let mut iter = cursor.get_ref().split(|v| *v == b&#39;\n&#39;);
     /// assert_eq!(iter.next().unwrap(), b&quot;0+0 records in&quot;);
     /// assert_eq!(iter.next().unwrap(), b&quot;0+0 records out&quot;);
-    /// assert_eq!(iter.next().unwrap(), b&quot;0 bytes copied, 1.0 s, 0 B/s&quot;);
+    /// assert_eq!(iter.next().unwrap(), b&quot;0 bytes copied, 1.0 s, 0.0 B/s&quot;);
     /// assert_eq!(iter.next().unwrap(), b&quot;&quot;);
     /// assert!(iter.next().is_none());
     /// ```
@@ -1207,22 +1199,20 @@
         //     $ : | dd
         //     0 bytes copied, 7.9151e-05 s, 0.0 kB/s
         //
-        // The throughput still does not match GNU dd. For the ones
-        // that include the concise byte counts, the format is also
-        // not right.
-        </span><span class="macro">assert_eq!</span>(cursor.get_ref(), <span class="string">b&quot;0 bytes copied, 1.0 s, 0 B/s\n&quot;</span>);
+        // The throughput still does not match GNU dd.
+        </span><span class="macro">assert_eq!</span>(cursor.get_ref(), <span class="string">b&quot;0 bytes copied, 1.0 s, 0.0 B/s\n&quot;</span>);
 
         <span class="kw">let </span>prog_update = prog_update_write(<span class="number">999</span>);
         <span class="kw">let </span><span class="kw-2">mut </span>cursor = Cursor::new(<span class="macro">vec!</span>[]);
         prog_update.write_prog_line(<span class="kw-2">&amp;mut </span>cursor, rewrite).unwrap();
-        <span class="macro">assert_eq!</span>(cursor.get_ref(), <span class="string">b&quot;999 bytes copied, 1.0 s, 0 B/s\n&quot;</span>);
+        <span class="macro">assert_eq!</span>(cursor.get_ref(), <span class="string">b&quot;999 bytes copied, 1.0 s, 0.0 B/s\n&quot;</span>);
 
         <span class="kw">let </span>prog_update = prog_update_write(<span class="number">1000</span>);
         <span class="kw">let </span><span class="kw-2">mut </span>cursor = Cursor::new(<span class="macro">vec!</span>[]);
         prog_update.write_prog_line(<span class="kw-2">&amp;mut </span>cursor, rewrite).unwrap();
         <span class="macro">assert_eq!</span>(
             cursor.get_ref(),
-            <span class="string">b&quot;1000 bytes (1000 B) copied, 1.0 s, 1000 B/s\n&quot;
+            <span class="string">b&quot;1000 bytes (1.0 kB) copied, 1.0 s, 1.0 kB/s\n&quot;
         </span>);
 
         <span class="kw">let </span>prog_update = prog_update_write(<span class="number">1023</span>);
@@ -1230,15 +1220,15 @@
         prog_update.write_prog_line(<span class="kw-2">&amp;mut </span>cursor, rewrite).unwrap();
         <span class="macro">assert_eq!</span>(
             cursor.get_ref(),
-            <span class="string">b&quot;1023 bytes (1 KB) copied, 1.0 s, 1000 B/s\n&quot;
+            <span class="string">b&quot;1023 bytes (1.0 kB) copied, 1.0 s, 1.0 kB/s\n&quot;
         </span>);
 
         <span class="kw">let </span>prog_update = prog_update_write(<span class="number">1024</span>);
         <span class="kw">let </span><span class="kw-2">mut </span>cursor = Cursor::new(<span class="macro">vec!</span>[]);
         prog_update.write_prog_line(<span class="kw-2">&amp;mut </span>cursor, rewrite).unwrap();
         <span class="macro">assert_eq!</span>(
-            std::str::from_utf8(cursor.get_ref()).unwrap(),
-            <span class="string">&quot;1024 bytes (1 KB, 1024 B) copied, 1.0 s, 1000 B/s\n&quot;
+            cursor.get_ref(),
+            <span class="string">b&quot;1024 bytes (1.0 kB, 1.0 KiB) copied, 1.0 s, 1.0 kB/s\n&quot;
         </span>);
     }
 
@@ -1257,7 +1247,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>iter = cursor.get_ref().split(|v| <span class="kw-2">*</span>v == <span class="string">b&#39;\n&#39;</span>);
         <span class="macro">assert_eq!</span>(iter.next().unwrap(), <span class="string">b&quot;0+0 records in&quot;</span>);
         <span class="macro">assert_eq!</span>(iter.next().unwrap(), <span class="string">b&quot;0+0 records out&quot;</span>);
-        <span class="macro">assert_eq!</span>(iter.next().unwrap(), <span class="string">b&quot;0 bytes copied, 1.0 s, 0 B/s&quot;</span>);
+        <span class="macro">assert_eq!</span>(iter.next().unwrap(), <span class="string">b&quot;0 bytes copied, 1.0 s, 0.0 B/s&quot;</span>);
         <span class="macro">assert_eq!</span>(iter.next().unwrap(), <span class="string">b&quot;&quot;</span>);
         <span class="macro">assert!</span>(iter.next().is_none());
     }
@@ -1276,10 +1266,10 @@
         prog_update.write_prog_line(<span class="kw-2">&amp;mut </span>cursor, rewrite).unwrap();
         prog_update.write_transfer_stats(<span class="kw-2">&amp;mut </span>cursor, <span class="bool-val">true</span>).unwrap();
         <span class="kw">let </span><span class="kw-2">mut </span>iter = cursor.get_ref().split(|v| <span class="kw-2">*</span>v == <span class="string">b&#39;\n&#39;</span>);
-        <span class="macro">assert_eq!</span>(iter.next().unwrap(), <span class="string">b&quot;\r0 bytes copied, 1.0 s, 0 B/s&quot;</span>);
+        <span class="macro">assert_eq!</span>(iter.next().unwrap(), <span class="string">b&quot;\r0 bytes copied, 1.0 s, 0.0 B/s&quot;</span>);
         <span class="macro">assert_eq!</span>(iter.next().unwrap(), <span class="string">b&quot;0+0 records in&quot;</span>);
         <span class="macro">assert_eq!</span>(iter.next().unwrap(), <span class="string">b&quot;0+0 records out&quot;</span>);
-        <span class="macro">assert_eq!</span>(iter.next().unwrap(), <span class="string">b&quot;0 bytes copied, 1.0 s, 0 B/s&quot;</span>);
+        <span class="macro">assert_eq!</span>(iter.next().unwrap(), <span class="string">b&quot;0 bytes copied, 1.0 s, 0.0 B/s&quot;</span>);
         <span class="macro">assert_eq!</span>(iter.next().unwrap(), <span class="string">b&quot;&quot;</span>);
         <span class="macro">assert!</span>(iter.next().is_none());
     }

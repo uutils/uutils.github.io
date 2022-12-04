@@ -447,6 +447,7 @@
 <span id="447">447</span>
 <span id="448">448</span>
 <span id="449">449</span>
+<span id="450">450</span>
 </pre><pre class="rust"><code><span class="comment">// spell-checker:ignore (vars) charf decf floatf intf scif strf Cninety
 
 </span><span class="doccomment">//! Sub is a token that represents a
@@ -458,6 +459,7 @@
 <span class="kw">use </span>itertools::{put_back_n, PutBackN};
 <span class="kw">use </span>std::error::Error;
 <span class="kw">use </span>std::fmt::Display;
+<span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::iter::Peekable;
 <span class="kw">use </span>std::process::exit;
 <span class="kw">use </span>std::slice::Iter;
@@ -561,7 +563,7 @@
 }
 
 <span class="attribute">#[derive(Default)]
-</span><span class="kw">struct </span>SubParser {
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>SubParser {
     min_width_tmp: <span class="prelude-ty">Option</span>&lt;String&gt;,
     min_width_is_asterisk: bool,
     past_decimal: bool,
@@ -576,20 +578,24 @@
     <span class="kw">fn </span>new() -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>::default()
     }
-    <span class="kw">fn </span>from_it(
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_it&lt;W&gt;(
+        writer: <span class="kw-2">&amp;mut </span>W,
         it: <span class="kw-2">&amp;mut </span>PutBackN&lt;Chars&gt;,
         args: <span class="kw-2">&amp;mut </span>Peekable&lt;Iter&lt;String&gt;&gt;,
-    ) -&gt; UResult&lt;<span class="prelude-ty">Option</span>&lt;Box&lt;<span class="kw">dyn </span>token::Token&gt;&gt;&gt; {
+    ) -&gt; UResult&lt;<span class="prelude-ty">Option</span>&lt;token::Token&gt;&gt;
+    <span class="kw">where
+        </span>W: Write,
+    {
         <span class="kw">let </span><span class="kw-2">mut </span>parser = <span class="self">Self</span>::new();
         <span class="kw">if </span>parser.sub_vals_retrieved(it)<span class="question-mark">? </span>{
-            <span class="kw">let </span>t: Box&lt;<span class="kw">dyn </span>token::Token&gt; = <span class="self">Self</span>::build_token(parser);
-            t.print(args);
+            <span class="kw">let </span>t = <span class="self">Self</span>::build_token(parser);
+            t.write(writer, args);
             <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(t))
         } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
         }
     }
-    <span class="kw">fn </span>build_token(parser: <span class="self">Self</span>) -&gt; Box&lt;<span class="kw">dyn </span>token::Token&gt; {
+    <span class="kw">fn </span>build_token(parser: <span class="self">Self</span>) -&gt; token::Token {
         <span class="comment">// not a self method so as to allow move of sub-parser vals.
         // return new Sub struct as token
         </span><span class="kw">let </span>prefix_char = <span class="kw">match </span><span class="kw-2">&amp;</span>parser.min_width_tmp {
@@ -597,7 +603,7 @@
             <span class="kw">_ </span>=&gt; <span class="string">&#39; &#39;</span>,
         };
 
-        <span class="kw">let </span>t: Box&lt;<span class="kw">dyn </span>token::Token&gt; = Box::new(Sub::new(
+        token::Token::Sub(Sub::new(
             <span class="kw">if </span>parser.min_width_is_asterisk {
                 CanAsterisk::Asterisk
             } <span class="kw">else </span>{
@@ -615,8 +621,7 @@
             parser.field_char.unwrap(),
             parser.text_so_far,
             prefix_char,
-        ));
-        t
+        ))
     }
     <span class="kw">fn </span>sub_vals_retrieved(<span class="kw-2">&amp;mut </span><span class="self">self</span>, it: <span class="kw-2">&amp;mut </span>PutBackN&lt;Chars&gt;) -&gt; UResult&lt;bool&gt; {
         <span class="kw">if </span>!<span class="self">Self</span>::successfully_eat_prefix(it, <span class="kw-2">&amp;mut </span><span class="self">self</span>.text_so_far)<span class="question-mark">? </span>{
@@ -786,16 +791,11 @@
     }
 }
 
-<span class="kw">impl </span>token::Tokenizer <span class="kw">for </span>Sub {
-    <span class="kw">fn </span>from_it(
-        it: <span class="kw-2">&amp;mut </span>PutBackN&lt;Chars&gt;,
-        args: <span class="kw-2">&amp;mut </span>Peekable&lt;Iter&lt;String&gt;&gt;,
-    ) -&gt; UResult&lt;<span class="prelude-ty">Option</span>&lt;Box&lt;<span class="kw">dyn </span>token::Token&gt;&gt;&gt; {
-        SubParser::from_it(it, args)
-    }
-}
-<span class="kw">impl </span>token::Token <span class="kw">for </span>Sub {
-    <span class="kw">fn </span>print(<span class="kw-2">&amp;</span><span class="self">self</span>, pf_args_it: <span class="kw-2">&amp;mut </span>Peekable&lt;Iter&lt;String&gt;&gt;) {
+<span class="kw">impl </span>Sub {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>write&lt;W&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, writer: <span class="kw-2">&amp;mut </span>W, pf_args_it: <span class="kw-2">&amp;mut </span>Peekable&lt;Iter&lt;String&gt;&gt;)
+    <span class="kw">where
+        </span>W: Write,
+    {
         <span class="kw">let </span>field = FormatField {
             min_width: <span class="kw">match </span><span class="self">self</span>.min_width {
                 CanAsterisk::Fixed(x) =&gt; x,
@@ -846,7 +846,7 @@
                             }),
                             <span class="string">&#39;b&#39; </span>=&gt; {
                                 <span class="kw">let </span><span class="kw-2">mut </span>a_it = put_back_n(arg_string.chars());
-                                UnescapedText::from_it_core(<span class="kw-2">&amp;mut </span>a_it, <span class="bool-val">true</span>);
+                                UnescapedText::from_it_core(writer, <span class="kw-2">&amp;mut </span>a_it, <span class="bool-val">true</span>);
                                 <span class="prelude-val">None
                             </span>}
                             <span class="comment">// for &#39;c&#39;: get iter of string vals,
@@ -866,7 +866,8 @@
         };
         <span class="kw">if let </span><span class="prelude-val">Some</span>(pre_min_width) = pre_min_width_opt {
             <span class="comment">// if have a string, print it, ensuring minimum width is met.
-            </span><span class="macro">print!</span>(
+            </span><span class="macro">write!</span>(
+                writer,
                 <span class="string">&quot;{}&quot;</span>,
                 <span class="kw">match </span>field.min_width {
                     <span class="prelude-val">Some</span>(min_width) =&gt; {
@@ -892,7 +893,8 @@
                     }
                     <span class="prelude-val">None </span>=&gt; pre_min_width,
                 }
-            );
+            )
+            .ok();
         }
     }
 }

@@ -31,19 +31,38 @@
 <span id="31">31</span>
 <span id="32">32</span>
 <span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Traits and enums dealing with Tokenization of printf Format String
-</span><span class="kw">use </span>itertools::PutBackN;
+</span><span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::iter::Peekable;
 <span class="kw">use </span>std::slice::Iter;
-<span class="kw">use </span>std::str::Chars;
 
-<span class="kw">use </span><span class="kw">crate</span>::error::UResult;
+<span class="kw">use </span><span class="kw">crate</span>::features::tokenize::sub::Sub;
+<span class="kw">use </span><span class="kw">crate</span>::features::tokenize::unescaped_text::UnescapedText;
 
 <span class="comment">// A token object is an object that can print the expected output
 // of a contiguous segment of the format string, and
 // requires at most 1 argument
-</span><span class="kw">pub trait </span>Token {
-    <span class="kw">fn </span>print(<span class="kw-2">&amp;</span><span class="self">self</span>, args: <span class="kw-2">&amp;mut </span>Peekable&lt;Iter&lt;String&gt;&gt;);
+</span><span class="kw">pub enum </span>Token {
+    Sub(Sub),
+    UnescapedText(UnescapedText),
+}
+
+<span class="kw">impl </span>Token {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>write&lt;W&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, writer: <span class="kw-2">&amp;mut </span>W, args: <span class="kw-2">&amp;mut </span>Peekable&lt;Iter&lt;String&gt;&gt;)
+    <span class="kw">where
+        </span>W: Write,
+    {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::Sub(sub) =&gt; sub.write(writer, args),
+            <span class="self">Self</span>::UnescapedText(unescaped_text) =&gt; unescaped_text.write(writer),
+        }
+    }
 }
 
 <span class="comment">// A tokenizer object is an object that takes an iterator
@@ -57,12 +76,5 @@
 // printing of that token&#39;s value. Essentially tokenizing
 // a whole format string will print the format string and consume
 // a number of arguments equal to the number of argument-using tokens
-
-</span><span class="kw">pub trait </span>Tokenizer {
-    <span class="kw">fn </span>from_it(
-        it: <span class="kw-2">&amp;mut </span>PutBackN&lt;Chars&gt;,
-        args: <span class="kw-2">&amp;mut </span>Peekable&lt;Iter&lt;String&gt;&gt;,
-    ) -&gt; UResult&lt;<span class="prelude-ty">Option</span>&lt;Box&lt;<span class="kw">dyn </span>Token&gt;&gt;&gt;;
-}
-</code></pre></div>
+</span></code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uucore" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>
