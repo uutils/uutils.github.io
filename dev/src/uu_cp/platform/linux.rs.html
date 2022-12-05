@@ -132,17 +132,54 @@
 <span id="132">132</span>
 <span id="133">133</span>
 <span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
 //  * file that was distributed with this source code.
 // spell-checker:ignore ficlone reflink ftruncate pwrite fiemap
-</span><span class="kw">use </span>std::fs::File;
+</span><span class="kw">use </span>std::fs::{File, OpenOptions};
 <span class="kw">use </span>std::io::Read;
+<span class="kw">use </span>std::os::unix::fs::OpenOptionsExt;
 <span class="kw">use </span>std::os::unix::io::AsRawFd;
 <span class="kw">use </span>std::path::Path;
 
 <span class="kw">use </span>quick_error::ResultExt;
+
+<span class="kw">use </span>uucore::mode::get_umask;
 
 <span class="kw">use crate</span>::{CopyResult, ReflinkMode, SparseMode};
 
@@ -161,9 +198,6 @@
     <span class="doccomment">/// Raise an error.
     </span>Error,
 
-    <span class="doccomment">/// Use [`std::io::copy`].
-    </span>IOCopy,
-
     <span class="doccomment">/// Use [`std::fs::copy`].
     </span>FSCopy,
 }
@@ -176,8 +210,8 @@
 <span class="kw">where
     </span>P: AsRef&lt;Path&gt;,
 {
-    <span class="kw">let </span><span class="kw-2">mut </span>src_file = File::open(<span class="kw-2">&amp;</span>source)<span class="question-mark">?</span>;
-    <span class="kw">let </span><span class="kw-2">mut </span>dst_file = File::create(<span class="kw-2">&amp;</span>dest)<span class="question-mark">?</span>;
+    <span class="kw">let </span>src_file = File::open(<span class="kw-2">&amp;</span>source)<span class="question-mark">?</span>;
+    <span class="kw">let </span>dst_file = File::create(<span class="kw-2">&amp;</span>dest)<span class="question-mark">?</span>;
     <span class="kw">let </span>src_fd = src_file.as_raw_fd();
     <span class="kw">let </span>dst_fd = dst_file.as_raw_fd();
     <span class="kw">let </span>result = <span class="kw">unsafe </span>{ libc::ioctl(dst_fd, <span class="macro">FICLONE!</span>(), src_fd) };
@@ -186,7 +220,6 @@
     }
     <span class="kw">match </span>fallback {
         CloneFallback::Error =&gt; <span class="prelude-val">Err</span>(std::io::Error::last_os_error()),
-        CloneFallback::IOCopy =&gt; std::io::copy(<span class="kw-2">&amp;mut </span>src_file, <span class="kw-2">&amp;mut </span>dst_file).map(|<span class="kw">_</span>| ()),
         CloneFallback::FSCopy =&gt; std::fs::copy(source, dest).map(|<span class="kw">_</span>| ()),
     }
 }
@@ -232,6 +265,41 @@
     <span class="prelude-val">Ok</span>(())
 }
 
+<span class="doccomment">/// Copy the contents of the given source FIFO to the given file.
+</span><span class="kw">fn </span>copy_fifo_contents&lt;P&gt;(source: P, dest: P) -&gt; std::io::Result&lt;u64&gt;
+<span class="kw">where
+    </span>P: AsRef&lt;Path&gt;,
+{
+    <span class="comment">// For some reason,
+    //
+    //     cp --preserve=ownership --copy-contents fifo fifo2
+    //
+    // causes `fifo2` to be created with limited permissions (mode 622
+    // or maybe 600 it seems), and then after `fifo` is closed, the
+    // permissions get updated to match those of `fifo`. This doesn&#39;t
+    // make much sense to me but the behavior appears in
+    // `tests/cp/file-perm-race.sh`.
+    //
+    // So it seems that if `--preserve=ownership` is true then what we
+    // need to do is create the destination file with limited
+    // permissions, copy the contents, then update the permissions. If
+    // `--preserve=ownership` is not true, however, then we can just
+    // match the mode of the source file.
+    //
+    // TODO Update the code below to respect the case where
+    // `--preserve=ownership` is not true.
+    </span><span class="kw">let </span><span class="kw-2">mut </span>src_file = File::open(<span class="kw-2">&amp;</span>source)<span class="question-mark">?</span>;
+    <span class="kw">let </span>mode = <span class="number">0o622 </span>&amp; !get_umask();
+    <span class="kw">let </span><span class="kw-2">mut </span>dst_file = OpenOptions::new()
+        .create(<span class="bool-val">true</span>)
+        .write(<span class="bool-val">true</span>)
+        .mode(mode)
+        .open(<span class="kw-2">&amp;</span>dest)<span class="question-mark">?</span>;
+    <span class="kw">let </span>num_bytes_copied = std::io::copy(<span class="kw-2">&amp;mut </span>src_file, <span class="kw-2">&amp;mut </span>dst_file)<span class="question-mark">?</span>;
+    dst_file.set_permissions(src_file.metadata()<span class="question-mark">?</span>.permissions())<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(num_bytes_copied)
+}
+
 <span class="doccomment">/// Copies `source` to `dest` using copy-on-write if possible.
 ///
 /// The `source_is_fifo` flag must be set to `true` if and only if
@@ -253,7 +321,7 @@
 
         (ReflinkMode::Auto, <span class="kw">_</span>) =&gt; {
             <span class="kw">if </span>source_is_fifo {
-                clone(source, dest, CloneFallback::IOCopy)
+                copy_fifo_contents(source, dest).map(|<span class="kw">_</span>| ())
             } <span class="kw">else </span>{
                 clone(source, dest, CloneFallback::FSCopy)
             }
