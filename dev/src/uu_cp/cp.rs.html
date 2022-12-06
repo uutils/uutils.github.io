@@ -1677,6 +1677,12 @@
 <span id="1677">1677</span>
 <span id="1678">1678</span>
 <span id="1679">1679</span>
+<span id="1680">1680</span>
+<span id="1681">1681</span>
+<span id="1682">1682</span>
+<span id="1683">1683</span>
+<span id="1684">1684</span>
+<span id="1685">1685</span>
 </pre><pre class="rust"><code><span class="attribute">#![allow(clippy::missing_safety_doc)]
 #![allow(clippy::extra_unused_lifetimes)]
 
@@ -3108,6 +3114,9 @@
                     backup_dest(dest, <span class="kw-2">&amp;</span>backup_path)<span class="question-mark">?</span>;
                     fs::remove_file(dest)<span class="question-mark">?</span>;
                 }
+                <span class="kw">if </span>options.overwrite == OverwriteMode::Clobber(ClobberMode::Force) {
+                    fs::remove_file(dest)<span class="question-mark">?</span>;
+                }
             }
             <span class="kw">if </span>options.dereference(source_in_command_line) &amp;&amp; source.is_symlink() {
                 <span class="kw">let </span>resolved =
@@ -3130,6 +3139,9 @@
             )<span class="question-mark">?</span>;
         }
         CopyMode::SymLink =&gt; {
+            <span class="kw">if </span>dest.exists() &amp;&amp; options.overwrite == OverwriteMode::Clobber(ClobberMode::Force) {
+                fs::remove_file(dest)<span class="question-mark">?</span>;
+            }
             symlink_file(source, dest, context, symlinked_files)<span class="question-mark">?</span>;
         }
         CopyMode::Update =&gt; {
