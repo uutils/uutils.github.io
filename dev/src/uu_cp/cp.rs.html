@@ -1683,6 +1683,11 @@
 <span id="1683">1683</span>
 <span id="1684">1684</span>
 <span id="1685">1685</span>
+<span id="1686">1686</span>
+<span id="1687">1687</span>
+<span id="1688">1688</span>
+<span id="1689">1689</span>
+<span id="1690">1690</span>
 </pre><pre class="rust"><code><span class="attribute">#![allow(clippy::missing_safety_doc)]
 #![allow(clippy::extra_unused_lifetimes)]
 
@@ -2576,60 +2581,64 @@
     <span class="prelude-val">Ok</span>((paths, target))
 }
 
-<span class="kw">fn </span>preserve_hardlinks(
+<span class="doccomment">/// Get the inode information for a file.
+</span><span class="kw">fn </span>get_inode(file_info: <span class="kw-2">&amp;</span>FileInformation) -&gt; u64 {
+    <span class="attribute">#[cfg(unix)]
+    </span><span class="kw">let </span>result = file_info.inode();
+    <span class="attribute">#[cfg(windows)]
+    </span><span class="kw">let </span>result = file_info.file_index();
+    result
+}
+
+<span class="attribute">#[cfg(target_os = <span class="string">&quot;redox&quot;</span>)]
+</span><span class="kw">fn </span>preserve_hardlinks(
     hard_links: <span class="kw-2">&amp;mut </span>Vec&lt;(String, u64)&gt;,
     source: <span class="kw-2">&amp;</span>std::path::Path,
     dest: <span class="kw-2">&amp;</span>std::path::Path,
     found_hard_link: <span class="kw-2">&amp;mut </span>bool,
 ) -&gt; CopyResult&lt;()&gt; {
     <span class="comment">// Redox does not currently support hard links
-    </span><span class="attribute">#[cfg(not(target_os = <span class="string">&quot;redox&quot;</span>))]
-    </span>{
-        <span class="kw">if </span>!source.is_dir() {
-            <span class="kw">let </span>info = <span class="kw">match </span>FileInformation::from_path(source, <span class="bool-val">false</span>) {
-                <span class="prelude-val">Ok</span>(info) =&gt; info,
-                <span class="prelude-val">Err</span>(e) =&gt; {
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;cannot stat {}: {}&quot;</span>, source.quote(), e,).into());
-                }
-            };
+    </span><span class="prelude-val">Ok</span>(())
+}
 
-            <span class="attribute">#[cfg(unix)]
-            </span><span class="kw">let </span>inode = info.inode();
-
-            <span class="attribute">#[cfg(windows)]
-            </span><span class="kw">let </span>inode = info.file_index();
-
-            <span class="kw">let </span>nlinks = info.number_of_links();
-
-            <span class="kw">for </span>hard_link <span class="kw">in </span>hard_links.iter() {
-                <span class="kw">if </span>hard_link.<span class="number">1 </span>== inode {
-                    <span class="comment">// Consider the following files:
-                    //
-                    // * `src/f` - a regular file
-                    // * `src/link` - a hard link to `src/f`
-                    // * `dest/src/f` - a different regular file
-                    //
-                    // In this scenario, if we do `cp -a src/ dest/`, it is
-                    // possible that the order of traversal causes `src/link`
-                    // to get copied first (to `dest/src/link`). In that case,
-                    // in order to make sure `dest/src/link` is a hard link to
-                    // `dest/src/f` and `dest/src/f` has the contents of
-                    // `src/f`, we delete the existing file to allow the hard
-                    // linking.
-                    </span><span class="kw">if </span>file_or_link_exists(dest) &amp;&amp; file_or_link_exists(Path::new(<span class="kw-2">&amp;</span>hard_link.<span class="number">0</span>)) {
-                        std::fs::remove_file(dest)<span class="question-mark">?</span>;
-                    }
-
-                    std::fs::hard_link(hard_link.<span class="number">0</span>.clone(), dest).unwrap();
-                    <span class="kw-2">*</span>found_hard_link = <span class="bool-val">true</span>;
-                }
+<span class="doccomment">/// Hard link a pair of files if needed _and_ record if this pair is a new hard link.
+</span><span class="attribute">#[cfg(not(target_os = <span class="string">&quot;redox&quot;</span>))]
+</span><span class="kw">fn </span>preserve_hardlinks(
+    hard_links: <span class="kw-2">&amp;mut </span>Vec&lt;(String, u64)&gt;,
+    source: <span class="kw-2">&amp;</span>std::path::Path,
+    dest: <span class="kw-2">&amp;</span>std::path::Path,
+) -&gt; CopyResult&lt;bool&gt; {
+    <span class="kw">let </span>info = FileInformation::from_path(source, <span class="bool-val">false</span>)
+        .context(<span class="macro">format!</span>(<span class="string">&quot;cannot stat {}&quot;</span>, source.quote()))<span class="question-mark">?</span>;
+    <span class="kw">let </span>inode = get_inode(<span class="kw-2">&amp;</span>info);
+    <span class="kw">let </span>nlinks = info.number_of_links();
+    <span class="kw">let </span><span class="kw-2">mut </span>found_hard_link = <span class="bool-val">false</span>;
+    <span class="kw">for </span>(link, link_inode) <span class="kw">in </span>hard_links.iter() {
+        <span class="kw">if </span><span class="kw-2">*</span>link_inode == inode {
+            <span class="comment">// Consider the following files:
+            //
+            // * `src/f` - a regular file
+            // * `src/link` - a hard link to `src/f`
+            // * `dest/src/f` - a different regular file
+            //
+            // In this scenario, if we do `cp -a src/ dest/`, it is
+            // possible that the order of traversal causes `src/link`
+            // to get copied first (to `dest/src/link`). In that case,
+            // in order to make sure `dest/src/link` is a hard link to
+            // `dest/src/f` and `dest/src/f` has the contents of
+            // `src/f`, we delete the existing file to allow the hard
+            // linking.
+            </span><span class="kw">if </span>file_or_link_exists(dest) &amp;&amp; file_or_link_exists(Path::new(link)) {
+                std::fs::remove_file(dest)<span class="question-mark">?</span>;
             }
-            <span class="kw">if </span>!(<span class="kw-2">*</span>found_hard_link) &amp;&amp; nlinks &gt; <span class="number">1 </span>{
-                hard_links.push((dest.to_str().unwrap().to_string(), inode));
-            }
+            std::fs::hard_link(link, dest).unwrap();
+            found_hard_link = <span class="bool-val">true</span>;
         }
     }
-    <span class="prelude-val">Ok</span>(())
+    <span class="kw">if </span>!found_hard_link &amp;&amp; nlinks &gt; <span class="number">1 </span>{
+        hard_links.push((dest.to_str().unwrap().to_string(), inode));
+    }
+    <span class="prelude-val">Ok</span>(found_hard_link)
 }
 
 <span class="doccomment">/// Copy all `sources` to `target`.  Returns an
@@ -2671,11 +2680,12 @@
             <span class="comment">// FIXME: compare sources by the actual file they point to, not their path. (e.g. dir/file == dir/../dir/file in most cases)
             </span><span class="macro">show_warning!</span>(<span class="string">&quot;source {} specified more than once&quot;</span>, source.quote());
         } <span class="kw">else </span>{
-            <span class="kw">let </span><span class="kw-2">mut </span>found_hard_link = <span class="bool-val">false</span>;
-            <span class="kw">if </span>preserve_hard_links {
+            <span class="kw">let </span>found_hard_link = <span class="kw">if </span>preserve_hard_links &amp;&amp; !source.is_dir() {
                 <span class="kw">let </span>dest = construct_dest_path(source, target, <span class="kw-2">&amp;</span>target_type, options)<span class="question-mark">?</span>;
-                preserve_hardlinks(<span class="kw-2">&amp;mut </span>hard_links, source, <span class="kw-2">&amp;</span>dest, <span class="kw-2">&amp;mut </span>found_hard_link)<span class="question-mark">?</span>;
-            }
+                preserve_hardlinks(<span class="kw-2">&amp;mut </span>hard_links, source, <span class="kw-2">&amp;</span>dest)<span class="question-mark">?
+            </span>} <span class="kw">else </span>{
+                <span class="bool-val">false
+            </span>};
             <span class="kw">if </span>!found_hard_link {
                 <span class="kw">if let </span><span class="prelude-val">Err</span>(error) = copy_source(
                     <span class="kw-2">&amp;</span>progress_bar,

@@ -852,6 +852,32 @@
 <span id="852">852</span>
 <span id="853">853</span>
 <span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
+<span id="866">866</span>
+<span id="867">867</span>
+<span id="868">868</span>
+<span id="869">869</span>
+<span id="870">870</span>
+<span id="871">871</span>
+<span id="872">872</span>
+<span id="873">873</span>
+<span id="874">874</span>
+<span id="875">875</span>
+<span id="876">876</span>
+<span id="877">877</span>
+<span id="878">878</span>
+<span id="879">879</span>
+<span id="880">880</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Ben Eills &lt;ben@beneills.com&gt;
@@ -881,7 +907,9 @@
 <span class="kw">use </span>std::fs;
 <span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::os::unix::fs::MetadataExt;
-<span class="kw">use </span>std::path::{Path, PathBuf};
+<span class="attribute">#[cfg(unix)]
+</span><span class="kw">use </span>std::os::unix::prelude::OsStrExt;
+<span class="kw">use </span>std::path::{Path, PathBuf, MAIN_SEPARATOR};
 <span class="kw">use </span>std::process;
 
 <span class="kw">const </span>DEFAULT_MODE: u32 = <span class="number">0o755</span>;
@@ -1334,40 +1362,73 @@
             || path.parent().unwrap().as_os_str().is_empty()) <span class="comment">// In case of a simple file
 </span>}
 
+<span class="doccomment">/// Test if the path is an existing directory or ends with a trailing separator.
+///
+/// Returns true, if one of the conditions above is met; else false.
+///
+</span><span class="attribute">#[cfg(unix)]
+</span><span class="kw">fn </span>is_potential_directory_path(path: <span class="kw-2">&amp;</span>Path) -&gt; bool {
+    <span class="kw">let </span>separator = MAIN_SEPARATOR <span class="kw">as </span>u8;
+    path.as_os_str().as_bytes().last() == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>separator) || path.is_dir()
+}
+
+<span class="attribute">#[cfg(not(unix))]
+</span><span class="kw">fn </span>is_potential_directory_path(path: <span class="kw-2">&amp;</span>Path) -&gt; bool {
+    <span class="kw">let </span>path_str = path.to_string_lossy();
+    path_str.ends_with(MAIN_SEPARATOR) || path_str.ends_with(<span class="string">&#39;/&#39;</span>) || path.is_dir()
+}
+
 <span class="doccomment">/// Perform an install, given a list of paths and behavior.
 ///
 /// Returns a Result type with the Err variant containing the error message.
 ///
 </span><span class="kw">fn </span>standard(<span class="kw-2">mut </span>paths: Vec&lt;String&gt;, b: <span class="kw-2">&amp;</span>Behavior) -&gt; UResult&lt;()&gt; {
-    <span class="kw">let </span>target: PathBuf = <span class="kw">if let </span><span class="prelude-val">Some</span>(path) = <span class="kw-2">&amp;</span>b.target_dir {
+    <span class="comment">// first check that paths contains at least one element
+    </span><span class="kw">if </span>paths.is_empty() {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(UUsageError::new(<span class="number">1</span>, <span class="string">&quot;missing file operand&quot;</span>));
+    }
+
+    <span class="comment">// get the target from either &quot;-t foo&quot; param or from the last given paths argument
+    </span><span class="kw">let </span>target: PathBuf = <span class="kw">if let </span><span class="prelude-val">Some</span>(path) = <span class="kw-2">&amp;</span>b.target_dir {
         path.into()
     } <span class="kw">else </span>{
-        paths
-            .pop()
-            .ok_or_else(|| UUsageError::new(<span class="number">1</span>, <span class="string">&quot;missing file operand&quot;</span>))<span class="question-mark">?
-            </span>.into()
+        <span class="kw">let </span>last_path: PathBuf = paths.pop().unwrap().into();
+
+        <span class="comment">// paths has to contain more elements
+        </span><span class="kw">if </span>paths.is_empty() {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(UUsageError::new(
+                <span class="number">1</span>,
+                <span class="macro">format!</span>(
+                    <span class="string">&quot;missing destination file operand after &#39;{}&#39;&quot;</span>,
+                    last_path.to_str().unwrap()
+                ),
+            ));
+        }
+
+        last_path
     };
 
     <span class="kw">let </span>sources = <span class="kw-2">&amp;</span>paths.iter().map(PathBuf::from).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
-    <span class="kw">if </span>sources.len() &gt; <span class="number">1 </span>|| (target.exists() &amp;&amp; target.is_dir()) {
-        copy_files_into_dir(sources, <span class="kw-2">&amp;</span>target, b)
-    } <span class="kw">else </span>{
+    <span class="kw">if </span>b.create_leading {
         <span class="comment">// if -t is used in combination with -D, create whole target because it does not include filename
-        </span><span class="kw">let </span>to_create: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt; = <span class="kw">if </span>b.target_dir.is_some() &amp;&amp; b.create_leading {
+        </span><span class="kw">let </span>to_create: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt; = <span class="kw">if </span>b.target_dir.is_some() {
             <span class="prelude-val">Some</span>(target.as_path())
-        } <span class="kw">else </span>{
+        <span class="comment">// if source and target are filenames used in combination with -D, create target&#39;s parent
+        </span>} <span class="kw">else if </span>!(sources.len() &gt; <span class="number">1 </span>|| is_potential_directory_path(<span class="kw-2">&amp;</span>target)) {
             target.parent()
-        };
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>};
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(to_create) = to_create {
-            <span class="kw">if </span>!to_create.exists() &amp;&amp; b.create_leading {
+            <span class="kw">if </span>!to_create.exists() {
                 <span class="kw">if </span>b.verbose {
                     <span class="kw">let </span><span class="kw-2">mut </span>result = PathBuf::new();
                     <span class="comment">// When creating directories with -Dv, show directory creations step by step
                     </span><span class="kw">for </span>part <span class="kw">in </span>to_create.components() {
                         result.push(part.as_os_str());
-                        <span class="kw">if </span>!Path::new(part.as_os_str()).is_dir() {
+                        <span class="kw">if </span>!result.is_dir() {
                             <span class="comment">// Don&#39;t display when the directory already exists
                             </span><span class="macro">println!</span>(<span class="string">&quot;install: creating directory {}&quot;</span>, result.quote());
                         }
@@ -1385,25 +1446,16 @@
                 }
             }
         }
+    }
 
-        <span class="kw">let </span>source = sources.first().ok_or_else(|| {
-            UUsageError::new(
-                <span class="number">1</span>,
-                <span class="macro">format!</span>(
-                    <span class="string">&quot;missing destination file operand after &#39;{}&#39;&quot;</span>,
-                    target.to_str().unwrap()
-                ),
-            )
-        })<span class="question-mark">?</span>;
+    <span class="kw">if </span>sources.len() &gt; <span class="number">1 </span>|| is_potential_directory_path(<span class="kw-2">&amp;</span>target) {
+        copy_files_into_dir(sources, <span class="kw-2">&amp;</span>target, b)
+    } <span class="kw">else </span>{
+        <span class="kw">let </span>source = sources.first().unwrap();
 
-        <span class="comment">// If the -D flag was passed (target does not include filename),
-        // we need to add the source name to the target_dir
-        // because `copy` expects `to` to be a file, not a directory
-        </span><span class="kw">let </span>target = <span class="kw">if </span>target.is_dir() &amp;&amp; b.create_leading {
-            target.join(source)
-        } <span class="kw">else </span>{
-            target <span class="comment">// already includes dest filename
-        </span>};
+        <span class="kw">if </span>source.is_dir() {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(InstallError::OmittingDirectory(source.to_path_buf()).into());
+        }
 
         <span class="kw">if </span>target.is_file() || is_new_file_path(<span class="kw-2">&amp;</span>target) {
             copy(source, <span class="kw-2">&amp;</span>target, b)
