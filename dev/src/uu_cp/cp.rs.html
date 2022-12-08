@@ -2661,16 +2661,16 @@
     <span class="kw">let </span><span class="kw-2">mut </span>symlinked_files = HashSet::new();
 
     <span class="kw">let </span>progress_bar = <span class="kw">if </span>options.progress_bar {
-        <span class="prelude-val">Some</span>(
-            ProgressBar::new(disk_usage(sources, options.recursive)<span class="question-mark">?</span>)
-                .with_style(
-                    ProgressStyle::with_template(
-                        <span class="string">&quot;{msg}: [{elapsed_precise}] {wide_bar} {bytes:&gt;7}/{total_bytes:7}&quot;</span>,
-                    )
-                    .unwrap(),
+        <span class="kw">let </span>pb = ProgressBar::new(disk_usage(sources, options.recursive)<span class="question-mark">?</span>)
+            .with_style(
+                ProgressStyle::with_template(
+                    <span class="string">&quot;{msg}: [{elapsed_precise}] {wide_bar} {bytes:&gt;7}/{total_bytes:7}&quot;</span>,
                 )
-                .with_message(uucore::util_name()),
-        )
+                .unwrap(),
+            )
+            .with_message(uucore::util_name());
+        pb.tick();
+        <span class="prelude-val">Some</span>(pb)
     } <span class="kw">else </span>{
         <span class="prelude-val">None
     </span>};
