@@ -636,6 +636,14 @@
 <span id="636">636</span>
 <span id="637">637</span>
 <span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
+<span id="644">644</span>
+<span id="645">645</span>
+<span id="646">646</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
@@ -789,20 +797,23 @@
         <span class="comment">// If the number of bytes written is sufficiently large, then
         // print a more concise representation of the number, like
         // &quot;1.2 kB&quot; and &quot;1.0 KiB&quot;.
-        </span><span class="kw">if </span>btotal &lt; <span class="number">1000 </span>{
-            <span class="macro">write!</span>(
+        </span><span class="kw">match </span>btotal {
+            <span class="number">1 </span>=&gt; <span class="macro">write!</span>(
+                w,
+                <span class="string">&quot;{}{} byte copied, {:.1} s, {}/s{}&quot;</span>,
+                carriage_return, btotal, duration, transfer_rate, newline,
+            ),
+            <span class="number">0</span>..=<span class="number">999 </span>=&gt; <span class="macro">write!</span>(
                 w,
                 <span class="string">&quot;{}{} bytes copied, {:.1} s, {}/s{}&quot;</span>,
                 carriage_return, btotal, duration, transfer_rate, newline,
-            )
-        } <span class="kw">else if </span>btotal &lt; <span class="number">1024 </span>{
-            <span class="macro">write!</span>(
+            ),
+            <span class="number">1000</span>..=<span class="number">1023 </span>=&gt; <span class="macro">write!</span>(
                 w,
                 <span class="string">&quot;{}{} bytes ({}) copied, {:.1} s, {}/s{}&quot;</span>,
                 carriage_return, btotal, btotal_metric, duration, transfer_rate, newline,
-            )
-        } <span class="kw">else </span>{
-            <span class="macro">write!</span>(
+            ),
+            <span class="kw">_ </span>=&gt; <span class="macro">write!</span>(
                 w,
                 <span class="string">&quot;{}{} bytes ({}, {}) copied, {:.1} s, {}/s{}&quot;</span>,
                 carriage_return,
@@ -812,7 +823,7 @@
                 duration,
                 transfer_rate,
                 newline,
-            )
+            ),
         }
     }
 
@@ -1201,6 +1212,11 @@
         //
         // The throughput still does not match GNU dd.
         </span><span class="macro">assert_eq!</span>(cursor.get_ref(), <span class="string">b&quot;0 bytes copied, 1.0 s, 0.0 B/s\n&quot;</span>);
+
+        <span class="kw">let </span>prog_update = prog_update_write(<span class="number">1</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>cursor = Cursor::new(<span class="macro">vec!</span>[]);
+        prog_update.write_prog_line(<span class="kw-2">&amp;mut </span>cursor, rewrite).unwrap();
+        <span class="macro">assert_eq!</span>(cursor.get_ref(), <span class="string">b&quot;1 byte copied, 1.0 s, 0.0 B/s\n&quot;</span>);
 
         <span class="kw">let </span>prog_update = prog_update_write(<span class="number">999</span>);
         <span class="kw">let </span><span class="kw-2">mut </span>cursor = Cursor::new(<span class="macro">vec!</span>[]);

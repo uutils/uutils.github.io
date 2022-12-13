@@ -392,6 +392,68 @@
 <span id="392">392</span>
 <span id="393">393</span>
 <span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
@@ -418,8 +480,8 @@
 <span class="kw">use </span>walkdir::{DirEntry, WalkDir};
 
 <span class="kw">use crate</span>::{
-    copy_attributes, copy_file, copy_link, preserve_hardlinks, CopyResult, Error, Options,
-    TargetSlice,
+    aligned_ancestors, context_for, copy_attributes, copy_file, copy_link, preserve_hardlinks,
+    CopyResult, Error, Options, TargetSlice,
 };
 
 <span class="doccomment">/// Ensure a Windows path starts with a `\\?`.
@@ -566,6 +628,27 @@
     }
 }
 
+<span class="doccomment">/// Decide whether the given path ends with `/.`.
+///
+/// # Examples
+///
+/// ```rust,ignore
+/// assert!(ends_with_slash_dot(&quot;/.&quot;));
+/// assert!(ends_with_slash_dot(&quot;./.&quot;));
+/// assert!(ends_with_slash_dot(&quot;a/.&quot;));
+///
+/// assert!(!ends_with_slash_dot(&quot;.&quot;));
+/// assert!(!ends_with_slash_dot(&quot;./&quot;));
+/// assert!(!ends_with_slash_dot(&quot;a/..&quot;));
+/// ```
+</span><span class="kw">fn </span>ends_with_slash_dot&lt;P&gt;(path: P) -&gt; bool
+<span class="kw">where
+    </span>P: AsRef&lt;Path&gt;,
+{
+    <span class="comment">// `path.ends_with(&quot;.&quot;)` does not seem to work
+    </span>path.as_ref().display().to_string().ends_with(<span class="string">&quot;/.&quot;</span>)
+}
+
 <span class="doccomment">/// Copy a single entry during a directory traversal.
 </span><span class="kw">fn </span>copy_direntry(
     progress_bar: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;ProgressBar&gt;,
@@ -590,7 +673,10 @@
 
     <span class="comment">// If the source is a directory and the destination does not
     // exist, ...
-    </span><span class="kw">if </span>source_absolute.is_dir() &amp;&amp; !local_to_target.exists() {
+    </span><span class="kw">if </span>source_absolute.is_dir()
+        &amp;&amp; !ends_with_slash_dot(<span class="kw-2">&amp;</span>source_absolute)
+        &amp;&amp; !local_to_target.exists()
+    {
         <span class="kw">if </span>target_is_file {
             <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">&quot;cannot overwrite non-directory with directory&quot;</span>.into());
         } <span class="kw">else </span>{
@@ -599,7 +685,10 @@
             // `create_dir_all()` will have any benefit over
             // `create_dir()`, since all the ancestor directories
             // should have already been created.
-            </span>fs::create_dir_all(local_to_target)<span class="question-mark">?</span>;
+            </span>fs::create_dir_all(<span class="kw-2">&amp;</span>local_to_target)<span class="question-mark">?</span>;
+            <span class="kw">if </span>options.verbose {
+                <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, context_for(<span class="kw-2">&amp;</span>source_relative, <span class="kw-2">&amp;</span>local_to_target));
+            }
             <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
     }
@@ -717,6 +806,19 @@
         <span class="kw">if let </span><span class="prelude-val">Some</span>(parent) = root.parent() {
             <span class="kw">let </span>new_target = target.join(parent);
             std::fs::create_dir_all(<span class="kw-2">&amp;</span>new_target)<span class="question-mark">?</span>;
+
+            <span class="kw">if </span>options.verbose {
+                <span class="comment">// For example, if copying file `a/b/c` and its parents
+                // to directory `d/`, then print
+                //
+                //     a -&gt; d/a
+                //     a/b -&gt; d/a/b
+                //
+                </span><span class="kw">for </span>(x, y) <span class="kw">in </span>aligned_ancestors(root, <span class="kw-2">&amp;</span>target.join(root)) {
+                    <span class="macro">println!</span>(<span class="string">&quot;{} -&gt; {}&quot;</span>, x.display(), y.display());
+                }
+            }
+
             new_target
         } <span class="kw">else </span>{
             target.to_path_buf()
@@ -785,6 +887,28 @@
     <span class="kw">let </span>pathbuf2 = canonicalize(p2, MissingHandling::Normal, ResolveMode::Logical)<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(pathbuf1.starts_with(pathbuf2))
+}
+
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span><span class="kw">super</span>::ends_with_slash_dot;
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_ends_with_slash_dot() {
+        <span class="macro">assert!</span>(ends_with_slash_dot(<span class="string">&quot;/.&quot;</span>));
+        <span class="macro">assert!</span>(ends_with_slash_dot(<span class="string">&quot;./.&quot;</span>));
+        <span class="macro">assert!</span>(ends_with_slash_dot(<span class="string">&quot;../.&quot;</span>));
+        <span class="macro">assert!</span>(ends_with_slash_dot(<span class="string">&quot;a/.&quot;</span>));
+        <span class="macro">assert!</span>(ends_with_slash_dot(<span class="string">&quot;/a/.&quot;</span>));
+
+        <span class="macro">assert!</span>(!ends_with_slash_dot(<span class="string">&quot;&quot;</span>));
+        <span class="macro">assert!</span>(!ends_with_slash_dot(<span class="string">&quot;.&quot;</span>));
+        <span class="macro">assert!</span>(!ends_with_slash_dot(<span class="string">&quot;./&quot;</span>));
+        <span class="macro">assert!</span>(!ends_with_slash_dot(<span class="string">&quot;..&quot;</span>));
+        <span class="macro">assert!</span>(!ends_with_slash_dot(<span class="string">&quot;/..&quot;</span>));
+        <span class="macro">assert!</span>(!ends_with_slash_dot(<span class="string">&quot;a/..&quot;</span>));
+        <span class="macro">assert!</span>(!ends_with_slash_dot(<span class="string">&quot;/a/..&quot;</span>));
+    }
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_cp" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

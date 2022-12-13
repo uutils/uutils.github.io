@@ -1688,6 +1688,85 @@
 <span id="1688">1688</span>
 <span id="1689">1689</span>
 <span id="1690">1690</span>
+<span id="1691">1691</span>
+<span id="1692">1692</span>
+<span id="1693">1693</span>
+<span id="1694">1694</span>
+<span id="1695">1695</span>
+<span id="1696">1696</span>
+<span id="1697">1697</span>
+<span id="1698">1698</span>
+<span id="1699">1699</span>
+<span id="1700">1700</span>
+<span id="1701">1701</span>
+<span id="1702">1702</span>
+<span id="1703">1703</span>
+<span id="1704">1704</span>
+<span id="1705">1705</span>
+<span id="1706">1706</span>
+<span id="1707">1707</span>
+<span id="1708">1708</span>
+<span id="1709">1709</span>
+<span id="1710">1710</span>
+<span id="1711">1711</span>
+<span id="1712">1712</span>
+<span id="1713">1713</span>
+<span id="1714">1714</span>
+<span id="1715">1715</span>
+<span id="1716">1716</span>
+<span id="1717">1717</span>
+<span id="1718">1718</span>
+<span id="1719">1719</span>
+<span id="1720">1720</span>
+<span id="1721">1721</span>
+<span id="1722">1722</span>
+<span id="1723">1723</span>
+<span id="1724">1724</span>
+<span id="1725">1725</span>
+<span id="1726">1726</span>
+<span id="1727">1727</span>
+<span id="1728">1728</span>
+<span id="1729">1729</span>
+<span id="1730">1730</span>
+<span id="1731">1731</span>
+<span id="1732">1732</span>
+<span id="1733">1733</span>
+<span id="1734">1734</span>
+<span id="1735">1735</span>
+<span id="1736">1736</span>
+<span id="1737">1737</span>
+<span id="1738">1738</span>
+<span id="1739">1739</span>
+<span id="1740">1740</span>
+<span id="1741">1741</span>
+<span id="1742">1742</span>
+<span id="1743">1743</span>
+<span id="1744">1744</span>
+<span id="1745">1745</span>
+<span id="1746">1746</span>
+<span id="1747">1747</span>
+<span id="1748">1748</span>
+<span id="1749">1749</span>
+<span id="1750">1750</span>
+<span id="1751">1751</span>
+<span id="1752">1752</span>
+<span id="1753">1753</span>
+<span id="1754">1754</span>
+<span id="1755">1755</span>
+<span id="1756">1756</span>
+<span id="1757">1757</span>
+<span id="1758">1758</span>
+<span id="1759">1759</span>
+<span id="1760">1760</span>
+<span id="1761">1761</span>
+<span id="1762">1762</span>
+<span id="1763">1763</span>
+<span id="1764">1764</span>
+<span id="1765">1765</span>
+<span id="1766">1766</span>
+<span id="1767">1767</span>
+<span id="1768">1768</span>
+<span id="1769">1769</span>
 </pre><pre class="rust"><code><span class="attribute">#![allow(clippy::missing_safety_doc)]
 #![allow(clippy::extra_unused_lifetimes)]
 
@@ -3006,6 +3085,47 @@
     </span>path.symlink_metadata().is_ok()
 }
 
+<span class="doccomment">/// Zip the ancestors of a source path and destination path.
+///
+/// # Examples
+///
+/// ```rust,ignore
+/// let actual = aligned_ancestors(&amp;Path::new(&quot;a/b/c&quot;), &amp;Path::new(&quot;d/a/b/c&quot;));
+/// let expected = vec![
+///     (Path::new(&quot;a&quot;), Path::new(&quot;d/a&quot;)),
+///     (Path::new(&quot;a/b&quot;), Path::new(&quot;d/a/b&quot;)),
+/// ];
+/// assert_eq!(actual, expected);
+/// ```
+</span><span class="kw">fn </span>aligned_ancestors&lt;<span class="lifetime">&#39;a</span>&gt;(source: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Path, dest: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Path) -&gt; Vec&lt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Path, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Path)&gt; {
+    <span class="comment">// Collect the ancestors of each. For example, if `source` is
+    // &quot;a/b/c&quot;, then the ancestors are &quot;a/b/c&quot;, &quot;a/b&quot;, &quot;a/&quot;, and &quot;&quot;.
+    </span><span class="kw">let </span>source_ancestors: Vec&lt;<span class="kw-2">&amp;</span>Path&gt; = source.ancestors().collect();
+    <span class="kw">let </span>dest_ancestors: Vec&lt;<span class="kw-2">&amp;</span>Path&gt; = dest.ancestors().collect();
+
+    <span class="comment">// For this particular application, we don&#39;t care about the null
+    // path &quot;&quot; and we don&#39;t care about the full path (e.g. &quot;a/b/c&quot;),
+    // so we exclude those.
+    </span><span class="kw">let </span>n = source_ancestors.len();
+    <span class="kw">let </span>source_ancestors = <span class="kw-2">&amp;</span>source_ancestors[<span class="number">1</span>..n - <span class="number">1</span>];
+
+    <span class="comment">// Get the matching number of elements from the ancestors of the
+    // destination path (for example, get &quot;d/a&quot; and &quot;d/a/b&quot;).
+    </span><span class="kw">let </span>k = source_ancestors.len();
+    <span class="kw">let </span>dest_ancestors = <span class="kw-2">&amp;</span>dest_ancestors[<span class="number">1</span>..<span class="number">1 </span>+ k];
+
+    <span class="comment">// Now we have two slices of the same length, so we zip them.
+    </span><span class="kw">let </span><span class="kw-2">mut </span>result = <span class="macro">vec!</span>[];
+    <span class="kw">for </span>(x, y) <span class="kw">in </span>source_ancestors
+        .iter()
+        .rev()
+        .zip(dest_ancestors.iter().rev())
+    {
+        result.push((<span class="kw-2">*</span>x, <span class="kw-2">*</span>y));
+    }
+    result
+}
+
 <span class="doccomment">/// Copy the a file from `source` to `dest`. `source` will be dereferenced if
 /// `options.dereference` is set to true. `dest` will be dereferenced only if
 /// the source was not a symlink.
@@ -3065,9 +3185,33 @@
         <span class="kw">if let </span><span class="prelude-val">Some</span>(pb) = progress_bar {
             <span class="comment">// Suspend (hide) the progress bar so the println won&#39;t overlap with the progress bar.
             </span>pb.suspend(|| {
+                <span class="kw">if </span>options.parents {
+                    <span class="comment">// For example, if copying file `a/b/c` and its parents
+                    // to directory `d/`, then print
+                    //
+                    //     a -&gt; d/a
+                    //     a/b -&gt; d/a/b
+                    //
+                    </span><span class="kw">for </span>(x, y) <span class="kw">in </span>aligned_ancestors(source, dest) {
+                        <span class="macro">println!</span>(<span class="string">&quot;{} -&gt; {}&quot;</span>, x.display(), y.display());
+                    }
+                }
+
                 <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, context_for(source, dest));
             });
         } <span class="kw">else </span>{
+            <span class="kw">if </span>options.parents {
+                <span class="comment">// For example, if copying file `a/b/c` and its parents
+                // to directory `d/`, then print
+                //
+                //     a -&gt; d/a
+                //     a/b -&gt; d/a/b
+                //
+                </span><span class="kw">for </span>(x, y) <span class="kw">in </span>aligned_ancestors(source, dest) {
+                    <span class="macro">println!</span>(<span class="string">&quot;{} -&gt; {}&quot;</span>, x.display(), y.display());
+                }
+            }
+
             <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, context_for(source, dest));
         }
     }
@@ -3366,17 +3510,31 @@
     <span class="prelude-val">Ok</span>(total)
 }
 
-<span class="attribute">#[test]
-</span><span class="kw">fn </span>test_cp_localize_to_target() {
-    <span class="macro">assert!</span>(
-        localize_to_target(
-            Path::new(<span class="string">&quot;a/source/&quot;</span>),
-            Path::new(<span class="string">&quot;a/source/c.txt&quot;</span>),
-            Path::new(<span class="string">&quot;target/&quot;</span>)
-        )
-        .unwrap()
-            == Path::new(<span class="string">&quot;target/c.txt&quot;</span>)
-    );
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+
+    <span class="kw">use crate</span>::{aligned_ancestors, localize_to_target};
+    <span class="kw">use </span>std::path::Path;
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_cp_localize_to_target() {
+        <span class="kw">let </span>root = Path::new(<span class="string">&quot;a/source/&quot;</span>);
+        <span class="kw">let </span>source = Path::new(<span class="string">&quot;a/source/c.txt&quot;</span>);
+        <span class="kw">let </span>target = Path::new(<span class="string">&quot;target/&quot;</span>);
+        <span class="kw">let </span>actual = localize_to_target(root, source, target).unwrap();
+        <span class="kw">let </span>expected = Path::new(<span class="string">&quot;target/c.txt&quot;</span>);
+        <span class="macro">assert_eq!</span>(actual, expected);
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_aligned_ancestors() {
+        <span class="kw">let </span>actual = aligned_ancestors(<span class="kw-2">&amp;</span>Path::new(<span class="string">&quot;a/b/c&quot;</span>), <span class="kw-2">&amp;</span>Path::new(<span class="string">&quot;d/a/b/c&quot;</span>));
+        <span class="kw">let </span>expected = <span class="macro">vec!</span>[
+            (Path::new(<span class="string">&quot;a&quot;</span>), Path::new(<span class="string">&quot;d/a&quot;</span>)),
+            (Path::new(<span class="string">&quot;a/b&quot;</span>), Path::new(<span class="string">&quot;d/a/b&quot;</span>)),
+        ];
+        <span class="macro">assert_eq!</span>(actual, expected);
+    }
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uu_cp" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>
