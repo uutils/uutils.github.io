@@ -498,6 +498,106 @@
 <span id="498">498</span>
 <span id="499">499</span>
 <span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Orvar Segerström &lt;orvarsegerstrom@gmail.com&gt;
@@ -512,6 +612,7 @@
 
 <span class="kw">use </span>clap::builder::ValueParser;
 <span class="kw">use </span>clap::{crate_version, error::ErrorKind, Arg, ArgAction, ArgMatches, Command};
+<span class="kw">use </span>indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 <span class="kw">use </span>std::env;
 <span class="kw">use </span>std::ffi::OsString;
 <span class="kw">use </span>std::fs;
@@ -524,9 +625,12 @@
 <span class="kw">use </span>uucore::backup_control::{<span class="self">self</span>, BackupMode};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{FromIo, UError, UResult, USimpleError, UUsageError};
-<span class="kw">use </span>uucore::{format_usage, prompt_yes, show, show_if_err};
+<span class="kw">use </span>uucore::{format_usage, prompt_yes, show};
 
-<span class="kw">use </span>fs_extra::dir::{move_dir, CopyOptions <span class="kw">as </span>DirCopyOptions};
+<span class="kw">use </span>fs_extra::dir::{
+    get_size <span class="kw">as </span>dir_get_size, move_dir, move_dir_with_progress, CopyOptions <span class="kw">as </span>DirCopyOptions,
+    TransitProcess, TransitProcessResult,
+};
 
 <span class="kw">use </span><span class="kw">crate</span>::error::MvError;
 
@@ -539,6 +643,7 @@
     no_target_dir: bool,
     verbose: bool,
     strip_slashes: bool,
+    progress_bar: bool,
 }
 
 <span class="attribute">#[derive(Clone, Eq, PartialEq)]
@@ -563,7 +668,7 @@
 <span class="kw">static </span>OPT_NO_TARGET_DIRECTORY: <span class="kw-2">&amp;</span>str = <span class="string">&quot;no-target-directory&quot;</span>;
 <span class="kw">static </span>OPT_UPDATE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;update&quot;</span>;
 <span class="kw">static </span>OPT_VERBOSE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;verbose&quot;</span>;
-
+<span class="kw">static </span>OPT_PROGRESS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;progress&quot;</span>;
 <span class="kw">static </span>ARG_FILES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;files&quot;</span>;
 
 <span class="attribute">#[uucore::main]
@@ -622,6 +727,7 @@
         no_target_dir: matches.get_flag(OPT_NO_TARGET_DIRECTORY),
         verbose: matches.get_flag(OPT_VERBOSE),
         strip_slashes: matches.get_flag(OPT_STRIP_TRAILING_SLASHES),
+        progress_bar: matches.get_flag(OPT_PROGRESS),
     };
 
     exec(<span class="kw-2">&amp;</span>files[..], <span class="kw-2">&amp;</span>behavior)
@@ -698,6 +804,16 @@
                 .action(ArgAction::SetTrue),
         )
         .arg(
+            Arg::new(OPT_PROGRESS)
+                .short(<span class="string">&#39;g&#39;</span>)
+                .long(OPT_PROGRESS)
+                .help(
+                    <span class="string">&quot;Display a progress bar. \n\
+                Note: this feature is not supported by GNU coreutils.&quot;</span>,
+                )
+                .action(ArgAction::SetTrue),
+        )
+        .arg(
             Arg::new(ARG_FILES)
                 .action(ArgAction::Append)
                 .num_args(<span class="number">1</span>..)
@@ -771,7 +887,7 @@
                     <span class="kw">if </span>!source.is_dir() {
                         <span class="prelude-val">Err</span>(MvError::DirectoryToNonDirectory(target.quote().to_string()).into())
                     } <span class="kw">else </span>{
-                        rename(source, target, b).map_err_context(|| {
+                        rename(source, target, b, <span class="prelude-val">None</span>).map_err_context(|| {
                             <span class="macro">format!</span>(<span class="string">&quot;cannot move {} to {}&quot;</span>, source.quote(), target.quote())
                         })
                     }
@@ -794,7 +910,7 @@
                 )
                 .into())
             } <span class="kw">else </span>{
-                rename(source, target, b).map_err(|e| USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, e)))
+                rename(source, target, b, <span class="prelude-val">None</span>).map_err(|e| USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, e)))
             }
         }
         <span class="kw">_ </span>=&gt; {
@@ -821,7 +937,27 @@
         .canonicalize()
         .unwrap_or_else(|<span class="kw">_</span>| target_dir.to_path_buf());
 
+    <span class="kw">let </span>multi_progress = b.progress_bar.then(MultiProgress::new);
+
+    <span class="kw">let </span>count_progress = <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>multi_progress) = multi_progress {
+        <span class="kw">if </span>files.len() &gt; <span class="number">1 </span>{
+            <span class="prelude-val">Some</span>(multi_progress.add(
+                ProgressBar::new(files.len().try_into().unwrap()).with_style(
+                    ProgressStyle::with_template(<span class="string">&quot;moving {msg} {wide_bar} {pos}/{len}&quot;</span>).unwrap(),
+                ),
+            ))
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
+    } <span class="kw">else </span>{
+        <span class="prelude-val">None
+    </span>};
+
     <span class="kw">for </span>sourcepath <span class="kw">in </span>files.iter() {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>pb) = count_progress {
+            pb.set_message(sourcepath.to_string_lossy().to_string());
+        }
+
         <span class="kw">let </span>targetpath = <span class="kw">match </span>sourcepath.file_name() {
             <span class="prelude-val">Some</span>(name) =&gt; target_dir.join(name),
             <span class="prelude-val">None </span>=&gt; {
@@ -852,18 +988,35 @@
             }
         }
 
-        <span class="macro">show_if_err!</span>(
-            rename(sourcepath, <span class="kw-2">&amp;</span>targetpath, b).map_err_context(|| <span class="macro">format!</span>(
-                <span class="string">&quot;cannot move {} to {}&quot;</span>,
-                sourcepath.quote(),
-                targetpath.quote()
-            ))
-        );
+        <span class="kw">let </span>rename_result = rename(sourcepath, <span class="kw-2">&amp;</span>targetpath, b, multi_progress.as_ref())
+            .map_err_context(|| {
+                <span class="macro">format!</span>(
+                    <span class="string">&quot;cannot move {} to {}&quot;</span>,
+                    sourcepath.quote(),
+                    targetpath.quote()
+                )
+            });
+
+        <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = rename_result {
+            <span class="kw">match </span>multi_progress {
+                <span class="prelude-val">Some</span>(<span class="kw-2">ref </span>pb) =&gt; pb.suspend(|| <span class="macro">show!</span>(e)),
+                <span class="prelude-val">None </span>=&gt; <span class="macro">show!</span>(e),
+            };
+        };
+
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>pb) = count_progress {
+            pb.inc(<span class="number">1</span>);
+        }
     }
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">fn </span>rename(from: <span class="kw-2">&amp;</span>Path, to: <span class="kw-2">&amp;</span>Path, b: <span class="kw-2">&amp;</span>Behavior) -&gt; io::Result&lt;()&gt; {
+<span class="kw">fn </span>rename(
+    from: <span class="kw-2">&amp;</span>Path,
+    to: <span class="kw-2">&amp;</span>Path,
+    b: <span class="kw-2">&amp;</span>Behavior,
+    multi_progress: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>MultiProgress&gt;,
+) -&gt; io::Result&lt;()&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>backup_path = <span class="prelude-val">None</span>;
 
     <span class="kw">if </span>to.exists() {
@@ -885,7 +1038,7 @@
 
         backup_path = backup_control::get_backup_path(b.backup, to, <span class="kw-2">&amp;</span>b.suffix);
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>backup_path) = backup_path {
-            rename_with_fallback(to, backup_path)<span class="question-mark">?</span>;
+            rename_with_fallback(to, backup_path, multi_progress)<span class="question-mark">?</span>;
         }
 
         <span class="kw">if </span>b.update &amp;&amp; fs::metadata(from)<span class="question-mark">?</span>.modified()<span class="question-mark">? </span>&lt;= fs::metadata(to)<span class="question-mark">?</span>.modified()<span class="question-mark">? </span>{
@@ -905,21 +1058,36 @@
         }
     }
 
-    rename_with_fallback(from, to)<span class="question-mark">?</span>;
+    rename_with_fallback(from, to, multi_progress)<span class="question-mark">?</span>;
 
     <span class="kw">if </span>b.verbose {
-        <span class="macro">print!</span>(<span class="string">&quot;{} -&gt; {}&quot;</span>, from.quote(), to.quote());
-        <span class="kw">match </span>backup_path {
-            <span class="prelude-val">Some</span>(path) =&gt; <span class="macro">println!</span>(<span class="string">&quot; (backup: {})&quot;</span>, path.quote()),
-            <span class="prelude-val">None </span>=&gt; <span class="macro">println!</span>(),
-        }
+        <span class="kw">let </span>message = <span class="kw">match </span>backup_path {
+            <span class="prelude-val">Some</span>(path) =&gt; <span class="macro">format!</span>(
+                <span class="string">&quot;{} -&gt; {} (backup: {})&quot;</span>,
+                from.quote(),
+                to.quote(),
+                path.quote()
+            ),
+            <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">&quot;{} -&gt; {}&quot;</span>, from.quote(), to.quote()),
+        };
+
+        <span class="kw">match </span>multi_progress {
+            <span class="prelude-val">Some</span>(pb) =&gt; pb.suspend(|| {
+                <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, message);
+            }),
+            <span class="prelude-val">None </span>=&gt; <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, message),
+        };
     }
     <span class="prelude-val">Ok</span>(())
 }
 
 <span class="doccomment">/// A wrapper around `fs::rename`, so that if it fails, we try falling back on
 /// copying and removing.
-</span><span class="kw">fn </span>rename_with_fallback(from: <span class="kw-2">&amp;</span>Path, to: <span class="kw-2">&amp;</span>Path) -&gt; io::Result&lt;()&gt; {
+</span><span class="kw">fn </span>rename_with_fallback(
+    from: <span class="kw-2">&amp;</span>Path,
+    to: <span class="kw-2">&amp;</span>Path,
+    multi_progress: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>MultiProgress&gt;,
+) -&gt; io::Result&lt;()&gt; {
     <span class="kw">if </span>fs::rename(from, to).is_err() {
         <span class="comment">// Get metadata without following symlinks
         </span><span class="kw">let </span>metadata = from.symlink_metadata()<span class="question-mark">?</span>;
@@ -941,7 +1109,39 @@
                 </span>copy_inside: <span class="bool-val">true</span>,
                 ..DirCopyOptions::new()
             };
-            <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = move_dir(from, to, <span class="kw-2">&amp;</span>options) {
+
+            <span class="comment">// Calculate total size of directory
+            // Silently degrades:
+            //    If finding the total size fails for whatever reason,
+            //    the progress bar wont be shown for this file / dir.
+            //    (Move will probably fail due to permission error later?)
+            </span><span class="kw">let </span>total_size = dir_get_size(from).ok();
+
+            <span class="kw">let </span>progress_bar =
+                <span class="kw">if let </span>(<span class="prelude-val">Some</span>(multi_progress), <span class="prelude-val">Some</span>(total_size)) = (multi_progress, total_size) {
+                    <span class="kw">let </span>bar = ProgressBar::new(total_size).with_style(
+                        ProgressStyle::with_template(
+                            <span class="string">&quot;{msg}: [{elapsed_precise}] {wide_bar} {bytes:&gt;7}/{total_bytes:7}&quot;</span>,
+                        )
+                        .unwrap(),
+                    );
+
+                    <span class="prelude-val">Some</span>(multi_progress.add(bar))
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">None
+                </span>};
+
+            <span class="kw">let </span>result = <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>pb) = progress_bar {
+                move_dir_with_progress(from, to, <span class="kw-2">&amp;</span>options, |process_info: TransitProcess| {
+                    pb.set_position(process_info.copied_bytes);
+                    pb.set_message(process_info.file_name);
+                    TransitProcessResult::ContinueOrAbort
+                })
+            } <span class="kw">else </span>{
+                move_dir(from, to, <span class="kw-2">&amp;</span>options)
+            };
+
+            <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = result {
                 <span class="kw">return match </span>err.kind {
                     fs_extra::error::ErrorKind::PermissionDenied =&gt; <span class="prelude-val">Err</span>(io::Error::new(
                         io::ErrorKind::PermissionDenied,
