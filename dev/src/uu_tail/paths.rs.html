@@ -235,51 +235,6 @@
 <span id="235">235</span>
 <span id="236">236</span>
 <span id="237">237</span>
-<span id="238">238</span>
-<span id="239">239</span>
-<span id="240">240</span>
-<span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
-<span id="245">245</span>
-<span id="246">246</span>
-<span id="247">247</span>
-<span id="248">248</span>
-<span id="249">249</span>
-<span id="250">250</span>
-<span id="251">251</span>
-<span id="252">252</span>
-<span id="253">253</span>
-<span id="254">254</span>
-<span id="255">255</span>
-<span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
-<span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
-<span id="262">262</span>
-<span id="263">263</span>
-<span id="264">264</span>
-<span id="265">265</span>
-<span id="266">266</span>
-<span id="267">267</span>
-<span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
@@ -287,25 +242,15 @@
 
 // spell-checker:ignore tailable seekable stdlib (stdlib)
 
-</span><span class="attribute">#[cfg(unix)]
-</span><span class="kw">use </span>std::os::unix::fs::{FileTypeExt, MetadataExt};
-
-<span class="kw">use </span>std::collections::VecDeque;
+</span><span class="kw">use </span><span class="kw">crate</span>::text;
 <span class="kw">use </span>std::fs::{File, Metadata};
 <span class="kw">use </span>std::io::{Seek, SeekFrom};
+<span class="attribute">#[cfg(unix)]
+</span><span class="kw">use </span>std::os::unix::fs::{FileTypeExt, MetadataExt};
 <span class="kw">use </span>std::path::{Path, PathBuf};
-
 <span class="kw">use </span>uucore::error::UResult;
 
-<span class="kw">use </span><span class="kw">crate</span>::args::Settings;
-<span class="kw">use </span><span class="kw">crate</span>::text;
-
-<span class="comment">//  * This file is part of the uutils coreutils package.
-//  *
-//  * For the full copyright and license information, please view the LICENSE
-//  * file that was distributed with this source code.
-
-</span><span class="attribute">#[derive(Debug, Clone)]
+<span class="attribute">#[derive(Debug, Clone)]
 </span><span class="kw">pub enum </span>InputKind {
     File(PathBuf),
     Stdin,
@@ -318,7 +263,8 @@
 }
 
 <span class="kw">impl </span>Input {
-    <span class="kw">pub fn </span>from(string: String) -&gt; <span class="self">Self </span>{
+    <span class="comment">// TODO: from &amp;str may be the better choice
+    </span><span class="kw">pub fn </span>from(string: String) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>kind = <span class="kw">if </span>string == text::DASH {
             InputKind::Stdin
         } <span class="kw">else </span>{
@@ -414,44 +360,6 @@
         }
     }
 }
-
-<span class="attribute">#[derive(Debug, Clone)]
-</span><span class="kw">pub struct </span>InputService {
-    <span class="kw">pub </span>inputs: VecDeque&lt;Input&gt;,
-    <span class="kw">pub </span>presume_input_pipe: bool,
-    <span class="kw">pub </span>header_printer: HeaderPrinter,
-}
-
-<span class="kw">impl </span>InputService {
-    <span class="kw">pub fn </span>new(verbose: bool, presume_input_pipe: bool, inputs: VecDeque&lt;Input&gt;) -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
-            inputs,
-            presume_input_pipe,
-            header_printer: HeaderPrinter::new(verbose, <span class="bool-val">true</span>),
-        }
-    }
-
-    <span class="kw">pub fn </span>from(settings: <span class="kw-2">&amp;</span>Settings) -&gt; <span class="self">Self </span>{
-        <span class="self">Self</span>::new(
-            settings.verbose,
-            settings.presume_input_pipe,
-            settings.inputs.clone(),
-        )
-    }
-
-    <span class="kw">pub fn </span>has_stdin(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; bool {
-        <span class="self">self</span>.inputs.iter().any(|input| input.is_stdin())
-    }
-
-    <span class="kw">pub fn </span>has_only_stdin(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="self">self</span>.inputs.iter().all(|input| input.is_stdin())
-    }
-
-    <span class="kw">pub fn </span>print_header(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>Input) {
-        <span class="self">self</span>.header_printer.print_input(input);
-    }
-}
-
 <span class="kw">pub trait </span>FileExtTail {
     <span class="attribute">#[allow(clippy::wrong_self_convention)]
     </span><span class="kw">fn </span>is_seekable(<span class="kw-2">&amp;mut </span><span class="self">self</span>, current_offset: u64) -&gt; bool;
@@ -510,9 +418,11 @@
         }
         <span class="attribute">#[cfg(windows)]
         </span>{
-            <span class="comment">// use std::os::windows::prelude::*;
+            <span class="comment">// TODO: `file_index` requires unstable library feature `windows_by_handle`
+            // use std::os::windows::prelude::*;
             // if let Some(self_id) = self.file_index() {
             //     if let Some(other_id) = other.file_index() {
+            //     // TODO: not sure this is the equivalent of comparing inode numbers
             //
             //         return self_id.eq(&amp;other_id);
             //     }

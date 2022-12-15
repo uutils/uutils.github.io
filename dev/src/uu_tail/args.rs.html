@@ -474,6 +474,57 @@
 <span id="474">474</span>
 <span id="475">475</span>
 <span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
@@ -483,8 +534,10 @@
 
 </span><span class="kw">use </span><span class="kw">crate</span>::paths::Input;
 <span class="kw">use crate</span>::{parse, platform, Quotable};
+<span class="kw">use </span>atty::Stream;
 <span class="kw">use </span>clap::crate_version;
 <span class="kw">use </span>clap::{parser::ValueSource, Arg, ArgAction, ArgMatches, Command};
+<span class="kw">use </span>same_file::Handle;
 <span class="kw">use </span>std::collections::VecDeque;
 <span class="kw">use </span>std::ffi::OsString;
 <span class="kw">use </span>std::time::Duration;
@@ -589,6 +642,13 @@
     Name,
 }
 
+<span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub enum </span>VerificationResult {
+    <span class="prelude-val">Ok</span>,
+    CannotFollowStdinByName,
+    NoOutput,
+}
+
 <span class="attribute">#[derive(Debug, Default)]
 </span><span class="kw">pub struct </span>Settings {
     <span class="kw">pub </span>follow: <span class="prelude-ty">Option</span>&lt;FollowMode&gt;,
@@ -624,10 +684,6 @@
 
         settings.retry =
             matches.get_flag(options::RETRY) || matches.get_flag(options::FOLLOW_RETRY);
-
-        <span class="kw">if </span>settings.retry &amp;&amp; settings.follow.is_none() {
-            <span class="macro">show_warning!</span>(<span class="string">&quot;--retry ignored; --retry is useful only when following&quot;</span>);
-        }
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(s) = matches.get_one::&lt;String&gt;(options::SLEEP_INT) {
             settings.sleep_sec = <span class="kw">match </span>s.parse::&lt;f32&gt;() {
@@ -670,14 +726,8 @@
                             <span class="macro">format!</span>(<span class="string">&quot;invalid PID: {}&quot;</span>, pid_str.quote()),
                         ));
                     }
+
                     settings.pid = pid;
-                    <span class="kw">if </span>settings.follow.is_none() {
-                        <span class="macro">show_warning!</span>(<span class="string">&quot;PID ignored; --pid=PID is useful only when following&quot;</span>);
-                    }
-                    <span class="kw">if </span>!platform::supports_pid_checks(settings.pid) {
-                        <span class="macro">show_warning!</span>(<span class="string">&quot;--pid=PID is not supported on this system&quot;</span>);
-                        settings.pid = <span class="number">0</span>;
-                    }
                 }
                 <span class="prelude-val">Err</span>(e) =&gt; {
                     <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
@@ -689,16 +739,6 @@
         }
 
         settings.mode = FilterMode::from(matches)<span class="question-mark">?</span>;
-
-        <span class="comment">// Mimic GNU&#39;s tail for -[nc]0 without -f and exit immediately
-        </span><span class="kw">if </span>settings.follow.is_none()
-            &amp;&amp; <span class="macro">matches!</span>(
-                settings.mode,
-                FilterMode::Lines(Signum::MinusZero, <span class="kw">_</span>) | FilterMode::Bytes(Signum::MinusZero)
-            )
-        {
-            std::process::exit(<span class="number">0</span>)
-        }
 
         <span class="kw">let </span><span class="kw-2">mut </span>inputs: VecDeque&lt;Input&gt; = matches
             .get_many::&lt;String&gt;(options::ARG_FILES)
@@ -718,6 +758,81 @@
         settings.presume_input_pipe = matches.get_flag(options::PRESUME_INPUT_PIPE);
 
         <span class="prelude-val">Ok</span>(settings)
+    }
+
+    <span class="kw">pub fn </span>has_only_stdin(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.inputs.iter().all(|input| input.is_stdin())
+    }
+
+    <span class="kw">pub fn </span>has_stdin(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.inputs.iter().any(|input| input.is_stdin())
+    }
+
+    <span class="kw">pub fn </span>num_inputs(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.inputs.len()
+    }
+
+    <span class="doccomment">/// Check [`Settings`] for problematic configurations of tail originating from user provided
+    /// command line arguments and print appropriate warnings.
+    </span><span class="kw">pub fn </span>check_warnings(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+        <span class="kw">if </span><span class="self">self</span>.retry {
+            <span class="kw">if </span><span class="self">self</span>.follow.is_none() {
+                <span class="macro">show_warning!</span>(<span class="string">&quot;--retry ignored; --retry is useful only when following&quot;</span>);
+            } <span class="kw">else if </span><span class="self">self</span>.follow == <span class="prelude-val">Some</span>(FollowMode::Descriptor) {
+                <span class="macro">show_warning!</span>(<span class="string">&quot;--retry only effective for the initial open&quot;</span>);
+            }
+        }
+
+        <span class="kw">if </span><span class="self">self</span>.pid != <span class="number">0 </span>{
+            <span class="kw">if </span><span class="self">self</span>.follow.is_none() {
+                <span class="macro">show_warning!</span>(<span class="string">&quot;PID ignored; --pid=PID is useful only when following&quot;</span>);
+            } <span class="kw">else if </span>!platform::supports_pid_checks(<span class="self">self</span>.pid) {
+                <span class="macro">show_warning!</span>(<span class="string">&quot;--pid=PID is not supported on this system&quot;</span>);
+            }
+        }
+
+        <span class="comment">// This warning originates from gnu&#39;s tail implementation of the equivalent warning. If the
+        // user wants to follow stdin, but tail is blocking indefinitely anyways, because of stdin
+        // as `tty` (but no otherwise blocking stdin), then we print a warning that `--follow`
+        // cannot be applied under these circumstances and is therefore ineffective.
+        </span><span class="kw">if </span><span class="self">self</span>.follow.is_some() &amp;&amp; <span class="self">self</span>.has_stdin() {
+            <span class="kw">let </span>blocking_stdin = <span class="self">self</span>.pid == <span class="number">0
+                </span>&amp;&amp; <span class="self">self</span>.follow == <span class="prelude-val">Some</span>(FollowMode::Descriptor)
+                &amp;&amp; <span class="self">self</span>.num_inputs() == <span class="number">1
+                </span>&amp;&amp; Handle::stdin().map_or(<span class="bool-val">false</span>, |handle| {
+                    handle
+                        .as_file()
+                        .metadata()
+                        .map_or(<span class="bool-val">false</span>, |meta| !meta.is_file())
+                });
+
+            <span class="kw">if </span>!blocking_stdin &amp;&amp; atty::is(Stream::Stdin) {
+                <span class="macro">show_warning!</span>(<span class="string">&quot;following standard input indefinitely is ineffective&quot;</span>);
+            }
+        }
+    }
+
+    <span class="doccomment">/// Verify [`Settings`] and try to find unsolvable misconfigurations of tail originating from
+    /// user provided command line arguments. In contrast to [`Settings::check_warnings`] these
+    /// misconfigurations usually lead to the immediate exit or abortion of the running `tail`
+    /// process.
+    </span><span class="kw">pub fn </span>verify(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; VerificationResult {
+        <span class="comment">// Mimic GNU&#39;s tail for `tail -F`
+        </span><span class="kw">if </span><span class="self">self</span>.inputs.iter().any(|i| i.is_stdin()) &amp;&amp; <span class="self">self</span>.follow == <span class="prelude-val">Some</span>(FollowMode::Name) {
+            <span class="kw">return </span>VerificationResult::CannotFollowStdinByName;
+        }
+
+        <span class="comment">// Mimic GNU&#39;s tail for -[nc]0 without -f and exit immediately
+        </span><span class="kw">if </span><span class="self">self</span>.follow.is_none()
+            &amp;&amp; <span class="macro">matches!</span>(
+                <span class="self">self</span>.mode,
+                FilterMode::Lines(Signum::MinusZero, <span class="kw">_</span>) | FilterMode::Bytes(Signum::MinusZero)
+            )
+        {
+            <span class="kw">return </span>VerificationResult::NoOutput;
+        }
+
+        VerificationResult::Ok
     }
 }
 
@@ -772,19 +887,6 @@
         (n, <span class="bool-val">true</span>) =&gt; Signum::Positive(n),
         (n, <span class="bool-val">false</span>) =&gt; Signum::Negative(n),
     })
-}
-
-<span class="kw">pub fn </span>stdin_is_pipe_or_fifo() -&gt; bool {
-    <span class="attribute">#[cfg(unix)]
-    </span>{
-        platform::stdin_is_pipe_or_fifo()
-    }
-    <span class="attribute">#[cfg(windows)]
-    </span>{
-        winapi_util::file::typ(winapi_util::HandleRef::stdin())
-            .map(|t| t.is_disk() || t.is_pipe())
-            .unwrap_or(<span class="bool-val">false</span>)
-    }
 }
 
 <span class="kw">pub fn </span>parse_args(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;Settings&gt; {

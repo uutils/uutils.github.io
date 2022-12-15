@@ -594,6 +594,13 @@
 <span id="594">594</span>
 <span id="595">595</span>
 <span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
@@ -609,8 +616,7 @@
 <span class="kw">use </span>std::collections::VecDeque;
 <span class="kw">use </span>std::io::BufRead;
 <span class="kw">use </span>std::path::{Path, PathBuf};
-<span class="kw">use </span>std::sync::mpsc;
-<span class="kw">use </span>std::sync::mpsc::{channel, Receiver};
+<span class="kw">use </span>std::sync::mpsc::{<span class="self">self</span>, channel, Receiver};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{set_exit_code, UResult, USimpleError};
 <span class="kw">use </span>uucore::show_error;
@@ -677,7 +683,7 @@
     }
 }
 
-<span class="kw">pub struct </span>WatcherService {
+<span class="kw">pub struct </span>Observer {
     <span class="doccomment">/// Whether --retry was given on the command line
     </span><span class="kw">pub </span>retry: bool,
 
@@ -688,18 +694,28 @@
     /// platform specific event driven method. Since `use_polling` is subject to
     /// change during runtime it is moved out of [`Settings`].
     </span><span class="kw">pub </span>use_polling: bool,
+
     <span class="kw">pub </span>watcher_rx: <span class="prelude-ty">Option</span>&lt;WatcherRx&gt;,
     <span class="kw">pub </span>orphans: Vec&lt;PathBuf&gt;,
     <span class="kw">pub </span>files: FileHandling,
+
+    <span class="kw">pub </span>pid: platform::Pid,
 }
 
-<span class="kw">impl </span>WatcherService {
+<span class="kw">impl </span>Observer {
     <span class="kw">pub fn </span>new(
         retry: bool,
         follow: <span class="prelude-ty">Option</span>&lt;FollowMode&gt;,
         use_polling: bool,
         files: FileHandling,
+        pid: platform::Pid,
     ) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>pid = <span class="kw">if </span>platform::supports_pid_checks(pid) {
+            pid
+        } <span class="kw">else </span>{
+            <span class="number">0
+        </span>};
+
         <span class="self">Self </span>{
             retry,
             follow,
@@ -707,6 +723,7 @@
             watcher_rx: <span class="prelude-val">None</span>,
             orphans: Vec::new(),
             files,
+            pid,
         }
     }
 
@@ -716,6 +733,7 @@
             settings.follow,
             settings.use_polling,
             FileHandling::from(settings),
+            settings.pid,
         )
     }
 
@@ -1056,14 +1074,12 @@
     }
 }
 
-<span class="kw">pub fn </span>follow(<span class="kw-2">mut </span>watcher_service: WatcherService, settings: <span class="kw-2">&amp;</span>Settings) -&gt; UResult&lt;()&gt; {
-    <span class="kw">if </span>watcher_service.files.no_files_remaining(settings)
-        &amp;&amp; !watcher_service.files.only_stdin_remaining()
-    {
+<span class="kw">pub fn </span>follow(<span class="kw-2">mut </span>observer: Observer, settings: <span class="kw-2">&amp;</span>Settings) -&gt; UResult&lt;()&gt; {
+    <span class="kw">if </span>observer.files.no_files_remaining(settings) &amp;&amp; !observer.files.only_stdin_remaining() {
         <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, text::NO_FILES_REMAINING.to_string()));
     }
 
-    <span class="kw">let </span><span class="kw-2">mut </span>process = platform::ProcessChecker::new(settings.pid);
+    <span class="kw">let </span><span class="kw-2">mut </span>process = platform::ProcessChecker::new(observer.pid);
 
     <span class="kw">let </span><span class="kw-2">mut </span>_event_counter = <span class="number">0</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>_timeout_counter = <span class="number">0</span>;
@@ -1074,7 +1090,7 @@
 
         <span class="comment">// If `--pid=p`, tail checks whether process p
         // is alive at least every `--sleep-interval=N` seconds
-        </span><span class="kw">if </span>settings.follow.is_some() &amp;&amp; settings.pid != <span class="number">0 </span>&amp;&amp; process.is_dead() {
+        </span><span class="kw">if </span>settings.follow.is_some() &amp;&amp; observer.pid != <span class="number">0 </span>&amp;&amp; process.is_dead() {
             <span class="comment">// p is dead, tail will also terminate
             </span><span class="kw">break</span>;
         }
@@ -1083,22 +1099,20 @@
         // If a path becomes an orphan during runtime, it will be added to orphans.
         // To be able to differentiate between the cases of test_retry8 and test_retry9,
         // here paths will not be removed from orphans if the path becomes available.
-        </span><span class="kw">if </span>watcher_service.follow_name_retry() {
-            <span class="kw">for </span>new_path <span class="kw">in </span><span class="kw-2">&amp;</span>watcher_service.orphans {
+        </span><span class="kw">if </span>observer.follow_name_retry() {
+            <span class="kw">for </span>new_path <span class="kw">in </span><span class="kw-2">&amp;</span>observer.orphans {
                 <span class="kw">if </span>new_path.exists() {
-                    <span class="kw">let </span>pd = watcher_service.files.get(new_path);
+                    <span class="kw">let </span>pd = observer.files.get(new_path);
                     <span class="kw">let </span>md = new_path.metadata().unwrap();
                     <span class="kw">if </span>md.is_tailable() &amp;&amp; pd.reader.is_none() {
                         <span class="macro">show_error!</span>(
                             <span class="string">&quot;{} has appeared;  following new file&quot;</span>,
                             pd.display_name.quote()
                         );
-                        watcher_service.files.update_metadata(new_path, <span class="prelude-val">Some</span>(md));
-                        watcher_service.files.update_reader(new_path)<span class="question-mark">?</span>;
-                        _read_some = watcher_service
-                            .files
-                            .tail_file(new_path, settings.verbose)<span class="question-mark">?</span>;
-                        watcher_service
+                        observer.files.update_metadata(new_path, <span class="prelude-val">Some</span>(md));
+                        observer.files.update_reader(new_path)<span class="question-mark">?</span>;
+                        _read_some = observer.files.tail_file(new_path, settings.verbose)<span class="question-mark">?</span>;
+                        observer
                             .watcher_rx
                             .as_mut()
                             .unwrap()
@@ -1110,7 +1124,7 @@
 
         <span class="comment">// With  -f, sleep for approximately N seconds (default 1.0) between iterations;
         // We wake up if Notify sends an Event or if we wait more than `sleep_sec`.
-        </span><span class="kw">let </span>rx_result = watcher_service
+        </span><span class="kw">let </span>rx_result = observer
             .watcher_rx
             .as_mut()
             .unwrap()
@@ -1125,9 +1139,9 @@
         </span><span class="kw">match </span>rx_result {
             <span class="prelude-val">Ok</span>(<span class="prelude-val">Ok</span>(event)) =&gt; {
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(event_path) = event.paths.first() {
-                    <span class="kw">if </span>watcher_service.files.contains_key(event_path) {
+                    <span class="kw">if </span>observer.files.contains_key(event_path) {
                         <span class="comment">// Handle Event if it is about a path that we are monitoring
-                        </span>paths = watcher_service.handle_event(<span class="kw-2">&amp;</span>event, settings)<span class="question-mark">?</span>;
+                        </span>paths = observer.handle_event(<span class="kw-2">&amp;</span>event, settings)<span class="question-mark">?</span>;
                     }
                 }
             }
@@ -1136,8 +1150,8 @@
                 paths,
             })) <span class="kw">if </span>e.kind() == std::io::ErrorKind::NotFound =&gt; {
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(event_path) = paths.first() {
-                    <span class="kw">if </span>watcher_service.files.contains_key(event_path) {
-                        <span class="kw">let _ </span>= watcher_service
+                    <span class="kw">if </span>observer.files.contains_key(event_path) {
+                        <span class="kw">let _ </span>= observer
                             .watcher_rx
                             .as_mut()
                             .unwrap()
@@ -1162,16 +1176,16 @@
             <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;RecvTimeoutError: {}&quot;</span>, e))),
         }
 
-        <span class="kw">if </span>watcher_service.use_polling &amp;&amp; settings.follow.is_some() {
+        <span class="kw">if </span>observer.use_polling &amp;&amp; settings.follow.is_some() {
             <span class="comment">// Consider all files to potentially have new content.
             // This is a workaround because `Notify::PollWatcher`
             // does not recognize the &quot;renaming&quot; of files.
-            </span>paths = watcher_service.files.keys().cloned().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+            </span>paths = observer.files.keys().cloned().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
         }
 
         <span class="comment">// main print loop
         </span><span class="kw">for </span>path <span class="kw">in </span><span class="kw-2">&amp;</span>paths {
-            _read_some = watcher_service.files.tail_file(path, settings.verbose)<span class="question-mark">?</span>;
+            _read_some = observer.files.tail_file(path, settings.verbose)<span class="question-mark">?</span>;
         }
 
         <span class="kw">if </span>_timeout_counter == settings.max_unchanged_stats {

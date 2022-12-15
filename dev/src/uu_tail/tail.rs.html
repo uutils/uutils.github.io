@@ -492,16 +492,6 @@
 <span id="492">492</span>
 <span id="493">493</span>
 <span id="494">494</span>
-<span id="495">495</span>
-<span id="496">496</span>
-<span id="497">497</span>
-<span id="498">498</span>
-<span id="499">499</span>
-<span id="500">500</span>
-<span id="501">501</span>
-<span id="502">502</span>
-<span id="503">503</span>
-<span id="504">504</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Morten Olsen Lysgaard &lt;morten@lysgaard.no&gt;
@@ -528,58 +518,57 @@
 <span class="kw">mod </span>platform;
 <span class="kw">pub mod </span>text;
 
+<span class="kw">pub use </span>args::uu_app;
+<span class="kw">use </span>args::{parse_args, FilterMode, Settings, Signum};
+<span class="kw">use </span>chunks::ReverseChunks;
+<span class="kw">use </span>follow::Observer;
+<span class="kw">use </span>paths::{FileExtTail, HeaderPrinter, Input, InputKind, MetadataExtTail};
 <span class="kw">use </span>same_file::Handle;
 <span class="kw">use </span>std::cmp::Ordering;
 <span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::io::{<span class="self">self</span>, stdin, stdout, BufRead, BufReader, BufWriter, Read, Seek, SeekFrom, Write};
 <span class="kw">use </span>std::path::{Path, PathBuf};
-<span class="kw">use </span>uucore::{show, show_error, show_warning};
-
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{get_exit_code, set_exit_code, FromIo, UError, UResult, USimpleError};
-
-<span class="kw">pub use </span>args::uu_app;
-<span class="kw">use </span>args::{parse_args, FilterMode, Settings, Signum};
-<span class="kw">use </span>chunks::ReverseChunks;
-<span class="kw">use </span>follow::WatcherService;
-<span class="kw">use </span>paths::{FileExtTail, Input, InputKind, InputService, MetadataExtTail};
+<span class="kw">use </span>uucore::{show, show_error};
 
 <span class="attribute">#[uucore::main]
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
     <span class="kw">let </span>settings = parse_args(args)<span class="question-mark">?</span>;
+
+    settings.check_warnings();
+
+    <span class="kw">match </span>settings.verify() {
+        args::VerificationResult::CannotFollowStdinByName =&gt; {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
+                <span class="number">1</span>,
+                <span class="macro">format!</span>(<span class="string">&quot;cannot follow {} by name&quot;</span>, text::DASH.quote()),
+            ))
+        }
+        <span class="comment">// Exit early if we do not output anything. Note, that this may break a pipe
+        // when tail is on the receiving side.
+        </span>args::VerificationResult::NoOutput =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
+        args::VerificationResult::Ok =&gt; {}
+    }
+
     uu_tail(<span class="kw-2">&amp;</span>settings)
 }
 
 <span class="kw">fn </span>uu_tail(settings: <span class="kw-2">&amp;</span>Settings) -&gt; UResult&lt;()&gt; {
-    <span class="comment">// Mimic GNU&#39;s tail for `tail -F` and exit immediately
-    </span><span class="kw">let </span><span class="kw-2">mut </span>input_service = InputService::from(settings);
-    <span class="kw">let </span><span class="kw-2">mut </span>watcher_service = WatcherService::from(settings);
+    <span class="kw">let </span><span class="kw-2">mut </span>printer = HeaderPrinter::new(settings.verbose, <span class="bool-val">true</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>observer = Observer::from(settings);
 
-    <span class="kw">if </span>input_service.has_stdin() &amp;&amp; watcher_service.follow_name() {
-        <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
-            <span class="number">1</span>,
-            <span class="macro">format!</span>(<span class="string">&quot;cannot follow {} by name&quot;</span>, text::DASH.quote()),
-        ));
-    }
-
-    watcher_service.start(settings)<span class="question-mark">?</span>;
+    observer.start(settings)<span class="question-mark">?</span>;
     <span class="comment">// Do an initial tail print of each path&#39;s content.
     // Add `path` and `reader` to `files` map if `--follow` is selected.
-    </span><span class="kw">for </span>input <span class="kw">in </span><span class="kw-2">&amp;</span>input_service.inputs.clone() {
+    </span><span class="kw">for </span>input <span class="kw">in </span><span class="kw-2">&amp;</span>settings.inputs.clone() {
         <span class="kw">match </span>input.kind() {
             InputKind::File(path) <span class="kw">if </span><span class="macro">cfg!</span>(not(unix)) || path != <span class="kw-2">&amp;</span>PathBuf::from(text::DEV_STDIN) =&gt; {
-                tail_file(
-                    settings,
-                    <span class="kw-2">&amp;mut </span>input_service,
-                    input,
-                    path,
-                    <span class="kw-2">&amp;mut </span>watcher_service,
-                    <span class="number">0</span>,
-                )<span class="question-mark">?</span>;
+                tail_file(settings, <span class="kw-2">&amp;mut </span>printer, input, path, <span class="kw-2">&amp;mut </span>observer, <span class="number">0</span>)<span class="question-mark">?</span>;
             }
             <span class="comment">// File points to /dev/stdin here
             </span>InputKind::File(<span class="kw">_</span>) | InputKind::Stdin =&gt; {
-                tail_stdin(settings, <span class="kw-2">&amp;mut </span>input_service, input, <span class="kw-2">&amp;mut </span>watcher_service)<span class="question-mark">?</span>;
+                tail_stdin(settings, <span class="kw-2">&amp;mut </span>printer, input, <span class="kw-2">&amp;mut </span>observer)<span class="question-mark">?</span>;
             }
         }
     }
@@ -594,9 +583,8 @@
         the input file is not a FIFO, pipe, or regular file, it is unspecified whether or
         not the -f option shall be ignored.
         */
-
-        </span><span class="kw">if </span>!input_service.has_only_stdin() {
-            follow::follow(watcher_service, settings)<span class="question-mark">?</span>;
+        </span><span class="kw">if </span>!settings.has_only_stdin() {
+            follow::follow(observer, settings)<span class="question-mark">?</span>;
         }
     }
 
@@ -609,16 +597,12 @@
 
 <span class="kw">fn </span>tail_file(
     settings: <span class="kw-2">&amp;</span>Settings,
-    input_service: <span class="kw-2">&amp;mut </span>InputService,
+    header_printer: <span class="kw-2">&amp;mut </span>HeaderPrinter,
     input: <span class="kw-2">&amp;</span>Input,
     path: <span class="kw-2">&amp;</span>Path,
-    watcher_service: <span class="kw-2">&amp;mut </span>WatcherService,
+    observer: <span class="kw-2">&amp;mut </span>Observer,
     offset: u64,
 ) -&gt; UResult&lt;()&gt; {
-    <span class="kw">if </span>watcher_service.follow_descriptor_retry() {
-        <span class="macro">show_warning!</span>(<span class="string">&quot;--retry only effective for the initial open&quot;</span>);
-    }
-
     <span class="kw">if </span>!path.exists() {
         set_exit_code(<span class="number">1</span>);
         <span class="macro">show_error!</span>(
@@ -626,11 +610,11 @@
             input.display_name,
             text::NO_SUCH_FILE
         );
-        watcher_service.add_bad_path(path, input.display_name.as_str(), <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+        observer.add_bad_path(path, input.display_name.as_str(), <span class="bool-val">false</span>)<span class="question-mark">?</span>;
     } <span class="kw">else if </span>path.is_dir() {
         set_exit_code(<span class="number">1</span>);
 
-        input_service.print_header(input);
+        header_printer.print_input(input);
         <span class="kw">let </span>err_msg = <span class="string">&quot;Is a directory&quot;</span>.to_string();
 
         <span class="macro">show_error!</span>(<span class="string">&quot;error reading &#39;{}&#39;: {}&quot;</span>, input.display_name, err_msg);
@@ -646,16 +630,16 @@
                 msg
             );
         }
-        <span class="kw">if </span>!(watcher_service.follow_name_retry()) {
+        <span class="kw">if </span>!(observer.follow_name_retry()) {
             <span class="comment">// skip directory if not retry
             </span><span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
-        watcher_service.add_bad_path(path, input.display_name.as_str(), <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+        observer.add_bad_path(path, input.display_name.as_str(), <span class="bool-val">false</span>)<span class="question-mark">?</span>;
     } <span class="kw">else if </span>input.is_tailable() {
         <span class="kw">let </span>metadata = path.metadata().ok();
         <span class="kw">match </span>File::open(path) {
             <span class="prelude-val">Ok</span>(<span class="kw-2">mut </span>file) =&gt; {
-                input_service.print_header(input);
+                header_printer.print_input(input);
                 <span class="kw">let </span><span class="kw-2">mut </span>reader;
                 <span class="kw">if </span>!settings.presume_input_pipe
                     &amp;&amp; file.is_seekable(<span class="kw">if </span>input.is_stdin() { offset } <span class="kw">else </span>{ <span class="number">0 </span>})
@@ -667,7 +651,7 @@
                     reader = BufReader::new(file);
                     unbounded_tail(<span class="kw-2">&amp;mut </span>reader, settings)<span class="question-mark">?</span>;
                 }
-                watcher_service.add_path(
+                observer.add_path(
                     path,
                     input.display_name.as_str(),
                     <span class="prelude-val">Some</span>(Box::new(reader)),
@@ -675,20 +659,20 @@
                 )<span class="question-mark">?</span>;
             }
             <span class="prelude-val">Err</span>(e) <span class="kw">if </span>e.kind() == std::io::ErrorKind::PermissionDenied =&gt; {
-                watcher_service.add_bad_path(path, input.display_name.as_str(), <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+                observer.add_bad_path(path, input.display_name.as_str(), <span class="bool-val">false</span>)<span class="question-mark">?</span>;
                 <span class="macro">show!</span>(e.map_err_context(|| {
                     <span class="macro">format!</span>(<span class="string">&quot;cannot open &#39;{}&#39; for reading&quot;</span>, input.display_name)
                 }));
             }
             <span class="prelude-val">Err</span>(e) =&gt; {
-                watcher_service.add_bad_path(path, input.display_name.as_str(), <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+                observer.add_bad_path(path, input.display_name.as_str(), <span class="bool-val">false</span>)<span class="question-mark">?</span>;
                 <span class="kw">return </span><span class="prelude-val">Err</span>(e.map_err_context(|| {
                     <span class="macro">format!</span>(<span class="string">&quot;cannot open &#39;{}&#39; for reading&quot;</span>, input.display_name)
                 }));
             }
         }
     } <span class="kw">else </span>{
-        watcher_service.add_bad_path(path, input.display_name.as_str(), <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+        observer.add_bad_path(path, input.display_name.as_str(), <span class="bool-val">false</span>)<span class="question-mark">?</span>;
     }
 
     <span class="prelude-val">Ok</span>(())
@@ -696,9 +680,9 @@
 
 <span class="kw">fn </span>tail_stdin(
     settings: <span class="kw-2">&amp;</span>Settings,
-    input_service: <span class="kw-2">&amp;mut </span>InputService,
+    header_printer: <span class="kw-2">&amp;mut </span>HeaderPrinter,
     input: <span class="kw-2">&amp;</span>Input,
-    watcher_service: <span class="kw-2">&amp;mut </span>WatcherService,
+    observer: <span class="kw-2">&amp;mut </span>Observer,
 ) -&gt; UResult&lt;()&gt; {
     <span class="kw">match </span>input.resolve() {
         <span class="comment">// fifo
@@ -715,24 +699,20 @@
             }
             tail_file(
                 settings,
-                input_service,
+                header_printer,
                 input,
                 <span class="kw-2">&amp;</span>path,
-                watcher_service,
+                observer,
                 stdin_offset,
             )<span class="question-mark">?</span>;
         }
         <span class="comment">// pipe
         </span><span class="prelude-val">None </span>=&gt; {
-            input_service.print_header(input);
+            header_printer.print_input(input);
             <span class="kw">if </span>!paths::stdin_is_bad_fd() {
                 <span class="kw">let </span><span class="kw-2">mut </span>reader = BufReader::new(stdin());
                 unbounded_tail(<span class="kw-2">&amp;mut </span>reader, settings)<span class="question-mark">?</span>;
-                watcher_service.add_stdin(
-                    input.display_name.as_str(),
-                    <span class="prelude-val">Some</span>(Box::new(reader)),
-                    <span class="bool-val">true</span>,
-                )<span class="question-mark">?</span>;
+                observer.add_stdin(input.display_name.as_str(), <span class="prelude-val">Some</span>(Box::new(reader)), <span class="bool-val">true</span>)<span class="question-mark">?</span>;
             } <span class="kw">else </span>{
                 set_exit_code(<span class="number">1</span>);
                 <span class="macro">show_error!</span>(
@@ -921,7 +901,7 @@
         FilterMode::Lines(Signum::Negative(count), sep) =&gt; {
             <span class="kw">let </span><span class="kw-2">mut </span>chunks = chunks::LinesChunkBuffer::new(<span class="kw-2">*</span>sep, <span class="kw-2">*</span>count);
             chunks.fill(reader)<span class="question-mark">?</span>;
-            chunks.print(writer)<span class="question-mark">?</span>;
+            chunks.print(<span class="kw-2">&amp;mut </span>writer)<span class="question-mark">?</span>;
         }
         FilterMode::Lines(Signum::PlusZero | Signum::Positive(<span class="number">1</span>), <span class="kw">_</span>) =&gt; {
             io::copy(reader, <span class="kw-2">&amp;mut </span>writer)<span class="question-mark">?</span>;
@@ -945,7 +925,7 @@
         FilterMode::Bytes(Signum::Negative(count)) =&gt; {
             <span class="kw">let </span><span class="kw-2">mut </span>chunks = chunks::BytesChunkBuffer::new(<span class="kw-2">*</span>count);
             chunks.fill(reader)<span class="question-mark">?</span>;
-            chunks.print(writer)<span class="question-mark">?</span>;
+            chunks.print(<span class="kw-2">&amp;mut </span>writer)<span class="question-mark">?</span>;
         }
         FilterMode::Bytes(Signum::PlusZero | Signum::Positive(<span class="number">1</span>)) =&gt; {
             io::copy(reader, <span class="kw-2">&amp;mut </span>writer)<span class="question-mark">?</span>;
