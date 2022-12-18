@@ -985,6 +985,90 @@
 <span id="985">985</span>
 <span id="986">986</span>
 <span id="987">987</span>
+<span id="988">988</span>
+<span id="989">989</span>
+<span id="990">990</span>
+<span id="991">991</span>
+<span id="992">992</span>
+<span id="993">993</span>
+<span id="994">994</span>
+<span id="995">995</span>
+<span id="996">996</span>
+<span id="997">997</span>
+<span id="998">998</span>
+<span id="999">999</span>
+<span id="1000">1000</span>
+<span id="1001">1001</span>
+<span id="1002">1002</span>
+<span id="1003">1003</span>
+<span id="1004">1004</span>
+<span id="1005">1005</span>
+<span id="1006">1006</span>
+<span id="1007">1007</span>
+<span id="1008">1008</span>
+<span id="1009">1009</span>
+<span id="1010">1010</span>
+<span id="1011">1011</span>
+<span id="1012">1012</span>
+<span id="1013">1013</span>
+<span id="1014">1014</span>
+<span id="1015">1015</span>
+<span id="1016">1016</span>
+<span id="1017">1017</span>
+<span id="1018">1018</span>
+<span id="1019">1019</span>
+<span id="1020">1020</span>
+<span id="1021">1021</span>
+<span id="1022">1022</span>
+<span id="1023">1023</span>
+<span id="1024">1024</span>
+<span id="1025">1025</span>
+<span id="1026">1026</span>
+<span id="1027">1027</span>
+<span id="1028">1028</span>
+<span id="1029">1029</span>
+<span id="1030">1030</span>
+<span id="1031">1031</span>
+<span id="1032">1032</span>
+<span id="1033">1033</span>
+<span id="1034">1034</span>
+<span id="1035">1035</span>
+<span id="1036">1036</span>
+<span id="1037">1037</span>
+<span id="1038">1038</span>
+<span id="1039">1039</span>
+<span id="1040">1040</span>
+<span id="1041">1041</span>
+<span id="1042">1042</span>
+<span id="1043">1043</span>
+<span id="1044">1044</span>
+<span id="1045">1045</span>
+<span id="1046">1046</span>
+<span id="1047">1047</span>
+<span id="1048">1048</span>
+<span id="1049">1049</span>
+<span id="1050">1050</span>
+<span id="1051">1051</span>
+<span id="1052">1052</span>
+<span id="1053">1053</span>
+<span id="1054">1054</span>
+<span id="1055">1055</span>
+<span id="1056">1056</span>
+<span id="1057">1057</span>
+<span id="1058">1058</span>
+<span id="1059">1059</span>
+<span id="1060">1060</span>
+<span id="1061">1061</span>
+<span id="1062">1062</span>
+<span id="1063">1063</span>
+<span id="1064">1064</span>
+<span id="1065">1065</span>
+<span id="1066">1066</span>
+<span id="1067">1067</span>
+<span id="1068">1068</span>
+<span id="1069">1069</span>
+<span id="1070">1070</span>
+<span id="1071">1071</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;
@@ -1486,15 +1570,39 @@
     <span class="attribute">#[cfg(unix)]
     </span><span class="kw">pub fn </span>new(statvfs: StatFs) -&gt; <span class="self">Self </span>{
         {
-            <span class="self">Self </span>{
+            <span class="attribute">#[cfg(all(not(target_os = <span class="string">&quot;freebsd&quot;</span>), target_pointer_width = <span class="string">&quot;64&quot;</span>))]
+            </span><span class="kw">return </span><span class="self">Self </span>{
                 blocksize: statvfs.f_bsize <span class="kw">as </span>u64, <span class="comment">// or `statvfs.f_frsize` ?
-                </span>blocks: statvfs.f_blocks <span class="kw">as </span>u64,
-                bfree: statvfs.f_bfree <span class="kw">as </span>u64,
-                bavail: statvfs.f_bavail <span class="kw">as </span>u64,
+                </span>blocks: statvfs.f_blocks,
+                bfree: statvfs.f_bfree,
+                bavail: statvfs.f_bavail,
+                bavail_top_bit_set: ((statvfs.f_bavail) &amp; (<span class="number">1u64</span>.rotate_right(<span class="number">1</span>))) != <span class="number">0</span>,
+                files: statvfs.f_files,
+                ffree: statvfs.f_ffree,
+            };
+            <span class="attribute">#[cfg(all(not(target_os = <span class="string">&quot;freebsd&quot;</span>), not(target_pointer_width = <span class="string">&quot;64&quot;</span>)))]
+            </span><span class="kw">return </span><span class="self">Self </span>{
+                blocksize: statvfs.f_bsize <span class="kw">as </span>u64, <span class="comment">// or `statvfs.f_frsize` ?
+                </span>blocks: statvfs.f_blocks.into(),
+                bfree: statvfs.f_bfree.into(),
+                bavail: statvfs.f_bavail.into(),
                 bavail_top_bit_set: ((statvfs.f_bavail <span class="kw">as </span>u64) &amp; (<span class="number">1u64</span>.rotate_right(<span class="number">1</span>))) != <span class="number">0</span>,
-                files: statvfs.f_files <span class="kw">as </span>u64,
-                ffree: statvfs.f_ffree <span class="kw">as </span>u64,
-            }
+                files: statvfs.f_files.into(),
+                ffree: statvfs.f_ffree.into(),
+            };
+            <span class="attribute">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+            </span><span class="kw">return </span><span class="self">Self </span>{
+                blocksize: statvfs.f_bsize, <span class="comment">// or `statvfs.f_frsize` ?
+                </span>blocks: statvfs.f_blocks,
+                bfree: statvfs.f_bfree,
+                bavail: statvfs.f_bavail.try_into().unwrap(),
+                bavail_top_bit_set: ((std::convert::TryInto::&lt;u64&gt;::try_into(statvfs.f_bavail)
+                    .unwrap())
+                    &amp; (<span class="number">1u64</span>.rotate_right(<span class="number">1</span>)))
+                    != <span class="number">0</span>,
+                files: statvfs.f_files,
+                ffree: statvfs.f_ffree.try_into().unwrap(),
+            };
         }
     }
     <span class="attribute">#[cfg(not(unix))]
@@ -1543,7 +1651,7 @@
         <span class="kw">let </span>bytes_per_cluster = sectors_per_cluster <span class="kw">as </span>u64 * bytes_per_sector <span class="kw">as </span>u64;
         <span class="self">Self </span>{
             <span class="comment">// f_bsize      File system block size.
-            </span>blocksize: bytes_per_cluster <span class="kw">as </span>u64,
+            </span>blocksize: bytes_per_cluster,
             <span class="comment">// f_blocks - Total number of blocks on the file system, in units of f_frsize.
             // frsize =     Fundamental file system block size (fragment size).
             </span>blocks: total_number_of_clusters <span class="kw">as </span>u64,
@@ -1577,22 +1685,60 @@
 <span class="attribute">#[cfg(unix)]
 </span><span class="kw">impl </span>FsMeta <span class="kw">for </span>StatFs {
     <span class="kw">fn </span>block_size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; i64 {
-        <span class="self">self</span>.f_bsize <span class="kw">as </span>i64
+        <span class="attribute">#[cfg(all(
+            not(target_env = <span class="string">&quot;musl&quot;</span>),
+            not(target_vendor = <span class="string">&quot;apple&quot;</span>),
+            not(target_os = <span class="string">&quot;android&quot;</span>),
+            not(target_os = <span class="string">&quot;freebsd&quot;</span>),
+            target_pointer_width = <span class="string">&quot;64&quot;
+        </span>))]
+        </span><span class="kw">return </span><span class="self">self</span>.f_bsize;
+        <span class="attribute">#[cfg(all(
+            not(target_env = <span class="string">&quot;musl&quot;</span>),
+            not(target_os = <span class="string">&quot;freebsd&quot;</span>),
+            any(
+                target_vendor = <span class="string">&quot;apple&quot;</span>,
+                target_os = <span class="string">&quot;android&quot;</span>,
+                not(target_pointer_width = <span class="string">&quot;64&quot;</span>)
+            )
+        ))]
+        </span><span class="kw">return </span><span class="self">self</span>.f_bsize.into();
+        <span class="attribute">#[cfg(any(target_env = <span class="string">&quot;musl&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+        </span><span class="kw">return </span><span class="self">self</span>.f_bsize.try_into().unwrap();
     }
     <span class="kw">fn </span>total_blocks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
-        <span class="self">self</span>.f_blocks <span class="kw">as </span>u64
+        <span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
+        </span><span class="kw">return </span><span class="self">self</span>.f_blocks;
+        <span class="attribute">#[cfg(not(target_pointer_width = <span class="string">&quot;64&quot;</span>))]
+        </span><span class="kw">return </span><span class="self">self</span>.f_blocks.into();
     }
     <span class="kw">fn </span>free_blocks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
-        <span class="self">self</span>.f_bfree <span class="kw">as </span>u64
+        <span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
+        </span><span class="kw">return </span><span class="self">self</span>.f_bfree;
+        <span class="attribute">#[cfg(not(target_pointer_width = <span class="string">&quot;64&quot;</span>))]
+        </span><span class="kw">return </span><span class="self">self</span>.f_bfree.into();
     }
     <span class="kw">fn </span>avail_blocks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
-        <span class="self">self</span>.f_bavail <span class="kw">as </span>u64
+        <span class="attribute">#[cfg(all(not(target_os = <span class="string">&quot;freebsd&quot;</span>), target_pointer_width = <span class="string">&quot;64&quot;</span>))]
+        </span><span class="kw">return </span><span class="self">self</span>.f_bavail;
+        <span class="attribute">#[cfg(all(not(target_os = <span class="string">&quot;freebsd&quot;</span>), not(target_pointer_width = <span class="string">&quot;64&quot;</span>)))]
+        </span><span class="kw">return </span><span class="self">self</span>.f_bavail.into();
+        <span class="attribute">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+        </span><span class="kw">return </span><span class="self">self</span>.f_bavail.try_into().unwrap();
     }
     <span class="kw">fn </span>total_file_nodes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
-        <span class="self">self</span>.f_files <span class="kw">as </span>u64
+        <span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
+        </span><span class="kw">return </span><span class="self">self</span>.f_files;
+        <span class="attribute">#[cfg(not(target_pointer_width = <span class="string">&quot;64&quot;</span>))]
+        </span><span class="kw">return </span><span class="self">self</span>.f_files.into();
     }
     <span class="kw">fn </span>free_file_nodes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
-        <span class="self">self</span>.f_ffree <span class="kw">as </span>u64
+        <span class="attribute">#[cfg(all(not(target_os = <span class="string">&quot;freebsd&quot;</span>), target_pointer_width = <span class="string">&quot;64&quot;</span>))]
+        </span><span class="kw">return </span><span class="self">self</span>.f_ffree;
+        <span class="attribute">#[cfg(all(not(target_os = <span class="string">&quot;freebsd&quot;</span>), not(target_pointer_width = <span class="string">&quot;64&quot;</span>)))]
+        </span><span class="kw">return </span><span class="self">self</span>.f_ffree.into();
+        <span class="attribute">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+        </span><span class="kw">return </span><span class="self">self</span>.f_ffree.try_into().unwrap();
     }
     <span class="attribute">#[cfg(any(
         target_os = <span class="string">&quot;linux&quot;</span>,
@@ -1601,7 +1747,26 @@
         target_os = <span class="string">&quot;freebsd&quot;
     </span>))]
     </span><span class="kw">fn </span>fs_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; i64 {
-        <span class="self">self</span>.f_type <span class="kw">as </span>i64
+        <span class="attribute">#[cfg(all(
+            not(target_env = <span class="string">&quot;musl&quot;</span>),
+            not(target_vendor = <span class="string">&quot;apple&quot;</span>),
+            not(target_os = <span class="string">&quot;android&quot;</span>),
+            not(target_os = <span class="string">&quot;freebsd&quot;</span>),
+            target_pointer_width = <span class="string">&quot;64&quot;
+        </span>))]
+        </span><span class="kw">return </span><span class="self">self</span>.f_type;
+        <span class="attribute">#[cfg(all(
+            not(target_env = <span class="string">&quot;musl&quot;</span>),
+            any(
+                target_vendor = <span class="string">&quot;apple&quot;</span>,
+                target_os = <span class="string">&quot;android&quot;</span>,
+                target_os = <span class="string">&quot;freebsd&quot;</span>,
+                not(target_pointer_width = <span class="string">&quot;64&quot;</span>)
+            )
+        ))]
+        </span><span class="kw">return </span><span class="self">self</span>.f_type.into();
+        <span class="attribute">#[cfg(target_env = <span class="string">&quot;musl&quot;</span>)]
+        </span><span class="kw">return </span><span class="self">self</span>.f_type.try_into().unwrap();
     }
     <span class="attribute">#[cfg(not(any(
         target_os = <span class="string">&quot;linux&quot;</span>,
@@ -1620,7 +1785,10 @@
     }
     <span class="attribute">#[cfg(any(target_vendor = <span class="string">&quot;apple&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>, target_os = <span class="string">&quot;netbsd&quot;</span>))]
     </span><span class="kw">fn </span>io_size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
-        <span class="self">self</span>.f_iosize <span class="kw">as </span>u64
+        <span class="attribute">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+        </span><span class="kw">return </span><span class="self">self</span>.f_iosize;
+        <span class="attribute">#[cfg(not(target_os = <span class="string">&quot;freebsd&quot;</span>))]
+        </span><span class="kw">return </span><span class="self">self</span>.f_iosize <span class="kw">as </span>u64;
     }
     <span class="comment">// XXX: dunno if this is right
     </span><span class="attribute">#[cfg(not(any(

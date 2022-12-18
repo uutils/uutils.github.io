@@ -354,6 +354,14 @@
 <span id="354">354</span>
 <span id="355">355</span>
 <span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;
@@ -407,7 +415,10 @@
 <span class="kw">pub use </span>libc::setutxent;
 <span class="attribute">#[cfg(any(target_vendor = <span class="string">&quot;apple&quot;</span>, target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;netbsd&quot;</span>))]
 </span><span class="kw">pub use </span>libc::utmpxname;
-<span class="attribute">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+
+<span class="doccomment">/// # Safety
+/// Just fixed the clippy warning. Please add description here.
+</span><span class="attribute">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
 </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>utmpxname(_file: <span class="kw-2">*const </span>libc::c_char) -&gt; libc::c_int {
     <span class="number">0
 </span>}
@@ -521,11 +532,11 @@
 <span class="kw">impl </span>Utmpx {
     <span class="doccomment">/// A.K.A. ut.ut_type
     </span><span class="kw">pub fn </span>record_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; i16 {
-        <span class="self">self</span>.inner.ut_type <span class="kw">as </span>i16
+        <span class="self">self</span>.inner.ut_type
     }
     <span class="doccomment">/// A.K.A. ut.ut_pid
     </span><span class="kw">pub fn </span>pid(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; i32 {
-        <span class="self">self</span>.inner.ut_pid <span class="kw">as </span>i32
+        <span class="self">self</span>.inner.ut_pid
     }
     <span class="doccomment">/// A.K.A. ut.ut_id
     </span><span class="kw">pub fn </span>terminal_suffix(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
@@ -545,7 +556,12 @@
     }
     <span class="doccomment">/// A.K.A. ut.ut_tv
     </span><span class="kw">pub fn </span>login_time(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; time::OffsetDateTime {
-        <span class="kw">let </span>ts_nanos: i128 = (<span class="self">self</span>.inner.ut_tv.tv_sec <span class="kw">as </span>i64 * <span class="number">1_000_000_000_i64
+        <span class="attribute">#[cfg(all(not(target_os = <span class="string">&quot;freebsd&quot;</span>), not(target_vendor = <span class="string">&quot;apple&quot;</span>)))]
+        </span><span class="kw">let </span>ts_nanos: i128 = (<span class="self">self</span>.inner.ut_tv.tv_sec <span class="kw">as </span>i64 * <span class="number">1_000_000_000_i64
+            </span>+ <span class="self">self</span>.inner.ut_tv.tv_usec <span class="kw">as </span>i64 * <span class="number">1_000_i64</span>)
+            .into();
+        <span class="attribute">#[cfg(any(target_os = <span class="string">&quot;freebsd&quot;</span>, target_vendor = <span class="string">&quot;apple&quot;</span>))]
+        </span><span class="kw">let </span>ts_nanos: i128 = (<span class="self">self</span>.inner.ut_tv.tv_sec * <span class="number">1_000_000_000_i64
             </span>+ <span class="self">self</span>.inner.ut_tv.tv_usec <span class="kw">as </span>i64 * <span class="number">1_000_i64</span>)
             .into();
         <span class="kw">let </span>local_offset = time::OffsetDateTime::now_local().unwrap().offset();
