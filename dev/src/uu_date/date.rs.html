@@ -426,6 +426,19 @@
 <span id="426">426</span>
 <span id="427">427</span>
 <span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Anthony Deschamps &lt;anthony.j.deschamps@gmail.com&gt;
@@ -436,7 +449,8 @@
 
 // spell-checker:ignore (chrono) Datelike Timelike ; (format) DATEFILE MMDDhhmm ; (vars) datetime datetimes
 
-</span><span class="kw">use </span>chrono::{DateTime, FixedOffset, Local, Offset, Utc};
+</span><span class="kw">use </span>chrono::format::{Item, StrftimeItems};
+<span class="kw">use </span>chrono::{DateTime, FixedOffset, Local, Offset, Utc};
 <span class="attribute">#[cfg(windows)]
 </span><span class="kw">use </span>chrono::{Datelike, Timelike};
 <span class="kw">use </span>clap::{crate_version, Arg, ArgAction, Command};
@@ -671,7 +685,19 @@
                 <span class="prelude-val">Ok</span>(date) =&gt; {
                     <span class="comment">// GNU `date` uses `%N` for nano seconds, however crate::chrono uses `%f`
                     </span><span class="kw">let </span>format_string = <span class="kw-2">&amp;</span>format_string.replace(<span class="string">&quot;%N&quot;</span>, <span class="string">&quot;%f&quot;</span>);
-                    <span class="kw">let </span>formatted = date.format(format_string).to_string().replace(<span class="string">&quot;%f&quot;</span>, <span class="string">&quot;%N&quot;</span>);
+                    <span class="comment">// Hack to work around panic in chrono,
+                    // TODO - remove when a fix for https://github.com/chronotope/chrono/issues/623 is released
+                    </span><span class="kw">let </span>format_items = StrftimeItems::new(format_string);
+                    <span class="kw">if </span>format_items.clone().any(|i| i == Item::Error) {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
+                            <span class="number">1</span>,
+                            <span class="macro">format!</span>(<span class="string">&quot;invalid format {}&quot;</span>, format_string.replace(<span class="string">&quot;%f&quot;</span>, <span class="string">&quot;%N&quot;</span>)),
+                        ));
+                    }
+                    <span class="kw">let </span>formatted = date
+                        .format_with_items(format_items)
+                        .to_string()
+                        .replace(<span class="string">&quot;%f&quot;</span>, <span class="string">&quot;%N&quot;</span>);
                     <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, formatted);
                 }
                 <span class="prelude-val">Err</span>((input, _err)) =&gt; <span class="macro">show_error!</span>(<span class="string">&quot;invalid date {}&quot;</span>, input.quote()),
