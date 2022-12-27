@@ -2012,16 +2012,6 @@
 <span id="2012">2012</span>
 <span id="2013">2013</span>
 <span id="2014">2014</span>
-<span id="2015">2015</span>
-<span id="2016">2016</span>
-<span id="2017">2017</span>
-<span id="2018">2018</span>
-<span id="2019">2019</span>
-<span id="2020">2020</span>
-<span id="2021">2021</span>
-<span id="2022">2022</span>
-<span id="2023">2023</span>
-<span id="2024">2024</span>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Michael Yin &lt;mikeyin@mikeyin.org&gt;
@@ -2070,7 +2060,7 @@
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{set_exit_code, strip_errno, UError, UResult, USimpleError, UUsageError};
 <span class="kw">use </span>uucore::format_usage;
-<span class="kw">use </span>uucore::parse_size::{parse_size, ParseSizeError};
+<span class="kw">use </span>uucore::parse_size::{ParseSizeError, Parser};
 <span class="kw">use </span>uucore::version_cmp::version_cmp;
 
 <span class="kw">use </span><span class="kw">crate</span>::tmp_dir::TmpDirWrapper;
@@ -2366,30 +2356,20 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
     </span><span class="kw">fn </span>parse_byte_count(input: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;usize, ParseSizeError&gt; {
         <span class="comment">// GNU sort (8.32)   valid: 1b,        k, K, m, M, g, G, t, T, P, E, Z, Y
         // GNU sort (8.32) invalid:  b, B, 1B,                         p, e, z, y
-        </span><span class="kw">const </span>ALLOW_LIST: <span class="kw-2">&amp;</span>[char] = <span class="kw-2">&amp;</span>[
-            <span class="string">&#39;b&#39;</span>, <span class="string">&#39;k&#39;</span>, <span class="string">&#39;K&#39;</span>, <span class="string">&#39;m&#39;</span>, <span class="string">&#39;M&#39;</span>, <span class="string">&#39;g&#39;</span>, <span class="string">&#39;G&#39;</span>, <span class="string">&#39;t&#39;</span>, <span class="string">&#39;T&#39;</span>, <span class="string">&#39;P&#39;</span>, <span class="string">&#39;E&#39;</span>, <span class="string">&#39;Z&#39;</span>, <span class="string">&#39;Y&#39;</span>,
-        ];
-        <span class="kw">let </span><span class="kw-2">mut </span>size_string = input.trim().to_string();
+        </span><span class="kw">let </span>size = Parser::default()
+            .with_allow_list(<span class="kw-2">&amp;</span>[
+                <span class="string">&quot;b&quot;</span>, <span class="string">&quot;k&quot;</span>, <span class="string">&quot;K&quot;</span>, <span class="string">&quot;m&quot;</span>, <span class="string">&quot;M&quot;</span>, <span class="string">&quot;g&quot;</span>, <span class="string">&quot;G&quot;</span>, <span class="string">&quot;t&quot;</span>, <span class="string">&quot;T&quot;</span>, <span class="string">&quot;P&quot;</span>, <span class="string">&quot;E&quot;</span>, <span class="string">&quot;Z&quot;</span>, <span class="string">&quot;Y&quot;</span>,
+            ])
+            .with_default_unit(<span class="string">&quot;K&quot;</span>)
+            .with_b_byte_count(<span class="bool-val">true</span>)
+            .parse(input.trim())<span class="question-mark">?</span>;
 
-        <span class="kw">if </span>size_string.ends_with(|c: char| ALLOW_LIST.contains(<span class="kw-2">&amp;</span>c) || c.is_ascii_digit()) {
-            <span class="comment">// b 1, K 1024 (default)
-            </span><span class="kw">if </span>size_string.ends_with(|c: char| c.is_ascii_digit()) {
-                size_string.push(<span class="string">&#39;K&#39;</span>);
-            } <span class="kw">else if </span>size_string.ends_with(<span class="string">&#39;b&#39;</span>) {
-                size_string.pop();
-            }
-            <span class="kw">let </span>size = parse_size(<span class="kw-2">&amp;</span>size_string)<span class="question-mark">?</span>;
-            usize::try_from(size).map_err(|<span class="kw">_</span>| {
-                ParseSizeError::SizeTooBig(<span class="macro">format!</span>(
-                    <span class="string">&quot;Buffer size {} does not fit in address space&quot;</span>,
-                    size
-                ))
-            })
-        } <span class="kw">else if </span>size_string.starts_with(|c: char| c.is_ascii_digit()) {
-            <span class="prelude-val">Err</span>(ParseSizeError::InvalidSuffix(<span class="string">&quot;invalid suffix&quot;</span>.to_string()))
-        } <span class="kw">else </span>{
-            <span class="prelude-val">Err</span>(ParseSizeError::ParseFailure(<span class="string">&quot;parse failure&quot;</span>.to_string()))
-        }
+        usize::try_from(size).map_err(|<span class="kw">_</span>| {
+            ParseSizeError::SizeTooBig(<span class="macro">format!</span>(
+                <span class="string">&quot;Buffer size {} does not fit in address space&quot;</span>,
+                size
+            ))
+        })
     }
 
     <span class="doccomment">/// Precompute some data needed for sorting.
