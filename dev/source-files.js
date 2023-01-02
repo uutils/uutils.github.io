@@ -114,7 +114,7 @@ var sourcesIndex = JSON.parse('{\
 "uu_comm":["",[],["comm.rs"]],\
 "uu_cp":["",[["platform",[],["linux.rs","mod.rs"]]],["copydir.rs","cp.rs"]],\
 "uu_csplit":["",[],["csplit.rs","csplit_error.rs","patterns.rs","split_name.rs"]],\
-"uu_cut":["",[],["cut.rs","searcher.rs"]],\
+"uu_cut":["",[],["cut.rs","searcher.rs","whitespace_searcher.rs"]],\
 "uu_date":["",[],["date.rs"]],\
 "uu_dd":["",[],["blocks.rs","conversion_tables.rs","datastructures.rs","dd.rs","numbers.rs","parseargs.rs","progress.rs"]],\
 "uu_df":["",[],["blocks.rs","columns.rs","df.rs","filesystem.rs","table.rs"]],\
