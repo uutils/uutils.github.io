@@ -638,6 +638,8 @@ supports the <code>--no-names</code> option that does not appear in the GNU util
 coreutils. We do not aim for full compatibility with the <code>more</code> utility from
 <code>util-linux</code>. Features from more modern pagers (like <code>less</code> and <code>bat</code>) are
 therefore welcomed.</p>
+<h2 id="cut"><a class="header" href="#cut"><code>cut</code></a></h2>
+<p><code>cut</code> can separate fields by whitespace (Space and Tab) with <code>-w</code> flag. This feature is adopted from <a href="https://www.freebsd.org/cgi/man.cgi?cut">FreeBSD</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="multi-call-binary"><a class="header" href="#multi-call-binary">Multi-call binary</a></h1>
 <p>uutils includes a multi-call binary from which the utils can be invoked. This
 reduces the binary size of the binary and can be useful for portability.</p>
@@ -1945,7 +1947,7 @@ cp [OPTION]... -t DIRECTORY SOURCE...
 <p>The examples are provided by the <a href="https://tldr.sh">tldr-pages project</a> under the <a href="https://github.com/tldr-pages/tldr/blob/main/LICENSE.md">CC BY 4.0 License</a>.</p>
 <p>Please note that, as uutils is a work in progress, some examples might fail.</p>
 </blockquote>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="cut"><a class="header" href="#cut">cut</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="cut-1"><a class="header" href="#cut-1">cut</a></h1>
 <div class="additional">
 <div class="platforms">
 <i class="fa fa-brands fa-linux"></i>
@@ -1955,7 +1957,7 @@ cp [OPTION]... -t DIRECTORY SOURCE...
 <div class="version">v0.0.16
 </div>
 </div>
-<pre><code>cut [-d] [-s] [-z] [--output-delimiter] ((-f|-b|-c) {{sequence}}) {{sourcefile}}+
+<pre><code>cut [-d|-w] [-s] [-z] [--output-delimiter] ((-f|-b|-c) {{sequence}}) {{sourcefile}}+
 </code></pre>
 <p>Prints specified byte or field columns from each line of stdin or the input files</p>
 <h2 id="options-17"><a class="header" href="#options-17">Options</a></h2>
@@ -1970,6 +1972,10 @@ cp [OPTION]... -t DIRECTORY SOURCE...
 <dt><code>--delimiter=&lt;DELIM&gt;</code>, <code>-d &lt;DELIM&gt;</code></dt>
 <dd>
 <p>specify the delimiter character that separates fields in the input source. Defaults to Tab.</p>
+</dd>
+<dt><code>-w &lt;WHITESPACE&gt;</code></dt>
+<dd>
+<p>Use any number of whitespace (Space, Tab) to separate fields in the input source (FreeBSD extension).</p>
 </dd>
 <dt><code>--fields=&lt;LIST&gt;</code>, <code>-f &lt;LIST&gt;</code></dt>
 <dd>
@@ -2055,6 +2061,11 @@ Set the delimiter
     Set the delimiter which separates fields in the file using the
     --delimiter (-d) option. Setting the delimiter is optional.
     If not set, a default delimiter of Tab will be used.
+
+    If the -w option is provided, fields will be separated by any number
+    of whitespace characters (Space and Tab). The output delimiter will
+    be a Tab unless explicitly specified. Only one of -d or -w option can be specified.
+    This is an extension adopted from FreeBSD.
 
 Optionally Filter based on delimiter
     If the --only-delimited (-s) flag is provided, only lines which
@@ -2318,25 +2329,25 @@ noctty      do not assign a controlling tty.
 nofollow    do not follow system links.
 </code></pre>
 <h2 id="examples-17"><a class="header" href="#examples-17">Examples</a></h2>
-<p>Make a bootable USB drive from an isohybrid file (such like <code>archlinux-xxx.iso</code>) and show the progress:</p>
-<pre><code class="language-shell">dd if={{file.iso}} of=/dev/{{usb_drive}} status=progress
+<p>Make a bootable USB drive from an isohybrid file (such like <code>archlinux-xxx.iso</code>):</p>
+<pre><code class="language-shell">dd if={{path/to/file.iso}} of=/dev/{{usb_drive}}
 </code></pre>
-<p>Clone a drive to another drive with 4 MiB block, ignore error and show progress:</p>
-<pre><code class="language-shell">dd if=/dev/{{source_drive}} of=/dev/{{dest_drive}} bs=4M conv=noerror status=progress
+<p>Clone a drive to another drive with 4 MiB block and ignore error:</p>
+<pre><code class="language-shell">dd if=/dev/{{source_drive}} of=/dev/{{dest_drive}} bs={{4194304}} conv={{noerror}}
 </code></pre>
 <p>Generate a file of 100 random bytes by using kernel random driver:</p>
-<pre><code class="language-shell">dd if=/dev/urandom of={{random_file}} bs=100 count=1
+<pre><code class="language-shell">dd if=/dev/urandom of={{path/to/random_file}} bs={{100}} count={{1}}
 </code></pre>
 <p>Benchmark the write performance of a disk:</p>
-<pre><code class="language-shell">dd if=/dev/zero of={{file_1GB}} bs=1024 count=1000000
+<pre><code class="language-shell">dd if=/dev/zero of={{path/to/file_1GB}} bs={{1024}} count={{1000000}}
 </code></pre>
-<p>Generate a system backup into an IMG file and show the progress:</p>
-<pre><code class="language-shell">dd if=/dev/{{drive_device}} of={{path/to/file.img}} status=progress
+<p>Generate a system backup into an IMG file:</p>
+<pre><code class="language-shell">dd if={{/dev/drive_device}} of={{path/to/file.img}}
 </code></pre>
-<p>Restore a drive from an IMG file and show the progress:</p>
-<pre><code class="language-shell">dd if={{path/to/file.img}} of=/dev/{{drive_device}} status=progress
+<p>Restore a drive from an IMG file:</p>
+<pre><code class="language-shell">dd if={{path/to/file.img}} of={{/dev/drive_device}}
 </code></pre>
-<p>Check progress of an ongoing dd operation (Run this command from another shell):</p>
+<p>Check the progress of an ongoing dd operation (run this command from another shell):</p>
 <pre><code class="language-shell">kill -USR1 $(pgrep ^dd)
 </code></pre>
 <blockquote>
