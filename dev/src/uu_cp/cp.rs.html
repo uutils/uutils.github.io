@@ -1767,6 +1767,104 @@
 <span id="1767">1767</span>
 <span id="1768">1768</span>
 <span id="1769">1769</span>
+<span id="1770">1770</span>
+<span id="1771">1771</span>
+<span id="1772">1772</span>
+<span id="1773">1773</span>
+<span id="1774">1774</span>
+<span id="1775">1775</span>
+<span id="1776">1776</span>
+<span id="1777">1777</span>
+<span id="1778">1778</span>
+<span id="1779">1779</span>
+<span id="1780">1780</span>
+<span id="1781">1781</span>
+<span id="1782">1782</span>
+<span id="1783">1783</span>
+<span id="1784">1784</span>
+<span id="1785">1785</span>
+<span id="1786">1786</span>
+<span id="1787">1787</span>
+<span id="1788">1788</span>
+<span id="1789">1789</span>
+<span id="1790">1790</span>
+<span id="1791">1791</span>
+<span id="1792">1792</span>
+<span id="1793">1793</span>
+<span id="1794">1794</span>
+<span id="1795">1795</span>
+<span id="1796">1796</span>
+<span id="1797">1797</span>
+<span id="1798">1798</span>
+<span id="1799">1799</span>
+<span id="1800">1800</span>
+<span id="1801">1801</span>
+<span id="1802">1802</span>
+<span id="1803">1803</span>
+<span id="1804">1804</span>
+<span id="1805">1805</span>
+<span id="1806">1806</span>
+<span id="1807">1807</span>
+<span id="1808">1808</span>
+<span id="1809">1809</span>
+<span id="1810">1810</span>
+<span id="1811">1811</span>
+<span id="1812">1812</span>
+<span id="1813">1813</span>
+<span id="1814">1814</span>
+<span id="1815">1815</span>
+<span id="1816">1816</span>
+<span id="1817">1817</span>
+<span id="1818">1818</span>
+<span id="1819">1819</span>
+<span id="1820">1820</span>
+<span id="1821">1821</span>
+<span id="1822">1822</span>
+<span id="1823">1823</span>
+<span id="1824">1824</span>
+<span id="1825">1825</span>
+<span id="1826">1826</span>
+<span id="1827">1827</span>
+<span id="1828">1828</span>
+<span id="1829">1829</span>
+<span id="1830">1830</span>
+<span id="1831">1831</span>
+<span id="1832">1832</span>
+<span id="1833">1833</span>
+<span id="1834">1834</span>
+<span id="1835">1835</span>
+<span id="1836">1836</span>
+<span id="1837">1837</span>
+<span id="1838">1838</span>
+<span id="1839">1839</span>
+<span id="1840">1840</span>
+<span id="1841">1841</span>
+<span id="1842">1842</span>
+<span id="1843">1843</span>
+<span id="1844">1844</span>
+<span id="1845">1845</span>
+<span id="1846">1846</span>
+<span id="1847">1847</span>
+<span id="1848">1848</span>
+<span id="1849">1849</span>
+<span id="1850">1850</span>
+<span id="1851">1851</span>
+<span id="1852">1852</span>
+<span id="1853">1853</span>
+<span id="1854">1854</span>
+<span id="1855">1855</span>
+<span id="1856">1856</span>
+<span id="1857">1857</span>
+<span id="1858">1858</span>
+<span id="1859">1859</span>
+<span id="1860">1860</span>
+<span id="1861">1861</span>
+<span id="1862">1862</span>
+<span id="1863">1863</span>
+<span id="1864">1864</span>
+<span id="1865">1865</span>
+<span id="1866">1866</span>
+<span id="1867">1867</span>
 </pre><pre class="rust"><code><span class="attribute">#![allow(clippy::missing_safety_doc)]
 #![allow(clippy::extra_unused_lifetimes)]
 
@@ -1793,7 +1891,6 @@
 <span class="attribute">#[cfg(unix)]
 </span><span class="kw">use </span>std::os::unix::fs::{FileTypeExt, PermissionsExt};
 <span class="kw">use </span>std::path::{Path, PathBuf, StripPrefixError};
-<span class="kw">use </span>std::str::FromStr;
 <span class="kw">use </span>std::string::ToString;
 
 <span class="kw">use </span>clap::{crate_version, Arg, ArgAction, ArgMatches, Command};
@@ -1802,6 +1899,8 @@
 <span class="attribute">#[cfg(unix)]
 </span><span class="kw">use </span>libc::mkfifo;
 <span class="kw">use </span>quick_error::ResultExt;
+
+<span class="kw">use </span>platform::copy_on_write;
 <span class="kw">use </span>uucore::backup_control::{<span class="self">self</span>, BackupMode};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{set_exit_code, UClapError, UError, UResult, UUsageError};
@@ -1810,12 +1909,10 @@
 };
 <span class="kw">use </span>uucore::{crash, format_usage, prompt_yes, show_error, show_warning};
 
-<span class="kw">mod </span>copydir;
 <span class="kw">use </span><span class="kw">crate</span>::copydir::copy_directory;
 
+<span class="kw">mod </span>copydir;
 <span class="kw">mod </span>platform;
-<span class="kw">use </span>platform::copy_on_write;
-
 <span class="macro">quick_error! </span>{
     <span class="attribute">#[derive(Debug)]
     </span><span class="kw">pub enum </span>Error {
@@ -1926,18 +2023,51 @@
     AttrOnly,
 }
 
-<span class="comment">// The ordering here determines the order in which attributes are (re-)applied.
-// In particular, Ownership must be changed first to avoid interfering with mode change.
-</span><span class="attribute">#[derive(Clone, Eq, PartialEq, Debug, PartialOrd, Ord)]
-</span><span class="kw">pub enum </span>Attribute {
+<span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub struct </span>Attributes {
     <span class="attribute">#[cfg(unix)]
-    </span>Ownership,
-    Mode,
-    Timestamps,
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;feat_selinux&quot;</span>)]
-    </span>Context,
-    Links,
-    Xattr,
+    </span>ownership: Preserve,
+    mode: Preserve,
+    timestamps: Preserve,
+    context: Preserve,
+    links: Preserve,
+    xattr: Preserve,
+}
+
+<span class="kw">impl </span>Attributes {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>max(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
+        <span class="attribute">#[cfg(unix)]
+        </span>{
+            <span class="self">self</span>.ownership = <span class="self">self</span>.ownership.max(other.ownership);
+        }
+        <span class="self">self</span>.mode = <span class="self">self</span>.mode.max(other.mode);
+        <span class="self">self</span>.timestamps = <span class="self">self</span>.timestamps.max(other.timestamps);
+        <span class="self">self</span>.context = <span class="self">self</span>.context.max(other.context);
+        <span class="self">self</span>.links = <span class="self">self</span>.links.max(other.links);
+        <span class="self">self</span>.xattr = <span class="self">self</span>.xattr.max(other.xattr);
+    }
+}
+
+<span class="attribute">#[derive(Debug, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>Preserve {
+    No,
+    Yes { required: bool },
+}
+
+<span class="kw">impl </span>Preserve {
+    <span class="doccomment">/// Preservation level should only increase, with no preservation being the lowest option,
+    /// preserve but don&#39;t require - middle, and preserve and require - top.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>max(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="self">Self</span>) -&gt; <span class="self">Self </span>{
+        <span class="kw">match </span>(<span class="self">self</span>, other) {
+            (<span class="self">Self</span>::Yes { required: <span class="bool-val">true </span>}, <span class="kw">_</span>) | (<span class="kw">_</span>, <span class="self">Self</span>::Yes { required: <span class="bool-val">true </span>}) =&gt; {
+                <span class="self">Self</span>::Yes { required: <span class="bool-val">true </span>}
+            }
+            (<span class="self">Self</span>::Yes { required: <span class="bool-val">false </span>}, <span class="kw">_</span>) | (<span class="kw">_</span>, <span class="self">Self</span>::Yes { required: <span class="bool-val">false </span>}) =&gt; {
+                <span class="self">Self</span>::Yes { required: <span class="bool-val">false </span>}
+            }
+            <span class="kw">_ </span>=&gt; <span class="self">Self</span>::No,
+        }
+    }
 }
 
 <span class="doccomment">/// Re-usable, extensible copy options
@@ -1956,7 +2086,7 @@
     sparse_mode: SparseMode,
     strip_trailing_slashes: bool,
     reflink_mode: ReflinkMode,
-    preserve_attributes: Vec&lt;Attribute&gt;,
+    attributes: Attributes,
     recursive: bool,
     backup_suffix: String,
     target_dir: <span class="prelude-ty">Option</span>&lt;String&gt;,
@@ -2012,8 +2142,7 @@
     <span class="string">&quot;mode&quot;</span>,
     <span class="string">&quot;ownership&quot;</span>,
     <span class="string">&quot;timestamps&quot;</span>,
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;feat_selinux&quot;</span>)]
-    </span><span class="string">&quot;context&quot;</span>,
+    <span class="string">&quot;context&quot;</span>,
     <span class="string">&quot;links&quot;</span>,
     <span class="string">&quot;xattr&quot;</span>,
     <span class="string">&quot;all&quot;</span>,
@@ -2022,13 +2151,6 @@
 <span class="attribute">#[cfg(not(unix))]
 </span><span class="kw">static </span>PRESERVABLE_ATTRIBUTES: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str] =
     <span class="kw-2">&amp;</span>[<span class="string">&quot;mode&quot;</span>, <span class="string">&quot;timestamps&quot;</span>, <span class="string">&quot;context&quot;</span>, <span class="string">&quot;links&quot;</span>, <span class="string">&quot;xattr&quot;</span>, <span class="string">&quot;all&quot;</span>];
-
-<span class="kw">static </span>DEFAULT_ATTRIBUTES: <span class="kw-2">&amp;</span>[Attribute] = <span class="kw-2">&amp;</span>[
-    Attribute::Mode,
-    <span class="attribute">#[cfg(unix)]
-    </span>Attribute::Ownership,
-    Attribute::Timestamps,
-];
 
 <span class="kw">pub fn </span>uu_app() -&gt; Command {
     <span class="kw">const </span>MODE_ARGS: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str] = <span class="kw-2">&amp;</span>[
@@ -2396,44 +2518,77 @@
     }
 }
 
-<span class="kw">impl </span>FromStr <span class="kw">for </span>Attribute {
-    <span class="kw">type </span><span class="prelude-val">Err </span>= Error;
+<span class="kw">impl </span>Attributes {
+    <span class="comment">// TODO: ownership is required if the user is root, for non-root users it&#39;s not required.
+    // See: https://github.com/coreutils/coreutils/blob/master/src/copy.c#L3181
 
-    <span class="kw">fn </span>from_str(value: <span class="kw-2">&amp;</span>str) -&gt; CopyResult&lt;<span class="self">Self</span>&gt; {
-        <span class="prelude-val">Ok</span>(<span class="kw">match </span><span class="kw-2">&amp;*</span>value.to_lowercase() {
-            <span class="string">&quot;mode&quot; </span>=&gt; <span class="self">Self</span>::Mode,
+    </span><span class="kw">fn </span>all() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
             <span class="attribute">#[cfg(unix)]
-            </span><span class="string">&quot;ownership&quot; </span>=&gt; <span class="self">Self</span>::Ownership,
-            <span class="string">&quot;timestamps&quot; </span>=&gt; <span class="self">Self</span>::Timestamps,
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;feat_selinux&quot;</span>)]
-            </span><span class="string">&quot;context&quot; </span>=&gt; <span class="self">Self</span>::Context,
-            <span class="string">&quot;links&quot; </span>=&gt; <span class="self">Self</span>::Links,
-            <span class="string">&quot;xattr&quot; </span>=&gt; <span class="self">Self</span>::Xattr,
+            </span>ownership: Preserve::Yes { required: <span class="bool-val">true </span>},
+            mode: Preserve::Yes { required: <span class="bool-val">true </span>},
+            timestamps: Preserve::Yes { required: <span class="bool-val">true </span>},
+            context: {
+                <span class="attribute">#[cfg(feature = <span class="string">&quot;feat_selinux&quot;</span>)]
+                </span>{
+                    Preserve::Yes { required: <span class="bool-val">false </span>}
+                }
+                <span class="attribute">#[cfg(not(feature = <span class="string">&quot;feat_selinux&quot;</span>))]
+                </span>{
+                    Preserve::No
+                }
+            },
+            links: Preserve::Yes { required: <span class="bool-val">true </span>},
+            xattr: Preserve::Yes { required: <span class="bool-val">false </span>},
+        }
+    }
+
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            <span class="attribute">#[cfg(unix)]
+            </span>ownership: Preserve::Yes { required: <span class="bool-val">true </span>},
+            mode: Preserve::Yes { required: <span class="bool-val">true </span>},
+            timestamps: Preserve::Yes { required: <span class="bool-val">true </span>},
+            context: Preserve::No,
+            links: Preserve::No,
+            xattr: Preserve::No,
+        }
+    }
+
+    <span class="kw">fn </span>none() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            <span class="attribute">#[cfg(unix)]
+            </span>ownership: Preserve::No,
+            mode: Preserve::No,
+            timestamps: Preserve::No,
+            context: Preserve::No,
+            links: Preserve::No,
+            xattr: Preserve::No,
+        }
+    }
+
+    <span class="doccomment">/// Tries to match string containing a parameter to preserve with the corresponding entry in the
+    /// Attributes struct.
+    </span><span class="kw">fn </span>try_set_from_string(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span>preserve_yes_required = Preserve::Yes { required: <span class="bool-val">true </span>};
+
+        <span class="kw">match </span><span class="kw-2">&amp;*</span>value.to_lowercase() {
+            <span class="string">&quot;mode&quot; </span>=&gt; <span class="self">self</span>.mode = preserve_yes_required,
+            <span class="attribute">#[cfg(unix)]
+            </span><span class="string">&quot;ownership&quot; </span>=&gt; <span class="self">self</span>.ownership = preserve_yes_required,
+            <span class="string">&quot;timestamps&quot; </span>=&gt; <span class="self">self</span>.timestamps = preserve_yes_required,
+            <span class="string">&quot;context&quot; </span>=&gt; <span class="self">self</span>.context = preserve_yes_required,
+            <span class="string">&quot;links&quot; </span>=&gt; <span class="self">self</span>.links = preserve_yes_required,
+            <span class="string">&quot;xattr&quot; </span>=&gt; <span class="self">self</span>.xattr = preserve_yes_required,
             <span class="kw">_ </span>=&gt; {
                 <span class="kw">return </span><span class="prelude-val">Err</span>(Error::InvalidArgument(<span class="macro">format!</span>(
                     <span class="string">&quot;invalid attribute {}&quot;</span>,
                     value.quote()
                 )));
             }
-        })
+        };
+        <span class="prelude-val">Ok</span>(())
     }
-}
-
-<span class="kw">fn </span>add_all_attributes() -&gt; Vec&lt;Attribute&gt; {
-    <span class="kw">use </span>Attribute::<span class="kw-2">*</span>;
-
-    <span class="kw">let </span>attr = <span class="macro">vec!</span>[
-        <span class="attribute">#[cfg(unix)]
-        </span>Ownership,
-        Mode,
-        Timestamps,
-        <span class="attribute">#[cfg(feature = <span class="string">&quot;feat_selinux&quot;</span>)]
-        </span>Context,
-        Links,
-        Xattr,
-    ];
-
-    attr
 }
 
 <span class="kw">impl </span>Options {
@@ -2479,22 +2634,23 @@
         };
 
         <span class="comment">// Parse attributes to preserve
-        </span><span class="kw">let </span><span class="kw-2">mut </span>preserve_attributes: Vec&lt;Attribute&gt; = <span class="kw">if </span>matches.contains_id(options::PRESERVE) {
+        </span><span class="kw">let </span>attributes: Attributes = <span class="kw">if </span>matches.contains_id(options::PRESERVE) {
             <span class="kw">match </span>matches.get_many::&lt;String&gt;(options::PRESERVE) {
-                <span class="prelude-val">None </span>=&gt; DEFAULT_ATTRIBUTES.to_vec(),
+                <span class="prelude-val">None </span>=&gt; Attributes::default(),
                 <span class="prelude-val">Some</span>(attribute_strs) =&gt; {
-                    <span class="kw">let </span><span class="kw-2">mut </span>attributes = Vec::new();
+                    <span class="kw">let </span><span class="kw-2">mut </span>attributes: Attributes = Attributes::none();
+                    <span class="kw">let </span><span class="kw-2">mut </span>attributes_empty = <span class="bool-val">true</span>;
                     <span class="kw">for </span>attribute_str <span class="kw">in </span>attribute_strs {
+                        attributes_empty = <span class="bool-val">false</span>;
                         <span class="kw">if </span>attribute_str == <span class="string">&quot;all&quot; </span>{
-                            attributes = add_all_attributes();
-                            <span class="kw">break</span>;
+                            attributes.max(Attributes::all());
                         } <span class="kw">else </span>{
-                            attributes.push(Attribute::from_str(attribute_str)<span class="question-mark">?</span>);
+                            attributes.try_set_from_string(attribute_str)<span class="question-mark">?</span>;
                         }
                     }
                     <span class="comment">// `--preserve` case, use the defaults
-                    </span><span class="kw">if </span>attributes.is_empty() {
-                        DEFAULT_ATTRIBUTES.to_vec()
+                    </span><span class="kw">if </span>attributes_empty {
+                        Attributes::default()
                     } <span class="kw">else </span>{
                         attributes
                     }
@@ -2502,19 +2658,27 @@
             }
         } <span class="kw">else if </span>matches.get_flag(options::ARCHIVE) {
             <span class="comment">// --archive is used. Same as --preserve=all
-            </span>add_all_attributes()
+            </span>Attributes::all()
         } <span class="kw">else if </span>matches.get_flag(options::NO_DEREFERENCE_PRESERVE_LINKS) {
-            <span class="macro">vec!</span>[Attribute::Links]
+            <span class="kw">let </span><span class="kw-2">mut </span>attributes = Attributes::none();
+            attributes.links = Preserve::Yes { required: <span class="bool-val">true </span>};
+            attributes
         } <span class="kw">else if </span>matches.get_flag(options::PRESERVE_DEFAULT_ATTRIBUTES) {
-            DEFAULT_ATTRIBUTES.to_vec()
+            Attributes::default()
         } <span class="kw">else </span>{
-            <span class="macro">vec!</span>[]
+            Attributes::none()
         };
 
-        <span class="comment">// Make sure ownership is changed before other attributes,
-        // as chown clears some of the permission and therefore could undo previous changes
-        // if not executed first.
-        </span>preserve_attributes.sort_unstable();
+        <span class="attribute">#[cfg(not(feature = <span class="string">&quot;feat_selinux&quot;</span>))]
+        </span><span class="kw">if let </span>Preserve::Yes { required } = attributes.context {
+            <span class="kw">let </span>selinux_disabled_error =
+                Error::Error(<span class="string">&quot;SELinux was not enabled during the compile time!&quot;</span>.to_string());
+            <span class="kw">if </span>required {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(selinux_disabled_error);
+            } <span class="kw">else </span>{
+                show_error_if_needed(<span class="kw-2">&amp;</span>selinux_disabled_error);
+            }
+        }
 
         <span class="kw">let </span>options = <span class="self">Self </span>{
             attributes_only: matches.get_flag(options::ATTRIBUTES_ONLY),
@@ -2570,7 +2734,7 @@
                             <span class="kw">return </span><span class="prelude-val">Err</span>(Error::InvalidArgument(<span class="macro">format!</span>(
                                 <span class="string">&quot;invalid argument {} for \&#39;sparse\&#39;&quot;</span>,
                                 val
-                            )))
+                            )));
                         }
                     }
                 } <span class="kw">else </span>{
@@ -2581,7 +2745,7 @@
             backup_suffix,
             overwrite,
             no_target_dir,
-            preserve_attributes,
+            attributes,
             recursive,
             target_dir,
             progress_bar: matches.get_flag(options::PROGRESS_BAR),
@@ -2595,13 +2759,11 @@
     }
 
     <span class="kw">fn </span>preserve_hard_links(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="kw">for </span>attribute <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.preserve_attributes {
-            <span class="kw">if </span><span class="kw-2">*</span>attribute == Attribute::Links {
-                <span class="kw">return </span><span class="bool-val">true</span>;
-            }
+        <span class="kw">match </span><span class="self">self</span>.attributes.links {
+            Preserve::No =&gt; <span class="bool-val">false</span>,
+            Preserve::Yes { .. } =&gt; <span class="bool-val">true</span>,
         }
-        <span class="bool-val">false
-    </span>}
+    }
 
     <span class="doccomment">/// Whether to force overwriting the destination file.
     </span><span class="kw">fn </span>force(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
@@ -2720,6 +2882,22 @@
     <span class="prelude-val">Ok</span>(found_hard_link)
 }
 
+<span class="doccomment">/// When handling errors, we don&#39;t always want to show them to the user. This function handles that.
+/// If the error is printed, returns true, false otherwise.
+</span><span class="kw">fn </span>show_error_if_needed(error: <span class="kw-2">&amp;</span>Error) -&gt; bool {
+    <span class="kw">match </span>error {
+        <span class="comment">// When using --no-clobber, we don&#39;t want to show
+        // an error message
+        </span>Error::NotAllFilesCopied =&gt; (),
+        Error::Skipped =&gt; (),
+        <span class="kw">_ </span>=&gt; {
+            <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, error);
+            <span class="kw">return </span><span class="bool-val">true</span>;
+        }
+    }
+    <span class="bool-val">false
+</span>}
+
 <span class="doccomment">/// Copy all `sources` to `target`.  Returns an
 /// `Err(Error::NotAllFilesCopied)` if at least one non-fatal error was
 /// encountered.
@@ -2774,15 +2952,8 @@
                     options,
                     <span class="kw-2">&amp;mut </span>symlinked_files,
                 ) {
-                    <span class="kw">match </span>error {
-                        <span class="comment">// When using --no-clobber, we don&#39;t want to show
-                        // an error message
-                        </span>Error::NotAllFilesCopied =&gt; (),
-                        Error::Skipped =&gt; (),
-                        <span class="kw">_ </span>=&gt; {
-                            <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, error);
-                            non_fatal_errors = <span class="bool-val">true</span>;
-                        }
+                    <span class="kw">if </span>show_error_if_needed(<span class="kw-2">&amp;</span>error) {
+                        non_fatal_errors = <span class="bool-val">true</span>;
                     }
                 }
             }
@@ -2869,114 +3040,138 @@
     }
 }
 
+<span class="doccomment">/// Handles errors for attributes preservation. If the attribute is not required, and
+/// errored, tries to show error (see `show_error_if_needed` for additional behavior details).
+/// If it&#39;s required, then the error is thrown.
+</span><span class="kw">fn </span>handle_preserve&lt;F: Fn() -&gt; CopyResult&lt;()&gt;&gt;(p: <span class="kw-2">&amp;</span>Preserve, f: F) -&gt; CopyResult&lt;()&gt; {
+    <span class="kw">match </span>p {
+        Preserve::No =&gt; {}
+        Preserve::Yes { required } =&gt; {
+            <span class="kw">let </span>result = f();
+            <span class="kw">if </span><span class="kw-2">*</span>required {
+                result<span class="question-mark">?</span>;
+            } <span class="kw">else if let </span><span class="prelude-val">Err</span>(error) = result {
+                show_error_if_needed(<span class="kw-2">&amp;</span>error);
+            }
+        }
+    };
+    <span class="prelude-val">Ok</span>(())
+}
+
 <span class="doccomment">/// Copy the specified attributes from one path to another.
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>copy_attributes(
     source: <span class="kw-2">&amp;</span>Path,
     dest: <span class="kw-2">&amp;</span>Path,
-    attributes: <span class="kw-2">&amp;</span>[Attribute],
+    attributes: <span class="kw-2">&amp;</span>Attributes,
 ) -&gt; CopyResult&lt;()&gt; {
-    <span class="kw">for </span>attribute <span class="kw">in </span>attributes {
-        copy_attribute(source, dest, attribute)<span class="question-mark">?</span>;
-    }
-    <span class="prelude-val">Ok</span>(())
-}
-
-<span class="kw">fn </span>copy_attribute(source: <span class="kw-2">&amp;</span>Path, dest: <span class="kw-2">&amp;</span>Path, attribute: <span class="kw-2">&amp;</span>Attribute) -&gt; CopyResult&lt;()&gt; {
     <span class="kw">let </span>context = <span class="kw-2">&amp;*</span><span class="macro">format!</span>(<span class="string">&quot;{} -&gt; {}&quot;</span>, source.quote(), dest.quote());
     <span class="kw">let </span>source_metadata = fs::symlink_metadata(source).context(context)<span class="question-mark">?</span>;
-    <span class="kw">match </span><span class="kw-2">*</span>attribute {
-        Attribute::Mode =&gt; {
-            <span class="comment">// The `chmod()` system call that underlies the
-            // `fs::set_permissions()` call is unable to change the
-            // permissions of a symbolic link. In that case, we just
-            // do nothing, since every symbolic link has the same
-            // permissions.
-            </span><span class="kw">if </span>!dest.is_symlink() {
-                fs::set_permissions(dest, source_metadata.permissions()).context(context)<span class="question-mark">?</span>;
-                <span class="comment">// FIXME: Implement this for windows as well
-                </span><span class="attribute">#[cfg(feature = <span class="string">&quot;feat_acl&quot;</span>)]
-                </span>exacl::getfacl(source, <span class="prelude-val">None</span>)
-                    .and_then(|acl| exacl::setfacl(<span class="kw-2">&amp;</span>[dest], <span class="kw-2">&amp;</span>acl, <span class="prelude-val">None</span>))
-                    .map_err(|err| Error::Error(err.to_string()))<span class="question-mark">?</span>;
-            }
+
+    <span class="comment">// Ownership must be changed first to avoid interfering with mode change.
+    </span><span class="attribute">#[cfg(unix)]
+    </span>handle_preserve(<span class="kw-2">&amp;</span>attributes.ownership, || -&gt; CopyResult&lt;()&gt; {
+        <span class="kw">use </span>std::os::unix::prelude::MetadataExt;
+        <span class="kw">use </span>uucore::perms::wrap_chown;
+        <span class="kw">use </span>uucore::perms::Verbosity;
+        <span class="kw">use </span>uucore::perms::VerbosityLevel;
+
+        <span class="kw">let </span>dest_uid = source_metadata.uid();
+        <span class="kw">let </span>dest_gid = source_metadata.gid();
+
+        wrap_chown(
+            dest,
+            <span class="kw-2">&amp;</span>dest.symlink_metadata().context(context)<span class="question-mark">?</span>,
+            <span class="prelude-val">Some</span>(dest_uid),
+            <span class="prelude-val">Some</span>(dest_gid),
+            <span class="bool-val">false</span>,
+            Verbosity {
+                groups_only: <span class="bool-val">false</span>,
+                level: VerbosityLevel::Normal,
+            },
+        )
+        .map_err(Error::Error)<span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>(())
+    })<span class="question-mark">?</span>;
+
+    handle_preserve(<span class="kw-2">&amp;</span>attributes.mode, || -&gt; CopyResult&lt;()&gt; {
+        <span class="comment">// The `chmod()` system call that underlies the
+        // `fs::set_permissions()` call is unable to change the
+        // permissions of a symbolic link. In that case, we just
+        // do nothing, since every symbolic link has the same
+        // permissions.
+        </span><span class="kw">if </span>!dest.is_symlink() {
+            fs::set_permissions(dest, source_metadata.permissions()).context(context)<span class="question-mark">?</span>;
+            <span class="comment">// FIXME: Implement this for windows as well
+            </span><span class="attribute">#[cfg(feature = <span class="string">&quot;feat_acl&quot;</span>)]
+            </span>exacl::getfacl(source, <span class="prelude-val">None</span>)
+                .and_then(|acl| exacl::setfacl(<span class="kw-2">&amp;</span>[dest], <span class="kw-2">&amp;</span>acl, <span class="prelude-val">None</span>))
+                .map_err(|err| Error::Error(err.to_string()))<span class="question-mark">?</span>;
         }
-        <span class="attribute">#[cfg(unix)]
-        </span>Attribute::Ownership =&gt; {
-            <span class="kw">use </span>std::os::unix::prelude::MetadataExt;
-            <span class="kw">use </span>uucore::perms::wrap_chown;
-            <span class="kw">use </span>uucore::perms::Verbosity;
-            <span class="kw">use </span>uucore::perms::VerbosityLevel;
 
-            <span class="kw">let </span>dest_uid = source_metadata.uid();
-            <span class="kw">let </span>dest_gid = source_metadata.gid();
+        <span class="prelude-val">Ok</span>(())
+    })<span class="question-mark">?</span>;
 
-            wrap_chown(
-                dest,
-                <span class="kw-2">&amp;</span>dest.symlink_metadata().context(context)<span class="question-mark">?</span>,
-                <span class="prelude-val">Some</span>(dest_uid),
-                <span class="prelude-val">Some</span>(dest_gid),
-                <span class="bool-val">false</span>,
-                Verbosity {
-                    groups_only: <span class="bool-val">false</span>,
-                    level: VerbosityLevel::Normal,
-                },
+    handle_preserve(<span class="kw-2">&amp;</span>attributes.timestamps, || -&gt; CopyResult&lt;()&gt; {
+        <span class="kw">let </span>atime = FileTime::from_last_access_time(<span class="kw-2">&amp;</span>source_metadata);
+        <span class="kw">let </span>mtime = FileTime::from_last_modification_time(<span class="kw-2">&amp;</span>source_metadata);
+        <span class="kw">if </span>dest.is_symlink() {
+            filetime::set_symlink_file_times(dest, atime, mtime)<span class="question-mark">?</span>;
+        } <span class="kw">else </span>{
+            filetime::set_file_times(dest, atime, mtime)<span class="question-mark">?</span>;
+        }
+
+        <span class="prelude-val">Ok</span>(())
+    })<span class="question-mark">?</span>;
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;feat_selinux&quot;</span>)]
+    </span>handle_preserve(<span class="kw-2">&amp;</span>attributes.context, || -&gt; CopyResult&lt;()&gt; {
+        <span class="kw">let </span>context = selinux::SecurityContext::of_path(source, <span class="bool-val">false</span>, <span class="bool-val">false</span>).map_err(|e| {
+            <span class="macro">format!</span>(
+                <span class="string">&quot;failed to get security context of {}: {}&quot;</span>,
+                source.display(),
+                e
             )
-            .map_err(Error::Error)<span class="question-mark">?</span>;
-        }
-        Attribute::Timestamps =&gt; {
-            <span class="kw">let </span>atime = FileTime::from_last_access_time(<span class="kw-2">&amp;</span>source_metadata);
-            <span class="kw">let </span>mtime = FileTime::from_last_modification_time(<span class="kw-2">&amp;</span>source_metadata);
-            <span class="kw">if </span>dest.is_symlink() {
-                filetime::set_symlink_file_times(dest, atime, mtime)<span class="question-mark">?</span>;
-            } <span class="kw">else </span>{
-                filetime::set_file_times(dest, atime, mtime)<span class="question-mark">?</span>;
-            }
-        }
-        <span class="attribute">#[cfg(feature = <span class="string">&quot;feat_selinux&quot;</span>)]
-        </span>Attribute::Context =&gt; {
-            <span class="kw">let </span>context = selinux::SecurityContext::of_path(source, <span class="bool-val">false</span>, <span class="bool-val">false</span>).map_err(|e| {
+        })<span class="question-mark">?</span>;
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(context) = context {
+            context.set_for_path(dest, <span class="bool-val">false</span>, <span class="bool-val">false</span>).map_err(|e| {
                 <span class="macro">format!</span>(
-                    <span class="string">&quot;failed to get security context of {}: {}&quot;</span>,
-                    source.display(),
+                    <span class="string">&quot;failed to set security context for {}: {}&quot;</span>,
+                    dest.display(),
                     e
                 )
             })<span class="question-mark">?</span>;
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(context) = context {
-                context.set_for_path(dest, <span class="bool-val">false</span>, <span class="bool-val">false</span>).map_err(|e| {
-                    <span class="macro">format!</span>(
-                        <span class="string">&quot;failed to set security context for {}: {}&quot;</span>,
-                        dest.display(),
-                        e
-                    )
-                })<span class="question-mark">?</span>;
-            }
         }
-        Attribute::Links =&gt; {}
-        Attribute::Xattr =&gt; {
-            <span class="attribute">#[cfg(unix)]
-            </span>{
-                <span class="kw">let </span>xattrs = xattr::list(source)<span class="question-mark">?</span>;
-                <span class="kw">for </span>attr <span class="kw">in </span>xattrs {
-                    <span class="kw">if let </span><span class="prelude-val">Some</span>(attr_value) = xattr::get(source, attr.clone())<span class="question-mark">? </span>{
-                        xattr::set(dest, attr, <span class="kw-2">&amp;</span>attr_value[..])<span class="question-mark">?</span>;
-                    }
+
+        <span class="prelude-val">Ok</span>(())
+    })<span class="question-mark">?</span>;
+
+    handle_preserve(<span class="kw-2">&amp;</span>attributes.xattr, || -&gt; CopyResult&lt;()&gt; {
+        <span class="attribute">#[cfg(unix)]
+        </span>{
+            <span class="kw">let </span>xattrs = xattr::list(source)<span class="question-mark">?</span>;
+            <span class="kw">for </span>attr <span class="kw">in </span>xattrs {
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(attr_value) = xattr::get(source, attr.clone())<span class="question-mark">? </span>{
+                    xattr::set(dest, attr, <span class="kw-2">&amp;</span>attr_value[..])<span class="question-mark">?</span>;
                 }
             }
-            <span class="attribute">#[cfg(not(unix))]
-            </span>{
-                <span class="comment">// The documentation for GNU cp states:
-                //
-                // &gt; Try to preserve SELinux security context and
-                // &gt; extended attributes (xattr), but ignore any failure
-                // &gt; to do that and print no corresponding diagnostic.
-                //
-                // so we simply do nothing here.
-                //
-                // TODO Silently ignore failures in the `#[cfg(unix)]`
-                // block instead of terminating immediately on errors.
-            </span>}
         }
-    };
+        <span class="attribute">#[cfg(not(unix))]
+        </span>{
+            <span class="comment">// The documentation for GNU cp states:
+            //
+            // &gt; Try to preserve SELinux security context and
+            // &gt; extended attributes (xattr), but ignore any failure
+            // &gt; to do that and print no corresponding diagnostic.
+            //
+            // so we simply do nothing here.
+            //
+            // TODO Silently ignore failures in the `#[cfg(unix)]`
+            // block instead of terminating immediately on errors.
+        </span>}
+
+        <span class="prelude-val">Ok</span>(())
+    })<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(())
 }
@@ -3349,7 +3544,8 @@
         // the user does not have permission to write to the file.
         </span>fs::set_permissions(dest, dest_permissions).ok();
     }
-    copy_attributes(source, dest, <span class="kw-2">&amp;</span>options.preserve_attributes)<span class="question-mark">?</span>;
+
+    copy_attributes(source, dest, <span class="kw-2">&amp;</span>options.attributes)<span class="question-mark">?</span>;
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(progress_bar) = progress_bar {
         progress_bar.inc(fs::metadata(source)<span class="question-mark">?</span>.len());
