@@ -215,11 +215,6 @@
 <span id="215">215</span>
 <span id="216">216</span>
 <span id="217">217</span>
-<span id="218">218</span>
-<span id="219">219</span>
-<span id="220">220</span>
-<span id="221">221</span>
-<span id="222">222</span>
 </pre><pre class="rust"><code><span class="kw">use </span>half::f16;
 <span class="kw">use </span>std::f32;
 <span class="kw">use </span>std::f64;
@@ -269,7 +264,7 @@
 
     <span class="kw">if </span>f.classify() == FpCategory::Subnormal {
         <span class="comment">// subnormal numbers will be normal as f64, so will print with a wrong precision
-        </span><span class="macro">format!</span>(<span class="string">&quot;{:width$e}&quot;</span>, f, width = width) <span class="comment">// subnormal numbers
+        </span><span class="macro">format!</span>(<span class="string">&quot;{:width$e}&quot;</span>, f) <span class="comment">// subnormal numbers
     </span>} <span class="kw">else </span>{
         format_float(f64::from(f), width, precision)
     }
@@ -282,12 +277,12 @@
 <span class="kw">fn </span>format_float(f: f64, width: usize, precision: usize) -&gt; String {
     <span class="kw">if </span>!f.is_normal() {
         <span class="kw">if </span>f == -<span class="number">0.0 </span>&amp;&amp; f.is_sign_negative() {
-            <span class="kw">return </span><span class="macro">format!</span>(<span class="string">&quot;{:&gt;width$}&quot;</span>, <span class="string">&quot;-0&quot;</span>, width = width);
+            <span class="kw">return </span><span class="macro">format!</span>(<span class="string">&quot;{:&gt;width$}&quot;</span>, <span class="string">&quot;-0&quot;</span>);
         }
         <span class="kw">if </span>f == <span class="number">0.0 </span>|| !f.is_finite() {
-            <span class="kw">return </span><span class="macro">format!</span>(<span class="string">&quot;{:width$}&quot;</span>, f, width = width);
+            <span class="kw">return </span><span class="macro">format!</span>(<span class="string">&quot;{:width$}&quot;</span>, f);
         }
-        <span class="kw">return </span><span class="macro">format!</span>(<span class="string">&quot;{:width$e}&quot;</span>, f, width = width); <span class="comment">// subnormal numbers
+        <span class="kw">return </span><span class="macro">format!</span>(<span class="string">&quot;{:width$e}&quot;</span>, f); <span class="comment">// subnormal numbers
     </span>}
 
     <span class="kw">let </span><span class="kw-2">mut </span>l = f.abs().log10().floor() <span class="kw">as </span>i32;
@@ -299,16 +294,11 @@
     }
 
     <span class="kw">if </span>l &gt;= <span class="number">0 </span>&amp;&amp; l &lt;= (precision <span class="kw">as </span>i32 - <span class="number">1</span>) {
-        <span class="macro">format!</span>(
-            <span class="string">&quot;{:width$.dec$}&quot;</span>,
-            f,
-            width = width,
-            dec = (precision - <span class="number">1</span>) - l <span class="kw">as </span>usize
-        )
+        <span class="macro">format!</span>(<span class="string">&quot;{:width$.dec$}&quot;</span>, f, dec = (precision - <span class="number">1</span>) - l <span class="kw">as </span>usize)
     } <span class="kw">else if </span>l == -<span class="number">1 </span>{
-        <span class="macro">format!</span>(<span class="string">&quot;{:width$.dec$}&quot;</span>, f, width = width, dec = precision)
+        <span class="macro">format!</span>(<span class="string">&quot;{:width$.dec$}&quot;</span>, f, dec = precision)
     } <span class="kw">else </span>{
-        <span class="macro">format!</span>(<span class="string">&quot;{:width$.dec$e}&quot;</span>, f, width = width, dec = precision - <span class="number">1</span>)
+        <span class="macro">format!</span>(<span class="string">&quot;{:width$.dec$e}&quot;</span>, f, dec = precision - <span class="number">1</span>)
     }
 }
 
