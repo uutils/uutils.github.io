@@ -521,8 +521,6 @@
 <a href="#521" id="521">521</a>
 <a href="#522" id="522">522</a>
 <a href="#523" id="523">523</a>
-<a href="#524" id="524">524</a>
-<a href="#525" id="525">525</a>
 </pre><pre class="rust"><code><span class="comment">//* This file is part of the uutils coreutils package.
 //*
 //* (c) Roman Gafiyatullin &lt;r.gafiyatullin@me.com&gt;
@@ -676,7 +674,7 @@
                     <span class="string">&quot;index&quot; </span>=&gt; <span class="prelude-val">Ok</span>(prefix_operator_index(<span class="kw-2">&amp;</span>operand_values)),
                     <span class="string">&quot;substr&quot; </span>=&gt; <span class="prelude-val">Ok</span>(prefix_operator_substr(<span class="kw-2">&amp;</span>operand_values)),
 
-                    <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;operation not implemented: {}&quot;</span>, op_type)),
+                    <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;operation not implemented: {op_type}&quot;</span>)),
                 },
             },
         }
@@ -729,7 +727,7 @@
             <span class="macro">println!</span>(<span class="string">&quot;EXPR_DEBUG_AST&quot;</span>);
             <span class="kw">match </span>result {
                 <span class="prelude-val">Ok</span>(ast) =&gt; ast.debug_dump(),
-                <span class="prelude-val">Err</span>(reason) =&gt; <span class="macro">println!</span>(<span class="string">&quot;\terr: {:?}&quot;</span>, reason),
+                <span class="prelude-val">Err</span>(reason) =&gt; <span class="macro">println!</span>(<span class="string">&quot;\terr: {reason:?}&quot;</span>),
             }
         }
     }
@@ -742,7 +740,7 @@
         <span class="kw">if </span>debug_var == <span class="string">&quot;1&quot; </span>{
             <span class="macro">println!</span>(<span class="string">&quot;EXPR_DEBUG_RPN&quot;</span>);
             <span class="kw">for </span>token <span class="kw">in </span>rpn {
-                <span class="macro">println!</span>(<span class="string">&quot;\t{:?}&quot;</span>, token);
+                <span class="macro">println!</span>(<span class="string">&quot;\t{token:?}&quot;</span>);
             }
         }
     }
@@ -763,7 +761,7 @@
         }
 
         <span class="prelude-val">Some</span>((token_idx, unexpected_token)) =&gt; {
-            <span class="macro">panic!</span>(<span class="string">&quot;unexpected token at #{} {:?}&quot;</span>, token_idx, unexpected_token)
+            <span class="macro">panic!</span>(<span class="string">&quot;unexpected token at #{token_idx} {unexpected_token:?}&quot;</span>)
         }
     }
 }
@@ -791,15 +789,13 @@
             <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
             <span class="prelude-val">Some</span>((token_idx, Token::ParOpen)) =&gt; {
                 <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(
-                    <span class="string">&quot;syntax error (Mismatched open-parenthesis at #{})&quot;</span>,
-                    token_idx
-                ))
+                    <span class="string">&quot;syntax error (Mismatched open-parenthesis at #{token_idx})&quot;
+                </span>))
             }
             <span class="prelude-val">Some</span>((token_idx, Token::ParClose)) =&gt; {
                 <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(
-                    <span class="string">&quot;syntax error (Mismatched close-parenthesis at #{})&quot;</span>,
-                    token_idx
-                ))
+                    <span class="string">&quot;syntax error (Mismatched close-parenthesis at #{token_idx})&quot;
+                </span>))
             }
             <span class="prelude-val">Some</span>(other) =&gt; out_stack.push(other),
         }
@@ -850,10 +846,10 @@
     <span class="kw">if let </span><span class="prelude-val">Ok</span>(debug_var) = env::var(<span class="string">&quot;EXPR_DEBUG_SYA_STEP&quot;</span>) {
         <span class="kw">if </span>debug_var == <span class="string">&quot;1&quot; </span>{
             <span class="macro">println!</span>(<span class="string">&quot;EXPR_DEBUG_SYA_STEP&quot;</span>);
-            <span class="macro">println!</span>(<span class="string">&quot;\t{} =&gt; {:?}&quot;</span>, token_idx, token);
-            <span class="macro">println!</span>(<span class="string">&quot;\t\tout: {:?}&quot;</span>, out_stack);
-            <span class="macro">println!</span>(<span class="string">&quot;\t\top : {:?}&quot;</span>, op_stack);
-            <span class="macro">println!</span>(<span class="string">&quot;\t\tresult: {:?}&quot;</span>, result);
+            <span class="macro">println!</span>(<span class="string">&quot;\t{token_idx} =&gt; {token:?}&quot;</span>);
+            <span class="macro">println!</span>(<span class="string">&quot;\t\tout: {out_stack:?}&quot;</span>);
+            <span class="macro">println!</span>(<span class="string">&quot;\t\top : {op_stack:?}&quot;</span>);
+            <span class="macro">println!</span>(<span class="string">&quot;\t\tresult: {result:?}&quot;</span>);
         }
     }
 }

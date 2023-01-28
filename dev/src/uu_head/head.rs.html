@@ -788,7 +788,7 @@
     <span class="kw">fn </span>from(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, String&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(v) = matches.get_one::&lt;String&gt;(options::BYTES_NAME) {
             <span class="kw">let </span>(n, all_but_last) =
-                parse::parse_num(v).map_err(|err| <span class="macro">format!</span>(<span class="string">&quot;invalid number of bytes: {}&quot;</span>, err))<span class="question-mark">?</span>;
+                parse::parse_num(v).map_err(|err| <span class="macro">format!</span>(<span class="string">&quot;invalid number of bytes: {err}&quot;</span>))<span class="question-mark">?</span>;
             <span class="kw">if </span>all_but_last {
                 <span class="prelude-val">Ok</span>(<span class="self">Self</span>::AllButLastBytes(n))
             } <span class="kw">else </span>{
@@ -796,7 +796,7 @@
             }
         } <span class="kw">else if let </span><span class="prelude-val">Some</span>(v) = matches.get_one::&lt;String&gt;(options::LINES_NAME) {
             <span class="kw">let </span>(n, all_but_last) =
-                parse::parse_num(v).map_err(|err| <span class="macro">format!</span>(<span class="string">&quot;invalid number of lines: {}&quot;</span>, err))<span class="question-mark">?</span>;
+                parse::parse_num(v).map_err(|err| <span class="macro">format!</span>(<span class="string">&quot;invalid number of lines: {err}&quot;</span>))<span class="question-mark">?</span>;
             <span class="kw">if </span>all_but_last {
                 <span class="prelude-val">Ok</span>(<span class="self">Self</span>::AllButLastLines(n))
             } <span class="kw">else </span>{
@@ -1041,13 +1041,13 @@
             }
             <span class="comment">// if it were just `n`,
             </span><span class="kw">if </span>lines == n + <span class="number">1 </span>{
-                input.seek(SeekFrom::Start(<span class="number">0</span>))<span class="question-mark">?</span>;
+                input.rewind()<span class="question-mark">?</span>;
                 <span class="kw">return </span><span class="prelude-val">Ok</span>(size - i);
             }
             i += <span class="number">1</span>;
         }
         <span class="kw">if </span>size - i == <span class="number">0 </span>{
-            input.seek(SeekFrom::Start(<span class="number">0</span>))<span class="question-mark">?</span>;
+            input.rewind()<span class="question-mark">?</span>;
             <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="number">0</span>);
         }
     }
@@ -1113,7 +1113,7 @@
                     <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = usize::try_from(n) {
                         <span class="macro">show!</span>(USimpleError::new(
                             <span class="number">1</span>,
-                            <span class="macro">format!</span>(<span class="string">&quot;{}: number of bytes is too large&quot;</span>, e)
+                            <span class="macro">format!</span>(<span class="string">&quot;{e}: number of bytes is too large&quot;</span>)
                         ));
                         <span class="kw">continue</span>;
                     };
@@ -1147,7 +1147,7 @@
                     <span class="kw">if </span>!first {
                         <span class="macro">println!</span>();
                     }
-                    <span class="macro">println!</span>(<span class="string">&quot;==&gt; {} &lt;==&quot;</span>, name);
+                    <span class="macro">println!</span>(<span class="string">&quot;==&gt; {name} &lt;==&quot;</span>);
                 }
                 head_file(<span class="kw-2">&amp;mut </span>file, options)
             }
@@ -1160,7 +1160,7 @@
             };
             <span class="macro">show!</span>(USimpleError::new(
                 <span class="number">1</span>,
-                <span class="macro">format!</span>(<span class="string">&quot;error reading {}: Input/output error&quot;</span>, name)
+                <span class="macro">format!</span>(<span class="string">&quot;error reading {name}: Input/output error&quot;</span>)
             ));
         }
         first = <span class="bool-val">false</span>;

@@ -2009,9 +2009,6 @@
 <a href="#2009" id="2009">2009</a>
 <a href="#2010" id="2010">2010</a>
 <a href="#2011" id="2011">2011</a>
-<a href="#2012" id="2012">2012</a>
-<a href="#2013" id="2013">2013</a>
-<a href="#2014" id="2014">2014</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Michael Yin &lt;mikeyin@mikeyin.org&gt;
@@ -2234,13 +2231,13 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
                 <span class="macro">write!</span>(f, <span class="string">&quot;failed to open temporary file: {}&quot;</span>, strip_errno(error))
             }
             <span class="self">Self</span>::CompressProgExecutionFailed { code } =&gt; {
-                <span class="macro">write!</span>(f, <span class="string">&quot;couldn&#39;t execute compress program: errno {}&quot;</span>, code)
+                <span class="macro">write!</span>(f, <span class="string">&quot;couldn&#39;t execute compress program: errno {code}&quot;</span>)
             }
             <span class="self">Self</span>::CompressProgTerminatedAbnormally { prog } =&gt; {
                 <span class="macro">write!</span>(f, <span class="string">&quot;{} terminated abnormally&quot;</span>, prog.quote())
             }
             <span class="self">Self</span>::TmpDirCreationFailed =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;could not create temporary directory&quot;</span>),
-            <span class="self">Self</span>::Uft8Error { error } =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, error),
+            <span class="self">Self</span>::Uft8Error { error } =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;{error}&quot;</span>),
         }
     }
 }
@@ -2365,10 +2362,7 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
             .parse(input.trim())<span class="question-mark">?</span>;
 
         usize::try_from(size).map_err(|<span class="kw">_</span>| {
-            ParseSizeError::SizeTooBig(<span class="macro">format!</span>(
-                <span class="string">&quot;Buffer size {} does not fit in address space&quot;</span>,
-                size
-            ))
+            ParseSizeError::SizeTooBig(<span class="macro">format!</span>(<span class="string">&quot;Buffer size {size} does not fit in address space&quot;</span>))
         })
     }
 
@@ -2577,7 +2571,7 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
         // optimizations here.
 
         </span><span class="kw">let </span>line = <span class="self">self</span>.line.replace(<span class="string">&#39;\t&#39;</span>, <span class="string">&quot;&gt;&quot;</span>);
-        <span class="macro">writeln!</span>(writer, <span class="string">&quot;{}&quot;</span>, line)<span class="question-mark">?</span>;
+        <span class="macro">writeln!</span>(writer, <span class="string">&quot;{line}&quot;</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>fields = <span class="macro">vec!</span>[];
         tokenize(<span class="self">self</span>.line, settings.separator, <span class="kw-2">&amp;mut </span>fields);
@@ -2880,7 +2874,7 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
                     <span class="string">&#39;R&#39; </span>=&gt; key_settings.set_sort_mode(SortMode::Random)<span class="question-mark">?</span>,
                     <span class="string">&#39;r&#39; </span>=&gt; key_settings.reverse = <span class="bool-val">true</span>,
                     <span class="string">&#39;V&#39; </span>=&gt; key_settings.set_sort_mode(SortMode::Version)<span class="question-mark">?</span>,
-                    c =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;invalid option: &#39;{}&#39;&quot;</span>, c)),
+                    c =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;invalid option: &#39;{c}&#39;&quot;</span>)),
                 }
             }
             <span class="prelude-val">Ok</span>(ignore_blanks)
@@ -2956,7 +2950,7 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
 
     <span class="doccomment">/// Look up the range in the line that corresponds to this selector.
     /// If needs_fields returned false, tokens must be None.
-    </span><span class="kw">fn </span>get_range&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, line: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str, tokens: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>[Field]&gt;) -&gt; Range&lt;usize&gt; {
+    </span><span class="kw">fn </span>get_range(<span class="kw-2">&amp;</span><span class="self">self</span>, line: <span class="kw-2">&amp;</span>str, tokens: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>[Field]&gt;) -&gt; Range&lt;usize&gt; {
         <span class="kw">enum </span>Resolution {
             <span class="comment">// The start index of the resolved character, inclusive
             </span>StartOfChar(usize),

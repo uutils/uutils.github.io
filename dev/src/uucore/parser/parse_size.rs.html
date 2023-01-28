@@ -649,7 +649,7 @@
         <span class="kw">let </span>s = <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::InvalidSuffix(s) | <span class="self">Self</span>::ParseFailure(s) | <span class="self">Self</span>::SizeTooBig(s) =&gt; s,
         };
-        <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, s)
+        <span class="macro">write!</span>(f, <span class="string">&quot;{s}&quot;</span>)
     }
 }
 
@@ -745,21 +745,21 @@
         </span>];
 
         <span class="kw">for </span><span class="kw-2">&amp;</span>(c, exp) <span class="kw">in </span><span class="kw-2">&amp;</span>suffixes {
-            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;2{}B&quot;</span>, c); <span class="comment">// KB
+            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;2{c}B&quot;</span>); <span class="comment">// KB
             </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2 </span>* (<span class="number">1000_u128</span>).pow(exp)) <span class="kw">as </span>u64), parse_size(<span class="kw-2">&amp;</span>s));
-            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;2{}&quot;</span>, c); <span class="comment">// K
+            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;2{c}&quot;</span>); <span class="comment">// K
             </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2 </span>* (<span class="number">1024_u128</span>).pow(exp)) <span class="kw">as </span>u64), parse_size(<span class="kw-2">&amp;</span>s));
-            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;2{}iB&quot;</span>, c); <span class="comment">// KiB
+            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;2{c}iB&quot;</span>); <span class="comment">// KiB
             </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2 </span>* (<span class="number">1024_u128</span>).pow(exp)) <span class="kw">as </span>u64), parse_size(<span class="kw-2">&amp;</span>s));
             <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;2{}iB&quot;</span>, c.to_lowercase()); <span class="comment">// kiB
             </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>((<span class="number">2 </span>* (<span class="number">1024_u128</span>).pow(exp)) <span class="kw">as </span>u64), parse_size(<span class="kw-2">&amp;</span>s));
 
             <span class="comment">// suffix only
-            </span><span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;{}B&quot;</span>, c); <span class="comment">// KB
+            </span><span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;{c}B&quot;</span>); <span class="comment">// KB
             </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1000_u128</span>).pow(exp)) <span class="kw">as </span>u64), parse_size(<span class="kw-2">&amp;</span>s));
-            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, c); <span class="comment">// K
+            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;{c}&quot;</span>); <span class="comment">// K
             </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1024_u128</span>).pow(exp)) <span class="kw">as </span>u64), parse_size(<span class="kw-2">&amp;</span>s));
-            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;{}iB&quot;</span>, c); <span class="comment">// KiB
+            <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;{c}iB&quot;</span>); <span class="comment">// KiB
             </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1024_u128</span>).pow(exp)) <span class="kw">as </span>u64), parse_size(<span class="kw-2">&amp;</span>s));
             <span class="kw">let </span>s = <span class="macro">format!</span>(<span class="string">&quot;{}iB&quot;</span>, c.to_lowercase()); <span class="comment">// kiB
             </span><span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(((<span class="number">1024_u128</span>).pow(exp)) <span class="kw">as </span>u64), parse_size(<span class="kw-2">&amp;</span>s));
@@ -874,9 +874,9 @@
 
         <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1024</span>), parser.parse(<span class="string">&quot;1&quot;</span>));
         <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2 </span>* <span class="number">1024</span>), parser.parse(<span class="string">&quot;2&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1 </span>* <span class="number">1000 </span>* <span class="number">1000</span>), parser.parse(<span class="string">&quot;1MB&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1 </span>* <span class="number">1024 </span>* <span class="number">1024</span>), parser.parse(<span class="string">&quot;1M&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1 </span>* <span class="number">1024 </span>* <span class="number">1024 </span>* <span class="number">1024</span>), parser.parse(<span class="string">&quot;1G&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1000 </span>* <span class="number">1000</span>), parser.parse(<span class="string">&quot;1MB&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1024 </span>* <span class="number">1024</span>), parser.parse(<span class="string">&quot;1M&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1024 </span>* <span class="number">1024 </span>* <span class="number">1024</span>), parser.parse(<span class="string">&quot;1G&quot;</span>));
 
         <span class="macro">assert!</span>(parser.parse(<span class="string">&quot;1T&quot;</span>).is_err());
         <span class="macro">assert!</span>(parser.parse(<span class="string">&quot;1P&quot;</span>).is_err());
@@ -891,9 +891,9 @@
 
         <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1024</span>), parser.parse(<span class="string">&quot;1&quot;</span>));
         <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">2 </span>* <span class="number">1024</span>), parser.parse(<span class="string">&quot;2&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1 </span>* <span class="number">1000 </span>* <span class="number">1000</span>), parser.parse(<span class="string">&quot;1MB&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1 </span>* <span class="number">1024 </span>* <span class="number">1024</span>), parser.parse(<span class="string">&quot;1M&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1 </span>* <span class="number">1024 </span>* <span class="number">1024 </span>* <span class="number">1024</span>), parser.parse(<span class="string">&quot;1G&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1000 </span>* <span class="number">1000</span>), parser.parse(<span class="string">&quot;1MB&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1024 </span>* <span class="number">1024</span>), parser.parse(<span class="string">&quot;1M&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1024 </span>* <span class="number">1024 </span>* <span class="number">1024</span>), parser.parse(<span class="string">&quot;1G&quot;</span>));
 
         <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1</span>), parser.parse(<span class="string">&quot;1b&quot;</span>));
         <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">1024</span>), parser.parse(<span class="string">&quot;1024b&quot;</span>));

@@ -3250,7 +3250,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 )
             }
             <span class="self">Self</span>::InvalidLineWidth(s) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;invalid line width: {}&quot;</span>, s.quote()),
-            <span class="self">Self</span>::IOError(e) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;general io error: {}&quot;</span>, e),
+            <span class="self">Self</span>::IOError(e) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;general io error: {e}&quot;</span>),
             <span class="self">Self</span>::IOErrorContext(e, p, <span class="kw">_</span>) =&gt; {
                 <span class="kw">let </span>error_kind = e.kind();
                 <span class="kw">let </span>errno = e.raw_os_error().unwrap_or(<span class="number">1i32</span>);
@@ -5120,11 +5120,11 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
 }
 
 <span class="kw">fn </span>pad_left(string: <span class="kw-2">&amp;</span>str, count: usize) -&gt; String {
-    <span class="macro">format!</span>(<span class="string">&quot;{:&gt;width$}&quot;</span>, string, width = count)
+    <span class="macro">format!</span>(<span class="string">&quot;{string:&gt;count$}&quot;</span>)
 }
 
 <span class="kw">fn </span>pad_right(string: <span class="kw-2">&amp;</span>str, count: usize) -&gt; String {
-    <span class="macro">format!</span>(<span class="string">&quot;{:&lt;width$}&quot;</span>, string, width = count)
+    <span class="macro">format!</span>(<span class="string">&quot;{string:&lt;count$}&quot;</span>)
 }
 
 <span class="kw">fn </span>display_total(items: <span class="kw-2">&amp;</span>[PathData], config: <span class="kw-2">&amp;</span>Config, out: <span class="kw-2">&amp;mut </span>BufWriter&lt;Stdout&gt;) -&gt; UResult&lt;()&gt; {
@@ -5171,7 +5171,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
         };
         <span class="comment">// extra space is insert to align the sizes, as needed for all formats, except for the comma format.
         </span><span class="kw">if </span>config.format == Format::Commas {
-            <span class="macro">write!</span>(result, <span class="string">&quot;{} &quot;</span>, s).unwrap();
+            <span class="macro">write!</span>(result, <span class="string">&quot;{s} &quot;</span>).unwrap();
         } <span class="kw">else </span>{
             <span class="macro">write!</span>(result, <span class="string">&quot;{} &quot;</span>, pad_left(<span class="kw-2">&amp;</span>s, padding.block_size)).unwrap();
         };
@@ -5192,13 +5192,13 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             </span><span class="kw">if </span>config.inode || config.alloc_size {
                 <span class="kw">let </span>more_info =
                     display_additional_leading_info(item, <span class="kw-2">&amp;</span>padding_collection, config, out)<span class="question-mark">?</span>;
-                <span class="macro">write!</span>(out, <span class="string">&quot;{}&quot;</span>, more_info)<span class="question-mark">?</span>;
+                <span class="macro">write!</span>(out, <span class="string">&quot;{more_info}&quot;</span>)<span class="question-mark">?</span>;
             }
             <span class="attr">#[cfg(not(unix))]
             </span><span class="kw">if </span>config.alloc_size {
                 <span class="kw">let </span>more_info =
                     display_additional_leading_info(item, <span class="kw-2">&amp;</span>padding_collection, config, out)<span class="question-mark">?</span>;
-                <span class="macro">write!</span>(out, <span class="string">&quot;{}&quot;</span>, more_info)<span class="question-mark">?</span>;
+                <span class="macro">write!</span>(out, <span class="string">&quot;{more_info}&quot;</span>)<span class="question-mark">?</span>;
             }
             display_item_long(item, <span class="kw-2">&amp;</span>padding_collection, config, out)<span class="question-mark">?</span>;
         }
@@ -5329,7 +5329,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
 
         <span class="kw">match </span>grid.fit_into_width(width <span class="kw">as </span>usize) {
             <span class="prelude-val">Some</span>(output) =&gt; {
-                <span class="macro">write!</span>(out, <span class="string">&quot;{}&quot;</span>, output)<span class="question-mark">?</span>;
+                <span class="macro">write!</span>(out, <span class="string">&quot;{output}&quot;</span>)<span class="question-mark">?</span>;
             }
             <span class="comment">// Width is too small for the grid, so we fit it in one column
             </span><span class="prelude-val">None </span>=&gt; {
@@ -5493,7 +5493,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
         <span class="macro">write!</span>(
             out,
             <span class="string">&quot;{}{} {}&quot;</span>,
-            <span class="macro">format_args!</span>(<span class="string">&quot;{}?????????&quot;</span>, leading_char),
+            <span class="macro">format_args!</span>(<span class="string">&quot;{leading_char}?????????&quot;</span>),
             <span class="kw">if </span>item.security_context.len() &gt; <span class="number">1 </span>{
                 <span class="comment">// GNU `ls` uses a &quot;.&quot; character to indicate a file with a security context,
                 // but not other alternate access method.
@@ -5928,7 +5928,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             } <span class="kw">else </span>{
                 path.security_context.to_owned()
             };
-            name = <span class="macro">format!</span>(<span class="string">&quot;{} {}&quot;</span>, security_context, name);
+            name = <span class="macro">format!</span>(<span class="string">&quot;{security_context} {name}&quot;</span>);
             width += security_context.len() + <span class="number">1</span>;
         }
     }

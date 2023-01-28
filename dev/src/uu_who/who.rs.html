@@ -962,7 +962,7 @@
     </span><span class="kw">fn </span>print_runlevel(<span class="kw-2">&amp;</span><span class="self">self</span>, ut: <span class="kw-2">&amp;</span>Utmpx) {
         <span class="kw">let </span>last = (ut.pid() / <span class="number">256</span>) <span class="kw">as </span>u8 <span class="kw">as </span>char;
         <span class="kw">let </span>curr = (ut.pid() % <span class="number">256</span>) <span class="kw">as </span>u8 <span class="kw">as </span>char;
-        <span class="kw">let </span>runlvline = <span class="macro">format!</span>(<span class="string">&quot;run-level {}&quot;</span>, curr);
+        <span class="kw">let </span>runlvline = <span class="macro">format!</span>(<span class="string">&quot;run-level {curr}&quot;</span>);
         <span class="kw">let </span>comment = <span class="macro">format!</span>(<span class="string">&quot;last={}&quot;</span>, <span class="kw">if </span>last == <span class="string">&#39;N&#39; </span>{ <span class="string">&#39;S&#39; </span>} <span class="kw">else </span>{ <span class="string">&#39;N&#39; </span>});
 
         <span class="self">self</span>.print_line(
@@ -1078,7 +1078,7 @@
         </span>} <span class="kw">else </span>{
             ut.host()
         };
-        <span class="kw">let </span>hoststr = <span class="kw">if </span>s.is_empty() { s } <span class="kw">else </span>{ <span class="macro">format!</span>(<span class="string">&quot;({})&quot;</span>, s) };
+        <span class="kw">let </span>hoststr = <span class="kw">if </span>s.is_empty() { s } <span class="kw">else </span>{ <span class="macro">format!</span>(<span class="string">&quot;({s})&quot;</span>) };
 
         <span class="self">self</span>.print_line(
             ut.user().as_ref(),
@@ -1109,24 +1109,24 @@
         <span class="kw">let </span><span class="kw-2">mut </span>buf = String::with_capacity(<span class="number">64</span>);
         <span class="kw">let </span>msg = <span class="macro">vec!</span>[<span class="string">&#39; &#39;</span>, state].into_iter().collect::&lt;String&gt;();
 
-        <span class="macro">write!</span>(buf, <span class="string">&quot;{:&lt;8}&quot;</span>, user).unwrap();
+        <span class="macro">write!</span>(buf, <span class="string">&quot;{user:&lt;8}&quot;</span>).unwrap();
         <span class="kw">if </span><span class="self">self</span>.include_mesg {
             buf.push_str(<span class="kw-2">&amp;</span>msg);
         }
-        <span class="macro">write!</span>(buf, <span class="string">&quot; {:&lt;12}&quot;</span>, line).unwrap();
+        <span class="macro">write!</span>(buf, <span class="string">&quot; {line:&lt;12}&quot;</span>).unwrap();
         <span class="comment">// &quot;%b %e %H:%M&quot; (LC_ALL=C)
         </span><span class="kw">let </span>time_size = <span class="number">3 </span>+ <span class="number">2 </span>+ <span class="number">2 </span>+ <span class="number">1 </span>+ <span class="number">2</span>;
-        <span class="macro">write!</span>(buf, <span class="string">&quot; {:&lt;1$}&quot;</span>, time, time_size).unwrap();
+        <span class="macro">write!</span>(buf, <span class="string">&quot; {time:&lt;time_size$}&quot;</span>).unwrap();
 
         <span class="kw">if </span>!<span class="self">self</span>.short_output {
             <span class="kw">if </span><span class="self">self</span>.include_idle {
-                <span class="macro">write!</span>(buf, <span class="string">&quot; {:&lt;6}&quot;</span>, idle).unwrap();
+                <span class="macro">write!</span>(buf, <span class="string">&quot; {idle:&lt;6}&quot;</span>).unwrap();
             }
-            <span class="macro">write!</span>(buf, <span class="string">&quot; {:&gt;10}&quot;</span>, pid).unwrap();
+            <span class="macro">write!</span>(buf, <span class="string">&quot; {pid:&gt;10}&quot;</span>).unwrap();
         }
-        <span class="macro">write!</span>(buf, <span class="string">&quot; {:&lt;8}&quot;</span>, comment).unwrap();
+        <span class="macro">write!</span>(buf, <span class="string">&quot; {comment:&lt;8}&quot;</span>).unwrap();
         <span class="kw">if </span><span class="self">self</span>.include_exit {
-            <span class="macro">write!</span>(buf, <span class="string">&quot; {:&lt;12}&quot;</span>, exit).unwrap();
+            <span class="macro">write!</span>(buf, <span class="string">&quot; {exit:&lt;12}&quot;</span>).unwrap();
         }
         <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, buf.trim_end());
     }

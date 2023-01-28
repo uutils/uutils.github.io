@@ -1434,7 +1434,6 @@
 <a href="#1434" id="1434">1434</a>
 <a href="#1435" id="1435">1435</a>
 <a href="#1436" id="1436">1436</a>
-<a href="#1437" id="1437">1437</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Akira Hayakawa &lt;ruby.wktk@gmail.com&gt;
@@ -1495,8 +1494,8 @@
     <span class="kw">let </span>matches = uu_app().try_get_matches_from(args)<span class="question-mark">?</span>;
     <span class="kw">match </span>Settings::from(<span class="kw-2">&amp;</span>matches) {
         <span class="prelude-val">Ok</span>(settings) =&gt; split(<span class="kw-2">&amp;</span>settings),
-        <span class="prelude-val">Err</span>(e) <span class="kw">if </span>e.requires_usage() =&gt; <span class="prelude-val">Err</span>(UUsageError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, e))),
-        <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, e))),
+        <span class="prelude-val">Err</span>(e) <span class="kw">if </span>e.requires_usage() =&gt; <span class="prelude-val">Err</span>(UUsageError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{e}&quot;</span>))),
+        <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{e}&quot;</span>))),
     }
 }
 
@@ -1780,13 +1779,13 @@
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>StrategyError {
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
-            <span class="self">Self</span>::Lines(e) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;invalid number of lines: {}&quot;</span>, e),
-            <span class="self">Self</span>::Bytes(e) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;invalid number of bytes: {}&quot;</span>, e),
+            <span class="self">Self</span>::Lines(e) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;invalid number of lines: {e}&quot;</span>),
+            <span class="self">Self</span>::Bytes(e) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;invalid number of bytes: {e}&quot;</span>),
             <span class="self">Self</span>::NumberType(NumberTypeError::NumberOfChunks(s)) =&gt; {
-                <span class="macro">write!</span>(f, <span class="string">&quot;invalid number of chunks: {}&quot;</span>, s)
+                <span class="macro">write!</span>(f, <span class="string">&quot;invalid number of chunks: {s}&quot;</span>)
             }
             <span class="self">Self</span>::NumberType(NumberTypeError::ChunkNumber(s)) =&gt; {
-                <span class="macro">write!</span>(f, <span class="string">&quot;invalid chunk number: {}&quot;</span>, s)
+                <span class="macro">write!</span>(f, <span class="string">&quot;invalid chunk number: {s}&quot;</span>)
             }
             <span class="self">Self</span>::MultipleWays =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;cannot split in more than one way&quot;</span>),
         }
@@ -1915,7 +1914,7 @@
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Strategy(e) =&gt; e.fmt(f),
             <span class="self">Self</span>::SuffixNotParsable(s) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;invalid suffix length: {}&quot;</span>, s.quote()),
-            <span class="self">Self</span>::SuffixTooSmall(i) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;the suffix length needs to be at least {}&quot;</span>, i),
+            <span class="self">Self</span>::SuffixTooSmall(i) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;the suffix length needs to be at least {i}&quot;</span>),
             <span class="self">Self</span>::SuffixContainsSeparator(s) =&gt; <span class="macro">write!</span>(
                 f,
                 <span class="string">&quot;invalid suffix {}, contains directory separator&quot;</span>,
@@ -1924,9 +1923,8 @@
             <span class="attr">#[cfg(windows)]
             </span><span class="self">Self</span>::NotSupported =&gt; <span class="macro">write!</span>(
                 f,
-                <span class="string">&quot;{} is currently not supported in this platform&quot;</span>,
-                OPT_FILTER
-            ),
+                <span class="string">&quot;{OPT_FILTER} is currently not supported in this platform&quot;
+            </span>),
         }
     }
 }
@@ -1984,7 +1982,7 @@
         <span class="kw">if </span>platform::paths_refer_to_same_file(<span class="kw-2">&amp;</span><span class="self">self</span>.input, filename) {
             <span class="kw">return </span><span class="prelude-val">Err</span>(io::Error::new(
                 ErrorKind::Other,
-                <span class="macro">format!</span>(<span class="string">&quot;&#39;{}&#39; would overwrite input; aborting&quot;</span>, filename),
+                <span class="macro">format!</span>(<span class="string">&quot;&#39;{filename}&#39; would overwrite input; aborting&quot;</span>),
             ));
         }
 
@@ -2742,7 +2740,7 @@
                     // allowable filenames, we use `ErrorKind::Other` to
                     // indicate that. A special error message needs to be
                     // printed in that case.
-                    </span>ErrorKind::Other =&gt; <span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, e))),
+                    </span>ErrorKind::Other =&gt; <span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{e}&quot;</span>))),
                     ErrorKind::BrokenPipe =&gt; <span class="prelude-val">Ok</span>(()),
                     <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="macro">uio_error!</span>(e, <span class="string">&quot;input/output error&quot;</span>)),
                 },
@@ -2761,7 +2759,7 @@
                     // allowable filenames, we use `ErrorKind::Other` to
                     // indicate that. A special error message needs to be
                     // printed in that case.
-                    </span>ErrorKind::Other =&gt; <span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, e))),
+                    </span>ErrorKind::Other =&gt; <span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{e}&quot;</span>))),
                     ErrorKind::BrokenPipe =&gt; <span class="prelude-val">Ok</span>(()),
                     <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="macro">uio_error!</span>(e, <span class="string">&quot;input/output error&quot;</span>)),
                 },
@@ -2780,7 +2778,7 @@
                     // allowable filenames, we use `ErrorKind::Other` to
                     // indicate that. A special error message needs to be
                     // printed in that case.
-                    </span>ErrorKind::Other =&gt; <span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, e))),
+                    </span>ErrorKind::Other =&gt; <span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{e}&quot;</span>))),
                     ErrorKind::BrokenPipe =&gt; <span class="prelude-val">Ok</span>(()),
                     <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="macro">uio_error!</span>(e, <span class="string">&quot;input/output error&quot;</span>)),
                 },

@@ -335,8 +335,6 @@
 <a href="#335" id="335">335</a>
 <a href="#336" id="336">336</a>
 <a href="#337" id="337">337</a>
-<a href="#338" id="338">338</a>
-<a href="#339" id="339">339</a>
 </pre><pre class="rust"><code><span class="comment">// spell-checker:ignore (regex) diuox
 
 </span><span class="kw">use </span>regex::Regex;
@@ -381,9 +379,7 @@
             </span>.unwrap_or(<span class="number">2</span>);
         <span class="comment">// translate the custom format into a function
         </span><span class="kw">let </span>fn_split_name: Box&lt;<span class="kw">dyn </span>Fn(usize) -&gt; String&gt; = <span class="kw">match </span>format_opt {
-            <span class="prelude-val">None </span>=&gt; Box::new(<span class="kw">move </span>|n: usize| -&gt; String {
-                <span class="macro">format!</span>(<span class="string">&quot;{}{:0width$}&quot;</span>, prefix, n, width = n_digits)
-            }),
+            <span class="prelude-val">None </span>=&gt; Box::new(<span class="kw">move </span>|n: usize| -&gt; String { <span class="macro">format!</span>(<span class="string">&quot;{prefix}{n:0n_digits$}&quot;</span>) }),
             <span class="prelude-val">Some</span>(custom) =&gt; {
                 <span class="kw">let </span>spec =
                     Regex::new(<span class="string">r&quot;(?P&lt;ALL&gt;%((?P&lt;FLAG&gt;[0#-])(?P&lt;WIDTH&gt;\d+)?)?(?P&lt;TYPE&gt;[diuoxX]))&quot;</span>)
@@ -401,16 +397,16 @@
                         <span class="kw">match </span>(captures.name(<span class="string">&quot;FLAG&quot;</span>), captures.name(<span class="string">&quot;TYPE&quot;</span>)) {
                             (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="kw-2">ref </span>t)) =&gt; <span class="kw">match </span>t.as_str() {
                                 <span class="string">&quot;d&quot; </span>| <span class="string">&quot;i&quot; </span>| <span class="string">&quot;u&quot; </span>=&gt; Box::new(<span class="kw">move </span>|n: usize| -&gt; String {
-                                    <span class="macro">format!</span>(<span class="string">&quot;{}{}{}{}&quot;</span>, prefix, before, n, after)
+                                    <span class="macro">format!</span>(<span class="string">&quot;{prefix}{before}{n}{after}&quot;</span>)
                                 }),
                                 <span class="string">&quot;o&quot; </span>=&gt; Box::new(<span class="kw">move </span>|n: usize| -&gt; String {
-                                    <span class="macro">format!</span>(<span class="string">&quot;{}{}{:o}{}&quot;</span>, prefix, before, n, after)
+                                    <span class="macro">format!</span>(<span class="string">&quot;{prefix}{before}{n:o}{after}&quot;</span>)
                                 }),
                                 <span class="string">&quot;x&quot; </span>=&gt; Box::new(<span class="kw">move </span>|n: usize| -&gt; String {
-                                    <span class="macro">format!</span>(<span class="string">&quot;{}{}{:x}{}&quot;</span>, prefix, before, n, after)
+                                    <span class="macro">format!</span>(<span class="string">&quot;{prefix}{before}{n:x}{after}&quot;</span>)
                                 }),
                                 <span class="string">&quot;X&quot; </span>=&gt; Box::new(<span class="kw">move </span>|n: usize| -&gt; String {
-                                    <span class="macro">format!</span>(<span class="string">&quot;{}{}{:X}{}&quot;</span>, prefix, before, n, after)
+                                    <span class="macro">format!</span>(<span class="string">&quot;{prefix}{before}{n:X}{after}&quot;</span>)
                                 }),
                                 <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(CsplitError::SuffixFormatIncorrect),
                             },
@@ -421,19 +417,19 @@
                                      */
                                     // decimal
                                     </span>(<span class="string">&quot;0&quot;</span>, <span class="string">&quot;d&quot; </span>| <span class="string">&quot;i&quot; </span>| <span class="string">&quot;u&quot;</span>) =&gt; Box::new(<span class="kw">move </span>|n: usize| -&gt; String {
-                                        <span class="macro">format!</span>(<span class="string">&quot;{}{}{:0width$}{}&quot;</span>, prefix, before, n, after)
+                                        <span class="macro">format!</span>(<span class="string">&quot;{prefix}{before}{n:0width$}{after}&quot;</span>)
                                     }),
                                     <span class="comment">// octal
                                     </span>(<span class="string">&quot;0&quot;</span>, <span class="string">&quot;o&quot;</span>) =&gt; Box::new(<span class="kw">move </span>|n: usize| -&gt; String {
-                                        <span class="macro">format!</span>(<span class="string">&quot;{}{}{:0width$o}{}&quot;</span>, prefix, before, n, after)
+                                        <span class="macro">format!</span>(<span class="string">&quot;{prefix}{before}{n:0width$o}{after}&quot;</span>)
                                     }),
                                     <span class="comment">// lower hexadecimal
                                     </span>(<span class="string">&quot;0&quot;</span>, <span class="string">&quot;x&quot;</span>) =&gt; Box::new(<span class="kw">move </span>|n: usize| -&gt; String {
-                                        <span class="macro">format!</span>(<span class="string">&quot;{}{}{:0width$x}{}&quot;</span>, prefix, before, n, after)
+                                        <span class="macro">format!</span>(<span class="string">&quot;{prefix}{before}{n:0width$x}{after}&quot;</span>)
                                     }),
                                     <span class="comment">// upper hexadecimal
                                     </span>(<span class="string">&quot;0&quot;</span>, <span class="string">&quot;X&quot;</span>) =&gt; Box::new(<span class="kw">move </span>|n: usize| -&gt; String {
-                                        <span class="macro">format!</span>(<span class="string">&quot;{}{}{:0width$X}{}&quot;</span>, prefix, before, n, after)
+                                        <span class="macro">format!</span>(<span class="string">&quot;{prefix}{before}{n:0width$X}{after}&quot;</span>)
                                     }),
 
                                     <span class="comment">/*
@@ -441,15 +437,15 @@
                                      */
                                     // octal
                                     </span>(<span class="string">&quot;#&quot;</span>, <span class="string">&quot;o&quot;</span>) =&gt; Box::new(<span class="kw">move </span>|n: usize| -&gt; String {
-                                        <span class="macro">format!</span>(<span class="string">&quot;{}{}{:&gt;#width$o}{}&quot;</span>, prefix, before, n, after)
+                                        <span class="macro">format!</span>(<span class="string">&quot;{prefix}{before}{n:&gt;#width$o}{after}&quot;</span>)
                                     }),
                                     <span class="comment">// lower hexadecimal
                                     </span>(<span class="string">&quot;#&quot;</span>, <span class="string">&quot;x&quot;</span>) =&gt; Box::new(<span class="kw">move </span>|n: usize| -&gt; String {
-                                        <span class="macro">format!</span>(<span class="string">&quot;{}{}{:&gt;#width$x}{}&quot;</span>, prefix, before, n, after)
+                                        <span class="macro">format!</span>(<span class="string">&quot;{prefix}{before}{n:&gt;#width$x}{after}&quot;</span>)
                                     }),
                                     <span class="comment">// upper hexadecimal
                                     </span>(<span class="string">&quot;#&quot;</span>, <span class="string">&quot;X&quot;</span>) =&gt; Box::new(<span class="kw">move </span>|n: usize| -&gt; String {
-                                        <span class="macro">format!</span>(<span class="string">&quot;{}{}{:&gt;#width$X}{}&quot;</span>, prefix, before, n, after)
+                                        <span class="macro">format!</span>(<span class="string">&quot;{prefix}{before}{n:&gt;#width$X}{after}&quot;</span>)
                                     }),
 
                                     <span class="comment">/*
@@ -457,19 +453,19 @@
                                      */
                                     // decimal
                                     </span>(<span class="string">&quot;-&quot;</span>, <span class="string">&quot;d&quot; </span>| <span class="string">&quot;i&quot; </span>| <span class="string">&quot;u&quot;</span>) =&gt; Box::new(<span class="kw">move </span>|n: usize| -&gt; String {
-                                        <span class="macro">format!</span>(<span class="string">&quot;{}{}{:&lt;#width$}{}&quot;</span>, prefix, before, n, after)
+                                        <span class="macro">format!</span>(<span class="string">&quot;{prefix}{before}{n:&lt;#width$}{after}&quot;</span>)
                                     }),
                                     <span class="comment">// octal
                                     </span>(<span class="string">&quot;-&quot;</span>, <span class="string">&quot;o&quot;</span>) =&gt; Box::new(<span class="kw">move </span>|n: usize| -&gt; String {
-                                        <span class="macro">format!</span>(<span class="string">&quot;{}{}{:&lt;#width$o}{}&quot;</span>, prefix, before, n, after)
+                                        <span class="macro">format!</span>(<span class="string">&quot;{prefix}{before}{n:&lt;#width$o}{after}&quot;</span>)
                                     }),
                                     <span class="comment">// lower hexadecimal
                                     </span>(<span class="string">&quot;-&quot;</span>, <span class="string">&quot;x&quot;</span>) =&gt; Box::new(<span class="kw">move </span>|n: usize| -&gt; String {
-                                        <span class="macro">format!</span>(<span class="string">&quot;{}{}{:&lt;#width$x}{}&quot;</span>, prefix, before, n, after)
+                                        <span class="macro">format!</span>(<span class="string">&quot;{prefix}{before}{n:&lt;#width$x}{after}&quot;</span>)
                                     }),
                                     <span class="comment">// upper hexadecimal
                                     </span>(<span class="string">&quot;-&quot;</span>, <span class="string">&quot;X&quot;</span>) =&gt; Box::new(<span class="kw">move </span>|n: usize| -&gt; String {
-                                        <span class="macro">format!</span>(<span class="string">&quot;{}{}{:&lt;#width$X}{}&quot;</span>, prefix, before, n, after)
+                                        <span class="macro">format!</span>(<span class="string">&quot;{prefix}{before}{n:&lt;#width$X}{after}&quot;</span>)
                                     }),
 
                                     <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(CsplitError::SuffixFormatIncorrect),

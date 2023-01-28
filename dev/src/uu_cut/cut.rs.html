@@ -666,69 +666,6 @@
 <a href="#666" id="666">666</a>
 <a href="#667" id="667">667</a>
 <a href="#668" id="668">668</a>
-<a href="#669" id="669">669</a>
-<a href="#670" id="670">670</a>
-<a href="#671" id="671">671</a>
-<a href="#672" id="672">672</a>
-<a href="#673" id="673">673</a>
-<a href="#674" id="674">674</a>
-<a href="#675" id="675">675</a>
-<a href="#676" id="676">676</a>
-<a href="#677" id="677">677</a>
-<a href="#678" id="678">678</a>
-<a href="#679" id="679">679</a>
-<a href="#680" id="680">680</a>
-<a href="#681" id="681">681</a>
-<a href="#682" id="682">682</a>
-<a href="#683" id="683">683</a>
-<a href="#684" id="684">684</a>
-<a href="#685" id="685">685</a>
-<a href="#686" id="686">686</a>
-<a href="#687" id="687">687</a>
-<a href="#688" id="688">688</a>
-<a href="#689" id="689">689</a>
-<a href="#690" id="690">690</a>
-<a href="#691" id="691">691</a>
-<a href="#692" id="692">692</a>
-<a href="#693" id="693">693</a>
-<a href="#694" id="694">694</a>
-<a href="#695" id="695">695</a>
-<a href="#696" id="696">696</a>
-<a href="#697" id="697">697</a>
-<a href="#698" id="698">698</a>
-<a href="#699" id="699">699</a>
-<a href="#700" id="700">700</a>
-<a href="#701" id="701">701</a>
-<a href="#702" id="702">702</a>
-<a href="#703" id="703">703</a>
-<a href="#704" id="704">704</a>
-<a href="#705" id="705">705</a>
-<a href="#706" id="706">706</a>
-<a href="#707" id="707">707</a>
-<a href="#708" id="708">708</a>
-<a href="#709" id="709">709</a>
-<a href="#710" id="710">710</a>
-<a href="#711" id="711">711</a>
-<a href="#712" id="712">712</a>
-<a href="#713" id="713">713</a>
-<a href="#714" id="714">714</a>
-<a href="#715" id="715">715</a>
-<a href="#716" id="716">716</a>
-<a href="#717" id="717">717</a>
-<a href="#718" id="718">718</a>
-<a href="#719" id="719">719</a>
-<a href="#720" id="720">720</a>
-<a href="#721" id="721">721</a>
-<a href="#722" id="722">722</a>
-<a href="#723" id="723">723</a>
-<a href="#724" id="724">724</a>
-<a href="#725" id="725">725</a>
-<a href="#726" id="726">726</a>
-<a href="#727" id="727">727</a>
-<a href="#728" id="728">728</a>
-<a href="#729" id="729">729</a>
-<a href="#730" id="730">730</a>
-<a href="#731" id="731">731</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Rolf Morel &lt;rolfmorel@gmail.com&gt;
@@ -747,12 +684,12 @@
 <span class="kw">use </span>uucore::error::{FromIo, UResult, USimpleError};
 
 <span class="kw">use </span><span class="self">self</span>::searcher::Searcher;
-<span class="kw">use </span><span class="self">self</span>::whitespace_searcher::WhitespaceSearcher;
+<span class="kw">use </span>matcher::{ExactMatcher, Matcher, WhitespaceMatcher};
 <span class="kw">use </span>uucore::ranges::Range;
 <span class="kw">use </span>uucore::{format_usage, show, show_error, show_if_err};
 
+<span class="kw">mod </span>matcher;
 <span class="kw">mod </span>searcher;
-<span class="kw">mod </span>whitespace_searcher;
 
 <span class="kw">static </span>USAGE: <span class="kw-2">&amp;</span>str =
     <span class="string">&quot;{} [-d|-w] [-s] [-z] [--output-delimiter] ((-f|-b|-c) {{sequence}}) {{sourcefile}}+&quot;</span>;
@@ -919,23 +856,22 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="attr">#[allow(clippy::cognitive_complexity)]
-</span><span class="kw">fn </span>cut_fields_delimiter&lt;R: Read&gt;(
+<span class="comment">// Output delimiter is explicitly specified
+</span><span class="kw">fn </span>cut_fields_explicit_out_delim&lt;R: Read, M: Matcher&gt;(
     reader: R,
+    matcher: <span class="kw-2">&amp;</span>M,
     ranges: <span class="kw-2">&amp;</span>[Range],
-    delim: <span class="kw-2">&amp;</span>str,
     only_delimited: bool,
     newline_char: u8,
     out_delim: <span class="kw-2">&amp;</span>str,
 ) -&gt; UResult&lt;()&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>buf_in = BufReader::new(reader);
     <span class="kw">let </span><span class="kw-2">mut </span>out = stdout_writer();
-    <span class="kw">let </span>input_delim_len = delim.len();
 
     <span class="kw">let </span>result = buf_in.for_byte_record_with_terminator(newline_char, |line| {
         <span class="kw">let </span><span class="kw-2">mut </span>fields_pos = <span class="number">1</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>low_idx = <span class="number">0</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>delim_search = Searcher::new(line, delim.as_bytes()).peekable();
+        <span class="kw">let </span><span class="kw-2">mut </span>delim_search = Searcher::new(matcher, line).peekable();
         <span class="kw">let </span><span class="kw-2">mut </span>print_delim = <span class="bool-val">false</span>;
 
         <span class="kw">if </span>delim_search.peek().is_none() {
@@ -950,85 +886,6 @@
         }
 
         <span class="kw">for </span><span class="kw-2">&amp;</span>Range { low, high } <span class="kw">in </span>ranges {
-            <span class="kw">if </span>low - fields_pos &gt; <span class="number">0 </span>{
-                low_idx = <span class="kw">match </span>delim_search.nth(low - fields_pos - <span class="number">1</span>) {
-                    <span class="prelude-val">Some</span>(index) =&gt; index + input_delim_len,
-                    <span class="prelude-val">None </span>=&gt; <span class="kw">break</span>,
-                };
-            }
-
-            <span class="kw">for _ in </span><span class="number">0</span>..=high - low {
-                <span class="kw">if </span>print_delim {
-                    out.write_all(out_delim.as_bytes())<span class="question-mark">?</span>;
-                } <span class="kw">else </span>{
-                    print_delim = <span class="bool-val">true</span>;
-                }
-
-                <span class="kw">match </span>delim_search.next() {
-                    <span class="prelude-val">Some</span>(high_idx) =&gt; {
-                        <span class="kw">let </span>segment = <span class="kw-2">&amp;</span>line[low_idx..high_idx];
-
-                        out.write_all(segment)<span class="question-mark">?</span>;
-
-                        low_idx = high_idx + input_delim_len;
-                        fields_pos = high + <span class="number">1</span>;
-                    }
-                    <span class="prelude-val">None </span>=&gt; {
-                        <span class="kw">let </span>segment = <span class="kw-2">&amp;</span>line[low_idx..];
-
-                        out.write_all(segment)<span class="question-mark">?</span>;
-
-                        <span class="kw">if </span>line[line.len() - <span class="number">1</span>] == newline_char {
-                            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="bool-val">true</span>);
-                        }
-                        <span class="kw">break</span>;
-                    }
-                }
-            }
-        }
-
-        out.write_all(<span class="kw-2">&amp;</span>[newline_char])<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
-    });
-
-    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = result {
-        <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, e.to_string()));
-    }
-
-    <span class="prelude-val">Ok</span>(())
-}
-
-<span class="kw">fn </span>cut_fields_whitespace&lt;R: Read&gt;(
-    reader: R,
-    ranges: <span class="kw-2">&amp;</span>[Range],
-    only_delimited: bool,
-    newline_char: u8,
-    out_delim: <span class="kw-2">&amp;</span>str,
-) -&gt; UResult&lt;()&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>buf_in = BufReader::new(reader);
-    <span class="kw">let </span><span class="kw-2">mut </span>out = stdout_writer();
-
-    <span class="kw">let </span>result = buf_in.for_byte_record_with_terminator(newline_char, |line| {
-        <span class="kw">let </span><span class="kw-2">mut </span>fields_pos = <span class="number">1</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>low_idx = <span class="number">0</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>delim_search = WhitespaceSearcher::new(line).peekable();
-        <span class="kw">let </span><span class="kw-2">mut </span>print_delim = <span class="bool-val">false</span>;
-
-        <span class="kw">if </span>delim_search.peek().is_none() {
-            <span class="kw">if </span>!only_delimited {
-                out.write_all(line)<span class="question-mark">?</span>;
-                <span class="kw">if </span>line[line.len() - <span class="number">1</span>] != newline_char {
-                    out.write_all(<span class="kw-2">&amp;</span>[newline_char])<span class="question-mark">?</span>;
-                }
-            }
-
-            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="bool-val">true</span>);
-        }
-        <span class="comment">// The logic is identical to `cut_fields_delimiter` function above, which uses
-        // `Searcher` that iterates over and returns the first position of the delimiter character.
-        // The main difference is that `WhitespaceSearcher` returns a pair of the first and last
-        // delimiter character positions, since each delimiter sequence length can vary.
-        </span><span class="kw">for </span><span class="kw-2">&amp;</span>Range { low, high } <span class="kw">in </span>ranges {
             <span class="kw">if </span>low - fields_pos &gt; <span class="number">0 </span>{
                 <span class="comment">// current field is not in the range, so jump to the field corresponding to the
                 // beginning of the range if any
@@ -1048,7 +905,7 @@
                 }
 
                 <span class="kw">match </span>delim_search.next() {
-                    <span class="comment">// print the current field up to the next whitespace
+                    <span class="comment">// print the current field up to the next field delim
                     </span><span class="prelude-val">Some</span>((first, last)) =&gt; {
                         <span class="kw">let </span>segment = <span class="kw-2">&amp;</span>line[low_idx..first];
 
@@ -1083,93 +940,110 @@
     <span class="prelude-val">Ok</span>(())
 }
 
+<span class="comment">// Output delimiter is the same as input delimiter
+</span><span class="kw">fn </span>cut_fields_implicit_out_delim&lt;R: Read, M: Matcher&gt;(
+    reader: R,
+    matcher: <span class="kw-2">&amp;</span>M,
+    ranges: <span class="kw-2">&amp;</span>[Range],
+    only_delimited: bool,
+    newline_char: u8,
+) -&gt; UResult&lt;()&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>buf_in = BufReader::new(reader);
+    <span class="kw">let </span><span class="kw-2">mut </span>out = stdout_writer();
+
+    <span class="kw">let </span>result = buf_in.for_byte_record_with_terminator(newline_char, |line| {
+        <span class="kw">let </span><span class="kw-2">mut </span>fields_pos = <span class="number">1</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>low_idx = <span class="number">0</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>delim_search = Searcher::new(matcher, line).peekable();
+        <span class="kw">let </span><span class="kw-2">mut </span>print_delim = <span class="bool-val">false</span>;
+
+        <span class="kw">if </span>delim_search.peek().is_none() {
+            <span class="kw">if </span>!only_delimited {
+                out.write_all(line)<span class="question-mark">?</span>;
+                <span class="kw">if </span>line[line.len() - <span class="number">1</span>] != newline_char {
+                    out.write_all(<span class="kw-2">&amp;</span>[newline_char])<span class="question-mark">?</span>;
+                }
+            }
+
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="bool-val">true</span>);
+        }
+
+        <span class="kw">for </span><span class="kw-2">&amp;</span>Range { low, high } <span class="kw">in </span>ranges {
+            <span class="kw">if </span>low - fields_pos &gt; <span class="number">0 </span>{
+                <span class="kw">if let </span><span class="prelude-val">Some</span>((first, last)) = delim_search.nth(low - fields_pos - <span class="number">1</span>) {
+                    low_idx = <span class="kw">if </span>print_delim { first } <span class="kw">else </span>{ last }
+                } <span class="kw">else </span>{
+                    <span class="kw">break</span>;
+                }
+            }
+
+            <span class="kw">match </span>delim_search.nth(high - low) {
+                <span class="prelude-val">Some</span>((first, <span class="kw">_</span>)) =&gt; {
+                    <span class="kw">let </span>segment = <span class="kw-2">&amp;</span>line[low_idx..first];
+
+                    out.write_all(segment)<span class="question-mark">?</span>;
+
+                    print_delim = <span class="bool-val">true</span>;
+                    low_idx = first;
+                    fields_pos = high + <span class="number">1</span>;
+                }
+                <span class="prelude-val">None </span>=&gt; {
+                    <span class="kw">let </span>segment = <span class="kw-2">&amp;</span>line[low_idx..line.len()];
+
+                    out.write_all(segment)<span class="question-mark">?</span>;
+
+                    <span class="kw">if </span>line[line.len() - <span class="number">1</span>] == newline_char {
+                        <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="bool-val">true</span>);
+                    }
+                    <span class="kw">break</span>;
+                }
+            }
+        }
+        out.write_all(<span class="kw-2">&amp;</span>[newline_char])<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
+    });
+
+    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = result {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, e.to_string()));
+    }
+
+    <span class="prelude-val">Ok</span>(())
+}
+
 <span class="kw">fn </span>cut_fields&lt;R: Read&gt;(reader: R, ranges: <span class="kw-2">&amp;</span>[Range], opts: <span class="kw-2">&amp;</span>FieldOptions) -&gt; UResult&lt;()&gt; {
     <span class="kw">let </span>newline_char = <span class="kw">if </span>opts.zero_terminated { <span class="string">b&#39;\0&#39; </span>} <span class="kw">else </span>{ <span class="string">b&#39;\n&#39; </span>};
     <span class="kw">match </span>opts.delimiter {
-        Delimiter::Whitespace =&gt; cut_fields_whitespace(
-            reader,
-            ranges,
-            opts.only_delimited,
-            newline_char,
-            opts.out_delimiter.as_deref().unwrap_or(<span class="string">&quot;\t&quot;</span>),
-        ),
-        Delimiter::String(<span class="kw-2">ref </span>delimiter) =&gt; {
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>o_delim) = opts.out_delimiter {
-                <span class="kw">return </span>cut_fields_delimiter(
+        Delimiter::String(<span class="kw-2">ref </span>delim) =&gt; {
+            <span class="kw">let </span>matcher = ExactMatcher::new(delim.as_bytes());
+            <span class="kw">match </span>opts.out_delimiter {
+                <span class="prelude-val">Some</span>(<span class="kw-2">ref </span>out_delim) =&gt; cut_fields_explicit_out_delim(
                     reader,
+                    <span class="kw-2">&amp;</span>matcher,
                     ranges,
-                    delimiter,
                     opts.only_delimited,
                     newline_char,
-                    o_delim,
-                );
+                    out_delim,
+                ),
+                <span class="prelude-val">None </span>=&gt; cut_fields_implicit_out_delim(
+                    reader,
+                    <span class="kw-2">&amp;</span>matcher,
+                    ranges,
+                    opts.only_delimited,
+                    newline_char,
+                ),
             }
-
-            <span class="kw">let </span><span class="kw-2">mut </span>buf_in = BufReader::new(reader);
-            <span class="kw">let </span><span class="kw-2">mut </span>out = stdout_writer();
-            <span class="kw">let </span>delim_len = delimiter.len();
-
-            <span class="kw">let </span>result = buf_in.for_byte_record_with_terminator(newline_char, |line| {
-                <span class="kw">let </span><span class="kw-2">mut </span>fields_pos = <span class="number">1</span>;
-                <span class="kw">let </span><span class="kw-2">mut </span>low_idx = <span class="number">0</span>;
-                <span class="kw">let </span><span class="kw-2">mut </span>delim_search = Searcher::new(line, delimiter.as_bytes()).peekable();
-                <span class="kw">let </span><span class="kw-2">mut </span>print_delim = <span class="bool-val">false</span>;
-
-                <span class="kw">if </span>delim_search.peek().is_none() {
-                    <span class="kw">if </span>!opts.only_delimited {
-                        out.write_all(line)<span class="question-mark">?</span>;
-                        <span class="kw">if </span>line[line.len() - <span class="number">1</span>] != newline_char {
-                            out.write_all(<span class="kw-2">&amp;</span>[newline_char])<span class="question-mark">?</span>;
-                        }
-                    }
-
-                    <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="bool-val">true</span>);
-                }
-
-                <span class="kw">for </span><span class="kw-2">&amp;</span>Range { low, high } <span class="kw">in </span>ranges {
-                    <span class="kw">if </span>low - fields_pos &gt; <span class="number">0 </span>{
-                        <span class="kw">if let </span><span class="prelude-val">Some</span>(delim_pos) = delim_search.nth(low - fields_pos - <span class="number">1</span>) {
-                            low_idx = <span class="kw">if </span>print_delim {
-                                delim_pos
-                            } <span class="kw">else </span>{
-                                delim_pos + delim_len
-                            }
-                        } <span class="kw">else </span>{
-                            <span class="kw">break</span>;
-                        }
-                    }
-
-                    <span class="kw">match </span>delim_search.nth(high - low) {
-                        <span class="prelude-val">Some</span>(high_idx) =&gt; {
-                            <span class="kw">let </span>segment = <span class="kw-2">&amp;</span>line[low_idx..high_idx];
-
-                            out.write_all(segment)<span class="question-mark">?</span>;
-
-                            print_delim = <span class="bool-val">true</span>;
-                            low_idx = high_idx;
-                            fields_pos = high + <span class="number">1</span>;
-                        }
-                        <span class="prelude-val">None </span>=&gt; {
-                            <span class="kw">let </span>segment = <span class="kw-2">&amp;</span>line[low_idx..line.len()];
-
-                            out.write_all(segment)<span class="question-mark">?</span>;
-
-                            <span class="kw">if </span>line[line.len() - <span class="number">1</span>] == newline_char {
-                                <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="bool-val">true</span>);
-                            }
-                            <span class="kw">break</span>;
-                        }
-                    }
-                }
-                out.write_all(<span class="kw-2">&amp;</span>[newline_char])<span class="question-mark">?</span>;
-                <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
-            });
-
-            <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = result {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, e.to_string()));
-            }
-
-            <span class="prelude-val">Ok</span>(())
+        }
+        Delimiter::Whitespace =&gt; {
+            <span class="kw">let </span>matcher = WhitespaceMatcher {};
+            <span class="kw">let </span>out_delim = opts.out_delimiter.as_deref().unwrap_or(<span class="string">&quot;\t&quot;</span>);
+            cut_fields_explicit_out_delim(
+                reader,
+                <span class="kw-2">&amp;</span>matcher,
+                ranges,
+                opts.only_delimited,
+                newline_char,
+                out_delim,
+            )
         }
     }
 }
