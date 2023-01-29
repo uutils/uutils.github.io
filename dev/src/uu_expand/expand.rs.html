@@ -505,6 +505,8 @@
 <a href="#505" id="505">505</a>
 <a href="#506" id="506">506</a>
 <a href="#507" id="507">507</a>
+<a href="#508" id="508">508</a>
+<a href="#509" id="509">509</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Virgile Andreani &lt;virgile.andreani@anbuco.fr&gt;
@@ -633,12 +635,8 @@
         <span class="kw">let </span>bytes = word.as_bytes();
         <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..bytes.len() {
             <span class="kw">match </span>bytes[i] {
-                <span class="string">b&#39;+&#39; </span>=&gt; {
-                    remaining_mode = RemainingMode::Plus;
-                }
-                <span class="string">b&#39;/&#39; </span>=&gt; {
-                    remaining_mode = RemainingMode::Slash;
-                }
+                <span class="string">b&#39;+&#39; </span>=&gt; remaining_mode = RemainingMode::Plus,
+                <span class="string">b&#39;/&#39; </span>=&gt; remaining_mode = RemainingMode::Slash,
                 <span class="kw">_ </span>=&gt; {
                     <span class="comment">// Parse a number from the byte sequence.
                     </span><span class="kw">let </span>s = from_utf8(<span class="kw-2">&amp;</span>bytes[i..]).unwrap();
@@ -697,6 +695,10 @@
     // then just use the default tabstops.
     </span><span class="kw">if </span>nums.is_empty() {
         nums = <span class="macro">vec!</span>[DEFAULT_TABSTOP];
+    }
+
+    <span class="kw">if </span>nums.len() &lt; <span class="number">2 </span>{
+        remaining_mode = RemainingMode::None;
     }
     <span class="prelude-val">Ok</span>((remaining_mode, nums))
 }
@@ -843,17 +845,19 @@
 /// in the `tabstops` slice is interpreted as a relative number of
 /// spaces, which this function will return for every input value of
 /// `col` beyond the end of the second-to-last element of `tabstops`.
-///
-/// If `remaining_mode` is [`RemainingMode::Plus`], then the last entry
-/// in the `tabstops` slice is interpreted as a relative number of
-/// spaces, which this function will return for every input value of
-/// `col` beyond the end of the second-to-last element of `tabstops`.
 </span><span class="kw">fn </span>next_tabstop(tabstops: <span class="kw-2">&amp;</span>[usize], col: usize, remaining_mode: <span class="kw-2">&amp;</span>RemainingMode) -&gt; usize {
     <span class="kw">let </span>num_tabstops = tabstops.len();
     <span class="kw">match </span>remaining_mode {
         RemainingMode::Plus =&gt; <span class="kw">match </span>tabstops[<span class="number">0</span>..num_tabstops - <span class="number">1</span>].iter().find(|&amp;&amp;t| t &gt; col) {
             <span class="prelude-val">Some</span>(t) =&gt; t - col,
-            <span class="prelude-val">None </span>=&gt; tabstops[num_tabstops - <span class="number">1</span>] - <span class="number">1</span>,
+            <span class="prelude-val">None </span>=&gt; {
+                <span class="kw">let </span>step_size = tabstops[num_tabstops - <span class="number">1</span>];
+                <span class="kw">let </span>last_fixed_tabstop = tabstops[num_tabstops - <span class="number">2</span>];
+                <span class="kw">let </span>characters_since_last_tabstop = col - last_fixed_tabstop;
+
+                <span class="kw">let </span>steps_required = <span class="number">1 </span>+ characters_since_last_tabstop / step_size;
+                steps_required * step_size - characters_since_last_tabstop
+            }
         },
         RemainingMode::Slash =&gt; <span class="kw">match </span>tabstops[<span class="number">0</span>..num_tabstops - <span class="number">1</span>].iter().find(|&amp;&amp;t| t &gt; col) {
             <span class="prelude-val">Some</span>(t) =&gt; t - col,
@@ -994,8 +998,8 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_next_tabstop_remaining_mode_plus() {
         <span class="macro">assert_eq!</span>(next_tabstop(<span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">5</span>], <span class="number">0</span>, <span class="kw-2">&amp;</span>RemainingMode::Plus), <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(next_tabstop(<span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">5</span>], <span class="number">3</span>, <span class="kw-2">&amp;</span>RemainingMode::Plus), <span class="number">4</span>);
-        <span class="macro">assert_eq!</span>(next_tabstop(<span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">5</span>], <span class="number">6</span>, <span class="kw-2">&amp;</span>RemainingMode::Plus), <span class="number">4</span>);
+        <span class="macro">assert_eq!</span>(next_tabstop(<span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">5</span>], <span class="number">3</span>, <span class="kw-2">&amp;</span>RemainingMode::Plus), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(next_tabstop(<span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">5</span>], <span class="number">6</span>, <span class="kw-2">&amp;</span>RemainingMode::Plus), <span class="number">5</span>);
     }
 
     <span class="attr">#[test]
