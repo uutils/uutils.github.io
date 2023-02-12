@@ -579,9 +579,6 @@
 <a href="#579" id="579">579</a>
 <a href="#580" id="580">580</a>
 <a href="#581" id="581">581</a>
-<a href="#582" id="582">582</a>
-<a href="#583" id="583">583</a>
-<a href="#584" id="584">584</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Alex Lyon &lt;arcterus@mail.com&gt;
@@ -592,7 +589,6 @@
 // spell-checker:ignore (path) eacces
 
 </span><span class="kw">use </span>clap::{crate_version, parser::ValueSource, Arg, ArgAction, Command};
-<span class="kw">use </span>remove_dir_all::remove_dir_all;
 <span class="kw">use </span>std::collections::VecDeque;
 <span class="kw">use </span>std::fs::{<span class="self">self</span>, File, Metadata};
 <span class="kw">use </span>std::io::ErrorKind;
@@ -882,9 +878,7 @@
     <span class="kw">let </span>is_root = path.has_root() &amp;&amp; path.parent().is_none();
     <span class="kw">if </span>options.recursive &amp;&amp; (!is_root || !options.preserve_root) {
         <span class="kw">if </span>options.interactive != InteractiveMode::Always &amp;&amp; !options.verbose {
-            <span class="comment">// we need the extra crate because apparently fs::remove_dir_all() does not function
-            // correctly on Windows
-            </span><span class="kw">if let </span><span class="prelude-val">Err</span>(e) = remove_dir_all(path) {
+            <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = fs::remove_dir_all(path) {
                 had_err = <span class="bool-val">true</span>;
                 <span class="kw">if </span>e.kind() == std::io::ErrorKind::PermissionDenied {
                     <span class="comment">// GNU compatibility (rm/fail-eacces.sh)
