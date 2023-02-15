@@ -145,6 +145,15 @@
 <a href="#145" id="145">145</a>
 <a href="#146" id="146">146</a>
 <a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Michael Gehring &lt;mg@ebfe.org&gt;
@@ -155,7 +164,7 @@
 // spell-checker:ignore (ToDO) NPROCESSORS nprocs numstr threadstr sysconf
 
 </span><span class="kw">use </span>clap::{crate_version, Arg, ArgAction, Command};
-<span class="kw">use </span>std::env;
+<span class="kw">use </span>std::{env, thread};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{UResult, USimpleError};
 <span class="kw">use </span>uucore::format_usage;
@@ -220,16 +229,16 @@ they will determine the minimum and maximum returned value respectively.&quot;#<
                 // If OMP_NUM_THREADS=0, rejects the value
                 </span><span class="kw">let </span>thread: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = threadstr.split_terminator(<span class="string">&#39;,&#39;</span>).collect();
                 <span class="kw">match </span><span class="kw-2">&amp;</span>thread[..] {
-                    [] =&gt; num_cpus::get(),
+                    [] =&gt; available_parallelism(),
                     [s, ..] =&gt; <span class="kw">match </span>s.parse() {
-                        <span class="prelude-val">Ok</span>(<span class="number">0</span>) | <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; num_cpus::get(),
+                        <span class="prelude-val">Ok</span>(<span class="number">0</span>) | <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; available_parallelism(),
                         <span class="prelude-val">Ok</span>(n) =&gt; n,
                     },
                 }
             }
             <span class="comment">// the variable &#39;OMP_NUM_THREADS&#39; doesn&#39;t exist
             // fallback to the regular CPU detection
-            </span><span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; num_cpus::get(),
+            </span><span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; available_parallelism(),
         }
     };
 
@@ -274,7 +283,7 @@ they will determine the minimum and maximum returned value respectively.&quot;#<
     <span class="kw">if </span>nprocs == <span class="number">1 </span>{
         <span class="comment">// In some situation, /proc and /sys are not mounted, and sysconf returns 1.
         // However, we want to guarantee that `nproc --all` &gt;= `nproc`.
-        </span>num_cpus::get()
+        </span>available_parallelism()
     } <span class="kw">else if </span>nprocs &gt; <span class="number">0 </span>{
         nprocs <span class="kw">as </span>usize
     } <span class="kw">else </span>{
@@ -282,7 +291,7 @@ they will determine the minimum and maximum returned value respectively.&quot;#<
     </span>}
 }
 
-<span class="comment">// Other platforms (e.g., windows), num_cpus::get() directly.
+<span class="comment">// Other platforms (e.g., windows), available_parallelism() directly.
 </span><span class="attr">#[cfg(not(any(
     target_os = <span class="string">&quot;linux&quot;</span>,
     target_vendor = <span class="string">&quot;apple&quot;</span>,
@@ -290,7 +299,16 @@ they will determine the minimum and maximum returned value respectively.&quot;#<
     target_os = <span class="string">&quot;netbsd&quot;
 </span>)))]
 </span><span class="kw">fn </span>num_cpus_all() -&gt; usize {
-    num_cpus::get()
+    available_parallelism()
+}
+
+<span class="comment">// In some cases, thread::available_parallelism() may return an Err
+// In this case, we will return 1 (like GNU)
+</span><span class="kw">fn </span>available_parallelism() -&gt; usize {
+    <span class="kw">match </span>thread::available_parallelism() {
+        <span class="prelude-val">Ok</span>(n) =&gt; n.get(),
+        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="number">1</span>,
+    }
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uu_nproc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.1 (d5a82bbd2 2023-02-07)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
