@@ -88,10 +88,6 @@
 <a href="#88" id="88">88</a>
 <a href="#89" id="89">89</a>
 <a href="#90" id="90">90</a>
-<a href="#91" id="91">91</a>
-<a href="#92" id="92">92</a>
-<a href="#93" id="93">93</a>
-<a href="#94" id="94">94</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Derek Chiang &lt;derekchiang93@gmail.com&gt;
@@ -105,26 +101,22 @@
 <span class="kw">use </span>uucore::error::{UResult, UUsageError};
 <span class="kw">use </span>uucore::format_usage;
 
-<span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Strip last component from file name&quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Strip last component from file name&quot;</span>;
 <span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;{} [OPTION] NAME...&quot;</span>;
+<span class="kw">const </span>LONG_USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;\
+    Output each NAME with its last non-slash component and trailing slashes \n\
+    removed; if NAME contains no /&#39;s, output &#39;.&#39; (meaning the current directory).&quot;</span>;
 
 <span class="kw">mod </span>options {
     <span class="kw">pub const </span>ZERO: <span class="kw-2">&amp;</span>str = <span class="string">&quot;zero&quot;</span>;
     <span class="kw">pub const </span>DIR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;dir&quot;</span>;
 }
 
-<span class="kw">fn </span>get_long_usage() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
-    <span class="string">&quot;Output each NAME with its last non-slash component and trailing slashes \n\
-        removed; if NAME contains no /&#39;s, output &#39;.&#39; (meaning the current directory).&quot;
-</span>}
-
 <span class="attr">#[uucore::main]
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
     <span class="kw">let </span>args = args.collect_lossy();
 
-    <span class="kw">let </span>matches = uu_app()
-        .after_help(get_long_usage())
-        .try_get_matches_from(args)<span class="question-mark">?</span>;
+    <span class="kw">let </span>matches = uu_app().after_help(LONG_USAGE).try_get_matches_from(args)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>separator = <span class="kw">if </span>matches.get_flag(options::ZERO) {
         <span class="string">&quot;\0&quot;

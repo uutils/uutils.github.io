@@ -169,11 +169,6 @@
 <a href="#169" id="169">169</a>
 <a href="#170" id="170">170</a>
 <a href="#171" id="171">171</a>
-<a href="#172" id="172">172</a>
-<a href="#173" id="173">173</a>
-<a href="#174" id="174">174</a>
-<a href="#175" id="175">175</a>
-<a href="#176" id="176">176</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
@@ -195,8 +190,11 @@
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{UResult, USimpleError, UUsageError};
 
-<span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Translate or delete characters&quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Translate or delete characters&quot;</span>;
 <span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;{} [OPTION]... SET1 [SET2]&quot;</span>;
+<span class="kw">const </span>LONG_USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;\
+    Translate, squeeze, and/or delete characters from standard input, \
+    writing to standard output.&quot;</span>;
 
 <span class="kw">mod </span>options {
     <span class="kw">pub const </span>COMPLEMENT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;complement&quot;</span>;
@@ -206,19 +204,11 @@
     <span class="kw">pub const </span>SETS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;sets&quot;</span>;
 }
 
-<span class="kw">fn </span>get_long_usage() -&gt; String {
-    <span class="string">&quot;Translate, squeeze, and/or delete characters from standard input, \
-     writing to standard output.&quot;
-        </span>.to_string()
-}
-
 <span class="attr">#[uucore::main]
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
     <span class="kw">let </span>args = args.collect_lossy();
 
-    <span class="kw">let </span>matches = uu_app()
-        .after_help(get_long_usage())
-        .try_get_matches_from(args)<span class="question-mark">?</span>;
+    <span class="kw">let </span>matches = uu_app().after_help(LONG_USAGE).try_get_matches_from(args)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>delete_flag = matches.get_flag(options::DELETE);
     <span class="kw">let </span>complement_flag = matches.get_flag(options::COMPLEMENT);

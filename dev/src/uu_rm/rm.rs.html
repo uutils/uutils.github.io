@@ -574,11 +574,6 @@
 <a href="#574" id="574">574</a>
 <a href="#575" id="575">575</a>
 <a href="#576" id="576">576</a>
-<a href="#577" id="577">577</a>
-<a href="#578" id="578">578</a>
-<a href="#579" id="579">579</a>
-<a href="#580" id="580">580</a>
-<a href="#581" id="581">581</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Alex Lyon &lt;arcterus@mail.com&gt;
@@ -618,8 +613,22 @@
     verbose: bool,
 }
 
-<span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Remove (unlink) the FILE(s)&quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Remove (unlink) the FILE(s)&quot;</span>;
 <span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;{} [OPTION]... FILE...&quot;</span>;
+<span class="kw">const </span>LONG_USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;\
+By default, rm does not remove directories.  Use the --recursive (-r or -R)
+option to remove each listed directory, too, along with all of its contents
+
+To remove a file whose name starts with a &#39;-&#39;, for example &#39;-foo&#39;,
+use one of these commands:
+rm -- -foo
+
+rm ./-foo
+
+Note that if you use rm to remove a file, it might be possible to recover
+some of its contents, given sufficient expertise and/or time.  For greater
+assurance that the contents are truly unrecoverable, consider using shred.&quot;</span>;
+
 <span class="kw">static </span>OPT_DIR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;dir&quot;</span>;
 <span class="kw">static </span>OPT_INTERACTIVE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;interactive&quot;</span>;
 <span class="kw">static </span>OPT_FORCE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;force&quot;</span>;
@@ -634,28 +643,9 @@
 
 <span class="kw">static </span>ARG_FILES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;files&quot;</span>;
 
-<span class="kw">fn </span>get_long_usage() -&gt; String {
-    String::from(
-        <span class="string">&quot;By default, rm does not remove directories.  Use the --recursive (-r or -R)
-        option to remove each listed directory, too, along with all of its contents
-
-        To remove a file whose name starts with a &#39;-&#39;, for example &#39;-foo&#39;,
-        use one of these commands:
-        rm -- -foo
-
-        rm ./-foo
-
-        Note that if you use rm to remove a file, it might be possible to recover
-        some of its contents, given sufficient expertise and/or time.  For greater
-        assurance that the contents are truly unrecoverable, consider using shred.&quot;</span>,
-    )
-}
-
 <span class="attr">#[uucore::main]
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
-    <span class="kw">let </span>matches = uu_app()
-        .after_help(get_long_usage())
-        .try_get_matches_from(args)<span class="question-mark">?</span>;
+    <span class="kw">let </span>matches = uu_app().after_help(LONG_USAGE).try_get_matches_from(args)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>files: Vec&lt;String&gt; = matches
         .get_many::&lt;String&gt;(ARG_FILES)

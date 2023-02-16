@@ -375,11 +375,6 @@
 <a href="#375" id="375">375</a>
 <a href="#376" id="376">376</a>
 <a href="#377" id="377">377</a>
-<a href="#378" id="378">378</a>
-<a href="#379" id="379">379</a>
-<a href="#380" id="380">380</a>
-<a href="#381" id="381">381</a>
-<a href="#382" id="382">382</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Alex Lyon &lt;arcterus@mail.com&gt;
@@ -401,8 +396,14 @@
 </span><span class="kw">use </span>uucore::mode;
 <span class="kw">use </span>uucore::{format_usage, show_error};
 
-<span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Change the mode of each FILE to MODE.
- With --reference, change the mode of each FILE to that of RFILE.&quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Change the mode of each FILE to MODE.\n\
+    With --reference, change the mode of each FILE to that of RFILE.&quot;</span>;
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;\
+       {} [OPTION]... MODE[,MODE]... FILE...
+       {} [OPTION]... OCTAL-MODE FILE...
+       {} [OPTION]... --reference=RFILE FILE...&quot;</span>;
+<span class="kw">const </span>LONG_USAGE: <span class="kw-2">&amp;</span>str =
+    <span class="string">&quot;Each MODE is of the form &#39;[ugoa]*([-+=]([rwxXst]*|[ugo]))+|[-+=]?[0-7]+&#39;.&quot;</span>;
 
 <span class="kw">mod </span>options {
     <span class="kw">pub const </span>CHANGES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;changes&quot;</span>;
@@ -416,15 +417,6 @@
     <span class="kw">pub const </span>FILE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;FILE&quot;</span>;
 }
 
-<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;\
-    {} [OPTION]... MODE[,MODE]... FILE...
-    {} [OPTION]... OCTAL-MODE FILE...
-    {} [OPTION]... --reference=RFILE FILE...&quot;</span>;
-
-<span class="kw">fn </span>get_long_usage() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
-    <span class="string">&quot;Each MODE is of the form &#39;[ugoa]*([-+=]([rwxXst]*|[ugo]))+|[-+=]?[0-7]+&#39;.&quot;
-</span>}
-
 <span class="attr">#[uucore::main]
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>args = args.collect_lossy();
@@ -433,9 +425,7 @@
     // a possible MODE prefix &#39;-&#39; needs to be removed (e.g. &quot;chmod -x FILE&quot;).
     </span><span class="kw">let </span>mode_had_minus_prefix = mode::strip_minus_from_mode(<span class="kw-2">&amp;mut </span>args);
 
-    <span class="kw">let </span>after_help = get_long_usage();
-
-    <span class="kw">let </span>matches = uu_app().after_help(after_help).try_get_matches_from(args)<span class="question-mark">?</span>;
+    <span class="kw">let </span>matches = uu_app().after_help(LONG_USAGE).try_get_matches_from(args)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>changes = matches.get_flag(options::CHANGES);
     <span class="kw">let </span>quiet = matches.get_flag(options::QUIET);

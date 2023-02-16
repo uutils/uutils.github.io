@@ -434,11 +434,6 @@
 <a href="#434" id="434">434</a>
 <a href="#435" id="435">435</a>
 <a href="#436" id="436">436</a>
-<a href="#437" id="437">437</a>
-<a href="#438" id="438">438</a>
-<a href="#439" id="439">439</a>
-<a href="#440" id="440">440</a>
-<a href="#441" id="441">441</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Chirag B Jadwani &lt;chirag.jadwani@gmail.com&gt;
@@ -456,8 +451,14 @@
 <span class="kw">use </span>uucore::error::{FromIo, UResult, USimpleError, UUsageError};
 <span class="kw">use </span>uucore::format_usage;
 
-<span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Report or omit repeated lines.&quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Report or omit repeated lines.&quot;</span>;
 <span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;{} [OPTION]... [INPUT [OUTPUT]]...&quot;</span>;
+<span class="kw">const </span>LONG_USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;\
+    Filter adjacent matching lines from INPUT (or standard input),\n\
+    writing to OUTPUT (or standard output).\n\n\
+    Note: &#39;uniq&#39; does not detect repeated lines unless they are adjacent.\n\
+    You may want to sort the input first, or use &#39;sort -u&#39; without &#39;uniq&#39;.&quot;</span>;
+
 <span class="kw">pub mod </span>options {
     <span class="kw">pub static </span>ALL_REPEATED: <span class="kw-2">&amp;</span>str = <span class="string">&quot;all-repeated&quot;</span>;
     <span class="kw">pub static </span>CHECK_CHARS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;check-chars&quot;</span>;
@@ -682,20 +683,9 @@
     })
 }
 
-<span class="kw">fn </span>get_long_usage() -&gt; String {
-    String::from(
-        <span class="string">&quot;Filter adjacent matching lines from INPUT (or standard input),\n\
-        writing to OUTPUT (or standard output).
-        Note: &#39;uniq&#39; does not detect repeated lines unless they are adjacent.\n\
-        You may want to sort the input first, or use &#39;sort -u&#39; without &#39;uniq&#39;.\n&quot;</span>,
-    )
-}
-
 <span class="attr">#[uucore::main]
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
-    <span class="kw">let </span>matches = uu_app()
-        .after_help(get_long_usage())
-        .try_get_matches_from(args)<span class="question-mark">?</span>;
+    <span class="kw">let </span>matches = uu_app().after_help(LONG_USAGE).try_get_matches_from(args)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>files: Vec&lt;String&gt; = matches
         .get_many::&lt;String&gt;(ARG_FILES)

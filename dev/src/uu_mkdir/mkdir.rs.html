@@ -214,10 +214,6 @@
 <a href="#214" id="214">214</a>
 <a href="#215" id="215">215</a>
 <a href="#216" id="216">216</a>
-<a href="#217" id="217">217</a>
-<a href="#218" id="218">218</a>
-<a href="#219" id="219">219</a>
-<a href="#220" id="220">220</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Nicholas Juszczak &lt;juszczakn@gmail.com&gt;
@@ -242,8 +238,10 @@
 
 <span class="kw">static </span>DEFAULT_PERM: u32 = <span class="number">0o755</span>;
 
-<span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Create the given DIRECTORY(ies) if they do not exist&quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Create the given DIRECTORY(ies) if they do not exist&quot;</span>;
 <span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;{} [OPTION]... [USER]&quot;</span>;
+<span class="kw">const </span>LONG_USAGE: <span class="kw-2">&amp;</span>str =
+    <span class="string">&quot;Each MODE is of the form &#39;[ugoa]*([-+=]([rwxXst]*|[ugo]))+|[-+=]?[0-7]+&#39;.&quot;</span>;
 
 <span class="kw">mod </span>options {
     <span class="kw">pub const </span>MODE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;mode&quot;</span>;
@@ -251,10 +249,6 @@
     <span class="kw">pub const </span>VERBOSE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;verbose&quot;</span>;
     <span class="kw">pub const </span>DIRS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;dirs&quot;</span>;
 }
-
-<span class="kw">fn </span>get_long_usage() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
-    <span class="string">&quot;Each MODE is of the form &#39;[ugoa]*([-+=]([rwxXst]*|[ugo]))+|[-+=]?[0-7]+&#39;.&quot;
-</span>}
 
 <span class="attr">#[cfg(windows)]
 </span><span class="kw">fn </span>get_mode(_matches: <span class="kw-2">&amp;</span>ArgMatches, _mode_had_minus_prefix: bool) -&gt; <span class="prelude-ty">Result</span>&lt;u32, String&gt; {
@@ -312,9 +306,7 @@
     <span class="comment">// Linux-specific options, not implemented
     // opts.optflag(&quot;Z&quot;, &quot;context&quot;, &quot;set SELinux security context&quot; +
     // &quot; of each created directory to CTX&quot;),
-    </span><span class="kw">let </span>matches = uu_app()
-        .after_help(get_long_usage())
-        .try_get_matches_from(args)<span class="question-mark">?</span>;
+    </span><span class="kw">let </span>matches = uu_app().after_help(LONG_USAGE).try_get_matches_from(args)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>dirs = matches
         .get_many::&lt;OsString&gt;(options::DIRS)
