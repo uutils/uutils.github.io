@@ -515,18 +515,24 @@
 <a href="#515" id="515">515</a>
 <a href="#516" id="516">516</a>
 <a href="#517" id="517">517</a>
+<a href="#518" id="518">518</a>
+<a href="#519" id="519">519</a>
+<a href="#520" id="520">520</a>
+<a href="#521" id="521">521</a>
+<a href="#522" id="522">522</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
 //  * file that was distributed with this source code.
 
-// spell-checker:ignore (ToDO) kqueue Signum
+// spell-checker:ignore (ToDO) kqueue Signum fundu
 
 </span><span class="kw">use </span><span class="kw">crate</span>::paths::Input;
 <span class="kw">use crate</span>::{parse, platform, Quotable};
 <span class="kw">use </span>atty::Stream;
 <span class="kw">use </span>clap::crate_version;
 <span class="kw">use </span>clap::{parser::ValueSource, Arg, ArgAction, ArgMatches, Command};
+<span class="kw">use </span>fundu::DurationParser;
 <span class="kw">use </span>same_file::Handle;
 <span class="kw">use </span>std::collections::VecDeque;
 <span class="kw">use </span>std::ffi::OsString;
@@ -665,16 +671,20 @@
         settings.retry =
             matches.get_flag(options::RETRY) || matches.get_flag(options::FOLLOW_RETRY);
 
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(s) = matches.get_one::&lt;String&gt;(options::SLEEP_INT) {
-            settings.sleep_sec = <span class="kw">match </span>s.parse::&lt;f32&gt;() {
-                <span class="prelude-val">Ok</span>(s) =&gt; Duration::from_secs_f32(s),
-                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(UUsageError::new(
-                        <span class="number">1</span>,
-                        <span class="macro">format!</span>(<span class="string">&quot;invalid number of seconds: {}&quot;</span>, s.quote()),
-                    ))
-                }
-            }
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(source) = matches.get_one::&lt;String&gt;(options::SLEEP_INT) {
+            <span class="comment">// Advantage of `fundu` over `Duration::(try_)from_secs_f64(source.parse().unwrap())`:
+            // * doesn&#39;t panic on errors like `Duration::from_secs_f64` would.
+            // * no precision loss, rounding errors or other floating point problems.
+            // * evaluates to `Duration::MAX` if the parsed number would have exceeded
+            //   `DURATION::MAX` or `infinity` was given
+            // * not applied here but it supports customizable time units and provides better error
+            //   messages
+            </span>settings.sleep_sec =
+                DurationParser::without_time_units()
+                    .parse(source)
+                    .map_err(|<span class="kw">_</span>| {
+                        UUsageError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;invalid number of seconds: &#39;{source}&#39;&quot;</span>))
+                    })<span class="question-mark">?</span>;
         }
 
         settings.use_polling = matches.get_flag(options::USE_POLLING);

@@ -240,21 +240,12 @@
     <span class="kw">pub const </span>TOTAL: <span class="kw-2">&amp;</span>str = <span class="string">&quot;total&quot;</span>;
 }
 
-<span class="kw">fn </span>mkdelim(col: usize, opts: <span class="kw-2">&amp;</span>ArgMatches) -&gt; String {
-    <span class="kw">let </span><span class="kw-2">mut </span>s = String::new();
-    <span class="kw">let </span>delim = <span class="kw">match </span>opts.get_one::&lt;String&gt;(options::DELIMITER).unwrap().as_str() {
-        <span class="string">&quot;&quot; </span>=&gt; <span class="string">&quot;\0&quot;</span>,
-        delim =&gt; delim,
-    };
-
-    <span class="kw">if </span>col &gt; <span class="number">1 </span>&amp;&amp; !opts.get_flag(options::COLUMN_1) {
-        s.push_str(delim.as_ref());
-    }
-    <span class="kw">if </span>col &gt; <span class="number">2 </span>&amp;&amp; !opts.get_flag(options::COLUMN_2) {
-        s.push_str(delim.as_ref());
-    }
-
-    s
+<span class="kw">fn </span>column_width(col: <span class="kw-2">&amp;</span>str, opts: <span class="kw-2">&amp;</span>ArgMatches) -&gt; usize {
+    <span class="kw">if </span>opts.get_flag(col) {
+        <span class="number">0
+    </span>} <span class="kw">else </span>{
+        <span class="number">1
+    </span>}
 }
 
 <span class="kw">fn </span>ensure_nl(line: <span class="kw-2">&amp;mut </span>String) {
@@ -278,7 +269,16 @@
 }
 
 <span class="kw">fn </span>comm(a: <span class="kw-2">&amp;mut </span>LineReader, b: <span class="kw-2">&amp;mut </span>LineReader, opts: <span class="kw-2">&amp;</span>ArgMatches) {
-    <span class="kw">let </span>delim: Vec&lt;String&gt; = (<span class="number">0</span>..<span class="number">4</span>).map(|col| mkdelim(col, opts)).collect();
+    <span class="kw">let </span>delim = <span class="kw">match </span>opts.get_one::&lt;String&gt;(options::DELIMITER).unwrap().as_str() {
+        <span class="string">&quot;&quot; </span>=&gt; <span class="string">&quot;\0&quot;</span>,
+        delim =&gt; delim,
+    };
+
+    <span class="kw">let </span>width_col_1 = column_width(options::COLUMN_1, opts);
+    <span class="kw">let </span>width_col_2 = column_width(options::COLUMN_2, opts);
+
+    <span class="kw">let </span>delim_col_2 = delim.repeat(width_col_1);
+    <span class="kw">let </span>delim_col_3 = delim.repeat(width_col_1 + width_col_2);
 
     <span class="kw">let </span>ra = <span class="kw-2">&amp;mut </span>String::new();
     <span class="kw">let </span><span class="kw-2">mut </span>na = a.read_line(ra);
@@ -306,7 +306,7 @@
             Ordering::Less =&gt; {
                 <span class="kw">if </span>!opts.get_flag(options::COLUMN_1) {
                     ensure_nl(ra);
-                    <span class="macro">print!</span>(<span class="string">&quot;{}{}&quot;</span>, delim[<span class="number">1</span>], ra);
+                    <span class="macro">print!</span>(<span class="string">&quot;{ra}&quot;</span>);
                 }
                 ra.clear();
                 na = a.read_line(ra);
@@ -315,7 +315,7 @@
             Ordering::Greater =&gt; {
                 <span class="kw">if </span>!opts.get_flag(options::COLUMN_2) {
                     ensure_nl(rb);
-                    <span class="macro">print!</span>(<span class="string">&quot;{}{}&quot;</span>, delim[<span class="number">2</span>], rb);
+                    <span class="macro">print!</span>(<span class="string">&quot;{delim_col_2}{rb}&quot;</span>);
                 }
                 rb.clear();
                 nb = b.read_line(rb);
@@ -324,7 +324,7 @@
             Ordering::Equal =&gt; {
                 <span class="kw">if </span>!opts.get_flag(options::COLUMN_3) {
                     ensure_nl(ra);
-                    <span class="macro">print!</span>(<span class="string">&quot;{}{}&quot;</span>, delim[<span class="number">3</span>], ra);
+                    <span class="macro">print!</span>(<span class="string">&quot;{delim_col_3}{ra}&quot;</span>);
                 }
                 ra.clear();
                 rb.clear();
@@ -336,7 +336,7 @@
     }
 
     <span class="kw">if </span>opts.get_flag(options::TOTAL) {
-        <span class="macro">println!</span>(<span class="string">&quot;{total_col_1}\t{total_col_2}\t{total_col_3}\ttotal&quot;</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;{total_col_1}{delim}{total_col_2}{delim}{total_col_3}{delim}total&quot;</span>);
     }
 }
 
