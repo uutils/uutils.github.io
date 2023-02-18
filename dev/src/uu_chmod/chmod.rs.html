@@ -375,6 +375,9 @@
 <a href="#375" id="375">375</a>
 <a href="#376" id="376">376</a>
 <a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Alex Lyon &lt;arcterus@mail.com&gt;
@@ -389,12 +392,12 @@
 <span class="kw">use </span>std::os::unix::fs::{MetadataExt, PermissionsExt};
 <span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>uucore::display::Quotable;
-<span class="kw">use </span>uucore::error::{ExitCode, UResult, USimpleError, UUsageError};
+<span class="kw">use </span>uucore::error::{set_exit_code, ExitCode, UResult, USimpleError, UUsageError};
 <span class="kw">use </span>uucore::fs::display_permissions_unix;
 <span class="kw">use </span>uucore::libc::mode_t;
 <span class="attr">#[cfg(not(windows))]
 </span><span class="kw">use </span>uucore::mode;
-<span class="kw">use </span>uucore::{format_usage, show_error};
+<span class="kw">use </span>uucore::{format_usage, show, show_error};
 
 <span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Change the mode of each FILE to MODE.\n\
     With --reference, change the mode of each FILE to that of RFILE.&quot;</span>;
@@ -572,21 +575,24 @@
                         filename.quote()
                     );
                     <span class="kw">if </span>!<span class="self">self</span>.quiet {
-                        <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
+                        <span class="macro">show!</span>(USimpleError::new(
                             <span class="number">1</span>,
                             <span class="macro">format!</span>(<span class="string">&quot;cannot operate on dangling symlink {}&quot;</span>, filename.quote()),
                         ));
                     }
                 } <span class="kw">else if </span>!<span class="self">self</span>.quiet {
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
+                    <span class="macro">show!</span>(USimpleError::new(
                         <span class="number">1</span>,
                         <span class="macro">format!</span>(
                             <span class="string">&quot;cannot access {}: No such file or directory&quot;</span>,
                             filename.quote()
-                        ),
+                        )
                     ));
                 }
-                <span class="kw">return </span><span class="prelude-val">Err</span>(ExitCode::new(<span class="number">1</span>));
+                <span class="comment">// GNU exits with exit code 1 even if -q or --quiet are passed
+                // So we set the exit code, because it hasn&#39;t been set yet if `self.quiet` is true.
+                </span>set_exit_code(<span class="number">1</span>);
+                <span class="kw">continue</span>;
             }
             <span class="kw">if </span><span class="self">self</span>.recursive &amp;&amp; <span class="self">self</span>.preserve_root &amp;&amp; filename == <span class="string">&quot;/&quot; </span>{
                 <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
