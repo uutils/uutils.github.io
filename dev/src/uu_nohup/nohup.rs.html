@@ -213,6 +213,7 @@
 <a href="#213" id="213">213</a>
 <a href="#214" id="214">214</a>
 <a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) 2014 Vsevolod Velichko &lt;torkvemada@sorokdva.net&gt;
@@ -223,6 +224,7 @@
 // spell-checker:ignore (ToDO) execvp SIGHUP cproc vprocmgr cstrs homeout
 
 </span><span class="kw">use </span>clap::{crate_version, Arg, ArgAction, Command};
+<span class="kw">use </span>is_terminal::IsTerminal;
 <span class="kw">use </span>libc::{c_char, dup2, execvp, signal};
 <span class="kw">use </span>libc::{SIGHUP, SIG_IGN};
 <span class="kw">use </span>std::env;
@@ -344,7 +346,7 @@ If standard error is terminal, it&#39;ll be redirected to stdout.
 }
 
 <span class="kw">fn </span>replace_fds() -&gt; UResult&lt;()&gt; {
-    <span class="kw">if </span>atty::is(atty::Stream::Stdin) {
+    <span class="kw">if </span>std::io::stdin().is_terminal() {
         <span class="kw">let </span>new_stdin = File::open(Path::new(<span class="string">&quot;/dev/null&quot;</span>))
             .map_err(|e| NohupError::CannotReplace(<span class="string">&quot;STDIN&quot;</span>, e))<span class="question-mark">?</span>;
         <span class="kw">if unsafe </span>{ dup2(new_stdin.as_raw_fd(), <span class="number">0</span>) } != <span class="number">0 </span>{
@@ -352,7 +354,7 @@ If standard error is terminal, it&#39;ll be redirected to stdout.
         }
     }
 
-    <span class="kw">if </span>atty::is(atty::Stream::Stdout) {
+    <span class="kw">if </span>std::io::stdout().is_terminal() {
         <span class="kw">let </span>new_stdout = find_stdout()<span class="question-mark">?</span>;
         <span class="kw">let </span>fd = new_stdout.as_raw_fd();
 
@@ -361,7 +363,7 @@ If standard error is terminal, it&#39;ll be redirected to stdout.
         }
     }
 
-    <span class="kw">if </span>atty::is(atty::Stream::Stderr) &amp;&amp; <span class="kw">unsafe </span>{ dup2(<span class="number">1</span>, <span class="number">2</span>) } != <span class="number">2 </span>{
+    <span class="kw">if </span>std::io::stderr().is_terminal() &amp;&amp; <span class="kw">unsafe </span>{ dup2(<span class="number">1</span>, <span class="number">2</span>) } != <span class="number">2 </span>{
         <span class="kw">return </span><span class="prelude-val">Err</span>(NohupError::CannotReplace(<span class="string">&quot;STDERR&quot;</span>, Error::last_os_error()).into());
     }
     <span class="prelude-val">Ok</span>(())

@@ -3051,6 +3051,7 @@
 <a href="#3051" id="3051">3051</a>
 <a href="#3052" id="3052">3052</a>
 <a href="#3053" id="3053">3053</a>
+<a href="#3054" id="3054">3054</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Jeremiah Peschka &lt;jeremiah.peschka@gmail.com&gt;
@@ -3065,6 +3066,7 @@
     crate_version, Arg, ArgAction, Command,
 };
 <span class="kw">use </span>glob::{MatchOptions, Pattern};
+<span class="kw">use </span>is_terminal::IsTerminal;
 <span class="kw">use </span>lscolors::LsColors;
 <span class="kw">use </span>number_prefix::NumberPrefix;
 <span class="kw">use </span>once_cell::unsync::OnceCell;
@@ -3504,7 +3506,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             (Format::Commas, <span class="prelude-val">Some</span>(options::format::COMMAS))
         } <span class="kw">else if </span>options.get_flag(options::format::COLUMNS) {
             (Format::Columns, <span class="prelude-val">Some</span>(options::format::COLUMNS))
-        } <span class="kw">else if </span>atty::is(atty::Stream::Stdout) {
+        } <span class="kw">else if </span>std::io::stdout().is_terminal() {
             (Format::Columns, <span class="prelude-val">None</span>)
         } <span class="kw">else </span>{
             (Format::OneLine, <span class="prelude-val">None</span>)
@@ -3610,7 +3612,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
             <span class="prelude-val">None </span>=&gt; options.contains_id(options::COLOR),
             <span class="prelude-val">Some</span>(val) =&gt; <span class="kw">match </span>val.as_str() {
                 <span class="string">&quot;&quot; </span>| <span class="string">&quot;always&quot; </span>| <span class="string">&quot;yes&quot; </span>| <span class="string">&quot;force&quot; </span>=&gt; <span class="bool-val">true</span>,
-                <span class="string">&quot;auto&quot; </span>| <span class="string">&quot;tty&quot; </span>| <span class="string">&quot;if-tty&quot; </span>=&gt; atty::is(atty::Stream::Stdout),
+                <span class="string">&quot;auto&quot; </span>| <span class="string">&quot;tty&quot; </span>| <span class="string">&quot;if-tty&quot; </span>=&gt; std::io::stdout().is_terminal(),
                 <span class="comment">/* &quot;never&quot; | &quot;no&quot; | &quot;none&quot; | */ </span><span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
             },
         };
@@ -3731,7 +3733,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
         </span>} <span class="kw">else if </span>options.get_flag(options::SHOW_CONTROL_CHARS) {
             <span class="bool-val">true
         </span>} <span class="kw">else </span>{
-            !atty::is(atty::Stream::Stdout)
+            !std::io::stdout().is_terminal()
         };
 
         <span class="kw">let </span>opt_quoting_style = options
@@ -3803,7 +3805,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 <span class="string">&quot;never&quot; </span>| <span class="string">&quot;no&quot; </span>| <span class="string">&quot;none&quot; </span>=&gt; IndicatorStyle::None,
                 <span class="string">&quot;always&quot; </span>| <span class="string">&quot;yes&quot; </span>| <span class="string">&quot;force&quot; </span>=&gt; IndicatorStyle::Classify,
                 <span class="string">&quot;auto&quot; </span>| <span class="string">&quot;tty&quot; </span>| <span class="string">&quot;if-tty&quot; </span>=&gt; {
-                    <span class="kw">if </span>atty::is(atty::Stream::Stdout) {
+                    <span class="kw">if </span>std::io::stdout().is_terminal() {
                         IndicatorStyle::Classify
                     } <span class="kw">else </span>{
                         IndicatorStyle::None

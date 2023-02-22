@@ -958,20 +958,6 @@
 <a href="#958" id="958">958</a>
 <a href="#959" id="959">959</a>
 <a href="#960" id="960">960</a>
-<a href="#961" id="961">961</a>
-<a href="#962" id="962">962</a>
-<a href="#963" id="963">963</a>
-<a href="#964" id="964">964</a>
-<a href="#965" id="965">965</a>
-<a href="#966" id="966">966</a>
-<a href="#967" id="967">967</a>
-<a href="#968" id="968">968</a>
-<a href="#969" id="969">969</a>
-<a href="#970" id="970">970</a>
-<a href="#971" id="971">971</a>
-<a href="#972" id="972">972</a>
-<a href="#973" id="973">973</a>
-<a href="#974" id="974">974</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Derek Chiang &lt;derekchiang93@gmail.com&gt;
@@ -1010,7 +996,9 @@
 <span class="kw">use </span>uucore::error::{UError, UResult};
 <span class="kw">use </span>uucore::parse_glob;
 <span class="kw">use </span>uucore::parse_size::{parse_size, ParseSizeError};
-<span class="kw">use </span>uucore::{crash, format_usage, show, show_error, show_warning};
+<span class="kw">use </span>uucore::{
+    crash, format_usage, help_about, help_section, help_usage, show, show_error, show_warning,
+};
 <span class="attr">#[cfg(windows)]
 </span><span class="kw">use </span>windows_sys::Win32::Foundation::HANDLE;
 <span class="attr">#[cfg(windows)]
@@ -1047,25 +1035,9 @@
     <span class="kw">pub const </span>FILE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;FILE&quot;</span>;
 }
 
-<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Estimate file space usage&quot;</span>;
-<span class="kw">const </span>LONG_HELP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;
-Display values are in units of the first available SIZE from --block-size,
-and the DU_BLOCK_SIZE, BLOCK_SIZE and BLOCKSIZE environment variables.
-Otherwise, units default to 1024 bytes (or 512 if POSIXLY_CORRECT is set).
-
-SIZE is an integer and optional unit (example: 10M is 10*1024*1024).
-Units are K, M, G, T, P, E, Z, Y (powers of 1024) or KB, MB,... (powers
-of 1000).
-
-PATTERN allows some advanced exclusions. For example, the following syntaxes
-are supported:
-? will match only one character
-* will match zero or more characters
-{a,b} will match a or b
-&quot;</span>;
-<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;\
-    {} [OPTION]... [FILE]...
-    {} [OPTION]... --files0-from=F&quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;du.md&quot;</span>);
+<span class="kw">const </span>AFTER_HELP: <span class="kw-2">&amp;</span>str = <span class="macro">help_section!</span>(<span class="string">&quot;after help&quot;</span>, <span class="string">&quot;du.md&quot;</span>);
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;du.md&quot;</span>);
 
 <span class="comment">// TODO: Support Z &amp; Y (currently limited by size of u64)
 </span><span class="kw">const </span>UNITS: [(char, u32); <span class="number">6</span>] = [(<span class="string">&#39;E&#39;</span>, <span class="number">6</span>), (<span class="string">&#39;P&#39;</span>, <span class="number">5</span>), (<span class="string">&#39;T&#39;</span>, <span class="number">4</span>), (<span class="string">&#39;G&#39;</span>, <span class="number">3</span>), (<span class="string">&#39;M&#39;</span>, <span class="number">2</span>), (<span class="string">&#39;K&#39;</span>, <span class="number">1</span>)];
@@ -1679,7 +1651,7 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
     Command::new(uucore::util_name())
         .version(<span class="macro">crate_version!</span>())
         .about(ABOUT)
-        .after_help(LONG_HELP)
+        .after_help(AFTER_HELP)
         .override_usage(format_usage(USAGE))
         .infer_long_args(<span class="bool-val">true</span>)
         .disable_help_flag(<span class="bool-val">true</span>)
