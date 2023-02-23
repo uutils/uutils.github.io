@@ -207,13 +207,6 @@
 <a href="#207" id="207">207</a>
 <a href="#208" id="208">208</a>
 <a href="#209" id="209">209</a>
-<a href="#210" id="210">210</a>
-<a href="#211" id="211">211</a>
-<a href="#212" id="212">212</a>
-<a href="#213" id="213">213</a>
-<a href="#214" id="214">214</a>
-<a href="#215" id="215">215</a>
-<a href="#216" id="216">216</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) 2014 Vsevolod Velichko &lt;torkvemada@sorokdva.net&gt;
@@ -236,18 +229,11 @@
 <span class="kw">use </span>std::path::{Path, PathBuf};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{set_exit_code, UClapError, UError, UResult};
-<span class="kw">use </span>uucore::{format_usage, show_error};
+<span class="kw">use </span>uucore::{format_usage, help_about, help_section, help_usage, show_error};
 
-<span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Run COMMAND ignoring hangup signals.&quot;</span>;
-<span class="kw">static </span>LONG_HELP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;
-If standard input is terminal, it&#39;ll be replaced with /dev/null.
-If standard output is terminal, it&#39;ll be appended to nohup.out instead,
-or $HOME/nohup.out, if nohup.out open failed.
-If standard error is terminal, it&#39;ll be redirected to stdout.
-&quot;</span>;
-<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;\
-    {} COMMAND [ARG]...
-    {} FLAG&quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;nohup.md&quot;</span>);
+<span class="kw">const </span>AFTER_HELP: <span class="kw-2">&amp;</span>str = <span class="macro">help_section!</span>(<span class="string">&quot;after help&quot;</span>, <span class="string">&quot;nohup.md&quot;</span>);
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;nohup.md&quot;</span>);
 <span class="kw">static </span>NOHUP_OUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;nohup.out&quot;</span>;
 <span class="comment">// exit codes that match the GNU implementation
 </span><span class="kw">static </span>EXIT_CANCELED: i32 = <span class="number">125</span>;
@@ -332,7 +318,7 @@ If standard error is terminal, it&#39;ll be redirected to stdout.
     Command::new(uucore::util_name())
         .version(<span class="macro">crate_version!</span>())
         .about(ABOUT)
-        .after_help(LONG_HELP)
+        .after_help(AFTER_HELP)
         .override_usage(format_usage(USAGE))
         .arg(
             Arg::new(options::CMD)

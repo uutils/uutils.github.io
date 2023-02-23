@@ -629,48 +629,6 @@
 <a href="#629" id="629">629</a>
 <a href="#630" id="630">630</a>
 <a href="#631" id="631">631</a>
-<a href="#632" id="632">632</a>
-<a href="#633" id="633">633</a>
-<a href="#634" id="634">634</a>
-<a href="#635" id="635">635</a>
-<a href="#636" id="636">636</a>
-<a href="#637" id="637">637</a>
-<a href="#638" id="638">638</a>
-<a href="#639" id="639">639</a>
-<a href="#640" id="640">640</a>
-<a href="#641" id="641">641</a>
-<a href="#642" id="642">642</a>
-<a href="#643" id="643">643</a>
-<a href="#644" id="644">644</a>
-<a href="#645" id="645">645</a>
-<a href="#646" id="646">646</a>
-<a href="#647" id="647">647</a>
-<a href="#648" id="648">648</a>
-<a href="#649" id="649">649</a>
-<a href="#650" id="650">650</a>
-<a href="#651" id="651">651</a>
-<a href="#652" id="652">652</a>
-<a href="#653" id="653">653</a>
-<a href="#654" id="654">654</a>
-<a href="#655" id="655">655</a>
-<a href="#656" id="656">656</a>
-<a href="#657" id="657">657</a>
-<a href="#658" id="658">658</a>
-<a href="#659" id="659">659</a>
-<a href="#660" id="660">660</a>
-<a href="#661" id="661">661</a>
-<a href="#662" id="662">662</a>
-<a href="#663" id="663">663</a>
-<a href="#664" id="664">664</a>
-<a href="#665" id="665">665</a>
-<a href="#666" id="666">666</a>
-<a href="#667" id="667">667</a>
-<a href="#668" id="668">668</a>
-<a href="#669" id="669">669</a>
-<a href="#670" id="670">670</a>
-<a href="#671" id="671">671</a>
-<a href="#672" id="672">672</a>
-<a href="#673" id="673">673</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Ben Hirsch &lt;benhirsch24@gmail.com&gt;
@@ -717,57 +675,15 @@
 <span class="kw">use </span>clap::{crate_version, parser::ValueSource, Arg, ArgMatches, Command};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{UResult, USimpleError};
-<span class="kw">use </span>uucore::format_usage;
 <span class="kw">use </span>uucore::parse_size::ParseSizeError;
-<span class="kw">use </span>uucore::show_error;
-<span class="kw">use </span>uucore::show_warning;
+<span class="kw">use </span>uucore::{format_usage, help_about, help_section, help_usage, show_error, show_warning};
 
 <span class="kw">const </span>PEEK_BUFFER_SIZE: usize = <span class="number">4</span>; <span class="comment">// utf-8 can be 4 bytes
-</span><span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Dump files in octal and other formats&quot;</span>;
+</span><span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;od.md&quot;</span>);
 
-<span class="kw">static </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;\
-    {} [OPTION]... [--] [FILENAME]...
-    {} [-abcdDefFhHiIlLoOsxX] [FILENAME] [[+][0x]OFFSET[.][b]]
-    {} --traditional [OPTION]... [FILENAME] [[+][0x]OFFSET[.][b] [[+][0x]LABEL[.][b]]]&quot;</span>;
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;od.md&quot;</span>);
 
-<span class="kw">static </span>LONG_HELP: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
-Displays data in various human-readable formats. If multiple formats are
-specified, the output will contain all formats in the order they appear on the
-command line. Each format will be printed on a new line. Only the line
-containing the first format will be prefixed with the offset.
-
-If no filename is specified, or it is &quot;-&quot;, stdin will be used. After a &quot;--&quot;, no
-more options will be recognized. This allows for filenames starting with a &quot;-&quot;.
-
-If a filename is a valid number which can be used as an offset in the second
-form, you can force it to be recognized as a filename if you include an option
-like &quot;-j0&quot;, which is only valid in the first form.
-
-RADIX is one of o,d,x,n for octal, decimal, hexadecimal or none.
-
-BYTES is decimal by default, octal if prefixed with a &quot;0&quot;, or hexadecimal if
-prefixed with &quot;0x&quot;. The suffixes b, KB, K, MB, M, GB, G, will multiply the
-number with 512, 1000, 1024, 1000^2, 1024^2, 1000^3, 1024^3, 1000^2, 1024^2.
-
-OFFSET and LABEL are octal by default, hexadecimal if prefixed with &quot;0x&quot; or
-decimal if a &quot;.&quot; suffix is added. The &quot;b&quot; suffix will multiply with 512.
-
-TYPE contains one or more format specifications consisting of:
-    a       for printable 7-bits ASCII
-    c       for utf-8 characters or octal for undefined characters
-    d[SIZE] for signed decimal
-    f[SIZE] for floating point
-    o[SIZE] for octal
-    u[SIZE] for unsigned decimal
-    x[SIZE] for hexadecimal
-SIZE is the number of bytes which can be the number 1, 2, 4, 8 or 16,
-    or C, I, S, L for 1, 2, 4, 8 bytes for integer types,
-    or F, D, L for 4, 8, 16 bytes for floating point.
-Any type specification can have a &quot;z&quot; suffix, which will add a ASCII dump at
-    the end of the line.
-
-If an error occurred, a diagnostic message will be printed to stderr, and the
-exitcode will be non-zero.&quot;#</span>;
+<span class="kw">const </span>AFTER_HELP: <span class="kw-2">&amp;</span>str = <span class="macro">help_section!</span>(<span class="string">&quot;after help&quot;</span>, <span class="string">&quot;od.md&quot;</span>);
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>options {
     <span class="kw">pub const </span>HELP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;help&quot;</span>;
@@ -968,7 +884,7 @@ exitcode will be non-zero.&quot;#</span>;
         .version(<span class="macro">crate_version!</span>())
         .about(ABOUT)
         .override_usage(format_usage(USAGE))
-        .after_help(LONG_HELP)
+        .after_help(AFTER_HELP)
         .trailing_var_arg(<span class="bool-val">true</span>)
         .dont_delimit_trailing_values(<span class="bool-val">true</span>)
         .infer_long_args(<span class="bool-val">true</span>)

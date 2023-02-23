@@ -868,10 +868,6 @@
 <a href="#868" id="868">868</a>
 <a href="#869" id="869">869</a>
 <a href="#870" id="870">870</a>
-<a href="#871" id="871">871</a>
-<a href="#872" id="872">872</a>
-<a href="#873" id="873">873</a>
-<a href="#874" id="874">874</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Ben Eills &lt;ben@beneills.com&gt;
@@ -915,8 +911,8 @@
     specified_mode: <span class="prelude-ty">Option</span>&lt;u32&gt;,
     backup_mode: BackupMode,
     suffix: String,
-    owner: String,
-    group: String,
+    owner_id: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    group_id: <span class="prelude-ty">Option</span>&lt;u32&gt;,
     verbose: bool,
     preserve_timestamps: bool,
     compare: bool,
@@ -932,14 +928,15 @@
     DirNeedsArg(),
     CreateDirFailed(PathBuf, std::io::Error),
     ChmodFailed(PathBuf),
+    ChownFailed(PathBuf, String),
     InvalidTarget(PathBuf),
     TargetDirIsntDir(PathBuf),
     BackupFailed(PathBuf, PathBuf, std::io::Error),
     InstallFailed(PathBuf, PathBuf, std::io::Error),
     StripProgramFailed(String),
     MetadataFailed(std::io::Error),
-    NoSuchUser(String),
-    NoSuchGroup(String),
+    InvalidUser(String),
+    InvalidGroup(String),
     OmittingDirectory(PathBuf),
 }
 
@@ -973,6 +970,7 @@
                 Display::fmt(<span class="kw-2">&amp;</span><span class="macro">uio_error!</span>(e, <span class="string">&quot;failed to create {}&quot;</span>, dir.quote()), f)
             }
             <span class="self">Self</span>::ChmodFailed(file) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;failed to chmod {}&quot;</span>, file.quote()),
+            <span class="self">Self</span>::ChownFailed(file, msg) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;failed to chown {}: {}&quot;</span>, file.quote(), msg),
             <span class="self">Self</span>::InvalidTarget(target) =&gt; <span class="macro">write!</span>(
                 f,
                 <span class="string">&quot;invalid target {}: No such file or directory&quot;</span>,
@@ -991,8 +989,8 @@
             ),
             <span class="self">Self</span>::StripProgramFailed(msg) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;strip program failed: {msg}&quot;</span>),
             <span class="self">Self</span>::MetadataFailed(e) =&gt; Display::fmt(<span class="kw-2">&amp;</span><span class="macro">uio_error!</span>(e, <span class="string">&quot;&quot;</span>), f),
-            <span class="self">Self</span>::NoSuchUser(user) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;no such user: {}&quot;</span>, user.maybe_quote()),
-            <span class="self">Self</span>::NoSuchGroup(group) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;no such group: {}&quot;</span>, group.maybe_quote()),
+            <span class="self">Self</span>::InvalidUser(user) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;invalid user: {}&quot;</span>, user.quote()),
+            <span class="self">Self</span>::InvalidGroup(group) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;invalid group: {}&quot;</span>, group.quote()),
             <span class="self">Self</span>::OmittingDirectory(dir) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;omitting directory {}&quot;</span>, dir.quote()),
         }
     }
@@ -1265,21 +1263,44 @@
         <span class="macro">show_error!</span>(<span class="string">&quot;Options --compare and --strip are mutually exclusive&quot;</span>);
         <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="number">1</span>.into());
     }
+
+    <span class="kw">let </span>owner = matches
+        .get_one::&lt;String&gt;(OPT_OWNER)
+        .map(|s| s.as_str())
+        .unwrap_or(<span class="string">&quot;&quot;</span>)
+        .to_string();
+
+    <span class="kw">let </span>owner_id = <span class="kw">if </span>!owner.is_empty() {
+        <span class="kw">match </span>usr2uid(<span class="kw-2">&amp;</span>owner) {
+            <span class="prelude-val">Ok</span>(u) =&gt; <span class="prelude-val">Some</span>(u),
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(InstallError::InvalidUser(owner.clone()).into()),
+        }
+    } <span class="kw">else </span>{
+        <span class="prelude-val">None
+    </span>};
+
+    <span class="kw">let </span>group = matches
+        .get_one::&lt;String&gt;(OPT_GROUP)
+        .map(|s| s.as_str())
+        .unwrap_or(<span class="string">&quot;&quot;</span>)
+        .to_string();
+
+    <span class="kw">let </span>group_id = <span class="kw">if </span>!group.is_empty() {
+        <span class="kw">match </span>grp2gid(<span class="kw-2">&amp;</span>group) {
+            <span class="prelude-val">Ok</span>(g) =&gt; <span class="prelude-val">Some</span>(g),
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(InstallError::InvalidGroup(group.clone()).into()),
+        }
+    } <span class="kw">else </span>{
+        <span class="prelude-val">None
+    </span>};
+
     <span class="prelude-val">Ok</span>(Behavior {
         main_function,
         specified_mode,
         backup_mode,
         suffix: backup_control::determine_backup_suffix(matches),
-        owner: matches
-            .get_one::&lt;String&gt;(OPT_OWNER)
-            .map(|s| s.as_str())
-            .unwrap_or(<span class="string">&quot;&quot;</span>)
-            .to_string(),
-        group: matches
-            .get_one::&lt;String&gt;(OPT_GROUP)
-            .map(|s| s.as_str())
-            .unwrap_or(<span class="string">&quot;&quot;</span>)
-            .to_string(),
+        owner_id,
+        group_id,
         verbose: matches.get_flag(OPT_VERBOSE),
         preserve_timestamps,
         compare,
@@ -1340,6 +1361,8 @@
                 </span>uucore::error::set_exit_code(<span class="number">1</span>);
                 <span class="kw">continue</span>;
             }
+
+            <span class="macro">show_if_err!</span>(chown_optional_user_group(path, b));
         }
         <span class="comment">// If the exit code was set, or show! has been called at least once
         // (which sets the exit code as well), function execution will end after
@@ -1494,6 +1517,42 @@
     </span><span class="prelude-val">Ok</span>(())
 }
 
+<span class="doccomment">/// Handle incomplete user/group parings for chown.
+///
+/// Returns a Result type with the Err variant containing the error message.
+///
+/// # Parameters
+///
+/// _path_ must exist.
+///
+/// # Errors
+///
+/// If the owner or group are invalid or copy system call fails, we print a verbose error and
+/// return an empty error value.
+///
+</span><span class="kw">fn </span>chown_optional_user_group(path: <span class="kw-2">&amp;</span>Path, b: <span class="kw-2">&amp;</span>Behavior) -&gt; UResult&lt;()&gt; {
+    <span class="kw">if </span>b.owner_id.is_some() || b.group_id.is_some() {
+        <span class="kw">let </span>meta = <span class="kw">match </span>fs::metadata(path) {
+            <span class="prelude-val">Ok</span>(meta) =&gt; meta,
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(InstallError::MetadataFailed(e).into()),
+        };
+
+        <span class="comment">// GNU coreutils doesn&#39;t print chown operations during install with verbose flag.
+        </span><span class="kw">let </span>verbosity = Verbosity {
+            groups_only: b.owner_id.is_none(),
+            level: VerbosityLevel::Normal,
+        };
+
+        <span class="kw">match </span>wrap_chown(path, <span class="kw-2">&amp;</span>meta, b.owner_id, b.group_id, <span class="bool-val">false</span>, verbosity) {
+            <span class="prelude-val">Ok</span>(msg) <span class="kw">if </span>b.verbose &amp;&amp; !msg.is_empty() =&gt; <span class="macro">println!</span>(<span class="string">&quot;chown: {msg}&quot;</span>),
+            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; {}
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(InstallError::ChownFailed(path.to_path_buf(), e).into()),
+        }
+    }
+
+    <span class="prelude-val">Ok</span>(())
+}
+
 <span class="doccomment">/// Copy one file to a new location, changing metadata.
 ///
 /// Returns a Result type with the Err variant containing the error message.
@@ -1576,66 +1635,7 @@
         <span class="kw">return </span><span class="prelude-val">Err</span>(InstallError::ChmodFailed(to.to_path_buf()).into());
     }
 
-    <span class="kw">if </span>!b.owner.is_empty() {
-        <span class="kw">let </span>meta = <span class="kw">match </span>fs::metadata(to) {
-            <span class="prelude-val">Ok</span>(meta) =&gt; meta,
-            <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(InstallError::MetadataFailed(e).into()),
-        };
-
-        <span class="kw">let </span>owner_id = <span class="kw">match </span>usr2uid(<span class="kw-2">&amp;</span>b.owner) {
-            <span class="prelude-val">Ok</span>(g) =&gt; g,
-            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(InstallError::NoSuchUser(b.owner.clone()).into()),
-        };
-        <span class="kw">let </span>gid = meta.gid();
-        <span class="kw">match </span>wrap_chown(
-            to,
-            <span class="kw-2">&amp;</span>meta,
-            <span class="prelude-val">Some</span>(owner_id),
-            <span class="prelude-val">Some</span>(gid),
-            <span class="bool-val">false</span>,
-            Verbosity {
-                groups_only: <span class="bool-val">false</span>,
-                level: VerbosityLevel::Normal,
-            },
-        ) {
-            <span class="prelude-val">Ok</span>(n) =&gt; {
-                <span class="kw">if </span>!n.is_empty() {
-                    <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, n);
-                }
-            }
-            <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, e),
-        }
-    }
-
-    <span class="kw">if </span>!b.group.is_empty() {
-        <span class="kw">let </span>meta = <span class="kw">match </span>fs::metadata(to) {
-            <span class="prelude-val">Ok</span>(meta) =&gt; meta,
-            <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(InstallError::MetadataFailed(e).into()),
-        };
-
-        <span class="kw">let </span>group_id = <span class="kw">match </span>grp2gid(<span class="kw-2">&amp;</span>b.group) {
-            <span class="prelude-val">Ok</span>(g) =&gt; g,
-            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(InstallError::NoSuchGroup(b.group.clone()).into()),
-        };
-        <span class="kw">match </span>wrap_chown(
-            to,
-            <span class="kw-2">&amp;</span>meta,
-            <span class="prelude-val">Some</span>(group_id),
-            <span class="prelude-val">None</span>,
-            <span class="bool-val">false</span>,
-            Verbosity {
-                groups_only: <span class="bool-val">true</span>,
-                level: VerbosityLevel::Normal,
-            },
-        ) {
-            <span class="prelude-val">Ok</span>(n) =&gt; {
-                <span class="kw">if </span>!n.is_empty() {
-                    <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, n);
-                }
-            }
-            <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, e),
-        }
-    }
+    chown_optional_user_group(to, b)<span class="question-mark">?</span>;
 
     <span class="kw">if </span>b.preserve_timestamps {
         <span class="kw">let </span>meta = <span class="kw">match </span>fs::metadata(from) {
@@ -1715,19 +1715,11 @@
 
     <span class="comment">// TODO: if -P (#1809) and from/to contexts mismatch, return true.
 
-    </span><span class="kw">if </span>!b.owner.is_empty() {
-        <span class="kw">let </span>owner_id = <span class="kw">match </span>usr2uid(<span class="kw-2">&amp;</span>b.owner) {
-            <span class="prelude-val">Ok</span>(id) =&gt; id,
-            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(InstallError::NoSuchUser(b.owner.clone()).into()),
-        };
+    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(owner_id) = b.owner_id {
         <span class="kw">if </span>owner_id != to_meta.uid() {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="bool-val">true</span>);
         }
-    } <span class="kw">else if </span>!b.group.is_empty() {
-        <span class="kw">let </span>group_id = <span class="kw">match </span>grp2gid(<span class="kw-2">&amp;</span>b.group) {
-            <span class="prelude-val">Ok</span>(id) =&gt; id,
-            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(InstallError::NoSuchGroup(b.group.clone()).into()),
-        };
+    } <span class="kw">else if let </span><span class="prelude-val">Some</span>(group_id) = b.group_id {
         <span class="kw">if </span>group_id != to_meta.gid() {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="bool-val">true</span>);
         }

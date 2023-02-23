@@ -562,18 +562,6 @@
 <a href="#562" id="562">562</a>
 <a href="#563" id="563">563</a>
 <a href="#564" id="564">564</a>
-<a href="#565" id="565">565</a>
-<a href="#566" id="566">566</a>
-<a href="#567" id="567">567</a>
-<a href="#568" id="568">568</a>
-<a href="#569" id="569">569</a>
-<a href="#570" id="570">570</a>
-<a href="#571" id="571">571</a>
-<a href="#572" id="572">572</a>
-<a href="#573" id="573">573</a>
-<a href="#574" id="574">574</a>
-<a href="#575" id="575">575</a>
-<a href="#576" id="576">576</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Alex Lyon &lt;arcterus@mail.com&gt;
@@ -591,7 +579,7 @@
 <span class="kw">use </span>std::path::{Path, PathBuf};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{UResult, USimpleError, UUsageError};
-<span class="kw">use </span>uucore::{format_usage, prompt_yes, show_error};
+<span class="kw">use </span>uucore::{format_usage, help_about, help_section, help_usage, prompt_yes, show_error};
 <span class="kw">use </span>walkdir::{DirEntry, WalkDir};
 
 <span class="attr">#[derive(Eq, PartialEq, Clone, Copy)]
@@ -613,21 +601,9 @@
     verbose: bool,
 }
 
-<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Remove (unlink) the FILE(s)&quot;</span>;
-<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;{} [OPTION]... FILE...&quot;</span>;
-<span class="kw">const </span>LONG_USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;\
-By default, rm does not remove directories.  Use the --recursive (-r or -R)
-option to remove each listed directory, too, along with all of its contents
-
-To remove a file whose name starts with a &#39;-&#39;, for example &#39;-foo&#39;,
-use one of these commands:
-rm -- -foo
-
-rm ./-foo
-
-Note that if you use rm to remove a file, it might be possible to recover
-some of its contents, given sufficient expertise and/or time.  For greater
-assurance that the contents are truly unrecoverable, consider using shred.&quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;rm.md&quot;</span>);
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;rm.md&quot;</span>);
+<span class="kw">const </span>AFTER_HELP: <span class="kw-2">&amp;</span>str = <span class="macro">help_section!</span>(<span class="string">&quot;after help&quot;</span>, <span class="string">&quot;rm.md&quot;</span>);
 
 <span class="kw">static </span>OPT_DIR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;dir&quot;</span>;
 <span class="kw">static </span>OPT_INTERACTIVE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;interactive&quot;</span>;
@@ -645,7 +621,7 @@ assurance that the contents are truly unrecoverable, consider using shred.&quot;
 
 <span class="attr">#[uucore::main]
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
-    <span class="kw">let </span>matches = uu_app().after_help(LONG_USAGE).try_get_matches_from(args)<span class="question-mark">?</span>;
+    <span class="kw">let </span>matches = uu_app().after_help(AFTER_HELP).try_get_matches_from(args)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>files: Vec&lt;String&gt; = matches
         .get_many::&lt;String&gt;(ARG_FILES)

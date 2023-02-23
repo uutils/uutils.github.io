@@ -213,7 +213,6 @@
 <a href="#213" id="213">213</a>
 <a href="#214" id="214">214</a>
 <a href="#215" id="215">215</a>
-<a href="#216" id="216">216</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Nicholas Juszczak &lt;juszczakn@gmail.com&gt;
@@ -234,14 +233,13 @@
 <span class="attr">#[cfg(not(windows))]
 </span><span class="kw">use </span>uucore::mode;
 <span class="kw">use </span>uucore::{display::Quotable, fs::dir_strip_dot_for_creation};
-<span class="kw">use </span>uucore::{format_usage, show, show_if_err};
+<span class="kw">use </span>uucore::{format_usage, help_about, help_section, help_usage, show, show_if_err};
 
 <span class="kw">static </span>DEFAULT_PERM: u32 = <span class="number">0o755</span>;
 
-<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Create the given DIRECTORY(ies) if they do not exist&quot;</span>;
-<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;{} [OPTION]... [USER]&quot;</span>;
-<span class="kw">const </span>LONG_USAGE: <span class="kw-2">&amp;</span>str =
-    <span class="string">&quot;Each MODE is of the form &#39;[ugoa]*([-+=]([rwxXst]*|[ugo]))+|[-+=]?[0-7]+&#39;.&quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;mkdir.md&quot;</span>);
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;mkdir.md&quot;</span>);
+<span class="kw">const </span>AFTER_HELP: <span class="kw-2">&amp;</span>str = <span class="macro">help_section!</span>(<span class="string">&quot;after help&quot;</span>, <span class="string">&quot;mkdir.md&quot;</span>);
 
 <span class="kw">mod </span>options {
     <span class="kw">pub const </span>MODE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;mode&quot;</span>;
@@ -306,7 +304,7 @@
     <span class="comment">// Linux-specific options, not implemented
     // opts.optflag(&quot;Z&quot;, &quot;context&quot;, &quot;set SELinux security context&quot; +
     // &quot; of each created directory to CTX&quot;),
-    </span><span class="kw">let </span>matches = uu_app().after_help(LONG_USAGE).try_get_matches_from(args)<span class="question-mark">?</span>;
+    </span><span class="kw">let </span>matches = uu_app().after_help(AFTER_HELP).try_get_matches_from(args)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>dirs = matches
         .get_many::&lt;OsString&gt;(options::DIRS)
