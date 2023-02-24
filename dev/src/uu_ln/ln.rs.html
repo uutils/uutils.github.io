@@ -472,18 +472,6 @@
 <a href="#472" id="472">472</a>
 <a href="#473" id="473">473</a>
 <a href="#474" id="474">474</a>
-<a href="#475" id="475">475</a>
-<a href="#476" id="476">476</a>
-<a href="#477" id="477">477</a>
-<a href="#478" id="478">478</a>
-<a href="#479" id="479">479</a>
-<a href="#480" id="480">480</a>
-<a href="#481" id="481">481</a>
-<a href="#482" id="482">482</a>
-<a href="#483" id="483">483</a>
-<a href="#484" id="484">484</a>
-<a href="#485" id="485">485</a>
-<a href="#486" id="486">486</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Joseph Crail &lt;jbcrail@gmail.com&gt;
@@ -497,7 +485,7 @@
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{FromIo, UError, UResult};
 <span class="kw">use </span>uucore::fs::{make_path_relative_to, paths_refer_to_same_file};
-<span class="kw">use </span>uucore::{format_usage, prompt_yes, show_error};
+<span class="kw">use </span>uucore::{format_usage, help_about, help_section, help_usage, prompt_yes, show_error};
 
 <span class="kw">use </span>std::borrow::Cow;
 <span class="kw">use </span>std::error::Error;
@@ -571,21 +559,9 @@
     </span>}
 }
 
-<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Change file owner and group&quot;</span>;
-<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;\
-       {} [OPTION]... [-T] TARGET LINK_NAME
-       {} [OPTION]... TARGET
-       {} [OPTION]... TARGET... DIRECTORY
-       {} [OPTION]... -t DIRECTORY TARGET...&quot;</span>;
-<span class="kw">const </span>LONG_USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;\
-    In the 1st form, create a link to TARGET with the name LINK_NAME.\n\
-    In the 2nd form, create a link to TARGET in the current directory.\n\
-    In the 3rd and 4th forms, create links to each TARGET in DIRECTORY.\n\
-    Create hard links by default, symbolic links with --symbolic.\n\
-    By default, each destination (name of new link) should not already exist.\n\
-    When creating hard links, each TARGET must exist.  Symbolic links\n\
-    can hold arbitrary text; if later resolved, a relative link is\n\
-    interpreted in relation to its parent directory.&quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;ln.md&quot;</span>);
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;ln.md&quot;</span>);
+<span class="kw">const </span>AFTER_HELP: <span class="kw-2">&amp;</span>str = <span class="macro">help_section!</span>(<span class="string">&quot;after help&quot;</span>, <span class="string">&quot;ln.md&quot;</span>);
 
 <span class="kw">mod </span>options {
     <span class="kw">pub const </span>FORCE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;force&quot;</span>;
@@ -605,13 +581,13 @@
 
 <span class="attr">#[uucore::main]
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
-    <span class="kw">let </span>long_usage = <span class="macro">format!</span>(
+    <span class="kw">let </span>after_help = <span class="macro">format!</span>(
         <span class="string">&quot;{}\n\n{}&quot;</span>,
-        LONG_USAGE,
+        AFTER_HELP,
         backup_control::BACKUP_CONTROL_LONG_HELP
     );
 
-    <span class="kw">let </span>matches = uu_app().after_help(long_usage).try_get_matches_from(args)<span class="question-mark">?</span>;
+    <span class="kw">let </span>matches = uu_app().after_help(after_help).try_get_matches_from(args)<span class="question-mark">?</span>;
 
     <span class="comment">/* the list of files */
 

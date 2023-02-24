@@ -669,21 +669,6 @@
 <a href="#669" id="669">669</a>
 <a href="#670" id="670">670</a>
 <a href="#671" id="671">671</a>
-<a href="#672" id="672">672</a>
-<a href="#673" id="673">673</a>
-<a href="#674" id="674">674</a>
-<a href="#675" id="675">675</a>
-<a href="#676" id="676">676</a>
-<a href="#677" id="677">677</a>
-<a href="#678" id="678">678</a>
-<a href="#679" id="679">679</a>
-<a href="#680" id="680">680</a>
-<a href="#681" id="681">681</a>
-<a href="#682" id="682">682</a>
-<a href="#683" id="683">683</a>
-<a href="#684" id="684">684</a>
-<a href="#685" id="685">685</a>
-<a href="#686" id="686">686</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Alex Lyon &lt;arcterus@mail.com&gt;
@@ -695,21 +680,12 @@
 
 // spell-checker:ignore (ToDO) algo, algoname, regexes, nread, nonames
 
-</span><span class="kw">mod </span>digest;
-
-<span class="kw">use </span><span class="self">self</span>::digest::Digest;
-<span class="kw">use </span><span class="self">self</span>::digest::DigestWriter;
-
-<span class="kw">use </span>clap::builder::ValueParser;
+</span><span class="kw">use </span>clap::builder::ValueParser;
 <span class="kw">use </span>clap::crate_version;
 <span class="kw">use </span>clap::ArgAction;
 <span class="kw">use </span>clap::{Arg, ArgMatches, Command};
 <span class="kw">use </span>hex::encode;
-<span class="kw">use </span>md5::Md5;
 <span class="kw">use </span>regex::Regex;
-<span class="kw">use </span>sha1::Sha1;
-<span class="kw">use </span>sha2::{Sha224, Sha256, Sha384, Sha512};
-<span class="kw">use </span>sha3::{Sha3_224, Sha3_256, Sha3_384, Sha3_512, Shake128, Shake256};
 <span class="kw">use </span>std::cmp::Ordering;
 <span class="kw">use </span>std::error::Error;
 <span class="kw">use </span>std::ffi::{OsStr, OsString};
@@ -718,10 +694,12 @@
 <span class="kw">use </span>std::iter;
 <span class="kw">use </span>std::num::ParseIntError;
 <span class="kw">use </span>std::path::Path;
-<span class="kw">use </span>uucore::crash;
-<span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{FromIo, UError, UResult};
-<span class="kw">use </span>uucore::show_warning;
+<span class="kw">use </span>uucore::sum::{
+    Blake2b, Blake3, Digest, DigestWriter, Md5, Sha1, Sha224, Sha256, Sha384, Sha3_224, Sha3_256,
+    Sha3_384, Sha3_512, Sha512, Shake128, Shake256,
+};
+<span class="kw">use </span>uucore::{crash, display::Quotable, show_warning};
 
 <span class="kw">const </span>NAME: <span class="kw-2">&amp;</span>str = <span class="string">&quot;hashsum&quot;</span>;
 
@@ -754,16 +732,8 @@
         <span class="string">&quot;sha256sum&quot; </span>=&gt; (<span class="string">&quot;SHA256&quot;</span>, Box::new(Sha256::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">256</span>),
         <span class="string">&quot;sha384sum&quot; </span>=&gt; (<span class="string">&quot;SHA384&quot;</span>, Box::new(Sha384::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">384</span>),
         <span class="string">&quot;sha512sum&quot; </span>=&gt; (<span class="string">&quot;SHA512&quot;</span>, Box::new(Sha512::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">512</span>),
-        <span class="string">&quot;b2sum&quot; </span>=&gt; (
-            <span class="string">&quot;BLAKE2&quot;</span>,
-            Box::new(blake2b_simd::State::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
-            <span class="number">512</span>,
-        ),
-        <span class="string">&quot;b3sum&quot; </span>=&gt; (
-            <span class="string">&quot;BLAKE3&quot;</span>,
-            Box::new(blake3::Hasher::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
-            <span class="number">256</span>,
-        ),
+        <span class="string">&quot;b2sum&quot; </span>=&gt; (<span class="string">&quot;BLAKE2&quot;</span>, Box::new(Blake2b::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">512</span>),
+        <span class="string">&quot;b3sum&quot; </span>=&gt; (<span class="string">&quot;BLAKE3&quot;</span>, Box::new(Blake3::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">256</span>),
         <span class="string">&quot;sha3sum&quot; </span>=&gt; <span class="kw">match </span>matches.get_one::&lt;usize&gt;(<span class="string">&quot;bits&quot;</span>) {
             <span class="prelude-val">Some</span>(<span class="number">224</span>) =&gt; (
                 <span class="string">&quot;SHA3-224&quot;</span>,
@@ -856,10 +826,10 @@
                     set_or_crash(<span class="string">&quot;SHA512&quot;</span>, Box::new(Sha512::new()), <span class="number">512</span>);
                 }
                 <span class="kw">if </span>matches.get_flag(<span class="string">&quot;b2sum&quot;</span>) {
-                    set_or_crash(<span class="string">&quot;BLAKE2&quot;</span>, Box::new(blake2b_simd::State::new()), <span class="number">512</span>);
+                    set_or_crash(<span class="string">&quot;BLAKE2&quot;</span>, Box::new(Blake2b::new()), <span class="number">512</span>);
                 }
                 <span class="kw">if </span>matches.get_flag(<span class="string">&quot;b3sum&quot;</span>) {
-                    set_or_crash(<span class="string">&quot;BLAKE3&quot;</span>, Box::new(blake3::Hasher::new()), <span class="number">256</span>);
+                    set_or_crash(<span class="string">&quot;BLAKE3&quot;</span>, Box::new(Blake3::new()), <span class="number">256</span>);
                 }
                 <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha3&quot;</span>) {
                     <span class="kw">match </span>matches.get_one::&lt;usize&gt;(<span class="string">&quot;bits&quot;</span>) {
@@ -1366,7 +1336,7 @@
         <span class="comment">// Assume it&#39;s SHAKE.  result_str() doesn&#39;t work with shake (as of 8/30/2016)
         </span><span class="kw">let </span><span class="kw-2">mut </span>bytes = Vec::new();
         bytes.resize((output_bits + <span class="number">7</span>) / <span class="number">8</span>, <span class="number">0</span>);
-        digest.result(<span class="kw-2">&amp;mut </span>bytes);
+        digest.hash_finalize(<span class="kw-2">&amp;mut </span>bytes);
         <span class="prelude-val">Ok</span>(encode(bytes))
     }
 }

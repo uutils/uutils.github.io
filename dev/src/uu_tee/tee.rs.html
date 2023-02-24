@@ -384,6 +384,7 @@
 <a href="#384" id="384">384</a>
 <a href="#385" id="385">385</a>
 <a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Aleksander Bielawski &lt;pabzdzdzwiagief@gmail.com&gt;
@@ -397,15 +398,16 @@
 <span class="kw">use </span>std::path::PathBuf;
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::UResult;
-<span class="kw">use </span>uucore::{format_usage, show_error};
+<span class="kw">use </span>uucore::{format_usage, help_about, help_section, help_usage, show_error};
 
 <span class="comment">// spell-checker:ignore nopipe
 
 </span><span class="attr">#[cfg(unix)]
 </span><span class="kw">use </span>uucore::libc;
 
-<span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Copy standard input to each FILE, and also to standard output.&quot;</span>;
-<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;{} [OPTION]... [FILE]...&quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;tee.md&quot;</span>);
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;tee.md&quot;</span>);
+<span class="kw">const </span>AFTER_HELP: <span class="kw-2">&amp;</span>str = <span class="macro">help_section!</span>(<span class="string">&quot;after help&quot;</span>, <span class="string">&quot;tee.md&quot;</span>);
 
 <span class="kw">mod </span>options {
     <span class="kw">pub const </span>APPEND: <span class="kw-2">&amp;</span>str = <span class="string">&quot;append&quot;</span>;
@@ -474,7 +476,7 @@
         .version(<span class="macro">crate_version!</span>())
         .about(ABOUT)
         .override_usage(format_usage(USAGE))
-        .after_help(<span class="string">&quot;If a FILE is -, it refers to a file named - .&quot;</span>)
+        .after_help(AFTER_HELP)
         .infer_long_args(<span class="bool-val">true</span>)
         .arg(
             Arg::new(options::APPEND)

@@ -131,7 +131,7 @@ var sourcesIndex = JSON.parse('{\
 "uu_fmt":["",[],["fmt.rs","linebreak.rs","parasplit.rs"]],\
 "uu_fold":["",[],["fold.rs"]],\
 "uu_groups":["",[],["groups.rs"]],\
-"uu_hashsum":["",[],["digest.rs","hashsum.rs"]],\
+"uu_hashsum":["",[],["hashsum.rs"]],\
 "uu_head":["",[],["head.rs","parse.rs","take.rs"]],\
 "uu_hostid":["",[],["hostid.rs"]],\
 "uu_hostname":["",[],["hostname.rs"]],\
@@ -202,7 +202,7 @@ var sourcesIndex = JSON.parse('{\
 "uu_who":["",[],["who.rs"]],\
 "uu_whoami":["",[["platform",[],["mod.rs","unix.rs"]]],["whoami.rs"]],\
 "uu_yes":["",[],["splice.rs","yes.rs"]],\
-"uucore":["",[["features",[["tokenize",[["num_format",[["formatters",[["base_conv",[],["mod.rs","tests.rs"]]],["cninetyninehexfloatf.rs","decf.rs","float_common.rs","floatf.rs","intf.rs","mod.rs","scif.rs"]]],["format_field.rs","formatter.rs","mod.rs","num_format.rs"]]],["mod.rs","sub.rs","token.rs","unescaped_text.rs"]]],["encoding.rs","entries.rs","fs.rs","fsext.rs","lines.rs","memo.rs","mode.rs","perms.rs","pipes.rs","process.rs","ringbuffer.rs","signals.rs","utmpx.rs"]],["mods",[],["backup_control.rs","display.rs","error.rs","os.rs","panic.rs","quoting_style.rs","ranges.rs","version_cmp.rs"]],["parser",[],["parse_glob.rs","parse_size.rs","parse_time.rs"]]],["features.rs","lib.rs","macros.rs","mods.rs","parser.rs"]],\
+"uucore":["",[["features",[["tokenize",[["num_format",[["formatters",[["base_conv",[],["mod.rs","tests.rs"]]],["cninetyninehexfloatf.rs","decf.rs","float_common.rs","floatf.rs","intf.rs","mod.rs","scif.rs"]]],["format_field.rs","formatter.rs","mod.rs","num_format.rs"]]],["mod.rs","sub.rs","token.rs","unescaped_text.rs"]]],["encoding.rs","entries.rs","fs.rs","fsext.rs","lines.rs","memo.rs","mode.rs","perms.rs","pipes.rs","process.rs","ringbuffer.rs","signals.rs","sum.rs","utmpx.rs"]],["mods",[],["backup_control.rs","display.rs","error.rs","os.rs","panic.rs","quoting_style.rs","ranges.rs","version_cmp.rs"]],["parser",[],["parse_glob.rs","parse_size.rs","parse_time.rs"]]],["features.rs","lib.rs","macros.rs","mods.rs","parser.rs"]],\
 "uucore_procs":["",[],["lib.rs"]],\
 "uudoc":["",[],["uudoc.rs"]],\
 "vdir":["",[],["main.rs"]],\
