@@ -1022,7 +1022,6 @@
 <a href="#1022" id="1022">1022</a>
 <a href="#1023" id="1023">1023</a>
 <a href="#1024" id="1024">1024</a>
-<a href="#1025" id="1025">1025</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Tyler Steele &lt;tyler.steele@protonmail.com&gt;
@@ -1163,7 +1162,7 @@
 ///
 /// Use the [`Input::new_stdin`] or [`Input::new_file`] functions to
 /// construct a new instance of this struct. Then pass the instance to
-/// the [`Output::dd_out`] function to execute the main copy operation
+/// the [`dd_copy`] function to execute the main copy operation
 /// for `dd`.
 </span><span class="kw">struct </span>Input&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="doccomment">/// The source from which bytes will be read.
@@ -1474,7 +1473,7 @@
 ///
 /// Use the [`Output::new_stdout`] or [`Output::new_file`] functions
 /// to construct a new instance of this struct. Then use the
-/// [`Output::dd_out`] function to execute the main copy operation for
+/// [`dd_copy`] function to execute the main copy operation for
 /// `dd`.
 </span><span class="kw">struct </span>Output&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="doccomment">/// The destination to which bytes will be written.
@@ -1604,136 +1603,135 @@
             </span><span class="prelude-val">Ok</span>(())
         }
     }
+}
 
-    <span class="doccomment">/// Copy the given input data to this output, consuming both.
-    ///
-    /// This method contains the main loop for the `dd` program. Bytes
-    /// are read in blocks from `i` and written in blocks to this
-    /// output. Read/write statistics are reported to stderr as
-    /// configured by the `status` command-line argument.
-    ///
-    /// # Errors
-    ///
-    /// If there is a problem reading from the input or writing to
-    /// this output.
-    </span><span class="kw">fn </span>dd_out(<span class="kw-2">mut </span><span class="self">self</span>, <span class="kw-2">mut </span>i: Input) -&gt; std::io::Result&lt;()&gt; {
-        <span class="comment">// The read and write statistics.
+<span class="doccomment">/// Copy the given input data to this output, consuming both.
+///
+/// This method contains the main loop for the `dd` program. Bytes
+/// are read in blocks from `i` and written in blocks to this
+/// output. Read/write statistics are reported to stderr as
+/// configured by the `status` command-line argument.
+///
+/// # Errors
+///
+/// If there is a problem reading from the input or writing to
+/// this output.
+</span><span class="kw">fn </span>dd_copy(<span class="kw-2">mut </span>i: Input, <span class="kw-2">mut </span>o: Output) -&gt; std::io::Result&lt;()&gt; {
+    <span class="comment">// The read and write statistics.
+    //
+    // These objects are counters, initialized to zero. After each
+    // iteration of the main loop, each will be incremented by the
+    // number of blocks read and written, respectively.
+    </span><span class="kw">let </span><span class="kw-2">mut </span>rstat = ReadStat::default();
+    <span class="kw">let </span><span class="kw-2">mut </span>wstat = WriteStat::default();
+
+    <span class="comment">// The time at which the main loop starts executing.
+    //
+    // When `status=progress` is given on the command-line, the
+    // `dd` program reports its progress every second or so. Part
+    // of its report includes the throughput in bytes per second,
+    // which requires knowing how long the process has been
+    // running.
+    </span><span class="kw">let </span>start = time::Instant::now();
+
+    <span class="comment">// A good buffer size for reading.
+    //
+    // This is an educated guess about a good buffer size based on
+    // the input and output block sizes.
+    </span><span class="kw">let </span>bsize = calc_bsize(i.settings.ibs, o.settings.obs);
+
+    <span class="comment">// Start a thread that reports transfer progress.
+    //
+    // The `dd` program reports its progress after every block is written,
+    // at most every 1 second, and only if `status=progress` is given on
+    // the command-line or a SIGUSR1 signal is received. We
+    // perform this reporting in a new thread so as not to take
+    // any CPU time away from the actual reading and writing of
+    // data. We send a `ProgUpdate` from the transmitter `prog_tx`
+    // to the receives `rx`, and the receiver prints the transfer
+    // information.
+    </span><span class="kw">let </span>(prog_tx, rx) = mpsc::channel();
+    <span class="kw">let </span>output_thread = thread::spawn(gen_prog_updater(rx, i.settings.status));
+    <span class="kw">let </span><span class="kw-2">mut </span>progress_as_secs = <span class="number">0</span>;
+
+    <span class="comment">// Optimization: if no blocks are to be written, then don&#39;t
+    // bother allocating any buffers.
+    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(Num::Blocks(<span class="number">0</span>) | Num::Bytes(<span class="number">0</span>)) = i.settings.count {
+        <span class="kw">return </span>finalize(<span class="kw-2">&amp;mut </span>o, rstat, wstat, start, <span class="kw-2">&amp;</span>prog_tx, output_thread);
+    };
+
+    <span class="comment">// Create a common buffer with a capacity of the block size.
+    // This is the max size needed.
+    </span><span class="kw">let </span><span class="kw-2">mut </span>buf = <span class="macro">vec!</span>[BUF_INIT_BYTE; bsize];
+
+    <span class="comment">// The main read/write loop.
+    //
+    // Each iteration reads blocks from the input and writes
+    // blocks to this output. Read/write statistics are updated on
+    // each iteration and cumulative statistics are reported to
+    // the progress reporting thread.
+    </span><span class="kw">while </span>below_count_limit(<span class="kw-2">&amp;</span>i.settings.count, <span class="kw-2">&amp;</span>rstat, <span class="kw-2">&amp;</span>wstat) {
+        <span class="comment">// Read a block from the input then write the block to the output.
         //
-        // These objects are counters, initialized to zero. After each
-        // iteration of the main loop, each will be incremented by the
-        // number of blocks read and written, respectively.
-        </span><span class="kw">let </span><span class="kw-2">mut </span>rstat = ReadStat::default();
-        <span class="kw">let </span><span class="kw-2">mut </span>wstat = WriteStat::default();
-
-        <span class="comment">// The time at which the main loop starts executing.
-        //
-        // When `status=progress` is given on the command-line, the
-        // `dd` program reports its progress every second or so. Part
-        // of its report includes the throughput in bytes per second,
-        // which requires knowing how long the process has been
-        // running.
-        </span><span class="kw">let </span>start = time::Instant::now();
-
-        <span class="comment">// A good buffer size for reading.
-        //
-        // This is an educated guess about a good buffer size based on
-        // the input and output block sizes.
-        </span><span class="kw">let </span>bsize = calc_bsize(i.settings.ibs, <span class="self">self</span>.settings.obs);
-
-        <span class="comment">// Start a thread that reports transfer progress.
-        //
-        // The `dd` program reports its progress after every block is written,
-        // at most every 1 second, and only if `status=progress` is given on
-        // the command-line or a SIGUSR1 signal is received. We
-        // perform this reporting in a new thread so as not to take
-        // any CPU time away from the actual reading and writing of
-        // data. We send a `ProgUpdate` from the transmitter `prog_tx`
-        // to the receives `rx`, and the receiver prints the transfer
-        // information.
-        </span><span class="kw">let </span>(prog_tx, rx) = mpsc::channel();
-        <span class="kw">let </span>output_thread = thread::spawn(gen_prog_updater(rx, i.settings.status));
-        <span class="kw">let </span><span class="kw-2">mut </span>progress_as_secs = <span class="number">0</span>;
-
-        <span class="comment">// Optimization: if no blocks are to be written, then don&#39;t
-        // bother allocating any buffers.
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(Num::Blocks(<span class="number">0</span>) | Num::Bytes(<span class="number">0</span>)) = i.settings.count {
-            <span class="kw">return </span><span class="self">self</span>.finalize(rstat, wstat, start, <span class="kw-2">&amp;</span>prog_tx, output_thread);
-        };
-
-        <span class="comment">// Create a common buffer with a capacity of the block size.
-        // This is the max size needed.
-        </span><span class="kw">let </span><span class="kw-2">mut </span>buf = <span class="macro">vec!</span>[BUF_INIT_BYTE; bsize];
-
-        <span class="comment">// The main read/write loop.
-        //
-        // Each iteration reads blocks from the input and writes
-        // blocks to this output. Read/write statistics are updated on
-        // each iteration and cumulative statistics are reported to
-        // the progress reporting thread.
-        </span><span class="kw">while </span>below_count_limit(<span class="kw-2">&amp;</span>i.settings.count, <span class="kw-2">&amp;</span>rstat, <span class="kw-2">&amp;</span>wstat) {
-            <span class="comment">// Read a block from the input then write the block to the output.
-            //
-            // As an optimization, make an educated guess about the
-            // best buffer size for reading based on the number of
-            // blocks already read and the number of blocks remaining.
-            </span><span class="kw">let </span>loop_bsize =
-                calc_loop_bsize(<span class="kw-2">&amp;</span>i.settings.count, <span class="kw-2">&amp;</span>rstat, <span class="kw-2">&amp;</span>wstat, i.settings.ibs, bsize);
-            <span class="kw">let </span>rstat_update = read_helper(<span class="kw-2">&amp;mut </span>i, <span class="kw-2">&amp;mut </span>buf, loop_bsize)<span class="question-mark">?</span>;
-            <span class="kw">if </span>rstat_update.is_empty() {
-                <span class="kw">break</span>;
-            }
-            <span class="kw">let </span>wstat_update = <span class="self">self</span>.write_blocks(<span class="kw-2">&amp;</span>buf)<span class="question-mark">?</span>;
-
-            <span class="comment">// Update the read/write stats and inform the progress thread once per second.
-            //
-            // If the receiver is disconnected, `send()` returns an
-            // error. Since it is just reporting progress and is not
-            // crucial to the operation of `dd`, let&#39;s just ignore the
-            // error.
-            </span>rstat += rstat_update;
-            wstat += wstat_update;
-            <span class="kw">let </span>prog_update = ProgUpdate::new(rstat, wstat, start.elapsed(), <span class="bool-val">false</span>);
-            <span class="kw">if </span>prog_update.duration.as_secs() &gt;= progress_as_secs {
-                progress_as_secs = prog_update.duration.as_secs() + <span class="number">1</span>;
-                prog_tx.send(prog_update).unwrap_or(());
-            }
+        // As an optimization, make an educated guess about the
+        // best buffer size for reading based on the number of
+        // blocks already read and the number of blocks remaining.
+        </span><span class="kw">let </span>loop_bsize = calc_loop_bsize(<span class="kw-2">&amp;</span>i.settings.count, <span class="kw-2">&amp;</span>rstat, <span class="kw-2">&amp;</span>wstat, i.settings.ibs, bsize);
+        <span class="kw">let </span>rstat_update = read_helper(<span class="kw-2">&amp;mut </span>i, <span class="kw-2">&amp;mut </span>buf, loop_bsize)<span class="question-mark">?</span>;
+        <span class="kw">if </span>rstat_update.is_empty() {
+            <span class="kw">break</span>;
         }
-        <span class="self">self</span>.finalize(rstat, wstat, start, <span class="kw-2">&amp;</span>prog_tx, output_thread)
+        <span class="kw">let </span>wstat_update = o.write_blocks(<span class="kw-2">&amp;</span>buf)<span class="question-mark">?</span>;
+
+        <span class="comment">// Update the read/write stats and inform the progress thread once per second.
+        //
+        // If the receiver is disconnected, `send()` returns an
+        // error. Since it is just reporting progress and is not
+        // crucial to the operation of `dd`, let&#39;s just ignore the
+        // error.
+        </span>rstat += rstat_update;
+        wstat += wstat_update;
+        <span class="kw">let </span>prog_update = ProgUpdate::new(rstat, wstat, start.elapsed(), <span class="bool-val">false</span>);
+        <span class="kw">if </span>prog_update.duration.as_secs() &gt;= progress_as_secs {
+            progress_as_secs = prog_update.duration.as_secs() + <span class="number">1</span>;
+            prog_tx.send(prog_update).unwrap_or(());
+        }
+    }
+    finalize(<span class="kw-2">&amp;mut </span>o, rstat, wstat, start, <span class="kw-2">&amp;</span>prog_tx, output_thread)
+}
+
+<span class="doccomment">/// Flush output, print final stats, and join with the progress thread.
+</span><span class="kw">fn </span>finalize&lt;T&gt;(
+    output: <span class="kw-2">&amp;mut </span>Output,
+    rstat: ReadStat,
+    wstat: WriteStat,
+    start: time::Instant,
+    prog_tx: <span class="kw-2">&amp;</span>mpsc::Sender&lt;ProgUpdate&gt;,
+    output_thread: thread::JoinHandle&lt;T&gt;,
+) -&gt; std::io::Result&lt;()&gt; {
+    <span class="comment">// Flush the output, if configured to do so.
+    </span>output.sync()<span class="question-mark">?</span>;
+
+    <span class="comment">// Truncate the file to the final cursor location.
+    //
+    // Calling `set_len()` may result in an error (for example,
+    // when calling it on `/dev/null`), but we don&#39;t want to
+    // terminate the process when that happens. Instead, we
+    // suppress the error by calling `Result::ok()`. This matches
+    // the behavior of GNU `dd` when given the command-line
+    // argument `of=/dev/null`.
+    </span><span class="kw">if </span>!output.settings.oconv.notrunc {
+        output.dst.truncate().ok();
     }
 
-    <span class="doccomment">/// Flush output, print final stats, and join with the progress thread.
-    </span><span class="kw">fn </span>finalize&lt;T&gt;(
-        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        rstat: ReadStat,
-        wstat: WriteStat,
-        start: time::Instant,
-        prog_tx: <span class="kw-2">&amp;</span>mpsc::Sender&lt;ProgUpdate&gt;,
-        output_thread: thread::JoinHandle&lt;T&gt;,
-    ) -&gt; std::io::Result&lt;()&gt; {
-        <span class="comment">// Flush the output, if configured to do so.
-        </span><span class="self">self</span>.sync()<span class="question-mark">?</span>;
-
-        <span class="comment">// Truncate the file to the final cursor location.
-        //
-        // Calling `set_len()` may result in an error (for example,
-        // when calling it on `/dev/null`), but we don&#39;t want to
-        // terminate the process when that happens. Instead, we
-        // suppress the error by calling `Result::ok()`. This matches
-        // the behavior of GNU `dd` when given the command-line
-        // argument `of=/dev/null`.
-        </span><span class="kw">if </span>!<span class="self">self</span>.settings.oconv.notrunc {
-            <span class="self">self</span>.dst.truncate().ok();
-        }
-
-        <span class="comment">// Print the final read/write statistics.
-        </span><span class="kw">let </span>prog_update = ProgUpdate::new(rstat, wstat, start.elapsed(), <span class="bool-val">true</span>);
-        prog_tx.send(prog_update).unwrap_or(());
-        <span class="comment">// Wait for the output thread to finish
-        </span>output_thread
-            .join()
-            .expect(<span class="string">&quot;Failed to join with the output thread.&quot;</span>);
-        <span class="prelude-val">Ok</span>(())
-    }
+    <span class="comment">// Print the final read/write statistics.
+    </span><span class="kw">let </span>prog_update = ProgUpdate::new(rstat, wstat, start.elapsed(), <span class="bool-val">true</span>);
+    prog_tx.send(prog_update).unwrap_or(());
+    <span class="comment">// Wait for the output thread to finish
+    </span>output_thread
+        .join()
+        .expect(<span class="string">&quot;Failed to join with the output thread.&quot;</span>);
+    <span class="prelude-val">Ok</span>(())
 }
 
 <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;android&quot;</span>))]
@@ -1950,7 +1948,7 @@
         </span>}
         <span class="prelude-val">None </span>=&gt; Output::new_stdout(<span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>,
     };
-    o.dd_out(i).map_err_context(|| <span class="string">&quot;IO error&quot;</span>.to_string())
+    dd_copy(i, o).map_err_context(|| <span class="string">&quot;IO error&quot;</span>.to_string())
 }
 
 <span class="kw">pub fn </span>uu_app() -&gt; Command {
