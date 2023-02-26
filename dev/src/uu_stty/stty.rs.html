@@ -399,24 +399,39 @@
 <a href="#399" id="399">399</a>
 <a href="#400" id="400">400</a>
 <a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a>
+<a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
+<a href="#415" id="415">415</a>
 </pre><pre class="rust"><code><span class="comment">// * This file is part of the uutils coreutils package.
 // *
 // * For the full copyright and license information, please view the LICENSE file
 // * that was distributed with this source code.
 
-// spell-checker:ignore tcgetattr tcsetattr tcsanow tiocgwinsz tiocswinsz cfgetospeed ushort
+// spell-checker:ignore clocal tcgetattr tcsetattr tcsanow tiocgwinsz tiocswinsz cfgetospeed ushort
 
 </span><span class="kw">mod </span>flags;
 
 <span class="kw">use </span>clap::{crate_version, Arg, ArgAction, ArgMatches, Command};
-<span class="kw">use </span>nix::libc::{c_ushort, TIOCGWINSZ, TIOCSWINSZ};
+<span class="kw">use </span>nix::libc::{c_ushort, O_NONBLOCK, TIOCGWINSZ, TIOCSWINSZ};
 <span class="kw">use </span>nix::sys::termios::{
     cfgetospeed, tcgetattr, tcsetattr, ControlFlags, InputFlags, LocalFlags, OutputFlags, Termios,
 };
 <span class="kw">use </span>nix::{ioctl_read_bad, ioctl_write_ptr_bad};
 <span class="kw">use </span>std::io::{<span class="self">self</span>, stdout};
 <span class="kw">use </span>std::ops::ControlFlow;
-<span class="kw">use </span>std::os::unix::io::{AsRawFd, RawFd};
+<span class="kw">use </span>std::os::unix::fs::OpenOptionsExt;
+<span class="kw">use </span>std::os::unix::io::{AsRawFd, IntoRawFd, RawFd};
 <span class="kw">use </span>uucore::error::{UResult, USimpleError};
 <span class="kw">use </span>uucore::format_usage;
 
@@ -503,7 +518,20 @@
             all: matches.get_flag(options::ALL),
             save: matches.get_flag(options::SAVE),
             file: <span class="kw">match </span>matches.get_one::&lt;String&gt;(options::FILE) {
-                <span class="prelude-val">Some</span>(_f) =&gt; <span class="macro">todo!</span>(),
+                <span class="comment">// Two notes here:
+                // 1. O_NONBLOCK is needed because according to GNU docs, a
+                //    POSIX tty can block waiting for carrier-detect if the
+                //    &quot;clocal&quot; flag is not set. If your TTY is not connected
+                //    to a modem, it is probably not relevant though.
+                // 2. We never close the FD that we open here, but the OS
+                //    will clean up the FD for us on exit, so it doesn&#39;t
+                //    matter. The alternative would be to have an enum of
+                //    BorrowedFd/OwnedFd to handle both cases.
+                </span><span class="prelude-val">Some</span>(f) =&gt; std::fs::OpenOptions::new()
+                    .read(<span class="bool-val">true</span>)
+                    .custom_flags(O_NONBLOCK)
+                    .open(f)<span class="question-mark">?
+                    </span>.into_raw_fd(),
                 <span class="prelude-val">None </span>=&gt; stdout().as_raw_fd(),
             },
             settings: matches

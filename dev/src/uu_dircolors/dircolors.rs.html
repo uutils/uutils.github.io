@@ -441,9 +441,6 @@
 <a href="#441" id="441">441</a>
 <a href="#442" id="442">442</a>
 <a href="#443" id="443">443</a>
-<a href="#444" id="444">444</a>
-<a href="#445" id="445">445</a>
-<a href="#446" id="446">446</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;
@@ -462,6 +459,7 @@
 <span class="kw">use </span>clap::{crate_version, Arg, ArgAction, Command};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{UResult, USimpleError, UUsageError};
+<span class="kw">use </span>uucore::{help_about, help_section, help_usage};
 
 <span class="kw">mod </span>options {
     <span class="kw">pub const </span>BOURNE_SHELL: <span class="kw-2">&amp;</span>str = <span class="string">&quot;bourne-shell&quot;</span>;
@@ -471,13 +469,9 @@
     <span class="kw">pub const </span>FILE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;FILE&quot;</span>;
 }
 
-<span class="kw">static </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;{} [OPTION]... [FILE]&quot;</span>;
-<span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Output commands to set the LS_COLORS environment variable.&quot;</span>;
-<span class="kw">static </span>LONG_HELP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;
- If FILE is specified, read it to determine which colors to use for which
- file types and extensions.  Otherwise, a precompiled database is used.
- For details on the format of these files, run &#39;dircolors --print-database&#39;
-&quot;</span>;
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;dircolors.md&quot;</span>);
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;dircolors.md&quot;</span>);
+<span class="kw">const </span>AFTER_HELP: <span class="kw-2">&amp;</span>str = <span class="macro">help_section!</span>(<span class="string">&quot;after help&quot;</span>, <span class="string">&quot;dircolors.md&quot;</span>);
 
 <span class="kw">mod </span>colors;
 <span class="kw">use </span><span class="self">self</span>::colors::INTERNAL_DB;
@@ -616,7 +610,7 @@
     Command::new(uucore::util_name())
         .version(<span class="macro">crate_version!</span>())
         .about(ABOUT)
-        .after_help(LONG_HELP)
+        .after_help(AFTER_HELP)
         .override_usage(format_usage(USAGE))
         .infer_long_args(<span class="bool-val">true</span>)
         .arg(
