@@ -243,6 +243,7 @@
 // spell-checker:ignore tailable seekable stdlib (stdlib)
 
 </span><span class="kw">use </span><span class="kw">crate</span>::text;
+<span class="kw">use </span>std::ffi::OsStr;
 <span class="kw">use </span>std::fs::{File, Metadata};
 <span class="kw">use </span>std::io::{Seek, SeekFrom};
 <span class="attr">#[cfg(unix)]
@@ -263,21 +264,20 @@
 }
 
 <span class="kw">impl </span>Input {
-    <span class="comment">// TODO: from &amp;str may be the better choice
-    </span><span class="kw">pub fn </span>from(string: String) -&gt; <span class="self">Self </span>{
-        <span class="kw">let </span>kind = <span class="kw">if </span>string == text::DASH {
+    <span class="kw">pub fn </span>from&lt;T: AsRef&lt;OsStr&gt;&gt;(string: <span class="kw-2">&amp;</span>T) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>kind = <span class="kw">if </span>string.as_ref() == Path::new(text::DASH) {
             InputKind::Stdin
         } <span class="kw">else </span>{
-            InputKind::File(PathBuf::from(<span class="kw-2">&amp;</span>string))
+            InputKind::File(PathBuf::from(string.as_ref()))
         };
 
         <span class="kw">let </span>display_name = <span class="kw">match </span>kind {
-            InputKind::File(<span class="kw">_</span>) =&gt; string,
+            InputKind::File(<span class="kw">_</span>) =&gt; string.as_ref().to_string_lossy().to_string(),
             InputKind::Stdin =&gt; {
                 <span class="kw">if </span><span class="macro">cfg!</span>(unix) {
                     text::STDIN_HEADER.to_string()
                 } <span class="kw">else </span>{
-                    string
+                    string.as_ref().to_string_lossy().to_string()
                 }
             }
         };

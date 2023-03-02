@@ -159,6 +159,34 @@
 <a href="#159" id="159">159</a>
 <a href="#160" id="160">160</a>
 <a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
@@ -166,158 +194,186 @@
 
 </span><span class="kw">use </span>std::ffi::OsString;
 
+<span class="attr">#[derive(PartialEq, Eq, Debug, Copy, Clone)]
+</span><span class="kw">pub struct </span>ObsoleteArgs {
+    <span class="kw">pub </span>num: u64,
+    <span class="kw">pub </span>plus: bool,
+    <span class="kw">pub </span>lines: bool,
+    <span class="kw">pub </span>follow: bool,
+}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>ObsoleteArgs {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            num: <span class="number">10</span>,
+            plus: <span class="bool-val">false</span>,
+            lines: <span class="bool-val">true</span>,
+            follow: <span class="bool-val">false</span>,
+        }
+    }
+}
+
 <span class="attr">#[derive(PartialEq, Eq, Debug)]
 </span><span class="kw">pub enum </span>ParseError {
-    Syntax,
+    OutOfRange,
     Overflow,
+    Context,
+    InvalidEncoding,
 }
 <span class="doccomment">/// Parses obsolete syntax
-/// tail -NUM\[kmzv\] // spell-checker:disable-line
-</span><span class="kw">pub fn </span>parse_obsolete(src: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Iterator&lt;Item = OsString&gt;, ParseError&gt;&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>chars = src.char_indices();
-    <span class="kw">if let </span><span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;-&#39;</span>)) = chars.next() {
-        <span class="kw">let </span><span class="kw-2">mut </span>num_end = <span class="number">0usize</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>has_num = <span class="bool-val">false</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>last_char = <span class="number">0 </span><span class="kw">as </span>char;
-        <span class="kw">for </span>(n, c) <span class="kw">in </span><span class="kw-2">&amp;mut </span>chars {
-            <span class="kw">if </span>c.is_ascii_digit() {
-                has_num = <span class="bool-val">true</span>;
-                num_end = n;
-            } <span class="kw">else </span>{
-                last_char = c;
-                <span class="kw">break</span>;
-            }
-        }
-        <span class="kw">if </span>has_num {
-            <span class="kw">match </span>src[<span class="number">1</span>..=num_end].parse::&lt;usize&gt;() {
-                <span class="prelude-val">Ok</span>(num) =&gt; {
-                    <span class="kw">let </span><span class="kw-2">mut </span>quiet = <span class="bool-val">false</span>;
-                    <span class="kw">let </span><span class="kw-2">mut </span>verbose = <span class="bool-val">false</span>;
-                    <span class="kw">let </span><span class="kw-2">mut </span>zero_terminated = <span class="bool-val">false</span>;
-                    <span class="kw">let </span><span class="kw-2">mut </span>multiplier = <span class="prelude-val">None</span>;
-                    <span class="kw">let </span><span class="kw-2">mut </span>c = last_char;
-                    <span class="kw">loop </span>{
-                        <span class="comment">// not that here, we only match lower case &#39;k&#39;, &#39;c&#39;, and &#39;m&#39;
-                        </span><span class="kw">match </span>c {
-                            <span class="comment">// we want to preserve order
-                            // this also saves us 1 heap allocation
-                            </span><span class="string">&#39;q&#39; </span>=&gt; {
-                                quiet = <span class="bool-val">true</span>;
-                                verbose = <span class="bool-val">false</span>;
-                            }
-                            <span class="string">&#39;v&#39; </span>=&gt; {
-                                verbose = <span class="bool-val">true</span>;
-                                quiet = <span class="bool-val">false</span>;
-                            }
-                            <span class="string">&#39;z&#39; </span>=&gt; zero_terminated = <span class="bool-val">true</span>,
-                            <span class="string">&#39;c&#39; </span>=&gt; multiplier = <span class="prelude-val">Some</span>(<span class="number">1</span>),
-                            <span class="string">&#39;b&#39; </span>=&gt; multiplier = <span class="prelude-val">Some</span>(<span class="number">512</span>),
-                            <span class="string">&#39;k&#39; </span>=&gt; multiplier = <span class="prelude-val">Some</span>(<span class="number">1024</span>),
-                            <span class="string">&#39;m&#39; </span>=&gt; multiplier = <span class="prelude-val">Some</span>(<span class="number">1024 </span>* <span class="number">1024</span>),
-                            <span class="string">&#39;\0&#39; </span>=&gt; {}
-                            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Syntax)),
-                        }
-                        <span class="kw">if let </span><span class="prelude-val">Some</span>((<span class="kw">_</span>, next)) = chars.next() {
-                            c = next;
-                        } <span class="kw">else </span>{
-                            <span class="kw">break</span>;
-                        }
-                    }
-                    <span class="kw">let </span><span class="kw-2">mut </span>options = Vec::new();
-                    <span class="kw">if </span>quiet {
-                        options.push(OsString::from(<span class="string">&quot;-q&quot;</span>));
-                    }
-                    <span class="kw">if </span>verbose {
-                        options.push(OsString::from(<span class="string">&quot;-v&quot;</span>));
-                    }
-                    <span class="kw">if </span>zero_terminated {
-                        options.push(OsString::from(<span class="string">&quot;-z&quot;</span>));
-                    }
-                    <span class="kw">if let </span><span class="prelude-val">Some</span>(n) = multiplier {
-                        options.push(OsString::from(<span class="string">&quot;-c&quot;</span>));
-                        <span class="kw">let </span>num = <span class="kw">match </span>num.checked_mul(n) {
-                            <span class="prelude-val">Some</span>(n) =&gt; n,
-                            <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Overflow)),
-                        };
-                        options.push(OsString::from(<span class="macro">format!</span>(<span class="string">&quot;{num}&quot;</span>)));
-                    } <span class="kw">else </span>{
-                        options.push(OsString::from(<span class="string">&quot;-n&quot;</span>));
-                        options.push(OsString::from(<span class="macro">format!</span>(<span class="string">&quot;{num}&quot;</span>)));
-                    }
-                    <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(options.into_iter()))
-                }
-                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Overflow)),
-            }
+/// tail -\[NUM\]\[bcl\]\[f\] and tail +\[NUM\]\[bcl\]\[f\] // spell-checker:disable-line
+</span><span class="kw">pub fn </span>parse_obsolete(src: <span class="kw-2">&amp;</span>OsString) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;ObsoleteArgs, ParseError&gt;&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>rest = <span class="kw">match </span>src.to_str() {
+        <span class="prelude-val">Some</span>(src) =&gt; src,
+        <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::InvalidEncoding)),
+    };
+    <span class="kw">let </span>sign = <span class="kw">if let </span><span class="prelude-val">Some</span>(r) = rest.strip_prefix(<span class="string">&#39;-&#39;</span>) {
+        rest = r;
+        <span class="string">&#39;-&#39;
+    </span>} <span class="kw">else if let </span><span class="prelude-val">Some</span>(r) = rest.strip_prefix(<span class="string">&#39;+&#39;</span>) {
+        rest = r;
+        <span class="string">&#39;+&#39;
+    </span>} <span class="kw">else </span>{
+        <span class="kw">return </span><span class="prelude-val">None</span>;
+    };
+
+    <span class="kw">let </span>end_num = rest
+        .find(|c: char| !c.is_ascii_digit())
+        .unwrap_or(rest.len());
+    <span class="kw">let </span>has_num = !rest[..end_num].is_empty();
+    <span class="kw">let </span>num: u64 = <span class="kw">if </span>has_num {
+        <span class="kw">if let </span><span class="prelude-val">Ok</span>(num) = rest[..end_num].parse() {
+            num
         } <span class="kw">else </span>{
-            <span class="prelude-val">None
-        </span>}
+            <span class="kw">return </span><span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::OutOfRange));
+        }
     } <span class="kw">else </span>{
-        <span class="prelude-val">None
-    </span>}
+        <span class="number">10
+    </span>};
+    rest = <span class="kw-2">&amp;</span>rest[end_num..];
+
+    <span class="kw">let </span>mode = <span class="kw">if let </span><span class="prelude-val">Some</span>(r) = rest.strip_prefix(<span class="string">&#39;l&#39;</span>) {
+        rest = r;
+        <span class="string">&#39;l&#39;
+    </span>} <span class="kw">else if let </span><span class="prelude-val">Some</span>(r) = rest.strip_prefix(<span class="string">&#39;c&#39;</span>) {
+        rest = r;
+        <span class="string">&#39;c&#39;
+    </span>} <span class="kw">else if let </span><span class="prelude-val">Some</span>(r) = rest.strip_prefix(<span class="string">&#39;b&#39;</span>) {
+        rest = r;
+        <span class="string">&#39;b&#39;
+    </span>} <span class="kw">else </span>{
+        <span class="string">&#39;l&#39;
+    </span>};
+
+    <span class="kw">let </span>follow = rest.contains(<span class="string">&#39;f&#39;</span>);
+    <span class="kw">if </span>!rest.chars().all(|f| f == <span class="string">&#39;f&#39;</span>) {
+        <span class="comment">// GNU allows an arbitrary amount of following fs, but nothing else
+        </span><span class="kw">if </span>sign == <span class="string">&#39;-&#39; </span>&amp;&amp; has_num {
+            <span class="kw">return </span><span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Context));
+        }
+        <span class="kw">return </span><span class="prelude-val">None</span>;
+    }
+
+    <span class="kw">let </span>multiplier = <span class="kw">if </span>mode == <span class="string">&#39;b&#39; </span>{ <span class="number">512 </span>} <span class="kw">else </span>{ <span class="number">1 </span>};
+    <span class="kw">let </span>num = <span class="kw">match </span>num.checked_mul(multiplier) {
+        <span class="prelude-val">Some</span>(n) =&gt; n,
+        <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Overflow)),
+    };
+
+    <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(ObsoleteArgs {
+        num,
+        plus: sign == <span class="string">&#39;+&#39;</span>,
+        lines: mode == <span class="string">&#39;l&#39;</span>,
+        follow,
+    }))
 }
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">fn </span>obsolete(src: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;String&gt;, ParseError&gt;&gt; {
-        <span class="kw">let </span>r = parse_obsolete(src);
-        <span class="kw">match </span>r {
-            <span class="prelude-val">Some</span>(s) =&gt; <span class="kw">match </span>s {
-                <span class="prelude-val">Ok</span>(v) =&gt; <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(v.map(|s| s.to_str().unwrap().to_owned()).collect())),
-                <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(e)),
-            },
-            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
-        }
-    }
-    <span class="kw">fn </span>obsolete_result(src: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str]) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;String&gt;, ParseError&gt;&gt; {
-        <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(src.iter().map(|s| s.to_string()).collect()))
-    }
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_parse_numbers_obsolete() {
-        <span class="macro">assert_eq!</span>(obsolete(<span class="string">&quot;-5&quot;</span>), obsolete_result(<span class="kw-2">&amp;</span>[<span class="string">&quot;-n&quot;</span>, <span class="string">&quot;5&quot;</span>]));
-        <span class="macro">assert_eq!</span>(obsolete(<span class="string">&quot;-100&quot;</span>), obsolete_result(<span class="kw-2">&amp;</span>[<span class="string">&quot;-n&quot;</span>, <span class="string">&quot;100&quot;</span>]));
-        <span class="macro">assert_eq!</span>(obsolete(<span class="string">&quot;-5m&quot;</span>), obsolete_result(<span class="kw-2">&amp;</span>[<span class="string">&quot;-c&quot;</span>, <span class="string">&quot;5242880&quot;</span>]));
-        <span class="macro">assert_eq!</span>(obsolete(<span class="string">&quot;-1k&quot;</span>), obsolete_result(<span class="kw-2">&amp;</span>[<span class="string">&quot;-c&quot;</span>, <span class="string">&quot;1024&quot;</span>]));
-        <span class="macro">assert_eq!</span>(obsolete(<span class="string">&quot;-2b&quot;</span>), obsolete_result(<span class="kw-2">&amp;</span>[<span class="string">&quot;-c&quot;</span>, <span class="string">&quot;1024&quot;</span>]));
-        <span class="macro">assert_eq!</span>(obsolete(<span class="string">&quot;-1mmk&quot;</span>), obsolete_result(<span class="kw-2">&amp;</span>[<span class="string">&quot;-c&quot;</span>, <span class="string">&quot;1024&quot;</span>]));
-        <span class="macro">assert_eq!</span>(obsolete(<span class="string">&quot;-1vz&quot;</span>), obsolete_result(<span class="kw-2">&amp;</span>[<span class="string">&quot;-v&quot;</span>, <span class="string">&quot;-z&quot;</span>, <span class="string">&quot;-n&quot;</span>, <span class="string">&quot;1&quot;</span>]));
         <span class="macro">assert_eq!</span>(
-            obsolete(<span class="string">&quot;-1vzqvq&quot;</span>), <span class="comment">// spell-checker:disable-line
-            </span>obsolete_result(<span class="kw-2">&amp;</span>[<span class="string">&quot;-q&quot;</span>, <span class="string">&quot;-z&quot;</span>, <span class="string">&quot;-n&quot;</span>, <span class="string">&quot;1&quot;</span>])
+            parse_obsolete(<span class="kw-2">&amp;</span>OsString::from(<span class="string">&quot;+2c&quot;</span>)),
+            <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(ObsoleteArgs {
+                num: <span class="number">2</span>,
+                plus: <span class="bool-val">true</span>,
+                lines: <span class="bool-val">false</span>,
+                follow: <span class="bool-val">false</span>,
+            }))
         );
-        <span class="macro">assert_eq!</span>(obsolete(<span class="string">&quot;-1vzc&quot;</span>), obsolete_result(<span class="kw-2">&amp;</span>[<span class="string">&quot;-v&quot;</span>, <span class="string">&quot;-z&quot;</span>, <span class="string">&quot;-c&quot;</span>, <span class="string">&quot;1&quot;</span>]));
         <span class="macro">assert_eq!</span>(
-            obsolete(<span class="string">&quot;-105kzm&quot;</span>),
-            obsolete_result(<span class="kw-2">&amp;</span>[<span class="string">&quot;-z&quot;</span>, <span class="string">&quot;-c&quot;</span>, <span class="string">&quot;110100480&quot;</span>])
+            parse_obsolete(<span class="kw-2">&amp;</span>OsString::from(<span class="string">&quot;-5&quot;</span>)),
+            <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(ObsoleteArgs {
+                num: <span class="number">5</span>,
+                plus: <span class="bool-val">false</span>,
+                lines: <span class="bool-val">true</span>,
+                follow: <span class="bool-val">false</span>,
+            }))
+        );
+        <span class="macro">assert_eq!</span>(
+            parse_obsolete(<span class="kw-2">&amp;</span>OsString::from(<span class="string">&quot;+100f&quot;</span>)),
+            <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(ObsoleteArgs {
+                num: <span class="number">100</span>,
+                plus: <span class="bool-val">true</span>,
+                lines: <span class="bool-val">true</span>,
+                follow: <span class="bool-val">true</span>,
+            }))
+        );
+        <span class="macro">assert_eq!</span>(
+            parse_obsolete(<span class="kw-2">&amp;</span>OsString::from(<span class="string">&quot;-2b&quot;</span>)),
+            <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(ObsoleteArgs {
+                num: <span class="number">1024</span>,
+                plus: <span class="bool-val">false</span>,
+                lines: <span class="bool-val">false</span>,
+                follow: <span class="bool-val">false</span>,
+            }))
         );
     }
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_parse_errors_obsolete() {
-        <span class="macro">assert_eq!</span>(obsolete(<span class="string">&quot;-5n&quot;</span>), <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Syntax)));
-        <span class="macro">assert_eq!</span>(obsolete(<span class="string">&quot;-5c5&quot;</span>), <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Syntax)));
+        <span class="macro">assert_eq!</span>(
+            parse_obsolete(<span class="kw-2">&amp;</span>OsString::from(<span class="string">&quot;-5n&quot;</span>)),
+            <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Context))
+        );
+        <span class="macro">assert_eq!</span>(
+            parse_obsolete(<span class="kw-2">&amp;</span>OsString::from(<span class="string">&quot;-5c5&quot;</span>)),
+            <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Context))
+        );
+        <span class="macro">assert_eq!</span>(
+            parse_obsolete(<span class="kw-2">&amp;</span>OsString::from(<span class="string">&quot;-1vzc&quot;</span>)),
+            <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Context))
+        );
+        <span class="macro">assert_eq!</span>(
+            parse_obsolete(<span class="kw-2">&amp;</span>OsString::from(<span class="string">&quot;-5m&quot;</span>)),
+            <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Context))
+        );
+        <span class="macro">assert_eq!</span>(
+            parse_obsolete(<span class="kw-2">&amp;</span>OsString::from(<span class="string">&quot;-1k&quot;</span>)),
+            <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Context))
+        );
+        <span class="macro">assert_eq!</span>(
+            parse_obsolete(<span class="kw-2">&amp;</span>OsString::from(<span class="string">&quot;-1mmk&quot;</span>)),
+            <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Context))
+        );
+        <span class="macro">assert_eq!</span>(
+            parse_obsolete(<span class="kw-2">&amp;</span>OsString::from(<span class="string">&quot;-105kzm&quot;</span>)),
+            <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Context))
+        );
+        <span class="macro">assert_eq!</span>(
+            parse_obsolete(<span class="kw-2">&amp;</span>OsString::from(<span class="string">&quot;-1vz&quot;</span>)),
+            <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Context))
+        );
+        <span class="macro">assert_eq!</span>(
+            parse_obsolete(<span class="kw-2">&amp;</span>OsString::from(<span class="string">&quot;-1vzqvq&quot;</span>)), <span class="comment">// spell-checker:disable-line
+            </span><span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Context))
+        );
     }
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_parse_obsolete_no_match() {
-        <span class="macro">assert_eq!</span>(obsolete(<span class="string">&quot;-k&quot;</span>), <span class="prelude-val">None</span>);
-        <span class="macro">assert_eq!</span>(obsolete(<span class="string">&quot;asd&quot;</span>), <span class="prelude-val">None</span>);
-    }
-    <span class="attr">#[test]
-    #[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
-    </span><span class="kw">fn </span>test_parse_obsolete_overflow_x64() {
-        <span class="macro">assert_eq!</span>(
-            obsolete(<span class="string">&quot;-1000000000000000m&quot;</span>),
-            <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Overflow))
-        );
-        <span class="macro">assert_eq!</span>(
-            obsolete(<span class="string">&quot;-10000000000000000000000&quot;</span>),
-            <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Overflow))
-        );
-    }
-    <span class="attr">#[test]
-    #[cfg(target_pointer_width = <span class="string">&quot;32&quot;</span>)]
-    </span><span class="kw">fn </span>test_parse_obsolete_overflow_x32() {
-        <span class="macro">assert_eq!</span>(obsolete(<span class="string">&quot;-42949672960&quot;</span>), <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Overflow)));
-        <span class="macro">assert_eq!</span>(obsolete(<span class="string">&quot;-42949672k&quot;</span>), <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(ParseError::Overflow)));
+        <span class="macro">assert_eq!</span>(parse_obsolete(<span class="kw-2">&amp;</span>OsString::from(<span class="string">&quot;-k&quot;</span>)), <span class="prelude-val">None</span>);
+        <span class="macro">assert_eq!</span>(parse_obsolete(<span class="kw-2">&amp;</span>OsString::from(<span class="string">&quot;asd&quot;</span>)), <span class="prelude-val">None</span>);
+        <span class="macro">assert_eq!</span>(parse_obsolete(<span class="kw-2">&amp;</span>OsString::from(<span class="string">&quot;-cc&quot;</span>)), <span class="prelude-val">None</span>);
     }
 }
 </code></pre></div>
