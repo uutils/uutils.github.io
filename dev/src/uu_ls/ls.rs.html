@@ -3048,10 +3048,6 @@
 <a href="#3048" id="3048">3048</a>
 <a href="#3049" id="3049">3049</a>
 <a href="#3050" id="3050">3050</a>
-<a href="#3051" id="3051">3051</a>
-<a href="#3052" id="3052">3052</a>
-<a href="#3053" id="3053">3053</a>
-<a href="#3054" id="3054">3054</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Jeremiah Peschka &lt;jeremiah.peschka@gmail.com&gt;
@@ -3109,17 +3105,16 @@
     parse_size::parse_size,
     version_cmp::version_cmp,
 };
-<span class="kw">use </span>uucore::{parse_glob, show, show_error, show_warning};
+<span class="kw">use </span>uucore::{help_about, help_section, help_usage, parse_glob, show, show_error, show_warning};
 
 <span class="attr">#[cfg(not(feature = <span class="string">&quot;selinux&quot;</span>))]
 </span><span class="kw">static </span>CONTEXT_HELP_TEXT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;print any security context of each file (not enabled)&quot;</span>;
 <span class="attr">#[cfg(feature = <span class="string">&quot;selinux&quot;</span>)]
 </span><span class="kw">static </span>CONTEXT_HELP_TEXT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;print any security context of each file&quot;</span>;
 
-<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;List directory contents.
-Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span>;
-
-<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;{} [OPTION]... [FILE]...&quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;ls.md&quot;</span>);
+<span class="kw">const </span>AFTER_HELP: <span class="kw-2">&amp;</span>str = <span class="macro">help_section!</span>(<span class="string">&quot;after help&quot;</span>, <span class="string">&quot;ls.md&quot;</span>);
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;ls.md&quot;</span>);
 
 <span class="kw">pub mod </span>options {
     <span class="kw">pub mod </span>format {
@@ -4675,10 +4670,7 @@ Ignore files and directories starting with a &#39;.&#39; by default&quot;#</span
                 .value_hint(clap::ValueHint::AnyPath)
                 .value_parser(ValueParser::os_string()),
         )
-        .after_help(
-            <span class="string">&quot;The TIME_STYLE argument can be full-iso, long-iso, iso, locale or +FORMAT. FORMAT is interpreted like in date. \
-            Also the TIME_STYLE environment variable sets the default style to use.&quot;</span>,
-        )
+        .after_help(AFTER_HELP)
 }
 
 <span class="doccomment">/// Represents a Path along with it&#39;s associated data.
