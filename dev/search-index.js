@@ -12,7 +12,7 @@ var searchIndex = JSON.parse('{\
 "chroot":{"doc":"","t":[5],"n":["main"],"q":["chroot"],"d":[""],"i":[0],"f":[[[]]],"p":[]},\
 "cksum":{"doc":"","t":[5],"n":["main"],"q":["cksum"],"d":[""],"i":[0],"f":[[[]]],"p":[]},\
 "comm":{"doc":"","t":[5],"n":["main"],"q":["comm"],"d":[""],"i":[0],"f":[[[]]],"p":[]},\
-"coreutils":{"doc":"","t":[6,17,5,5,5,5,5,5,5],"n":["UtilityMap","VERSION","binary_path","gen_completions","gen_coreutils_app","main","name","usage","util_map"],"q":["coreutils","","","","","","","",""],"d":["","","","Prints completions for the utility in the first parameter …","","","","",""],"i":[0,0,0,0,0,0,0,0,0],"f":[0,0,[[],1],[[2,3],4],[3,5],[[]],[6,7],[[3,7]],[[],[[3,[7]]]]],"p":[[3,"PathBuf"],[8,"Iterator"],[3,"Map"],[15,"never"],[3,"Command"],[3,"Path"],[15,"str"]]},\
+"coreutils":{"doc":"","t":[6,17,5,5,5,5,5,5,5,5],"n":["UtilityMap","VERSION","binary_path","gen_completions","gen_coreutils_app","gen_manpage","main","name","usage","util_map"],"q":["coreutils","","","","","","","","",""],"d":["","","","Prints completions for the utility in the first parameter …","","Generate the manpage for the utility in the first parameter","","","",""],"i":[0,0,0,0,0,0,0,0,0,0],"f":[0,0,[[],1],[[2,3],4],[3,5],[[2,3],4],[[]],[6,7],[[3,7]],[[],[[3,[7]]]]],"p":[[3,"PathBuf"],[8,"Iterator"],[3,"Map"],[15,"never"],[3,"Command"],[3,"Path"],[15,"str"]]},\
 "cp":{"doc":"","t":[5],"n":["main"],"q":["cp"],"d":[""],"i":[0],"f":[[[]]],"p":[]},\
 "csplit":{"doc":"","t":[5],"n":["main"],"q":["csplit"],"d":[""],"i":[0],"f":[[[]]],"p":[]},\
 "cut":{"doc":"","t":[5],"n":["main"],"q":["cut"],"d":[""],"i":[0],"f":[[[]]],"p":[]},\

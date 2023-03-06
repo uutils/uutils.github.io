@@ -152,10 +152,6 @@
 <a href="#152" id="152">152</a>
 <a href="#153" id="153">153</a>
 <a href="#154" id="154">154</a>
-<a href="#155" id="155">155</a>
-<a href="#156" id="156">156</a>
-<a href="#157" id="157">157</a>
-<a href="#158" id="158">158</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;
@@ -168,20 +164,16 @@
 </span><span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">pub use </span>uucore::entries;
 <span class="kw">use </span>uucore::error::{FromIo, UResult, USimpleError};
-<span class="kw">use </span>uucore::format_usage;
 <span class="kw">use </span>uucore::perms::{chown_base, options, IfFrom};
+<span class="kw">use </span>uucore::{format_usage, help_about, help_usage};
 
-<span class="kw">use </span>clap::{Arg, ArgAction, ArgMatches, Command};
+<span class="kw">use </span>clap::{crate_version, Arg, ArgAction, ArgMatches, Command};
 
 <span class="kw">use </span>std::fs;
 <span class="kw">use </span>std::os::unix::fs::MetadataExt;
 
-<span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Change the group of each FILE to GROUP.&quot;</span>;
-<span class="kw">static </span>VERSION: <span class="kw-2">&amp;</span>str = <span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_VERSION&quot;</span>);
-
-<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;\
-    {} [OPTION]... GROUP FILE...\n    \
-    {} [OPTION]... --reference=RFILE FILE...&quot;</span>;
+<span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;chgrp.md&quot;</span>);
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;chgrp.md&quot;</span>);
 
 <span class="kw">fn </span>parse_gid_and_uid(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; UResult&lt;(<span class="prelude-ty">Option</span>&lt;u32&gt;, <span class="prelude-ty">Option</span>&lt;u32&gt;, IfFrom)&gt; {
     <span class="kw">let </span>dest_gid = <span class="kw">if let </span><span class="prelude-val">Some</span>(file) = matches.get_one::&lt;String&gt;(options::REFERENCE) {
@@ -217,7 +209,7 @@
 
 <span class="kw">pub fn </span>uu_app() -&gt; Command {
     Command::new(uucore::util_name())
-        .version(VERSION)
+        .version(<span class="macro">crate_version!</span>())
         .about(ABOUT)
         .override_usage(format_usage(USAGE))
         .infer_long_args(<span class="bool-val">true</span>)
