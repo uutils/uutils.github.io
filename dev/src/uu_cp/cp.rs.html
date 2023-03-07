@@ -1889,7 +1889,7 @@
 <span class="kw">use </span>std::path::{Path, PathBuf, StripPrefixError};
 <span class="kw">use </span>std::string::ToString;
 
-<span class="kw">use </span>clap::{crate_version, Arg, ArgAction, ArgMatches, Command};
+<span class="kw">use </span>clap::{builder::ValueParser, crate_version, Arg, ArgAction, ArgMatches, Command};
 <span class="kw">use </span>filetime::FileTime;
 <span class="kw">use </span>indicatif::{ProgressBar, ProgressStyle};
 <span class="attr">#[cfg(unix)]
@@ -1954,7 +1954,7 @@
         <span class="doccomment">/// Invalid arguments to backup
         </span>Backup(description: String) { display(<span class="string">&quot;{}\nTry &#39;{} --help&#39; for more information.&quot;</span>, description, uucore::execution_phrase()) }
 
-        NotADirectory(path: String) { display(<span class="string">&quot;&#39;{}&#39; is not a directory&quot;</span>, path) }
+        NotADirectory(path: PathBuf) { display(<span class="string">&quot;&#39;{}&#39; is not a directory&quot;</span>, path.display()) }
     }
 }
 
@@ -2085,7 +2085,7 @@
     attributes: Attributes,
     recursive: bool,
     backup_suffix: String,
-    target_dir: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    target_dir: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
     update: bool,
     verbose: bool,
     progress_bar: bool,
@@ -2165,6 +2165,7 @@
                 .long(options::TARGET_DIRECTORY)
                 .value_name(options::TARGET_DIRECTORY)
                 .value_hint(clap::ValueHint::DirPath)
+                .value_parser(ValueParser::path_buf())
                 .help(<span class="string">&quot;copy all SOURCE arguments into target-directory&quot;</span>),
         )
         .arg(
@@ -2418,7 +2419,8 @@
         .arg(
             Arg::new(options::PATHS)
                 .action(ArgAction::Append)
-                .value_hint(clap::ValueHint::AnyPath),
+                .value_hint(clap::ValueHint::AnyPath)
+                .value_parser(ValueParser::path_buf()),
         )
 }
 
@@ -2439,7 +2441,7 @@
             clap::error::ErrorKind::DisplayVersion =&gt; <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, app.render_version()),
             <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(e.with_exit_code(<span class="number">1</span>))),
         };
-    } <span class="kw">else if let </span><span class="prelude-val">Ok</span>(matches) = matches {
+    } <span class="kw">else if let </span><span class="prelude-val">Ok</span>(<span class="kw-2">mut </span>matches) = matches {
         <span class="kw">let </span>options = Options::from_matches(<span class="kw-2">&amp;</span>matches)<span class="question-mark">?</span>;
 
         <span class="kw">if </span>options.overwrite == OverwriteMode::NoClobber &amp;&amp; options.backup != BackupMode::NoBackup {
@@ -2449,12 +2451,12 @@
             ));
         }
 
-        <span class="kw">let </span>paths: Vec&lt;String&gt; = matches
-            .get_many::&lt;String&gt;(options::PATHS)
-            .map(|v| v.map(ToString::to_string).collect())
+        <span class="kw">let </span>paths: Vec&lt;PathBuf&gt; = matches
+            .remove_many::&lt;PathBuf&gt;(options::PATHS)
+            .map(|v| v.collect())
             .unwrap_or_default();
 
-        <span class="kw">let </span>(sources, target) = parse_path_args(<span class="kw-2">&amp;</span>paths, <span class="kw-2">&amp;</span>options)<span class="question-mark">?</span>;
+        <span class="kw">let </span>(sources, target) = parse_path_args(paths, <span class="kw-2">&amp;</span>options)<span class="question-mark">?</span>;
 
         <span class="kw">if let </span><span class="prelude-val">Err</span>(error) = copy(<span class="kw-2">&amp;</span>sources, <span class="kw-2">&amp;</span>target, <span class="kw-2">&amp;</span>options) {
             <span class="kw">match </span>error {
@@ -2617,11 +2619,11 @@
         <span class="comment">// Parse target directory options
         </span><span class="kw">let </span>no_target_dir = matches.get_flag(options::NO_TARGET_DIRECTORY);
         <span class="kw">let </span>target_dir = matches
-            .get_one::&lt;String&gt;(options::TARGET_DIRECTORY)
-            .map(ToString::to_string);
+            .get_one::&lt;PathBuf&gt;(options::TARGET_DIRECTORY)
+            .cloned();
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(dir) = <span class="kw-2">&amp;</span>target_dir {
-            <span class="kw">if </span>!Path::new(dir).is_dir() {
+            <span class="kw">if </span>!dir.is_dir() {
                 <span class="kw">return </span><span class="prelude-val">Err</span>(Error::NotADirectory(dir.clone()));
             }
         };
@@ -2778,9 +2780,7 @@
 }
 
 <span class="doccomment">/// Returns tuple of (Source paths, Target)
-</span><span class="kw">fn </span>parse_path_args(path_args: <span class="kw-2">&amp;</span>[String], options: <span class="kw-2">&amp;</span>Options) -&gt; CopyResult&lt;(Vec&lt;Source&gt;, Target)&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>paths = path_args.iter().map(PathBuf::from).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-
+</span><span class="kw">fn </span>parse_path_args(<span class="kw-2">mut </span>paths: Vec&lt;Source&gt;, options: <span class="kw-2">&amp;</span>Options) -&gt; CopyResult&lt;(Vec&lt;Source&gt;, Target)&gt; {
     <span class="kw">if </span>paths.is_empty() {
         <span class="comment">// No files specified
         </span><span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">&quot;missing file operand&quot;</span>.into());
@@ -2796,7 +2796,7 @@
         <span class="prelude-val">Some</span>(<span class="kw-2">ref </span>target) =&gt; {
             <span class="comment">// All path args are sources, and the target dir was
             // specified separately
-            </span>PathBuf::from(target)
+            </span>target.clone()
         }
         <span class="prelude-val">None </span>=&gt; {
             <span class="comment">// If there was no explicit target-dir, then use the last
