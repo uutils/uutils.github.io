@@ -628,7 +628,6 @@
 <a href="#628" id="628">628</a>
 <a href="#629" id="629">629</a>
 <a href="#630" id="630">630</a>
-<a href="#631" id="631">631</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Ben Hirsch &lt;benhirsch24@gmail.com&gt;
@@ -659,17 +658,17 @@
 <span class="kw">use </span>std::cmp;
 <span class="kw">use </span>std::fmt::Write;
 
-<span class="kw">use </span><span class="kw">crate</span>::byteorder_io::<span class="kw-2">*</span>;
-<span class="kw">use </span><span class="kw">crate</span>::formatteriteminfo::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::byteorder_io::ByteOrder;
+<span class="kw">use </span><span class="kw">crate</span>::formatteriteminfo::FormatWriter;
 <span class="kw">use </span><span class="kw">crate</span>::inputdecoder::{InputDecoder, MemoryDecoder};
 <span class="kw">use </span><span class="kw">crate</span>::inputoffset::{InputOffset, Radix};
-<span class="kw">use </span><span class="kw">crate</span>::multifilereader::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::multifilereader::{HasError, InputSource, MultifileReader};
 <span class="kw">use </span><span class="kw">crate</span>::output_info::OutputInfo;
 <span class="kw">use </span><span class="kw">crate</span>::parse_formats::{parse_format_flags, ParsedFormatterItemInfo};
 <span class="kw">use </span><span class="kw">crate</span>::parse_inputs::{parse_inputs, CommandLineInputs};
 <span class="kw">use </span><span class="kw">crate</span>::parse_nrofbytes::parse_number_of_bytes;
-<span class="kw">use </span><span class="kw">crate</span>::partialreader::<span class="kw-2">*</span>;
-<span class="kw">use </span><span class="kw">crate</span>::peekreader::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::partialreader::PartialReader;
+<span class="kw">use </span><span class="kw">crate</span>::peekreader::{PeekRead, PeekReader};
 <span class="kw">use </span><span class="kw">crate</span>::prn_char::format_ascii_dump;
 <span class="kw">use </span>clap::ArgAction;
 <span class="kw">use </span>clap::{crate_version, parser::ValueSource, Arg, ArgMatches, Command};
@@ -679,10 +678,9 @@
 <span class="kw">use </span>uucore::{format_usage, help_about, help_section, help_usage, show_error, show_warning};
 
 <span class="kw">const </span>PEEK_BUFFER_SIZE: usize = <span class="number">4</span>; <span class="comment">// utf-8 can be 4 bytes
+
 </span><span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;od.md&quot;</span>);
-
 <span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;od.md&quot;</span>);
-
 <span class="kw">const </span>AFTER_HELP: <span class="kw-2">&amp;</span>str = <span class="macro">help_section!</span>(<span class="string">&quot;after help&quot;</span>, <span class="string">&quot;od.md&quot;</span>);
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>options {
@@ -1091,7 +1089,7 @@
         )
 }
 
-<span class="doccomment">/// Loops through the input line by line, calling print_bytes to take care of the output.
+<span class="doccomment">/// Loops through the input line by line, calling `print_bytes` to take care of the output.
 </span><span class="kw">fn </span>odfunc&lt;I&gt;(
     input_offset: <span class="kw-2">&amp;mut </span>InputOffset,
     input_decoder: <span class="kw-2">&amp;mut </span>InputDecoder&lt;I&gt;,
