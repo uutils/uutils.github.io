@@ -107,6 +107,10 @@
 <a href="#107" id="107">107</a>
 <a href="#108" id="108">108</a>
 <a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Parsing a glob Pattern from a string.
 //!
 //! Use the [`from_str`] function to parse a [`Pattern`] from a string.
@@ -119,8 +123,9 @@
     <span class="kw">let </span><span class="kw-2">mut </span>chars = glob.chars().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
     <span class="kw">let </span><span class="kw-2">mut </span>i = <span class="number">0</span>;
-    <span class="kw">while </span>i &lt; chars.len() {
-        <span class="kw">if </span>chars[i] == <span class="string">&#39;[&#39; </span>&amp;&amp; i + <span class="number">4 </span>&lt;= glob.len() &amp;&amp; chars[i + <span class="number">1</span>] == <span class="string">&#39;^&#39; </span>{
+    <span class="comment">// Add 3 to prevent out of bounds in loop
+    </span><span class="kw">while </span>i + <span class="number">3 </span>&lt; chars.len() {
+        <span class="kw">if </span>chars[i] == <span class="string">&#39;[&#39; </span>&amp;&amp; chars[i + <span class="number">1</span>] == <span class="string">&#39;^&#39; </span>{
             <span class="kw">match </span>chars[i + <span class="number">3</span>..].iter().position(|x| <span class="kw-2">*</span>x == <span class="string">&#39;]&#39;</span>) {
                 <span class="prelude-val">None </span>=&gt; (),
                 <span class="prelude-val">Some</span>(j) =&gt; {
@@ -214,6 +219,9 @@
         </span><span class="macro">assert_eq!</span>(fix_negation(<span class="string">&quot;[^]&quot;</span>), <span class="string">&quot;[^]&quot;</span>);
         <span class="macro">assert_eq!</span>(fix_negation(<span class="string">&quot;[^&quot;</span>), <span class="string">&quot;[^&quot;</span>);
         <span class="macro">assert_eq!</span>(fix_negation(<span class="string">&quot;[][^]&quot;</span>), <span class="string">&quot;[][^]&quot;</span>);
+
+        <span class="comment">// Issue #4479
+        </span><span class="macro">assert_eq!</span>(fix_negation(<span class="string">&quot;ààà[^&quot;</span>), <span class="string">&quot;ààà[^&quot;</span>);
     }
 }
 </code></pre></div>

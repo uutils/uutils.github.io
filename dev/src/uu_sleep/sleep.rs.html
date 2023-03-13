@@ -78,6 +78,27 @@
 <a href="#78" id="78">78</a>
 <a href="#79" id="79">79</a>
 <a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Alex Lyon &lt;arcterus@mail.com&gt;
@@ -94,6 +115,7 @@
 };
 
 <span class="kw">use </span>clap::{crate_version, Arg, ArgAction, Command};
+<span class="kw">use </span>fundu::{<span class="self">self</span>, DurationParser, ParseError};
 
 <span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;sleep.md&quot;</span>);
 <span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;sleep.md&quot;</span>);
@@ -141,14 +163,34 @@
 
 <span class="kw">fn </span>sleep(args: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str]) -&gt; UResult&lt;()&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>arg_error = <span class="bool-val">false</span>;
+
+    <span class="kw">use </span>fundu::TimeUnit::<span class="kw-2">*</span>;
+    <span class="kw">let </span>parser = DurationParser::with_time_units(<span class="kw-2">&amp;</span>[Second, Minute, Hour, Day]);
+
     <span class="kw">let </span>sleep_dur = args
         .iter()
-        .filter_map(|input| {
-            uucore::parse_time::from_str(input.trim()).ok().or_else(|| {
+        .filter_map(|input| <span class="kw">match </span>parser.parse(input.trim()) {
+            <span class="prelude-val">Ok</span>(duration) =&gt; <span class="prelude-val">Some</span>(duration),
+            <span class="prelude-val">Err</span>(error) =&gt; {
                 arg_error = <span class="bool-val">true</span>;
-                <span class="macro">show_error!</span>(<span class="string">&quot;invalid time interval &#39;{input}&#39;&quot;</span>);
+
+                <span class="kw">let </span>reason = <span class="kw">match </span>error {
+                    ParseError::Empty <span class="kw">if </span>input.is_empty() =&gt; <span class="string">&quot;Input was empty&quot;</span>.to_string(),
+                    ParseError::Empty =&gt; <span class="string">&quot;Found only whitespace in input&quot;</span>.to_string(),
+                    ParseError::Syntax(pos, description)
+                    | ParseError::TimeUnit(pos, description) =&gt; {
+                        <span class="macro">format!</span>(<span class="string">&quot;{description} at position {}&quot;</span>, pos.saturating_add(<span class="number">1</span>))
+                    }
+                    ParseError::NegativeExponentOverflow | ParseError::PositiveExponentOverflow =&gt; {
+                        <span class="string">&quot;Exponent was out of bounds&quot;</span>.to_string()
+                    }
+                    ParseError::NegativeNumber =&gt; <span class="string">&quot;Number was negative&quot;</span>.to_string(),
+                    error =&gt; error.to_string(),
+                };
+                <span class="macro">show_error!</span>(<span class="string">&quot;invalid time interval &#39;{input}&#39;: {reason}&quot;</span>);
+
                 <span class="prelude-val">None
-            </span>})
+            </span>}
         })
         .fold(Duration::ZERO, |acc, n| acc.saturating_add(n));
 

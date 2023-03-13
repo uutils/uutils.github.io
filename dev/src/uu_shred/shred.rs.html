@@ -650,6 +650,22 @@
 <a href="#650" id="650">650</a>
 <a href="#651" id="651">651</a>
 <a href="#652" id="652">652</a>
+<a href="#653" id="653">653</a>
+<a href="#654" id="654">654</a>
+<a href="#655" id="655">655</a>
+<a href="#656" id="656">656</a>
+<a href="#657" id="657">657</a>
+<a href="#658" id="658">658</a>
+<a href="#659" id="659">659</a>
+<a href="#660" id="660">660</a>
+<a href="#661" id="661">661</a>
+<a href="#662" id="662">662</a>
+<a href="#663" id="663">663</a>
+<a href="#664" id="664">664</a>
+<a href="#665" id="665">665</a>
+<a href="#666" id="666">666</a>
+<a href="#667" id="667">667</a>
+<a href="#668" id="668">668</a>
 </pre><pre class="rust"><code><span class="comment">// * This file is part of the uutils coreutils package.
 // *
 // * (c) Michael Rosenberg &lt;42micro@gmail.com&gt;
@@ -668,9 +684,13 @@
 <span class="kw">use </span>std::fs::{File, OpenOptions};
 <span class="kw">use </span>std::io;
 <span class="kw">use </span>std::io::prelude::<span class="kw-2">*</span>;
+<span class="attr">#[cfg(unix)]
+</span><span class="kw">use </span>std::os::unix::fs::PermissionsExt;
 <span class="kw">use </span>std::path::{Path, PathBuf};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{FromIo, UResult, USimpleError, UUsageError};
+<span class="attr">#[cfg(unix)]
+</span><span class="kw">use </span>uucore::libc::S_IWUSR;
 <span class="kw">use </span>uucore::{format_usage, show, show_if_err, util_name};
 
 <span class="kw">const </span>BLOCK_SIZE: usize = <span class="number">512</span>;
@@ -1114,7 +1134,19 @@ for even very expensive hardware probing to recover the data.
     </span><span class="kw">if </span>force {
         <span class="kw">let </span>metadata = fs::metadata(path).map_err_context(String::new)<span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>perms = metadata.permissions();
-        perms.set_readonly(<span class="bool-val">false</span>);
+        <span class="attr">#[cfg(unix)]
+        #[allow(clippy::useless_conversion)]
+        </span>{
+            <span class="comment">// NOTE: set_readonly(false) makes the file world-writable on Unix.
+            // NOTE: S_IWUSR type is u16 on macOS.
+            </span><span class="kw">if </span>(perms.mode() &amp; u32::from(S_IWUSR)) == <span class="number">0 </span>{
+                perms.set_mode(u32::from(S_IWUSR));
+            }
+        }
+        <span class="attr">#[cfg(not(unix))]
+        </span><span class="comment">// TODO: Remove the following once https://github.com/rust-lang/rust-clippy/issues/10477 is resolved.
+        </span><span class="attr">#[allow(clippy::permissions_set_readonly_false)]
+        </span>perms.set_readonly(<span class="bool-val">false</span>);
         fs::set_permissions(path, perms).map_err_context(String::new)<span class="question-mark">?</span>;
     }
 
