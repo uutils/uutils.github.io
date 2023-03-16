@@ -88,6 +88,21 @@
 <a href="#88" id="88">88</a>
 <a href="#89" id="89">89</a>
 <a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Maciej Dziardziel &lt;fiedzia@gmail.com&gt;
@@ -138,6 +153,9 @@
     /// send the signal to an unrelated process that recycled the PID.
     </span><span class="kw">fn </span>send_signal(<span class="kw-2">&amp;mut </span><span class="self">self</span>, signal: usize) -&gt; io::Result&lt;()&gt;;
 
+    <span class="doccomment">/// Send a signal to a process group.
+    </span><span class="kw">fn </span>send_signal_group(<span class="kw-2">&amp;mut </span><span class="self">self</span>, signal: usize) -&gt; io::Result&lt;()&gt;;
+
     <span class="doccomment">/// Wait for a process to finish or return after the specified duration.
     /// A `timeout` of zero disables the timeout.
     </span><span class="kw">fn </span>wait_or_timeout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, timeout: Duration) -&gt; io::Result&lt;<span class="prelude-ty">Option</span>&lt;ExitStatus&gt;&gt;;
@@ -146,6 +164,18 @@
 <span class="kw">impl </span>ChildExt <span class="kw">for </span>Child {
     <span class="kw">fn </span>send_signal(<span class="kw-2">&amp;mut </span><span class="self">self</span>, signal: usize) -&gt; io::Result&lt;()&gt; {
         <span class="kw">if unsafe </span>{ libc::kill(<span class="self">self</span>.id() <span class="kw">as </span>pid_t, signal <span class="kw">as </span>i32) } != <span class="number">0 </span>{
+            <span class="prelude-val">Err</span>(io::Error::last_os_error())
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Ok</span>(())
+        }
+    }
+
+    <span class="kw">fn </span>send_signal_group(<span class="kw-2">&amp;mut </span><span class="self">self</span>, signal: usize) -&gt; io::Result&lt;()&gt; {
+        <span class="comment">// Ignore the signal, so we don&#39;t go into a signal loop.
+        </span><span class="kw">if unsafe </span>{ libc::signal(signal <span class="kw">as </span>i32, libc::SIG_IGN) } != <span class="number">0 </span>{
+            <span class="kw">return </span><span class="prelude-val">Err</span>(io::Error::last_os_error());
+        }
+        <span class="kw">if unsafe </span>{ libc::kill(<span class="number">0</span>, signal <span class="kw">as </span>i32) } != <span class="number">0 </span>{
             <span class="prelude-val">Err</span>(io::Error::last_os_error())
         } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())

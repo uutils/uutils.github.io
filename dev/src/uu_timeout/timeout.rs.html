@@ -372,6 +372,21 @@
 <a href="#372" id="372">372</a>
 <a href="#373" id="373">373</a>
 <a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Alex Lyon &lt;arcterus@mail.com&gt;
@@ -570,6 +585,22 @@
     }
 }
 
+<span class="kw">fn </span>send_signal(process: <span class="kw-2">&amp;mut </span>Child, signal: usize, foreground: bool) {
+    <span class="comment">// NOTE: GNU timeout doesn&#39;t check for errors of signal.
+    // The subprocess might have exited just after the timeout.
+    // Sending a signal now would return &quot;No such process&quot;, but we should still try to kill the children.
+    </span><span class="kw">_ </span>= process.send_signal(signal);
+    <span class="kw">if </span>!foreground {
+        <span class="kw">_ </span>= process.send_signal_group(signal);
+        <span class="kw">let </span>kill_signal = signal_by_name_or_value(<span class="string">&quot;KILL&quot;</span>).unwrap();
+        <span class="kw">let </span>continued_signal = signal_by_name_or_value(<span class="string">&quot;CONT&quot;</span>).unwrap();
+        <span class="kw">if </span>signal != kill_signal &amp;&amp; signal != continued_signal {
+            <span class="kw">_ </span>= process.send_signal(continued_signal);
+            <span class="kw">_ </span>= process.send_signal_group(continued_signal);
+        }
+    }
+}
+
 <span class="doccomment">/// Wait for a child process and send a kill signal if it does not terminate.
 ///
 /// This function waits for the child `process` for the time period
@@ -591,10 +622,11 @@
 /// If there is a problem sending the `SIGKILL` signal or waiting for
 /// the process after that signal is sent.
 </span><span class="kw">fn </span>wait_or_kill_process(
-    <span class="kw-2">mut </span>process: Child,
+    process: <span class="kw-2">&amp;mut </span>Child,
     cmd: <span class="kw-2">&amp;</span>str,
     duration: Duration,
     preserve_status: bool,
+    foreground: bool,
     verbose: bool,
 ) -&gt; std::io::Result&lt;i32&gt; {
     <span class="kw">match </span>process.wait_or_timeout(duration) {
@@ -608,7 +640,7 @@
         <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) =&gt; {
             <span class="kw">let </span>signal = signal_by_name_or_value(<span class="string">&quot;KILL&quot;</span>).unwrap();
             report_if_verbose(signal, cmd, verbose);
-            process.send_signal(signal)<span class="question-mark">?</span>;
+            send_signal(process, signal, foreground);
             process.wait()<span class="question-mark">?</span>;
             <span class="prelude-val">Ok</span>(ExitStatus::SignalSent(signal).into())
         }
@@ -674,7 +706,7 @@
 
     enable_pipe_errors()<span class="question-mark">?</span>;
 
-    <span class="kw">let </span><span class="kw-2">mut </span>process = process::Command::new(<span class="kw-2">&amp;</span>cmd[<span class="number">0</span>])
+    <span class="kw">let </span>process = <span class="kw-2">&amp;mut </span>process::Command::new(<span class="kw-2">&amp;</span>cmd[<span class="number">0</span>])
         .args(<span class="kw-2">&amp;</span>cmd[<span class="number">1</span>..])
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
@@ -709,7 +741,7 @@
             .into()),
         <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) =&gt; {
             report_if_verbose(signal, <span class="kw-2">&amp;</span>cmd[<span class="number">0</span>], verbose);
-            process.send_signal(signal)<span class="question-mark">?</span>;
+            send_signal(process, signal, foreground);
             <span class="kw">match </span>kill_after {
                 <span class="prelude-val">None </span>=&gt; {
                     <span class="kw">if </span>preserve_status {
@@ -724,6 +756,7 @@
                         <span class="kw-2">&amp;</span>cmd[<span class="number">0</span>],
                         kill_after,
                         preserve_status,
+                        foreground,
                         verbose,
                     ) {
                         <span class="prelude-val">Ok</span>(status) =&gt; <span class="prelude-val">Err</span>(status.into()),
@@ -737,11 +770,8 @@
         }
         <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
             <span class="comment">// We&#39;re going to return ERR_EXIT_STATUS regardless of
-            // whether `send_signal()` succeeds or fails, so just
-            // ignore the return value.
-            </span>process
-                .send_signal(signal)
-                .map_err(|e| USimpleError::new(ExitStatus::TimeoutFailed.into(), <span class="macro">format!</span>(<span class="string">&quot;{e}&quot;</span>)))<span class="question-mark">?</span>;
+            // whether `send_signal()` succeeds or fails
+            </span>send_signal(process, signal, foreground);
             <span class="prelude-val">Err</span>(ExitStatus::TimeoutFailed.into())
         }
     }
