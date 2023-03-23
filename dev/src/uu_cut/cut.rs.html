@@ -582,91 +582,6 @@
 <a href="#582" id="582">582</a>
 <a href="#583" id="583">583</a>
 <a href="#584" id="584">584</a>
-<a href="#585" id="585">585</a>
-<a href="#586" id="586">586</a>
-<a href="#587" id="587">587</a>
-<a href="#588" id="588">588</a>
-<a href="#589" id="589">589</a>
-<a href="#590" id="590">590</a>
-<a href="#591" id="591">591</a>
-<a href="#592" id="592">592</a>
-<a href="#593" id="593">593</a>
-<a href="#594" id="594">594</a>
-<a href="#595" id="595">595</a>
-<a href="#596" id="596">596</a>
-<a href="#597" id="597">597</a>
-<a href="#598" id="598">598</a>
-<a href="#599" id="599">599</a>
-<a href="#600" id="600">600</a>
-<a href="#601" id="601">601</a>
-<a href="#602" id="602">602</a>
-<a href="#603" id="603">603</a>
-<a href="#604" id="604">604</a>
-<a href="#605" id="605">605</a>
-<a href="#606" id="606">606</a>
-<a href="#607" id="607">607</a>
-<a href="#608" id="608">608</a>
-<a href="#609" id="609">609</a>
-<a href="#610" id="610">610</a>
-<a href="#611" id="611">611</a>
-<a href="#612" id="612">612</a>
-<a href="#613" id="613">613</a>
-<a href="#614" id="614">614</a>
-<a href="#615" id="615">615</a>
-<a href="#616" id="616">616</a>
-<a href="#617" id="617">617</a>
-<a href="#618" id="618">618</a>
-<a href="#619" id="619">619</a>
-<a href="#620" id="620">620</a>
-<a href="#621" id="621">621</a>
-<a href="#622" id="622">622</a>
-<a href="#623" id="623">623</a>
-<a href="#624" id="624">624</a>
-<a href="#625" id="625">625</a>
-<a href="#626" id="626">626</a>
-<a href="#627" id="627">627</a>
-<a href="#628" id="628">628</a>
-<a href="#629" id="629">629</a>
-<a href="#630" id="630">630</a>
-<a href="#631" id="631">631</a>
-<a href="#632" id="632">632</a>
-<a href="#633" id="633">633</a>
-<a href="#634" id="634">634</a>
-<a href="#635" id="635">635</a>
-<a href="#636" id="636">636</a>
-<a href="#637" id="637">637</a>
-<a href="#638" id="638">638</a>
-<a href="#639" id="639">639</a>
-<a href="#640" id="640">640</a>
-<a href="#641" id="641">641</a>
-<a href="#642" id="642">642</a>
-<a href="#643" id="643">643</a>
-<a href="#644" id="644">644</a>
-<a href="#645" id="645">645</a>
-<a href="#646" id="646">646</a>
-<a href="#647" id="647">647</a>
-<a href="#648" id="648">648</a>
-<a href="#649" id="649">649</a>
-<a href="#650" id="650">650</a>
-<a href="#651" id="651">651</a>
-<a href="#652" id="652">652</a>
-<a href="#653" id="653">653</a>
-<a href="#654" id="654">654</a>
-<a href="#655" id="655">655</a>
-<a href="#656" id="656">656</a>
-<a href="#657" id="657">657</a>
-<a href="#658" id="658">658</a>
-<a href="#659" id="659">659</a>
-<a href="#660" id="660">660</a>
-<a href="#661" id="661">661</a>
-<a href="#662" id="662">662</a>
-<a href="#663" id="663">663</a>
-<a href="#664" id="664">664</a>
-<a href="#665" id="665">665</a>
-<a href="#666" id="666">666</a>
-<a href="#667" id="667">667</a>
-<a href="#668" id="668">668</a>
-<a href="#669" id="669">669</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Rolf Morel &lt;rolfmorel@gmail.com&gt;
@@ -688,99 +603,14 @@
 <span class="kw">use </span><span class="self">self</span>::searcher::Searcher;
 <span class="kw">use </span>matcher::{ExactMatcher, Matcher, WhitespaceMatcher};
 <span class="kw">use </span>uucore::ranges::Range;
-<span class="kw">use </span>uucore::{format_usage, show, show_error, show_if_err};
+<span class="kw">use </span>uucore::{format_usage, help_about, help_section, help_usage, show, show_error, show_if_err};
 
 <span class="kw">mod </span>matcher;
 <span class="kw">mod </span>searcher;
 
-<span class="kw">static </span>USAGE: <span class="kw-2">&amp;</span>str =
-    <span class="string">&quot;{} [-d|-w] [-s] [-z] [--output-delimiter] ((-f|-b|-c) {{sequence}}) {{sourcefile}}+&quot;</span>;
-<span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str =
-    <span class="string">&quot;Prints specified byte or field columns from each line of stdin or the input files&quot;</span>;
-<span class="kw">static </span>LONG_HELP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;
- Each call must specify a mode (what to use for columns),
- a sequence (which columns to print), and provide a data source
-
- Specifying a mode
-
-    Use --bytes (-b) or --characters (-c) to specify byte mode
-
-    Use --fields (-f) to specify field mode, where each line is broken into
-    fields identified by a delimiter character. For example for a typical CSV
-    you could use this in combination with setting comma as the delimiter
-
- Specifying a sequence
-
-    A sequence is a group of 1 or more numbers or inclusive ranges separated
-    by a commas.
-
-    cut -f 2,5-7 some_file.txt
-    will display the 2nd, 5th, 6th, and 7th field for each source line
-
-    Ranges can extend to the end of the row by excluding the the second number
-
-    cut -f 3- some_file.txt
-    will display the 3rd field and all fields after for each source line
-
-    The first number of a range can be excluded, and this is effectively the
-    same as using 1 as the first number: it causes the range to begin at the
-    first column. Ranges can also display a single column
-
-    cut -f 1,3-5 some_file.txt
-    will display the 1st, 3rd, 4th, and 5th field for each source line
-
-    The --complement option, when used, inverts the effect of the sequence
-
-    cut --complement -f 4-6 some_file.txt
-    will display the every field but the 4th, 5th, and 6th
-
- Specifying a data source
-
-    If no sourcefile arguments are specified, stdin is used as the source of
-    lines to print
-
-    If sourcefile arguments are specified, stdin is ignored and all files are
-    read in consecutively if a sourcefile is not successfully read, a warning
-    will print to stderr, and the eventual status code will be 1, but cut
-    will continue to read through proceeding sourcefiles
-
-    To print columns from both STDIN and a file argument, use - (dash) as a
-    sourcefile argument to represent stdin.
-
- Field Mode options
-
-    The fields in each line are identified by a delimiter (separator)
-
-    Set the delimiter
-        Set the delimiter which separates fields in the file using the
-        --delimiter (-d) option. Setting the delimiter is optional.
-        If not set, a default delimiter of Tab will be used.
-
-        If the -w option is provided, fields will be separated by any number
-        of whitespace characters (Space and Tab). The output delimiter will
-        be a Tab unless explicitly specified. Only one of -d or -w option can be specified.
-        This is an extension adopted from FreeBSD.
-
-    Optionally Filter based on delimiter
-        If the --only-delimited (-s) flag is provided, only lines which
-        contain the delimiter will be printed
-
-    Replace the delimiter
-        If the --output-delimiter option is provided, the argument used for
-        it will replace the delimiter character in each line printed. This is
-        useful for transforming tabular data - e.g. to convert a CSV to a
-        TSV (tab-separated file)
-
- Line endings
-
-    When the --zero-terminated (-z) option is used, cut sees \\0 (null) as the
-    &#39;line ending&#39; character (both for the purposes of reading lines and
-    separating printed lines) instead of \\n (newline). This is useful for
-    tabular data where some of the cells may contain newlines
-
-    echo &#39;ab\\0cd&#39; | cut -z -c 1
-    will result in &#39;a\\0c\\0&#39;
-&quot;</span>;
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;cut.md&quot;</span>);
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;cut.md&quot;</span>);
+<span class="kw">const </span>AFTER_HELP: <span class="kw-2">&amp;</span>str = <span class="macro">help_section!</span>(<span class="string">&quot;after help&quot;</span>, <span class="string">&quot;cut.md&quot;</span>);
 
 <span class="kw">struct </span>Options {
     out_delim: <span class="prelude-ty">Option</span>&lt;String&gt;,
@@ -1263,7 +1093,7 @@
         .version(<span class="macro">crate_version!</span>())
         .override_usage(format_usage(USAGE))
         .about(ABOUT)
-        .after_help(LONG_HELP)
+        .after_help(AFTER_HELP)
         .infer_long_args(<span class="bool-val">true</span>)
         .arg(
             Arg::new(options::BYTES)
