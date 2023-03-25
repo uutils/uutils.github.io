@@ -274,6 +274,16 @@
 <a href="#274" id="274">274</a>
 <a href="#275" id="275">275</a>
 <a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
 </pre><pre class="rust"><code><span class="comment">// library ~ (core/bundler file)
 
 // Copyright (C) ~ Alex Lyon &lt;arcterus@mail.com&gt;
@@ -375,10 +385,13 @@
 
 <span class="doccomment">/// Generate the usage string for clap.
 ///
-/// This function replaces all occurrences of `{}` with the execution phrase
-/// and returns the resulting `String`. It does **not** support
-/// more advanced formatting features such as `{0}`.
+/// This function does two things. It indents all but the first line to align
+/// the lines because clap adds &quot;Usage: &quot; to the first line. And it replaces
+/// all occurrences of `{}` with the execution phrase and returns the resulting
+/// `String`. It does **not** support more advanced formatting features such
+/// as `{0}`.
 </span><span class="kw">pub fn </span>format_usage(s: <span class="kw-2">&amp;</span>str) -&gt; String {
+    <span class="kw">let </span>s = s.replace(<span class="string">&#39;\n&#39;</span>, <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;\n{}&quot;</span>, <span class="string">&quot; &quot;</span>.repeat(<span class="number">7</span>)));
     s.replace(<span class="string">&quot;{}&quot;</span>, <span class="kw">crate</span>::execution_phrase())
 }
 
@@ -395,13 +408,11 @@
 </span><span class="kw">static </span>ARGV: Lazy&lt;Vec&lt;OsString&gt;&gt; = Lazy::new(|| wild::args_os().collect());
 
 <span class="kw">static </span>UTIL_NAME: Lazy&lt;String&gt; = Lazy::new(|| {
-    <span class="kw">if </span>get_utility_is_second_arg() {
-        <span class="kw-2">&amp;</span>ARGV[<span class="number">1</span>]
-    } <span class="kw">else </span>{
-        <span class="kw-2">&amp;</span>ARGV[<span class="number">0</span>]
-    }
-    .to_string_lossy()
-    .into_owned()
+    <span class="kw">let </span>base_index = <span class="kw">if </span>get_utility_is_second_arg() { <span class="number">1 </span>} <span class="kw">else </span>{ <span class="number">0 </span>};
+    <span class="kw">let </span>is_man = <span class="kw">if </span>ARGV[base_index].eq(<span class="string">&quot;manpage&quot;</span>) { <span class="number">1 </span>} <span class="kw">else </span>{ <span class="number">0 </span>};
+    <span class="kw">let </span>argv_index = base_index + is_man;
+
+    ARGV[argv_index].to_string_lossy().into_owned()
 });
 
 <span class="doccomment">/// Derive the utility name.
@@ -548,6 +559,15 @@
         <span class="kw">let </span>os_str = OsStr::from_bytes(<span class="kw-2">&amp;</span>source[..]);
         test_invalid_utf8_args_lossy(os_str);
         test_invalid_utf8_args_ignore(os_str);
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_format_usage() {
+        <span class="macro">assert_eq!</span>(format_usage(<span class="string">&quot;expr EXPRESSION&quot;</span>), <span class="string">&quot;expr EXPRESSION&quot;</span>);
+        <span class="macro">assert_eq!</span>(
+            format_usage(<span class="string">&quot;expr EXPRESSION\nexpr OPTION&quot;</span>),
+            <span class="string">&quot;expr EXPRESSION\n       expr OPTION&quot;
+        </span>);
     }
 }
 </code></pre></div>

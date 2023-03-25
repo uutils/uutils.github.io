@@ -589,83 +589,6 @@
 <a href="#589" id="589">589</a>
 <a href="#590" id="590">590</a>
 <a href="#591" id="591">591</a>
-<a href="#592" id="592">592</a>
-<a href="#593" id="593">593</a>
-<a href="#594" id="594">594</a>
-<a href="#595" id="595">595</a>
-<a href="#596" id="596">596</a>
-<a href="#597" id="597">597</a>
-<a href="#598" id="598">598</a>
-<a href="#599" id="599">599</a>
-<a href="#600" id="600">600</a>
-<a href="#601" id="601">601</a>
-<a href="#602" id="602">602</a>
-<a href="#603" id="603">603</a>
-<a href="#604" id="604">604</a>
-<a href="#605" id="605">605</a>
-<a href="#606" id="606">606</a>
-<a href="#607" id="607">607</a>
-<a href="#608" id="608">608</a>
-<a href="#609" id="609">609</a>
-<a href="#610" id="610">610</a>
-<a href="#611" id="611">611</a>
-<a href="#612" id="612">612</a>
-<a href="#613" id="613">613</a>
-<a href="#614" id="614">614</a>
-<a href="#615" id="615">615</a>
-<a href="#616" id="616">616</a>
-<a href="#617" id="617">617</a>
-<a href="#618" id="618">618</a>
-<a href="#619" id="619">619</a>
-<a href="#620" id="620">620</a>
-<a href="#621" id="621">621</a>
-<a href="#622" id="622">622</a>
-<a href="#623" id="623">623</a>
-<a href="#624" id="624">624</a>
-<a href="#625" id="625">625</a>
-<a href="#626" id="626">626</a>
-<a href="#627" id="627">627</a>
-<a href="#628" id="628">628</a>
-<a href="#629" id="629">629</a>
-<a href="#630" id="630">630</a>
-<a href="#631" id="631">631</a>
-<a href="#632" id="632">632</a>
-<a href="#633" id="633">633</a>
-<a href="#634" id="634">634</a>
-<a href="#635" id="635">635</a>
-<a href="#636" id="636">636</a>
-<a href="#637" id="637">637</a>
-<a href="#638" id="638">638</a>
-<a href="#639" id="639">639</a>
-<a href="#640" id="640">640</a>
-<a href="#641" id="641">641</a>
-<a href="#642" id="642">642</a>
-<a href="#643" id="643">643</a>
-<a href="#644" id="644">644</a>
-<a href="#645" id="645">645</a>
-<a href="#646" id="646">646</a>
-<a href="#647" id="647">647</a>
-<a href="#648" id="648">648</a>
-<a href="#649" id="649">649</a>
-<a href="#650" id="650">650</a>
-<a href="#651" id="651">651</a>
-<a href="#652" id="652">652</a>
-<a href="#653" id="653">653</a>
-<a href="#654" id="654">654</a>
-<a href="#655" id="655">655</a>
-<a href="#656" id="656">656</a>
-<a href="#657" id="657">657</a>
-<a href="#658" id="658">658</a>
-<a href="#659" id="659">659</a>
-<a href="#660" id="660">660</a>
-<a href="#661" id="661">661</a>
-<a href="#662" id="662">662</a>
-<a href="#663" id="663">663</a>
-<a href="#664" id="664">664</a>
-<a href="#665" id="665">665</a>
-<a href="#666" id="666">666</a>
-<a href="#667" id="667">667</a>
-<a href="#668" id="668">668</a>
 </pre><pre class="rust"><code><span class="comment">// * This file is part of the uutils coreutils package.
 // *
 // * (c) Michael Rosenberg &lt;42micro@gmail.com&gt;
@@ -674,252 +597,24 @@
 // * For the full copyright and license information, please view the LICENSE
 // * file that was distributed with this source code.
 
-// spell-checker:ignore (words) writeback wipesync
+// spell-checker:ignore (words) wipesync prefill
 
 </span><span class="kw">use </span>clap::{crate_version, Arg, ArgAction, Command};
-<span class="kw">use </span>rand::prelude::SliceRandom;
-<span class="kw">use </span>rand::Rng;
-<span class="kw">use </span>std::cell::{Cell, RefCell};
-<span class="kw">use </span>std::fs;
-<span class="kw">use </span>std::fs::{File, OpenOptions};
-<span class="kw">use </span>std::io;
-<span class="kw">use </span>std::io::prelude::<span class="kw-2">*</span>;
 <span class="attr">#[cfg(unix)]
-</span><span class="kw">use </span>std::os::unix::fs::PermissionsExt;
+</span><span class="kw">use </span>libc::S_IWUSR;
+<span class="kw">use </span>rand::{rngs::StdRng, seq::SliceRandom, Rng, SeedableRng};
+<span class="kw">use </span>std::fs::{<span class="self">self</span>, File, OpenOptions};
+<span class="kw">use </span>std::io::{<span class="self">self</span>, Seek, Write};
+<span class="attr">#[cfg(unix)]
+</span><span class="kw">use </span>std::os::unix::prelude::PermissionsExt;
 <span class="kw">use </span>std::path::{Path, PathBuf};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{FromIo, UResult, USimpleError, UUsageError};
-<span class="attr">#[cfg(unix)]
-</span><span class="kw">use </span>uucore::libc::S_IWUSR;
-<span class="kw">use </span>uucore::{format_usage, show, show_if_err, util_name};
+<span class="kw">use </span>uucore::{format_usage, help_about, help_section, help_usage, show, show_error, show_if_err};
 
-<span class="kw">const </span>BLOCK_SIZE: usize = <span class="number">512</span>;
-<span class="kw">const </span>NAME_CHARSET: <span class="kw-2">&amp;</span>[u8] = <span class="string">b&quot;0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.&quot;</span>;
-
-<span class="comment">// Patterns as shown in the GNU coreutils shred implementation
-</span><span class="kw">const </span>PATTERNS: [<span class="kw-2">&amp;</span>[u8]; <span class="number">22</span>] = [
-    <span class="string">b&quot;\x00&quot;</span>,
-    <span class="string">b&quot;\xFF&quot;</span>,
-    <span class="string">b&quot;\x55&quot;</span>,
-    <span class="string">b&quot;\xAA&quot;</span>,
-    <span class="string">b&quot;\x24\x92\x49&quot;</span>,
-    <span class="string">b&quot;\x49\x24\x92&quot;</span>,
-    <span class="string">b&quot;\x6D\xB6\xDB&quot;</span>,
-    <span class="string">b&quot;\x92\x49\x24&quot;</span>,
-    <span class="string">b&quot;\xB6\xDB\x6D&quot;</span>,
-    <span class="string">b&quot;\xDB\x6D\xB6&quot;</span>,
-    <span class="string">b&quot;\x11&quot;</span>,
-    <span class="string">b&quot;\x22&quot;</span>,
-    <span class="string">b&quot;\x33&quot;</span>,
-    <span class="string">b&quot;\x44&quot;</span>,
-    <span class="string">b&quot;\x66&quot;</span>,
-    <span class="string">b&quot;\x77&quot;</span>,
-    <span class="string">b&quot;\x88&quot;</span>,
-    <span class="string">b&quot;\x99&quot;</span>,
-    <span class="string">b&quot;\xBB&quot;</span>,
-    <span class="string">b&quot;\xCC&quot;</span>,
-    <span class="string">b&quot;\xDD&quot;</span>,
-    <span class="string">b&quot;\xEE&quot;</span>,
-];
-
-<span class="attr">#[derive(Clone, Copy)]
-</span><span class="kw">enum </span>PassType&lt;<span class="lifetime">&#39;a</span>&gt; {
-    Pattern(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[u8]),
-    Random,
-}
-
-<span class="comment">// Used to generate all possible filenames of a certain length using NAME_CHARSET as an alphabet
-</span><span class="kw">struct </span>FilenameGenerator {
-    name_len: usize,
-    name_charset_indices: RefCell&lt;Vec&lt;usize&gt;&gt;, <span class="comment">// Store the indices of the letters of our filename in NAME_CHARSET
-    </span>exhausted: Cell&lt;bool&gt;,
-}
-
-<span class="kw">impl </span>FilenameGenerator {
-    <span class="kw">fn </span>new(name_len: usize) -&gt; <span class="self">Self </span>{
-        <span class="kw">let </span>indices: Vec&lt;usize&gt; = <span class="macro">vec!</span>[<span class="number">0</span>; name_len];
-        <span class="self">Self </span>{
-            name_len,
-            name_charset_indices: RefCell::new(indices),
-            exhausted: Cell::new(<span class="bool-val">false</span>),
-        }
-    }
-}
-
-<span class="kw">impl </span>Iterator <span class="kw">for </span>FilenameGenerator {
-    <span class="kw">type </span>Item = String;
-
-    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
-        <span class="kw">if </span><span class="self">self</span>.exhausted.get() {
-            <span class="kw">return </span><span class="prelude-val">None</span>;
-        }
-
-        <span class="kw">let </span><span class="kw-2">mut </span>name_charset_indices = <span class="self">self</span>.name_charset_indices.borrow_mut();
-
-        <span class="comment">// Make the return value, then increment
-        </span><span class="kw">let </span><span class="kw-2">mut </span>ret = String::new();
-        <span class="kw">for </span>i <span class="kw">in </span>name_charset_indices.iter() {
-            <span class="kw">let </span>c = char::from(NAME_CHARSET[<span class="kw-2">*</span>i]);
-            ret.push(c);
-        }
-
-        <span class="kw">if </span>name_charset_indices[<span class="number">0</span>] == NAME_CHARSET.len() - <span class="number">1 </span>{
-            <span class="self">self</span>.exhausted.set(<span class="bool-val">true</span>);
-        }
-        <span class="comment">// Now increment the least significant index
-        </span><span class="kw">for </span>i <span class="kw">in </span>(<span class="number">0</span>..<span class="self">self</span>.name_len).rev() {
-            <span class="kw">if </span>name_charset_indices[i] == NAME_CHARSET.len() - <span class="number">1 </span>{
-                name_charset_indices[i] = <span class="number">0</span>; <span class="comment">// Carry the 1
-                </span><span class="kw">continue</span>;
-            } <span class="kw">else </span>{
-                name_charset_indices[i] += <span class="number">1</span>;
-                <span class="kw">break</span>;
-            }
-        }
-
-        <span class="prelude-val">Some</span>(ret)
-    }
-}
-
-<span class="comment">// Used to generate blocks of bytes of size &lt;= BLOCK_SIZE based on either a give pattern
-// or randomness
-</span><span class="kw">struct </span>BytesGenerator&lt;<span class="lifetime">&#39;a</span>&gt; {
-    total_bytes: u64,
-    bytes_generated: Cell&lt;u64&gt;,
-    block_size: usize,
-    exact: bool, <span class="comment">// if false, every block&#39;s size is block_size
-    </span>gen_type: PassType&lt;<span class="lifetime">&#39;a</span>&gt;,
-    rng: <span class="prelude-ty">Option</span>&lt;RefCell&lt;rand::rngs::ThreadRng&gt;&gt;,
-    bytes: [u8; BLOCK_SIZE],
-}
-
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; BytesGenerator&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">fn </span>new(total_bytes: u64, gen_type: PassType&lt;<span class="lifetime">&#39;a</span>&gt;, exact: bool) -&gt; BytesGenerator {
-        <span class="kw">let </span>rng = <span class="kw">match </span>gen_type {
-            PassType::Random =&gt; <span class="prelude-val">Some</span>(RefCell::new(rand::thread_rng())),
-            PassType::Pattern(<span class="kw">_</span>) =&gt; <span class="prelude-val">None</span>,
-        };
-
-        <span class="kw">let </span>bytes = [<span class="number">0</span>; BLOCK_SIZE];
-
-        BytesGenerator {
-            total_bytes,
-            bytes_generated: Cell::new(<span class="number">0u64</span>),
-            block_size: BLOCK_SIZE,
-            exact,
-            gen_type,
-            rng,
-            bytes,
-        }
-    }
-
-    <span class="kw">pub fn </span>reset(<span class="kw-2">&amp;mut </span><span class="self">self</span>, total_bytes: u64, gen_type: PassType&lt;<span class="lifetime">&#39;a</span>&gt;) {
-        <span class="kw">if let </span>PassType::Random = gen_type {
-            <span class="kw">if </span><span class="self">self</span>.rng.is_none() {
-                <span class="self">self</span>.rng = <span class="prelude-val">Some</span>(RefCell::new(rand::thread_rng()));
-            }
-        }
-
-        <span class="self">self</span>.total_bytes = total_bytes;
-        <span class="self">self</span>.gen_type = gen_type;
-
-        <span class="self">self</span>.bytes_generated.set(<span class="number">0</span>);
-    }
-
-    <span class="kw">pub fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>[u8]&gt; {
-        <span class="comment">// We go over the total_bytes limit when !self.exact and total_bytes isn&#39;t a multiple
-        // of self.block_size
-        </span><span class="kw">if </span><span class="self">self</span>.bytes_generated.get() &gt;= <span class="self">self</span>.total_bytes {
-            <span class="kw">return </span><span class="prelude-val">None</span>;
-        }
-
-        <span class="kw">let </span>this_block_size = <span class="kw">if </span>!<span class="self">self</span>.exact {
-            <span class="self">self</span>.block_size
-        } <span class="kw">else </span>{
-            <span class="kw">let </span>bytes_left = <span class="self">self</span>.total_bytes - <span class="self">self</span>.bytes_generated.get();
-            <span class="kw">if </span>bytes_left &gt;= <span class="self">self</span>.block_size <span class="kw">as </span>u64 {
-                <span class="self">self</span>.block_size
-            } <span class="kw">else </span>{
-                (bytes_left % <span class="self">self</span>.block_size <span class="kw">as </span>u64) <span class="kw">as </span>usize
-            }
-        };
-
-        <span class="kw">let </span>bytes = <span class="kw-2">&amp;mut </span><span class="self">self</span>.bytes[..this_block_size];
-
-        <span class="kw">match </span><span class="self">self</span>.gen_type {
-            PassType::Random =&gt; {
-                <span class="kw">let </span><span class="kw-2">mut </span>rng = <span class="self">self</span>.rng.as_ref().unwrap().borrow_mut();
-                rng.fill(bytes);
-            }
-            PassType::Pattern(pattern) =&gt; {
-                <span class="kw">let </span>skip = <span class="kw">if </span><span class="self">self</span>.bytes_generated.get() == <span class="number">0 </span>{
-                    <span class="number">0
-                </span>} <span class="kw">else </span>{
-                    (pattern.len() <span class="kw">as </span>u64 % <span class="self">self</span>.bytes_generated.get()) <span class="kw">as </span>usize
-                };
-
-                <span class="comment">// Copy the pattern in chunks rather than simply one byte at a time
-                </span><span class="kw">let </span><span class="kw-2">mut </span>i = <span class="number">0</span>;
-                <span class="kw">while </span>i &lt; this_block_size {
-                    <span class="kw">let </span>start = (i + skip) % pattern.len();
-                    <span class="kw">let </span>end = (this_block_size - i).min(pattern.len());
-                    <span class="kw">let </span>len = end - start;
-
-                    bytes[i..i + len].copy_from_slice(<span class="kw-2">&amp;</span>pattern[start..end]);
-
-                    i += len;
-                }
-            }
-        };
-
-        <span class="kw">let </span>new_bytes_generated = <span class="self">self</span>.bytes_generated.get() + this_block_size <span class="kw">as </span>u64;
-        <span class="self">self</span>.bytes_generated.set(new_bytes_generated);
-
-        <span class="prelude-val">Some</span>(bytes)
-    }
-}
-
-<span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Overwrite the specified FILE(s) repeatedly, in order to make it harder\n\
-for even very expensive hardware probing to recover the data.
-&quot;</span>;
-<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;{} [OPTION]... FILE...&quot;</span>;
-
-<span class="kw">static </span>AFTER_HELP: <span class="kw-2">&amp;</span>str =
-    <span class="string">&quot;Delete FILE(s) if --remove (-u) is specified.  The default is not to remove\n\
-     the files because it is common to operate on device files like /dev/hda,\n\
-     and those files usually should not be removed.\n\
-     \n\
-     CAUTION: Note that shred relies on a very important assumption:\n\
-     that the file system overwrites data in place.  This is the traditional\n\
-     way to do things, but many modern file system designs do not satisfy this\n\
-     assumption.  The following are examples of file systems on which shred is\n\
-     not effective, or is not guaranteed to be effective in all file system modes:\n\
-     \n\
-     * log-structured or journal file systems, such as those supplied with\n\
-     AIX and Solaris (and JFS, ReiserFS, XFS, Ext3, etc.)\n\
-     \n\
-     * file systems that write redundant data and carry on even if some writes\n\
-     fail, such as RAID-based file systems\n\
-     \n\
-     * file systems that make snapshots, such as Network Appliance&#39;s NFS server\n\
-     \n\
-     * file systems that cache in temporary locations, such as NFS\n\
-     version 3 clients\n\
-     \n\
-     * compressed file systems\n\
-     \n\
-     In the case of ext3 file systems, the above disclaimer applies\n\
-     and shred is thus of limited effectiveness) only in data=journal mode,\n\
-     which journals file data in addition to just metadata.  In both the\n\
-     data=ordered (default) and data=writeback modes, shred works as usual.\n\
-     Ext3 journal modes can be changed by adding the data=something option\n\
-     to the mount options for a particular file system in the /etc/fstab file,\n\
-     as documented in the mount man page (man mount).\n\
-     \n\
-     In addition, file system backups and remote mirrors may contain copies\n\
-     of the file that cannot be removed, and that will allow a shredded file\n\
-     to be recovered later.\n\
-     &quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;shred.md&quot;</span>);
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;shred.md&quot;</span>);
+<span class="kw">const </span>AFTER_HELP: <span class="kw-2">&amp;</span>str = <span class="macro">help_section!</span>(<span class="string">&quot;after help&quot;</span>, <span class="string">&quot;shred.md&quot;</span>);
 
 <span class="kw">pub mod </span>options {
     <span class="kw">pub const </span>FORCE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;force&quot;</span>;
@@ -930,6 +625,170 @@ for even very expensive hardware probing to recover the data.
     <span class="kw">pub const </span>VERBOSE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;verbose&quot;</span>;
     <span class="kw">pub const </span>EXACT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;exact&quot;</span>;
     <span class="kw">pub const </span>ZERO: <span class="kw-2">&amp;</span>str = <span class="string">&quot;zero&quot;</span>;
+}
+
+<span class="comment">// This block size seems to match GNU (2^16 = 65536)
+</span><span class="kw">const </span>BLOCK_SIZE: usize = <span class="number">1 </span>&lt;&lt; <span class="number">16</span>;
+<span class="kw">const </span>NAME_CHARSET: <span class="kw-2">&amp;</span>[u8] = <span class="string">b&quot;0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.&quot;</span>;
+
+<span class="kw">const </span>PATTERN_LENGTH: usize = <span class="number">3</span>;
+<span class="kw">const </span>PATTERN_BUFFER_SIZE: usize = BLOCK_SIZE + PATTERN_LENGTH - <span class="number">1</span>;
+
+<span class="doccomment">/// Patterns that appear in order for the passes
+///
+/// They are all extended to 3 bytes for consistency, even though some could be
+/// expressed as single bytes.
+</span><span class="kw">const </span>PATTERNS: [Pattern; <span class="number">22</span>] = [
+    Pattern::Single(<span class="string">b&#39;\x00&#39;</span>),
+    Pattern::Single(<span class="string">b&#39;\xFF&#39;</span>),
+    Pattern::Single(<span class="string">b&#39;\x55&#39;</span>),
+    Pattern::Single(<span class="string">b&#39;\xAA&#39;</span>),
+    Pattern::Multi([<span class="string">b&#39;\x24&#39;</span>, <span class="string">b&#39;\x92&#39;</span>, <span class="string">b&#39;\x49&#39;</span>]),
+    Pattern::Multi([<span class="string">b&#39;\x49&#39;</span>, <span class="string">b&#39;\x24&#39;</span>, <span class="string">b&#39;\x92&#39;</span>]),
+    Pattern::Multi([<span class="string">b&#39;\x6D&#39;</span>, <span class="string">b&#39;\xB6&#39;</span>, <span class="string">b&#39;\xDB&#39;</span>]),
+    Pattern::Multi([<span class="string">b&#39;\x92&#39;</span>, <span class="string">b&#39;\x49&#39;</span>, <span class="string">b&#39;\x24&#39;</span>]),
+    Pattern::Multi([<span class="string">b&#39;\xB6&#39;</span>, <span class="string">b&#39;\xDB&#39;</span>, <span class="string">b&#39;\x6D&#39;</span>]),
+    Pattern::Multi([<span class="string">b&#39;\xDB&#39;</span>, <span class="string">b&#39;\x6D&#39;</span>, <span class="string">b&#39;\xB6&#39;</span>]),
+    Pattern::Single(<span class="string">b&#39;\x11&#39;</span>),
+    Pattern::Single(<span class="string">b&#39;\x22&#39;</span>),
+    Pattern::Single(<span class="string">b&#39;\x33&#39;</span>),
+    Pattern::Single(<span class="string">b&#39;\x44&#39;</span>),
+    Pattern::Single(<span class="string">b&#39;\x66&#39;</span>),
+    Pattern::Single(<span class="string">b&#39;\x77&#39;</span>),
+    Pattern::Single(<span class="string">b&#39;\x88&#39;</span>),
+    Pattern::Single(<span class="string">b&#39;\x99&#39;</span>),
+    Pattern::Single(<span class="string">b&#39;\xBB&#39;</span>),
+    Pattern::Single(<span class="string">b&#39;\xCC&#39;</span>),
+    Pattern::Single(<span class="string">b&#39;\xDD&#39;</span>),
+    Pattern::Single(<span class="string">b&#39;\xEE&#39;</span>),
+];
+
+<span class="attr">#[derive(Clone, Copy)]
+</span><span class="kw">enum </span>Pattern {
+    Single(u8),
+    Multi([u8; <span class="number">3</span>]),
+}
+
+<span class="kw">enum </span>PassType {
+    Pattern(Pattern),
+    Random,
+}
+
+<span class="doccomment">/// Iterates over all possible filenames of a certain length using NAME_CHARSET as an alphabet
+</span><span class="kw">struct </span>FilenameIter {
+    <span class="comment">// Store the indices of the letters of our filename in NAME_CHARSET
+    </span>name_charset_indices: Vec&lt;usize&gt;,
+    exhausted: bool,
+}
+
+<span class="kw">impl </span>FilenameIter {
+    <span class="kw">fn </span>new(name_len: usize) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            name_charset_indices: <span class="macro">vec!</span>[<span class="number">0</span>; name_len],
+            exhausted: <span class="bool-val">false</span>,
+        }
+    }
+}
+
+<span class="kw">impl </span>Iterator <span class="kw">for </span>FilenameIter {
+    <span class="kw">type </span>Item = String;
+
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        <span class="kw">if </span><span class="self">self</span>.exhausted {
+            <span class="kw">return </span><span class="prelude-val">None</span>;
+        }
+
+        <span class="comment">// First, make the return value using the current state
+        </span><span class="kw">let </span>ret: String = <span class="self">self
+            </span>.name_charset_indices
+            .iter()
+            .map(|i| char::from(NAME_CHARSET[<span class="kw-2">*</span>i]))
+            .collect();
+
+        <span class="comment">// Now increment the least significant index and possibly each next
+        // index if necessary.
+        </span><span class="kw">for </span>index <span class="kw">in </span><span class="self">self</span>.name_charset_indices.iter_mut().rev() {
+            <span class="kw">if </span><span class="kw-2">*</span>index == NAME_CHARSET.len() - <span class="number">1 </span>{
+                <span class="comment">// Carry the 1
+                </span><span class="kw-2">*</span>index = <span class="number">0</span>;
+                <span class="kw">continue</span>;
+            } <span class="kw">else </span>{
+                <span class="kw-2">*</span>index += <span class="number">1</span>;
+                <span class="kw">return </span><span class="prelude-val">Some</span>(ret);
+            }
+        }
+
+        <span class="comment">// If we get here, we flipped all bits back to 0, so we exhausted all options.
+        </span><span class="self">self</span>.exhausted = <span class="bool-val">true</span>;
+        <span class="prelude-val">Some</span>(ret)
+    }
+}
+
+<span class="doccomment">/// Used to generate blocks of bytes of size &lt;= BLOCK_SIZE based on either a give pattern
+/// or randomness
+</span><span class="comment">// The lint warns about a large difference because StdRng is big, but the buffers are much
+// larger anyway, so it&#39;s fine.
+</span><span class="attr">#[allow(clippy::large_enum_variant)]
+</span><span class="kw">enum </span>BytesWriter {
+    Random {
+        rng: StdRng,
+        buffer: [u8; BLOCK_SIZE],
+    },
+    <span class="comment">// To write patterns we only write to the buffer once. To be able to do
+    // this, we need to extend the buffer with 2 bytes. We can then easily
+    // obtain a buffer starting with any character of the pattern that we
+    // want with an offset of either 0, 1 or 2.
+    //
+    // For example, if we have the pattern ABC, but we want to write a block
+    // of BLOCK_SIZE starting with B, we just pick the slice [1..BLOCK_SIZE+1]
+    // This means that we only have to fill the buffer once and can just reuse
+    // it afterwards.
+    </span>Pattern {
+        offset: usize,
+        buffer: [u8; PATTERN_BUFFER_SIZE],
+    },
+}
+
+<span class="kw">impl </span>BytesWriter {
+    <span class="kw">fn </span>from_pass_type(pass: <span class="kw-2">&amp;</span>PassType) -&gt; <span class="self">Self </span>{
+        <span class="kw">match </span>pass {
+            PassType::Random =&gt; <span class="self">Self</span>::Random {
+                rng: StdRng::from_entropy(),
+                buffer: [<span class="number">0</span>; BLOCK_SIZE],
+            },
+            PassType::Pattern(pattern) =&gt; {
+                <span class="comment">// Copy the pattern in chunks rather than simply one byte at a time
+                // We prefill the pattern so that the buffer can be reused at each
+                // iteration as a small optimization.
+                </span><span class="kw">let </span>buffer = <span class="kw">match </span>pattern {
+                    Pattern::Single(byte) =&gt; [<span class="kw-2">*</span>byte; PATTERN_BUFFER_SIZE],
+                    Pattern::Multi(bytes) =&gt; {
+                        <span class="kw">let </span><span class="kw-2">mut </span>buf = [<span class="number">0</span>; PATTERN_BUFFER_SIZE];
+                        <span class="kw">for </span>chunk <span class="kw">in </span>buf.chunks_exact_mut(PATTERN_LENGTH) {
+                            chunk.copy_from_slice(bytes);
+                        }
+                        buf
+                    }
+                };
+                <span class="self">Self</span>::Pattern { offset: <span class="number">0</span>, buffer }
+            }
+        }
+    }
+
+    <span class="kw">fn </span>bytes_for_pass(<span class="kw-2">&amp;mut </span><span class="self">self</span>, size: usize) -&gt; <span class="kw-2">&amp;</span>[u8] {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::Random { rng, buffer } =&gt; {
+                <span class="kw">let </span>bytes = <span class="kw-2">&amp;mut </span>buffer[..size];
+                rng.fill(bytes);
+                bytes
+            }
+            <span class="self">Self</span>::Pattern { offset, buffer } =&gt; {
+                <span class="kw">let </span>bytes = <span class="kw-2">&amp;</span>buffer[<span class="kw-2">*</span>offset..size + <span class="kw-2">*</span>offset];
+                <span class="kw-2">*</span>offset = (<span class="kw-2">*</span>offset + size) % PATTERN_LENGTH;
+                bytes
+            }
+        }
+    }
 }
 
 <span class="attr">#[uucore::main]
@@ -1076,11 +935,7 @@ for even very expensive hardware probing to recover the data.
     <span class="kw">let </span>coefficient = <span class="kw">match </span>size_str.parse::&lt;u64&gt;() {
         <span class="prelude-val">Ok</span>(u) =&gt; u,
         <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
-            <span class="macro">println!</span>(
-                <span class="string">&quot;{}: {}: Invalid file size&quot;</span>,
-                util_name(),
-                size_str_opt.unwrap().maybe_quote()
-            );
+            <span class="macro">show_error!</span>(<span class="string">&quot;{}: Invalid file size&quot;</span>, size_str_opt.unwrap().maybe_quote());
             std::process::exit(<span class="number">1</span>);
         }
     };
@@ -1088,19 +943,11 @@ for even very expensive hardware probing to recover the data.
     <span class="prelude-val">Some</span>(coefficient * unit)
 }
 
-<span class="kw">fn </span>pass_name(pass_type: PassType) -&gt; String {
+<span class="kw">fn </span>pass_name(pass_type: <span class="kw-2">&amp;</span>PassType) -&gt; String {
     <span class="kw">match </span>pass_type {
         PassType::Random =&gt; String::from(<span class="string">&quot;random&quot;</span>),
-        PassType::Pattern(bytes) =&gt; {
-            <span class="kw">let </span><span class="kw-2">mut </span>s: String = String::new();
-            <span class="kw">while </span>s.len() &lt; <span class="number">6 </span>{
-                <span class="kw">for </span>b <span class="kw">in </span>bytes {
-                    <span class="kw">let </span>readable: String = <span class="macro">format!</span>(<span class="string">&quot;{b:x}&quot;</span>);
-                    s.push_str(<span class="kw-2">&amp;</span>readable);
-                }
-            }
-            s
-        }
+        PassType::Pattern(Pattern::Single(byte)) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{byte:x}{byte:x}{byte:x}&quot;</span>),
+        PassType::Pattern(Pattern::Multi([a, b, c])) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{a:x}{b:x}{c:x}&quot;</span>),
     }
 }
 
@@ -1116,7 +963,7 @@ for even very expensive hardware probing to recover the data.
     force: bool,
 ) -&gt; UResult&lt;()&gt; {
     <span class="comment">// Get these potential errors out of the way first
-    </span><span class="kw">let </span>path: <span class="kw-2">&amp;</span>Path = Path::new(path_str);
+    </span><span class="kw">let </span>path = Path::new(path_str);
     <span class="kw">if </span>!path.exists() {
         <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
             <span class="number">1</span>,
@@ -1151,25 +998,24 @@ for even very expensive hardware probing to recover the data.
     }
 
     <span class="comment">// Fill up our pass sequence
-    </span><span class="kw">let </span><span class="kw-2">mut </span>pass_sequence: Vec&lt;PassType&gt; = Vec::new();
+    </span><span class="kw">let </span><span class="kw-2">mut </span>pass_sequence = Vec::new();
 
     <span class="kw">if </span>n_passes &lt;= <span class="number">3 </span>{
         <span class="comment">// Only random passes if n_passes &lt;= 3
         </span><span class="kw">for _ in </span><span class="number">0</span>..n_passes {
             pass_sequence.push(PassType::Random);
         }
-    }
-    <span class="comment">// First fill it with Patterns, shuffle it, then evenly distribute Random
-    </span><span class="kw">else </span>{
-        <span class="kw">let </span>n_full_arrays = n_passes / PATTERNS.len(); <span class="comment">// How many times can we go through all the patterns?
+    } <span class="kw">else </span>{
+        <span class="comment">// First fill it with Patterns, shuffle it, then evenly distribute Random
+        </span><span class="kw">let </span>n_full_arrays = n_passes / PATTERNS.len(); <span class="comment">// How many times can we go through all the patterns?
         </span><span class="kw">let </span>remainder = n_passes % PATTERNS.len(); <span class="comment">// How many do we get through on our last time through?
 
         </span><span class="kw">for _ in </span><span class="number">0</span>..n_full_arrays {
-            <span class="kw">for </span>p <span class="kw">in </span><span class="kw-2">&amp;</span>PATTERNS {
+            <span class="kw">for </span>p <span class="kw">in </span>PATTERNS {
                 pass_sequence.push(PassType::Pattern(p));
             }
         }
-        <span class="kw">for </span>pattern <span class="kw">in </span>PATTERNS.iter().take(remainder) {
+        <span class="kw">for </span>pattern <span class="kw">in </span>PATTERNS.into_iter().take(remainder) {
             pass_sequence.push(PassType::Pattern(pattern));
         }
         <span class="kw">let </span><span class="kw-2">mut </span>rng = rand::thread_rng();
@@ -1184,49 +1030,46 @@ for even very expensive hardware probing to recover the data.
 
     <span class="comment">// --zero specifies whether we want one final pass of 0x00 on our file
     </span><span class="kw">if </span>zero {
-        pass_sequence.push(PassType::Pattern(<span class="string">b&quot;\x00&quot;</span>));
+        pass_sequence.push(PassType::Pattern(PATTERNS[<span class="number">0</span>]));
     }
 
-    {
-        <span class="kw">let </span>total_passes: usize = pass_sequence.len();
-        <span class="kw">let </span><span class="kw-2">mut </span>file: File = OpenOptions::new()
-            .write(<span class="bool-val">true</span>)
-            .truncate(<span class="bool-val">false</span>)
-            .open(path)
-            .map_err_context(|| <span class="macro">format!</span>(<span class="string">&quot;{}: failed to open for writing&quot;</span>, path.maybe_quote()))<span class="question-mark">?</span>;
+    <span class="kw">let </span>total_passes = pass_sequence.len();
+    <span class="kw">let </span><span class="kw-2">mut </span>file = OpenOptions::new()
+        .write(<span class="bool-val">true</span>)
+        .truncate(<span class="bool-val">false</span>)
+        .open(path)
+        .map_err_context(|| <span class="macro">format!</span>(<span class="string">&quot;{}: failed to open for writing&quot;</span>, path.maybe_quote()))<span class="question-mark">?</span>;
 
-        <span class="comment">// NOTE: it does not really matter what we set for total_bytes and gen_type here, so just
-        //       use bogus values
-        </span><span class="kw">let </span><span class="kw-2">mut </span>generator = BytesGenerator::new(<span class="number">0</span>, PassType::Pattern(<span class="kw-2">&amp;</span>[]), exact);
+    <span class="kw">let </span>size = <span class="kw">match </span>size {
+        <span class="prelude-val">Some</span>(size) =&gt; size,
+        <span class="prelude-val">None </span>=&gt; get_file_size(path)<span class="question-mark">?</span>,
+    };
 
-        <span class="kw">for </span>(i, pass_type) <span class="kw">in </span>pass_sequence.iter().enumerate() {
-            <span class="kw">if </span>verbose {
-                <span class="kw">let </span>pass_name: String = pass_name(<span class="kw-2">*</span>pass_type);
-                <span class="kw">if </span>total_passes.to_string().len() == <span class="number">1 </span>{
-                    <span class="macro">println!</span>(
-                        <span class="string">&quot;{}: {}: pass {}/{} ({})... &quot;</span>,
-                        util_name(),
-                        path.maybe_quote(),
-                        i + <span class="number">1</span>,
-                        total_passes,
-                        pass_name
-                    );
-                } <span class="kw">else </span>{
-                    <span class="macro">println!</span>(
-                        <span class="string">&quot;{}: {}: pass {:2.0}/{:2.0} ({})... &quot;</span>,
-                        util_name(),
-                        path.maybe_quote(),
-                        i + <span class="number">1</span>,
-                        total_passes,
-                        pass_name
-                    );
-                }
+    <span class="kw">for </span>(i, pass_type) <span class="kw">in </span>pass_sequence.into_iter().enumerate() {
+        <span class="kw">if </span>verbose {
+            <span class="kw">let </span>pass_name = pass_name(<span class="kw-2">&amp;</span>pass_type);
+            <span class="kw">if </span>total_passes &lt; <span class="number">10 </span>{
+                <span class="macro">show_error!</span>(
+                    <span class="string">&quot;{}: pass {}/{} ({})... &quot;</span>,
+                    path.maybe_quote(),
+                    i + <span class="number">1</span>,
+                    total_passes,
+                    pass_name
+                );
+            } <span class="kw">else </span>{
+                <span class="macro">show_error!</span>(
+                    <span class="string">&quot;{}: pass {:2.0}/{:2.0} ({})... &quot;</span>,
+                    path.maybe_quote(),
+                    i + <span class="number">1</span>,
+                    total_passes,
+                    pass_name
+                );
             }
-            <span class="comment">// size is an optional argument for exactly how many bytes we want to shred
-            </span><span class="macro">show_if_err!</span>(do_pass(<span class="kw-2">&amp;mut </span>file, path, <span class="kw-2">&amp;mut </span>generator, <span class="kw-2">*</span>pass_type, size)
-                .map_err_context(|| <span class="macro">format!</span>(<span class="string">&quot;{}: File write pass failed&quot;</span>, path.maybe_quote())));
-            <span class="comment">// Ignore failed writes; just keep trying
-        </span>}
+        }
+        <span class="comment">// size is an optional argument for exactly how many bytes we want to shred
+        // Ignore failed writes; just keep trying
+        </span><span class="macro">show_if_err!</span>(do_pass(<span class="kw-2">&amp;mut </span>file, <span class="kw-2">&amp;</span>pass_type, exact, size)
+            .map_err_context(|| <span class="macro">format!</span>(<span class="string">&quot;{}: File write pass failed&quot;</span>, path.maybe_quote())));
     }
 
     <span class="kw">if </span>remove {
@@ -1236,21 +1079,29 @@ for even very expensive hardware probing to recover the data.
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">fn </span>do_pass&lt;<span class="lifetime">&#39;a</span>&gt;(
+<span class="kw">fn </span>do_pass(
     file: <span class="kw-2">&amp;mut </span>File,
-    path: <span class="kw-2">&amp;</span>Path,
-    generator: <span class="kw-2">&amp;mut </span>BytesGenerator&lt;<span class="lifetime">&#39;a</span>&gt;,
-    generator_type: PassType&lt;<span class="lifetime">&#39;a</span>&gt;,
-    given_file_size: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+    pass_type: <span class="kw-2">&amp;</span>PassType,
+    exact: bool,
+    file_size: u64,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), io::Error&gt; {
-    file.rewind()<span class="question-mark">?</span>;
+    <span class="comment">// We might be at the end of the file due to a previous iteration, so rewind.
+    </span>file.rewind()<span class="question-mark">?</span>;
 
-    <span class="comment">// Use the given size or the whole file if not specified
-    </span><span class="kw">let </span>size: u64 = given_file_size.unwrap_or(get_file_size(path)<span class="question-mark">?</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>writer = BytesWriter::from_pass_type(pass_type);
 
-    generator.reset(size, generator_type);
+    <span class="comment">// We start by writing BLOCK_SIZE times as many time as possible.
+    </span><span class="kw">for _ in </span><span class="number">0</span>..(file_size / BLOCK_SIZE <span class="kw">as </span>u64) {
+        <span class="kw">let </span>block = writer.bytes_for_pass(BLOCK_SIZE);
+        file.write_all(block)<span class="question-mark">?</span>;
+    }
 
-    <span class="kw">while let </span><span class="prelude-val">Some</span>(block) = generator.next() {
+    <span class="comment">// Now we might have some bytes left, so we write either that
+    // many bytes if exact is true, or BLOCK_SIZE bytes if not.
+    </span><span class="kw">let </span>bytes_left = (file_size % BLOCK_SIZE <span class="kw">as </span>u64) <span class="kw">as </span>usize;
+    <span class="kw">if </span>bytes_left &gt; <span class="number">0 </span>{
+        <span class="kw">let </span>size = <span class="kw">if </span>exact { bytes_left } <span class="kw">else </span>{ BLOCK_SIZE };
+        <span class="kw">let </span>block = writer.bytes_for_pass(size);
         file.write_all(block)<span class="question-mark">?</span>;
     }
 
@@ -1260,21 +1111,21 @@ for even very expensive hardware probing to recover the data.
 }
 
 <span class="kw">fn </span>get_file_size(path: <span class="kw-2">&amp;</span>Path) -&gt; <span class="prelude-ty">Result</span>&lt;u64, io::Error&gt; {
-    <span class="kw">let </span>size: u64 = fs::metadata(path)<span class="question-mark">?</span>.len();
-
-    <span class="prelude-val">Ok</span>(size)
+    <span class="prelude-val">Ok</span>(fs::metadata(path)<span class="question-mark">?</span>.len())
 }
 
 <span class="comment">// Repeatedly renames the file with strings of decreasing length (most likely all 0s)
 // Return the path of the file after its last renaming or None if error
 </span><span class="kw">fn </span>wipe_name(orig_path: <span class="kw-2">&amp;</span>Path, verbose: bool) -&gt; <span class="prelude-ty">Option</span>&lt;PathBuf&gt; {
-    <span class="kw">let </span>file_name_len: usize = orig_path.file_name().unwrap().to_str().unwrap().len();
+    <span class="kw">let </span>file_name_len = orig_path.file_name().unwrap().to_str().unwrap().len();
 
-    <span class="kw">let </span><span class="kw-2">mut </span>last_path: PathBuf = PathBuf::from(orig_path);
+    <span class="kw">let </span><span class="kw-2">mut </span>last_path = PathBuf::from(orig_path);
 
     <span class="kw">for </span>length <span class="kw">in </span>(<span class="number">1</span>..=file_name_len).rev() {
-        <span class="kw">for </span>name <span class="kw">in </span>FilenameGenerator::new(length) {
-            <span class="kw">let </span>new_path: PathBuf = orig_path.with_file_name(name);
+        <span class="comment">// Try all filenames of a given length.
+        // If every possible filename already exists, just reduce the length and try again
+        </span><span class="kw">for </span>name <span class="kw">in </span>FilenameIter::new(length) {
+            <span class="kw">let </span>new_path = orig_path.with_file_name(name);
             <span class="comment">// We don&#39;t want the filename to already exist (don&#39;t overwrite)
             // If it does, find another name that doesn&#39;t
             </span><span class="kw">if </span>new_path.exists() {
@@ -1283,28 +1134,24 @@ for even very expensive hardware probing to recover the data.
             <span class="kw">match </span>fs::rename(<span class="kw-2">&amp;</span>last_path, <span class="kw-2">&amp;</span>new_path) {
                 <span class="prelude-val">Ok</span>(()) =&gt; {
                     <span class="kw">if </span>verbose {
-                        <span class="macro">println!</span>(
-                            <span class="string">&quot;{}: {}: renamed to {}&quot;</span>,
-                            util_name(),
+                        <span class="macro">show_error!</span>(
+                            <span class="string">&quot;{}: renamed to {}&quot;</span>,
                             last_path.maybe_quote(),
                             new_path.quote()
                         );
                     }
 
                     <span class="comment">// Sync every file rename
-                    </span>{
-                        <span class="kw">let </span>new_file: File = File::open(new_path.clone())
-                            .expect(<span class="string">&quot;Failed to open renamed file for syncing&quot;</span>);
-                        new_file.sync_all().expect(<span class="string">&quot;Failed to sync renamed file&quot;</span>);
-                    }
+                    </span><span class="kw">let </span>new_file = File::open(new_path.clone())
+                        .expect(<span class="string">&quot;Failed to open renamed file for syncing&quot;</span>);
+                    new_file.sync_all().expect(<span class="string">&quot;Failed to sync renamed file&quot;</span>);
 
                     last_path = new_path;
                     <span class="kw">break</span>;
                 }
                 <span class="prelude-val">Err</span>(e) =&gt; {
-                    <span class="macro">println!</span>(
-                        <span class="string">&quot;{}: {}: Couldn&#39;t rename to {}: {}&quot;</span>,
-                        util_name(),
+                    <span class="macro">show_error!</span>(
+                        <span class="string">&quot;{}: Couldn&#39;t rename to {}: {}&quot;</span>,
                         last_path.maybe_quote(),
                         new_path.quote(),
                         e
@@ -1312,24 +1159,23 @@ for even very expensive hardware probing to recover the data.
                     <span class="kw">return </span><span class="prelude-val">None</span>;
                 }
             }
-        } <span class="comment">// If every possible filename already exists, just reduce the length and try again
-    </span>}
+        }
+    }
 
     <span class="prelude-val">Some</span>(last_path)
 }
 
 <span class="kw">fn </span>do_remove(path: <span class="kw-2">&amp;</span>Path, orig_filename: <span class="kw-2">&amp;</span>str, verbose: bool) -&gt; <span class="prelude-ty">Result</span>&lt;(), io::Error&gt; {
     <span class="kw">if </span>verbose {
-        <span class="macro">println!</span>(<span class="string">&quot;{}: {}: removing&quot;</span>, util_name(), orig_filename.maybe_quote());
+        <span class="macro">show_error!</span>(<span class="string">&quot;{}: removing&quot;</span>, orig_filename.maybe_quote());
     }
 
-    <span class="kw">let </span>renamed_path: <span class="prelude-ty">Option</span>&lt;PathBuf&gt; = wipe_name(path, verbose);
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(rp) = renamed_path {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(rp) = wipe_name(path, verbose) {
         fs::remove_file(rp)<span class="question-mark">?</span>;
     }
 
     <span class="kw">if </span>verbose {
-        <span class="macro">println!</span>(<span class="string">&quot;{}: {}: removed&quot;</span>, util_name(), orig_filename.maybe_quote());
+        <span class="macro">show_error!</span>(<span class="string">&quot;{}: removed&quot;</span>, orig_filename.maybe_quote());
     }
 
     <span class="prelude-val">Ok</span>(())
