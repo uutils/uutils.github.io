@@ -434,6 +434,11 @@
 <a href="#434" id="434">434</a>
 <a href="#435" id="435">435</a>
 <a href="#436" id="436">436</a>
+<a href="#437" id="437">437</a>
+<a href="#438" id="438">438</a>
+<a href="#439" id="439">439</a>
+<a href="#440" id="440">440</a>
+<a href="#441" id="441">441</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Chirag B Jadwani &lt;chirag.jadwani@gmail.com&gt;
@@ -446,7 +451,6 @@
 <span class="kw">use </span>std::io::{<span class="self">self</span>, stdin, stdout, BufRead, BufReader, BufWriter, Read, Write};
 <span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>std::str::FromStr;
-<span class="kw">use </span>strum_macros::{AsRefStr, EnumString};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{FromIo, UResult, USimpleError, UUsageError};
 <span class="kw">use </span>uucore::format_usage;
@@ -474,8 +478,7 @@
 
 <span class="kw">static </span>ARG_FILES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;files&quot;</span>;
 
-<span class="attr">#[derive(PartialEq, Clone, Copy, AsRefStr, EnumString)]
-#[strum(serialize_all = <span class="string">&quot;snake_case&quot;</span>)]
+<span class="attr">#[derive(PartialEq, Clone, Copy)]
 </span><span class="kw">enum </span>Delimiters {
     Append,
     Prepend,
@@ -839,8 +842,15 @@
         .get_one::&lt;String&gt;(options::ALL_REPEATED)
         .or_else(|| matches.get_one::&lt;String&gt;(options::GROUP));
     <span class="kw">if let </span><span class="prelude-val">Some</span>(delimiter_arg) = value {
-        Delimiters::from_str(delimiter_arg).unwrap() <span class="comment">// All possible values for ALL_REPEATED are Delimiters (of type `&amp;str`)
-    </span>} <span class="kw">else if </span>matches.contains_id(options::GROUP) {
+        <span class="kw">match </span>delimiter_arg.as_ref() {
+            <span class="string">&quot;append&quot; </span>=&gt; Delimiters::Append,
+            <span class="string">&quot;prepend&quot; </span>=&gt; Delimiters::Prepend,
+            <span class="string">&quot;separate&quot; </span>=&gt; Delimiters::Separate,
+            <span class="string">&quot;both&quot; </span>=&gt; Delimiters::Both,
+            <span class="string">&quot;none&quot; </span>=&gt; Delimiters::None,
+            <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Should have been caught by possible values in clap&quot;</span>),
+        }
+    } <span class="kw">else if </span>matches.contains_id(options::GROUP) {
         Delimiters::Separate
     } <span class="kw">else </span>{
         Delimiters::None
