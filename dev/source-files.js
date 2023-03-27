@@ -183,7 +183,7 @@ var sourcesIndex = JSON.parse('{\
 "uu_tac":["",[],["error.rs","tac.rs"]],\
 "uu_tail":["",[["follow",[],["files.rs","mod.rs","watch.rs"]],["platform",[],["mod.rs","unix.rs"]]],["args.rs","chunks.rs","parse.rs","paths.rs","tail.rs","text.rs"]],\
 "uu_tee":["",[],["tee.rs"]],\
-"uu_test":["",[],["parser.rs","test.rs"]],\
+"uu_test":["",[],["error.rs","parser.rs","test.rs"]],\
 "uu_timeout":["",[],["status.rs","timeout.rs"]],\
 "uu_touch":["",[],["touch.rs"]],\
 "uu_tr":["",[],["convert.rs","operation.rs","tr.rs","unicode_table.rs"]],\

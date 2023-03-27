@@ -410,6 +410,36 @@
 <a href="#410" id="410">410</a>
 <a href="#411" id="411">411</a>
 <a href="#412" id="412">412</a>
+<a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
+<a href="#415" id="415">415</a>
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
+<a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
+<a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a>
+<a href="#433" id="433">433</a>
+<a href="#434" id="434">434</a>
+<a href="#435" id="435">435</a>
+<a href="#436" id="436">436</a>
+<a href="#437" id="437">437</a>
+<a href="#438" id="438">438</a>
+<a href="#439" id="439">439</a>
+<a href="#440" id="440">440</a>
+<a href="#441" id="441">441</a>
+<a href="#442" id="442">442</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Daniel Rocco &lt;drocco@gmail.com&gt;
@@ -419,11 +449,12 @@
 
 // spell-checker:ignore (grammar) BOOLOP STRLEN FILETEST FILEOP INTOP STRINGOP ; (vars) LParen StrlenOp
 
-</span><span class="kw">use </span>std::ffi::OsString;
+</span><span class="kw">use </span>std::ffi::{OsStr, OsString};
 <span class="kw">use </span>std::iter::Peekable;
 
+<span class="kw">use </span><span class="kw">super</span>::error::{ParseError, ParseResult};
+
 <span class="kw">use </span>uucore::display::Quotable;
-<span class="kw">use </span>uucore::show_error;
 
 <span class="doccomment">/// Represents one of the binary comparison operators for strings, integers, or files
 </span><span class="attr">#[derive(Debug, PartialEq, Eq)]
@@ -502,6 +533,27 @@
     }
 }
 
+<span class="doccomment">/// Implement Display trait for Symbol to make it easier to print useful errors.
+/// We will try to match the format in which the symbol appears in the input.
+</span><span class="kw">impl </span>std::fmt::Display <span class="kw">for </span>Symbol {
+    <span class="doccomment">/// Format a Symbol for printing
+    </span><span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+        <span class="kw">let </span>s = <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self </span>{
+            <span class="self">Self</span>::LParen =&gt; OsStr::new(<span class="string">&quot;(&quot;</span>),
+            <span class="self">Self</span>::Bang =&gt; OsStr::new(<span class="string">&quot;!&quot;</span>),
+            <span class="self">Self</span>::BoolOp(s)
+            | <span class="self">Self</span>::Literal(s)
+            | <span class="self">Self</span>::Op(Operator::String(s))
+            | <span class="self">Self</span>::Op(Operator::Int(s))
+            | <span class="self">Self</span>::Op(Operator::File(s))
+            | <span class="self">Self</span>::UnaryOp(UnaryOperator::StrlenOp(s))
+            | <span class="self">Self</span>::UnaryOp(UnaryOperator::FiletestOp(s)) =&gt; OsStr::new(s),
+            <span class="self">Self</span>::None =&gt; OsStr::new(<span class="string">&quot;None&quot;</span>),
+        };
+        <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, s.quote())
+    }
+}
+
 <span class="doccomment">/// Recursive descent parser for test, which converts a list of OsStrings
 /// (typically command line arguments) into a stack of Symbols in postfix
 /// order.
@@ -545,16 +597,10 @@
     }
 
     <span class="doccomment">/// Consume the next token &amp; verify that it matches the provided value.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the next token does not match the provided value.
-    ///
-    /// TODO: remove panics and convert Parser to return error messages.
-    </span><span class="kw">fn </span>expect(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span>str) {
+    </span><span class="kw">fn </span>expect(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span>str) -&gt; ParseResult&lt;()&gt; {
         <span class="kw">match </span><span class="self">self</span>.next_token() {
-            Symbol::Literal(s) <span class="kw">if </span>s == value =&gt; (),
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;expected ‘{value}’&quot;</span>),
+            Symbol::Literal(s) <span class="kw">if </span>s == value =&gt; <span class="prelude-val">Ok</span>(()),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(ParseError::Expected(value.quote().to_string())),
         }
     }
 
@@ -574,25 +620,27 @@
     <span class="doccomment">/// Parse an expression.
     ///
     ///   EXPR → TERM | EXPR BOOLOP EXPR
-    </span><span class="kw">fn </span>expr(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+    </span><span class="kw">fn </span>expr(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; ParseResult&lt;()&gt; {
         <span class="kw">if </span>!<span class="self">self</span>.peek_is_boolop() {
-            <span class="self">self</span>.term();
+            <span class="self">self</span>.term()<span class="question-mark">?</span>;
         }
-        <span class="self">self</span>.maybe_boolop();
+        <span class="self">self</span>.maybe_boolop()<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Parse a term token and possible subsequent symbols: &quot;(&quot;, &quot;!&quot;, UOP,
     /// literal, or None.
-    </span><span class="kw">fn </span>term(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+    </span><span class="kw">fn </span>term(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; ParseResult&lt;()&gt; {
         <span class="kw">let </span>symbol = <span class="self">self</span>.next_token();
 
         <span class="kw">match </span>symbol {
-            Symbol::LParen =&gt; <span class="self">self</span>.lparen(),
-            Symbol::Bang =&gt; <span class="self">self</span>.bang(),
+            Symbol::LParen =&gt; <span class="self">self</span>.lparen()<span class="question-mark">?</span>,
+            Symbol::Bang =&gt; <span class="self">self</span>.bang()<span class="question-mark">?</span>,
             Symbol::UnaryOp(<span class="kw">_</span>) =&gt; <span class="self">self</span>.uop(symbol),
             Symbol::None =&gt; <span class="self">self</span>.stack.push(symbol),
-            literal =&gt; <span class="self">self</span>.literal(literal),
+            literal =&gt; <span class="self">self</span>.literal(literal)<span class="question-mark">?</span>,
         }
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Parse a (possibly) parenthesized expression.
@@ -604,7 +652,7 @@
     /// * when followed by a binary operator that is not _itself_ interpreted
     ///   as a literal
     ///
-    </span><span class="kw">fn </span>lparen(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+    </span><span class="kw">fn </span>lparen(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; ParseResult&lt;()&gt; {
         <span class="comment">// Look ahead up to 3 tokens to determine if the lparen is being used
         // as a grouping operator or should be treated as a literal string
         </span><span class="kw">let </span>peek3: Vec&lt;Symbol&gt; = <span class="self">self
@@ -616,13 +664,13 @@
 
         <span class="kw">match </span>peek3.as_slice() {
             <span class="comment">// case 1: lparen is a literal when followed by nothing
-            </span>[] =&gt; <span class="self">self</span>.literal(Symbol::LParen.into_literal()),
+            </span>[] =&gt; {
+                <span class="self">self</span>.literal(Symbol::LParen.into_literal())<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(())
+            }
 
             <span class="comment">// case 2: error if end of stream is `( &lt;any_token&gt;`
-            </span>[symbol] =&gt; {
-                <span class="macro">show_error!</span>(<span class="string">&quot;missing argument after ‘{:?}’&quot;</span>, symbol);
-                std::process::exit(<span class="number">2</span>);
-            }
+            </span>[symbol] =&gt; <span class="prelude-val">Err</span>(ParseError::MissingArgument(<span class="macro">format!</span>(<span class="string">&quot;{symbol}&quot;</span>))),
 
             <span class="comment">// case 3: `( uop &lt;any_token&gt; )` → parenthesized unary operation;
             //         this case ensures we don’t get confused by `( -f ) )`
@@ -630,43 +678,49 @@
             </span>[Symbol::UnaryOp(<span class="kw">_</span>), <span class="kw">_</span>, Symbol::Literal(s)] <span class="kw">if </span>s == <span class="string">&quot;)&quot; </span>=&gt; {
                 <span class="kw">let </span>symbol = <span class="self">self</span>.next_token();
                 <span class="self">self</span>.uop(symbol);
-                <span class="self">self</span>.expect(<span class="string">&quot;)&quot;</span>);
+                <span class="self">self</span>.expect(<span class="string">&quot;)&quot;</span>)<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(())
             }
 
             <span class="comment">// case 4: binary comparison of literal lparen, e.g. `( != )`
             </span>[Symbol::Op(<span class="kw">_</span>), Symbol::Literal(s)] | [Symbol::Op(<span class="kw">_</span>), Symbol::Literal(s), <span class="kw">_</span>]
                 <span class="kw">if </span>s == <span class="string">&quot;)&quot; </span>=&gt;
             {
-                <span class="self">self</span>.literal(Symbol::LParen.into_literal());
+                <span class="self">self</span>.literal(Symbol::LParen.into_literal())<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(())
             }
 
             <span class="comment">// case 5: after handling the prior cases, any single token inside
             //         parentheses is a literal, e.g. `( -f )`
             </span>[<span class="kw">_</span>, Symbol::Literal(s)] | [<span class="kw">_</span>, Symbol::Literal(s), <span class="kw">_</span>] <span class="kw">if </span>s == <span class="string">&quot;)&quot; </span>=&gt; {
                 <span class="kw">let </span>symbol = <span class="self">self</span>.next_token();
-                <span class="self">self</span>.literal(symbol);
-                <span class="self">self</span>.expect(<span class="string">&quot;)&quot;</span>);
+                <span class="self">self</span>.literal(symbol)<span class="question-mark">?</span>;
+                <span class="self">self</span>.expect(<span class="string">&quot;)&quot;</span>)<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(())
             }
 
             <span class="comment">// case 6: two binary ops in a row, treat the first op as a literal
             </span>[Symbol::Op(<span class="kw">_</span>), Symbol::Op(<span class="kw">_</span>), <span class="kw">_</span>] =&gt; {
                 <span class="kw">let </span>symbol = <span class="self">self</span>.next_token();
-                <span class="self">self</span>.literal(symbol);
-                <span class="self">self</span>.expect(<span class="string">&quot;)&quot;</span>);
+                <span class="self">self</span>.literal(symbol)<span class="question-mark">?</span>;
+                <span class="self">self</span>.expect(<span class="string">&quot;)&quot;</span>)<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(())
             }
 
             <span class="comment">// case 7: if earlier cases didn’t match, `( op &lt;any_token&gt;…`
             //         indicates binary comparison of literal lparen with
             //         anything _except_ &quot;)&quot; (case 4)
             </span>[Symbol::Op(<span class="kw">_</span>), <span class="kw">_</span>] | [Symbol::Op(<span class="kw">_</span>), <span class="kw">_</span>, <span class="kw">_</span>] =&gt; {
-                <span class="self">self</span>.literal(Symbol::LParen.into_literal());
+                <span class="self">self</span>.literal(Symbol::LParen.into_literal())<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(())
             }
 
             <span class="comment">// Otherwise, lparen indicates the start of a parenthesized
             // expression
             </span><span class="kw">_ </span>=&gt; {
-                <span class="self">self</span>.expr();
-                <span class="self">self</span>.expect(<span class="string">&quot;)&quot;</span>);
+                <span class="self">self</span>.expr()<span class="question-mark">?</span>;
+                <span class="self">self</span>.expect(<span class="string">&quot;)&quot;</span>)<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(())
             }
         }
     }
@@ -688,7 +742,7 @@
     /// * `! str BOOLOP str`: negate the entire Boolean expression
     /// * `! str BOOLOP EXPR BOOLOP EXPR`: negate the value of the first `str` term
     ///
-    </span><span class="kw">fn </span>bang(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+    </span><span class="kw">fn </span>bang(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; ParseResult&lt;()&gt; {
         <span class="kw">match </span><span class="self">self</span>.peek() {
             Symbol::Op(<span class="kw">_</span>) | Symbol::BoolOp(<span class="kw">_</span>) =&gt; {
                 <span class="comment">// we need to peek ahead one more token to disambiguate the first
@@ -701,14 +755,14 @@
                     </span>Symbol::Op(<span class="kw">_</span>) | Symbol::None =&gt; {
                         <span class="comment">// op is literal
                         </span><span class="kw">let </span>op = <span class="self">self</span>.next_token().into_literal();
-                        <span class="self">self</span>.literal(op);
+                        <span class="self">self</span>.literal(op)<span class="question-mark">?</span>;
                         <span class="self">self</span>.stack.push(Symbol::Bang);
                     }
                     <span class="comment">// case 2: `&lt;! as literal&gt; OP str [BOOLOP EXPR]`.
                     </span><span class="kw">_ </span>=&gt; {
                         <span class="comment">// bang is literal; parsing continues with op
-                        </span><span class="self">self</span>.literal(Symbol::Bang.into_literal());
-                        <span class="self">self</span>.maybe_boolop();
+                        </span><span class="self">self</span>.literal(Symbol::Bang.into_literal())<span class="question-mark">?</span>;
+                        <span class="self">self</span>.maybe_boolop()<span class="question-mark">?</span>;
                     }
                 }
             }
@@ -729,32 +783,34 @@
                 <span class="kw">match </span>peek4.as_slice() {
                     <span class="comment">// we peeked ahead 4 but there were only 3 tokens left
                     </span>[Symbol::Literal(<span class="kw">_</span>), Symbol::BoolOp(<span class="kw">_</span>), Symbol::Literal(<span class="kw">_</span>)] =&gt; {
-                        <span class="self">self</span>.expr();
+                        <span class="self">self</span>.expr()<span class="question-mark">?</span>;
                         <span class="self">self</span>.stack.push(Symbol::Bang);
                     }
                     <span class="kw">_ </span>=&gt; {
-                        <span class="self">self</span>.term();
+                        <span class="self">self</span>.term()<span class="question-mark">?</span>;
                         <span class="self">self</span>.stack.push(Symbol::Bang);
                     }
                 }
             }
         }
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Peek at the next token and parse it as a BOOLOP or string literal,
     /// as appropriate.
-    </span><span class="kw">fn </span>maybe_boolop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+    </span><span class="kw">fn </span>maybe_boolop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; ParseResult&lt;()&gt; {
         <span class="kw">if </span><span class="self">self</span>.peek_is_boolop() {
             <span class="kw">let </span>symbol = <span class="self">self</span>.next_token();
 
             <span class="comment">// BoolOp by itself interpreted as Literal
             </span><span class="kw">if let </span>Symbol::None = <span class="self">self</span>.peek() {
-                <span class="self">self</span>.literal(symbol.into_literal());
+                <span class="self">self</span>.literal(symbol.into_literal())<span class="question-mark">?</span>;
             } <span class="kw">else </span>{
-                <span class="self">self</span>.boolop(symbol);
-                <span class="self">self</span>.maybe_boolop();
+                <span class="self">self</span>.boolop(symbol)<span class="question-mark">?</span>;
+                <span class="self">self</span>.maybe_boolop()<span class="question-mark">?</span>;
             }
         }
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Parse a Boolean expression.
@@ -762,13 +818,14 @@
     /// Logical and (-a) has higher precedence than or (-o), so in an
     /// expression like `foo -o &#39;&#39; -a &#39;&#39;`, the and subexpression is evaluated
     /// first.
-    </span><span class="kw">fn </span>boolop(<span class="kw-2">&amp;mut </span><span class="self">self</span>, op: Symbol) {
+    </span><span class="kw">fn </span>boolop(<span class="kw-2">&amp;mut </span><span class="self">self</span>, op: Symbol) -&gt; ParseResult&lt;()&gt; {
         <span class="kw">if </span>op == Symbol::BoolOp(OsString::from(<span class="string">&quot;-a&quot;</span>)) {
-            <span class="self">self</span>.term();
+            <span class="self">self</span>.term()<span class="question-mark">?</span>;
         } <span class="kw">else </span>{
-            <span class="self">self</span>.expr();
+            <span class="self">self</span>.expr()<span class="question-mark">?</span>;
         }
         <span class="self">self</span>.stack.push(op);
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Parse a (possible) unary argument test (string length or file
@@ -787,7 +844,7 @@
 
     <span class="doccomment">/// Parse a string literal, optionally followed by a comparison operator
     /// and a second string literal.
-    </span><span class="kw">fn </span>literal(<span class="kw-2">&amp;mut </span><span class="self">self</span>, token: Symbol) {
+    </span><span class="kw">fn </span>literal(<span class="kw-2">&amp;mut </span><span class="self">self</span>, token: Symbol) -&gt; ParseResult&lt;()&gt; {
         <span class="self">self</span>.stack.push(token.into_literal());
 
         <span class="comment">// EXPR → str OP str
@@ -795,21 +852,24 @@
             <span class="kw">let </span>op = <span class="self">self</span>.next_token();
 
             <span class="kw">match </span><span class="self">self</span>.next_token() {
-                Symbol::None =&gt; <span class="macro">panic!</span>(<span class="string">&quot;missing argument after {op:?}&quot;</span>),
+                Symbol::None =&gt; {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(ParseError::MissingArgument(<span class="macro">format!</span>(<span class="string">&quot;{op}&quot;</span>)));
+                }
                 token =&gt; <span class="self">self</span>.stack.push(token.into_literal()),
             }
 
             <span class="self">self</span>.stack.push(op);
         }
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Parser entry point: parse the token stream `self.tokens`, storing the
     /// resulting `Symbol` stack in `self.stack`.
-    </span><span class="kw">fn </span>parse(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), String&gt; {
-        <span class="self">self</span>.expr();
+    </span><span class="kw">fn </span>parse(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; ParseResult&lt;()&gt; {
+        <span class="self">self</span>.expr()<span class="question-mark">?</span>;
 
         <span class="kw">match </span><span class="self">self</span>.tokens.next() {
-            <span class="prelude-val">Some</span>(token) =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;extra argument {}&quot;</span>, token.quote())),
+            <span class="prelude-val">Some</span>(token) =&gt; <span class="prelude-val">Err</span>(ParseError::ExtraArgument(token.quote().to_string())),
             <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(()),
         }
     }
@@ -817,7 +877,7 @@
 
 <span class="doccomment">/// Parse the token stream `args`, returning a `Symbol` stack representing the
 /// operations to perform in postfix order.
-</span><span class="kw">pub fn </span>parse(args: Vec&lt;OsString&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Symbol&gt;, String&gt; {
+</span><span class="kw">pub fn </span>parse(args: Vec&lt;OsString&gt;) -&gt; ParseResult&lt;Vec&lt;Symbol&gt;&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>p = Parser::new(args);
     p.parse()<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(p.stack)

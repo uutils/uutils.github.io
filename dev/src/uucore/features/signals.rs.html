@@ -227,6 +227,24 @@
 <a href="#227" id="227">227</a>
 <a href="#228" id="228">228</a>
 <a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Maciej Dziardziel &lt;fiedzia@gmail.com&gt;
@@ -236,8 +254,13 @@
 
 // spell-checker:ignore (vars/api) fcntl setrlimit setitimer
 // spell-checker:ignore (vars/signals) ABRT ALRM CHLD SEGV SIGABRT SIGALRM SIGBUS SIGCHLD SIGCONT SIGEMT SIGFPE SIGHUP SIGILL SIGINFO SIGINT SIGIO SIGIOT SIGKILL SIGPIPE SIGPROF SIGPWR SIGQUIT SIGSEGV SIGSTOP SIGSYS SIGTERM SIGTRAP SIGTSTP SIGTHR SIGTTIN SIGTTOU SIGURG SIGUSR SIGVTALRM SIGWINCH SIGXCPU SIGXFSZ STKFLT PWR THR TSTP TTIN TTOU VTALRM XCPU XFSZ
-
-</span><span class="kw">pub static </span>DEFAULT_SIGNAL: usize = <span class="number">15</span>;
+</span><span class="attr">#[cfg(unix)]
+</span><span class="kw">use </span>nix::errno::Errno;
+<span class="attr">#[cfg(unix)]
+</span><span class="kw">use </span>nix::sys::signal::{
+    signal, SigHandler::SigDfl, SigHandler::SigIgn, Signal::SIGINT, Signal::SIGPIPE,
+};
+<span class="kw">pub static </span>DEFAULT_SIGNAL: usize = <span class="number">15</span>;
 
 <span class="comment">/*
 
@@ -423,6 +446,19 @@ No    Name         Default Action       Description
 
 <span class="kw">pub fn </span>signal_name_by_value(signal_value: usize) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt; {
     ALL_SIGNALS.get(signal_value).copied()
+}
+
+<span class="attr">#[cfg(unix)]
+</span><span class="kw">pub fn </span>enable_pipe_errors() -&gt; <span class="prelude-ty">Result</span>&lt;(), Errno&gt; {
+    <span class="comment">// We pass the error as is, the return value would just be Ok(SigDfl), so we can safely ignore it.
+    // SAFETY: this function is safe as long as we do not use a custom SigHandler -- we use the default one.
+    </span><span class="kw">unsafe </span>{ signal(SIGPIPE, SigDfl) }.map(|<span class="kw">_</span>| ())
+}
+<span class="attr">#[cfg(unix)]
+</span><span class="kw">pub fn </span>ignore_interrupts() -&gt; <span class="prelude-ty">Result</span>&lt;(), Errno&gt; {
+    <span class="comment">// We pass the error as is, the return value would just be Ok(SigIgn), so we can safely ignore it.
+    // SAFETY: this function is safe as long as we do not use a custom SigHandler -- we use the default one.
+    </span><span class="kw">unsafe </span>{ signal(SIGINT, SigIgn) }.map(|<span class="kw">_</span>| ())
 }
 
 <span class="attr">#[test]

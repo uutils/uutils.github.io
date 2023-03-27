@@ -360,31 +360,6 @@
 <a href="#360" id="360">360</a>
 <a href="#361" id="361">361</a>
 <a href="#362" id="362">362</a>
-<a href="#363" id="363">363</a>
-<a href="#364" id="364">364</a>
-<a href="#365" id="365">365</a>
-<a href="#366" id="366">366</a>
-<a href="#367" id="367">367</a>
-<a href="#368" id="368">368</a>
-<a href="#369" id="369">369</a>
-<a href="#370" id="370">370</a>
-<a href="#371" id="371">371</a>
-<a href="#372" id="372">372</a>
-<a href="#373" id="373">373</a>
-<a href="#374" id="374">374</a>
-<a href="#375" id="375">375</a>
-<a href="#376" id="376">376</a>
-<a href="#377" id="377">377</a>
-<a href="#378" id="378">378</a>
-<a href="#379" id="379">379</a>
-<a href="#380" id="380">380</a>
-<a href="#381" id="381">381</a>
-<a href="#382" id="382">382</a>
-<a href="#383" id="383">383</a>
-<a href="#384" id="384">384</a>
-<a href="#385" id="385">385</a>
-<a href="#386" id="386">386</a>
-<a href="#387" id="387">387</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Aleksander Bielawski &lt;pabzdzdzwiagief@gmail.com&gt;
@@ -403,7 +378,7 @@
 <span class="comment">// spell-checker:ignore nopipe
 
 </span><span class="attr">#[cfg(unix)]
-</span><span class="kw">use </span>uucore::libc;
+</span><span class="kw">use </span>uucore::signals::{enable_pipe_errors, ignore_interrupts};
 
 <span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;tee.md&quot;</span>);
 <span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;tee.md&quot;</span>);
@@ -522,44 +497,19 @@
         )
 }
 
-<span class="attr">#[cfg(unix)]
-</span><span class="kw">fn </span>ignore_interrupts() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="kw">let </span>ret = <span class="kw">unsafe </span>{ libc::signal(libc::SIGINT, libc::SIG_IGN) };
-    <span class="kw">if </span>ret == libc::SIG_ERR {
-        <span class="kw">return </span><span class="prelude-val">Err</span>(Error::new(ErrorKind::Other, <span class="string">&quot;&quot;</span>));
-    }
-    <span class="prelude-val">Ok</span>(())
-}
-
-<span class="attr">#[cfg(not(unix))]
-</span><span class="kw">fn </span>ignore_interrupts() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="comment">// Do nothing.
-    </span><span class="prelude-val">Ok</span>(())
-}
-
-<span class="attr">#[cfg(unix)]
-</span><span class="kw">fn </span>enable_pipe_errors() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="kw">let </span>ret = <span class="kw">unsafe </span>{ libc::signal(libc::SIGPIPE, libc::SIG_DFL) };
-    <span class="kw">if </span>ret == libc::SIG_ERR {
-        <span class="kw">return </span><span class="prelude-val">Err</span>(Error::new(ErrorKind::Other, <span class="string">&quot;&quot;</span>));
-    }
-    <span class="prelude-val">Ok</span>(())
-}
-
-<span class="attr">#[cfg(not(unix))]
-</span><span class="kw">fn </span>enable_pipe_errors() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="comment">// Do nothing.
-    </span><span class="prelude-val">Ok</span>(())
-}
-
 <span class="kw">fn </span>tee(options: <span class="kw-2">&amp;</span>Options) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="kw">if </span>options.ignore_interrupts {
-        ignore_interrupts()<span class="question-mark">?</span>;
-    }
-    <span class="kw">if </span>options.output_error.is_none() {
-        enable_pipe_errors()<span class="question-mark">?</span>;
-    }
+    <span class="attr">#[cfg(unix)]
+    </span>{
+        <span class="comment">// ErrorKind::Other is raised by MultiWriter when all writers have exited.
+        // This is therefore just a clever way to stop all writers
 
+        </span><span class="kw">if </span>options.ignore_interrupts {
+            ignore_interrupts().map_err(|<span class="kw">_</span>| Error::from(ErrorKind::Other))<span class="question-mark">?</span>;
+        }
+        <span class="kw">if </span>options.output_error.is_none() {
+            enable_pipe_errors().map_err(|<span class="kw">_</span>| Error::from(ErrorKind::Other))<span class="question-mark">?</span>;
+        }
+    }
     <span class="kw">let </span><span class="kw-2">mut </span>writers: Vec&lt;NamedWriter&gt; = options
         .files
         .clone()

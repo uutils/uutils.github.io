@@ -378,15 +378,6 @@
 <a href="#378" id="378">378</a>
 <a href="#379" id="379">379</a>
 <a href="#380" id="380">380</a>
-<a href="#381" id="381">381</a>
-<a href="#382" id="382">382</a>
-<a href="#383" id="383">383</a>
-<a href="#384" id="384">384</a>
-<a href="#385" id="385">385</a>
-<a href="#386" id="386">386</a>
-<a href="#387" id="387">387</a>
-<a href="#388" id="388">388</a>
-<a href="#389" id="389">389</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Alex Lyon &lt;arcterus@mail.com&gt;
@@ -406,8 +397,14 @@
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{UClapError, UResult, USimpleError, UUsageError};
 <span class="kw">use </span>uucore::process::ChildExt;
-<span class="kw">use </span>uucore::signals::{signal_by_name_or_value, signal_name_by_value};
-<span class="kw">use </span>uucore::{format_usage, show_error};
+
+<span class="attr">#[cfg(unix)]
+</span><span class="kw">use </span>uucore::signals::enable_pipe_errors;
+
+<span class="kw">use </span>uucore::{
+    format_usage, show_error,
+    signals::{signal_by_name_or_value, signal_name_by_value},
+};
 
 <span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Start COMMAND, and kill it if still running after DURATION.&quot;</span>;
 <span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;{} [OPTION] DURATION COMMAND...&quot;</span>;
@@ -674,21 +671,6 @@
     </span>signal
 }
 
-<span class="attr">#[cfg(unix)]
-</span><span class="kw">fn </span>enable_pipe_errors() -&gt; std::io::Result&lt;()&gt; {
-    <span class="kw">let </span>ret = <span class="kw">unsafe </span>{ libc::signal(libc::SIGPIPE, libc::SIG_DFL) };
-    <span class="kw">if </span>ret == libc::SIG_ERR {
-        <span class="kw">return </span><span class="prelude-val">Err</span>(std::io::Error::new(std::io::ErrorKind::Other, <span class="string">&quot;&quot;</span>));
-    }
-    <span class="prelude-val">Ok</span>(())
-}
-
-<span class="attr">#[cfg(not(unix))]
-</span><span class="kw">fn </span>enable_pipe_errors() -&gt; std::io::Result&lt;()&gt; {
-    <span class="comment">// Do nothing.
-    </span><span class="prelude-val">Ok</span>(())
-}
-
 <span class="doccomment">/// TODO: Improve exit codes, and make them consistent with the GNU Coreutils exit codes.
 
 </span><span class="kw">fn </span>timeout(
@@ -703,8 +685,8 @@
     <span class="kw">if </span>!foreground {
         <span class="kw">unsafe </span>{ libc::setpgid(<span class="number">0</span>, <span class="number">0</span>) };
     }
-
-    enable_pipe_errors()<span class="question-mark">?</span>;
+    <span class="attr">#[cfg(unix)]
+    </span>enable_pipe_errors()<span class="question-mark">?</span>;
 
     <span class="kw">let </span>process = <span class="kw-2">&amp;mut </span>process::Command::new(<span class="kw-2">&amp;</span>cmd[<span class="number">0</span>])
         .args(<span class="kw-2">&amp;</span>cmd[<span class="number">1</span>..])

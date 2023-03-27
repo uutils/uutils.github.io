@@ -1298,7 +1298,7 @@
 /// // prints &quot;fix me please!: Permission denied&quot;
 /// println!(&quot;{}&quot;, uio_result.unwrap_err());
 /// ```
-</span><span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;android&quot;</span>))]
+</span><span class="attr">#[cfg(unix)]
 </span><span class="kw">impl</span>&lt;T&gt; FromIo&lt;UResult&lt;T&gt;&gt; <span class="kw">for </span><span class="prelude-ty">Result</span>&lt;T, nix::Error&gt; {
     <span class="kw">fn </span>map_err_context(<span class="self">self</span>, context: <span class="kw">impl </span>FnOnce() -&gt; String) -&gt; UResult&lt;T&gt; {
         <span class="self">self</span>.map_err(|e| {
@@ -1310,7 +1310,7 @@
     }
 }
 
-<span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;android&quot;</span>))]
+<span class="attr">#[cfg(unix)]
 </span><span class="kw">impl</span>&lt;T&gt; FromIo&lt;UResult&lt;T&gt;&gt; <span class="kw">for </span>nix::Error {
     <span class="kw">fn </span>map_err_context(<span class="self">self</span>, context: <span class="kw">impl </span>FnOnce() -&gt; String) -&gt; UResult&lt;T&gt; {
         <span class="prelude-val">Err</span>(Box::new(UIoError {
@@ -1320,7 +1320,7 @@
     }
 }
 
-<span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;android&quot;</span>))]
+<span class="attr">#[cfg(unix)]
 </span><span class="kw">impl </span>From&lt;nix::Error&gt; <span class="kw">for </span>UIoError {
     <span class="kw">fn </span>from(f: nix::Error) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
@@ -1330,7 +1330,7 @@
     }
 }
 
-<span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;android&quot;</span>))]
+<span class="attr">#[cfg(unix)]
 </span><span class="kw">impl </span>From&lt;nix::Error&gt; <span class="kw">for </span>Box&lt;<span class="kw">dyn </span>UError&gt; {
     <span class="kw">fn </span>from(f: nix::Error) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>u_error: UIoError = f.into();
@@ -1527,7 +1527,7 @@
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="attr">#[test]
-    #[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;android&quot;</span>))]
+    #[cfg(unix)]
     </span><span class="kw">fn </span>test_nix_error_conversion() {
         <span class="kw">use super</span>::{FromIo, UIoError};
         <span class="kw">use </span>nix::errno::Errno;

@@ -1861,6 +1861,11 @@
 <a href="#1861" id="1861">1861</a>
 <a href="#1862" id="1862">1862</a>
 <a href="#1863" id="1863">1863</a>
+<a href="#1864" id="1864">1864</a>
+<a href="#1865" id="1865">1865</a>
+<a href="#1866" id="1866">1866</a>
+<a href="#1867" id="1867">1867</a>
+<a href="#1868" id="1868">1868</a>
 </pre><pre class="rust"><code><span class="attr">#![allow(clippy::missing_safety_doc)]
 #![allow(clippy::extra_unused_lifetimes)]
 
@@ -1941,6 +1946,7 @@
         </span>StripPrefixError(err: StripPrefixError) { from() }
 
         <span class="doccomment">/// Result of a skipped file
+        /// Currently happens when &quot;no&quot; is selected in interactive mode
         </span>Skipped { }
 
         <span class="doccomment">/// Result of a skipped file
@@ -2881,7 +2887,11 @@
         <span class="comment">// When using --no-clobber, we don&#39;t want to show
         // an error message
         </span>Error::NotAllFilesCopied =&gt; (),
-        Error::Skipped =&gt; (),
+        Error::Skipped =&gt; {
+            <span class="comment">// touch a b &amp;&amp; echo &quot;n&quot;|cp -i a b &amp;&amp; echo $?
+            // should return an error from GNU 9.2
+            </span><span class="kw">return </span><span class="bool-val">true</span>;
+        }
         <span class="kw">_ </span>=&gt; {
             <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, error);
             <span class="kw">return </span><span class="bool-val">true</span>;
