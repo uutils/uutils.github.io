@@ -958,6 +958,11 @@
 <a href="#958" id="958">958</a>
 <a href="#959" id="959">959</a>
 <a href="#960" id="960">960</a>
+<a href="#961" id="961">961</a>
+<a href="#962" id="962">962</a>
+<a href="#963" id="963">963</a>
+<a href="#964" id="964">964</a>
+<a href="#965" id="965">965</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Derek Chiang &lt;derekchiang93@gmail.com&gt;
@@ -1873,6 +1878,11 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
         <span class="kw">let </span>size = parse_size(<span class="kw-2">&amp;</span>s[offset..])<span class="question-mark">?</span>;
 
         <span class="kw">if </span>s.starts_with(<span class="string">&#39;-&#39;</span>) {
+            <span class="comment">// Threshold of &#39;-0&#39; excludes everything besides 0 sized entries
+            // GNU&#39;s du treats &#39;-0&#39; as an invalid argument
+            </span><span class="kw">if </span>size == <span class="number">0 </span>{
+                <span class="kw">return </span><span class="prelude-val">Err</span>(ParseSizeError::ParseFailure(s.to_string()));
+            }
             <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Upper(size))
         } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Lower(size))
