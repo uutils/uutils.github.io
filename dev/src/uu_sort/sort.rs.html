@@ -2196,7 +2196,9 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
                 line,
                 silent,
             } =&gt; {
-                <span class="kw">if </span>!silent {
+                <span class="kw">if </span><span class="kw-2">*</span>silent {
+                    <span class="prelude-val">Ok</span>(())
+                } <span class="kw">else </span>{
                     <span class="macro">write!</span>(
                         f,
                         <span class="string">&quot;{}:{}: disorder: {}&quot;</span>,
@@ -2204,8 +2206,6 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
                         line_number,
                         line
                     )
-                } <span class="kw">else </span>{
-                    <span class="prelude-val">Ok</span>(())
                 }
             }
             <span class="self">Self</span>::OpenFailed { path, error } =&gt; {
@@ -2593,7 +2593,15 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
                     </span>selection.start += num_range.start;
                     selection.end = selection.start + num_range.len();
 
-                    <span class="kw">if </span>num_range != (<span class="number">0</span>..<span class="number">0</span>) {
+                    <span class="kw">if </span>num_range == (<span class="number">0</span>..<span class="number">0</span>) {
+                        <span class="comment">// This was not a valid number.
+                        // Report no match at the first non-whitespace character.
+                        </span><span class="kw">let </span>leading_whitespace = <span class="self">self</span>.line[selection.clone()]
+                            .find(|c: char| !c.is_whitespace())
+                            .unwrap_or(<span class="number">0</span>);
+                        selection.start += leading_whitespace;
+                        selection.end += leading_whitespace;
+                    } <span class="kw">else </span>{
                         <span class="comment">// include a trailing si unit
                         </span><span class="kw">if </span>selector.settings.mode == SortMode::HumanNumeric
                             &amp;&amp; <span class="self">self</span>.line[selection.end..initial_selection.end]
@@ -2608,14 +2616,6 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
                         {
                             selection.start -= <span class="number">1</span>;
                         }
-                    } <span class="kw">else </span>{
-                        <span class="comment">// This was not a valid number.
-                        // Report no match at the first non-whitespace character.
-                        </span><span class="kw">let </span>leading_whitespace = <span class="self">self</span>.line[selection.clone()]
-                            .find(|c: char| !c.is_whitespace())
-                            .unwrap_or(<span class="number">0</span>);
-                        selection.start += leading_whitespace;
-                        selection.end += leading_whitespace;
                     }
                 }
                 SortMode::GeneralNumeric =&gt; {
@@ -3583,10 +3583,7 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
     <span class="kw">let </span><span class="kw-2">mut </span>num_info_index = <span class="number">0</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>parsed_float_index = <span class="number">0</span>;
     <span class="kw">for </span>selector <span class="kw">in </span><span class="kw-2">&amp;</span>global_settings.selectors {
-        <span class="kw">let </span>(a_str, b_str) = <span class="kw">if </span>!selector.needs_selection {
-            <span class="comment">// We can select the whole line.
-            </span>(a.line, b.line)
-        } <span class="kw">else </span>{
+        <span class="kw">let </span>(a_str, b_str) = <span class="kw">if </span>selector.needs_selection {
             <span class="kw">let </span>selections = (
                 a_line_data.selections
                     [a.index * global_settings.precomputed.selections_per_line + selection_index],
@@ -3595,6 +3592,9 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
             );
             selection_index += <span class="number">1</span>;
             selections
+        } <span class="kw">else </span>{
+            <span class="comment">// We can select the whole line.
+            </span>(a.line, b.line)
         };
 
         <span class="kw">let </span>settings = <span class="kw-2">&amp;</span>selector.settings;
@@ -4021,4 +4021,4 @@ Valid options are: MbdfhnRrV. They override the global options for this key.&quo
     }
 }
 </code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uu_sort" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.1 (8460ca823 2023-03-20)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-08ddfdda51b8ee2e.css" ></div></body></html>
+</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uu_sort" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.2 (9eb3afe9e 2023-03-27)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-08ddfdda51b8ee2e.css" ></div></body></html>

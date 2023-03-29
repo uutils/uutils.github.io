@@ -1310,9 +1310,7 @@
                     });
                 }
                 <span class="string">&#39;\\&#39; </span>=&gt; {
-                    <span class="kw">if </span>!use_printf {
-                        tokens.push(Token::Char(<span class="string">&#39;\\&#39;</span>));
-                    } <span class="kw">else </span>{
+                    <span class="kw">if </span>use_printf {
                         i += <span class="number">1</span>;
                         <span class="kw">if </span>i &gt;= bound {
                             <span class="macro">show_warning!</span>(<span class="string">&quot;backslash at end of format&quot;</span>);
@@ -1349,6 +1347,8 @@
                                 tokens.push(Token::Char(c));
                             }
                         }
+                    } <span class="kw">else </span>{
+                        tokens.push(Token::Char(<span class="string">&#39;\\&#39;</span>));
                     }
                 }
 
@@ -1454,7 +1454,67 @@
             OsString::from(file)
         };
 
-        <span class="kw">if </span>!<span class="self">self</span>.show_fs {
+        <span class="kw">if </span><span class="self">self</span>.show_fs {
+            <span class="attr">#[cfg(unix)]
+            </span><span class="kw">let </span>p = file.as_bytes();
+            <span class="attr">#[cfg(not(unix))]
+            </span><span class="kw">let </span>p = file.into_string().unwrap();
+            <span class="kw">match </span>statfs(p) {
+                <span class="prelude-val">Ok</span>(meta) =&gt; {
+                    <span class="kw">let </span>tokens = <span class="kw-2">&amp;</span><span class="self">self</span>.default_tokens;
+
+                    <span class="kw">for </span>t <span class="kw">in </span>tokens.iter() {
+                        <span class="kw">match </span><span class="kw-2">*</span>t {
+                            Token::Char(c) =&gt; <span class="macro">print!</span>(<span class="string">&quot;{c}&quot;</span>),
+                            Token::Directive {
+                                flag,
+                                width,
+                                precision,
+                                format,
+                            } =&gt; {
+                                <span class="kw">let </span>output = <span class="kw">match </span>format {
+                                    <span class="comment">// free blocks available to non-superuser
+                                    </span><span class="string">&#39;a&#39; </span>=&gt; OutputType::Unsigned(meta.avail_blocks()),
+                                    <span class="comment">// total data blocks in file system
+                                    </span><span class="string">&#39;b&#39; </span>=&gt; OutputType::Unsigned(meta.total_blocks()),
+                                    <span class="comment">// total file nodes in file system
+                                    </span><span class="string">&#39;c&#39; </span>=&gt; OutputType::Unsigned(meta.total_file_nodes()),
+                                    <span class="comment">// free file nodes in file system
+                                    </span><span class="string">&#39;d&#39; </span>=&gt; OutputType::Unsigned(meta.free_file_nodes()),
+                                    <span class="comment">// free blocks in file system
+                                    </span><span class="string">&#39;f&#39; </span>=&gt; OutputType::Unsigned(meta.free_blocks()),
+                                    <span class="comment">// file system ID in hex
+                                    </span><span class="string">&#39;i&#39; </span>=&gt; OutputType::UnsignedHex(meta.fsid()),
+                                    <span class="comment">// maximum length of filenames
+                                    </span><span class="string">&#39;l&#39; </span>=&gt; OutputType::Unsigned(meta.namelen()),
+                                    <span class="comment">// file name
+                                    </span><span class="string">&#39;n&#39; </span>=&gt; OutputType::Str(display_name.to_string()),
+                                    <span class="comment">// block size (for faster transfers)
+                                    </span><span class="string">&#39;s&#39; </span>=&gt; OutputType::Unsigned(meta.io_size()),
+                                    <span class="comment">// fundamental block size (for block counts)
+                                    </span><span class="string">&#39;S&#39; </span>=&gt; OutputType::Integer(meta.block_size()),
+                                    <span class="comment">// file system type in hex
+                                    </span><span class="string">&#39;t&#39; </span>=&gt; OutputType::UnsignedHex(meta.fs_type() <span class="kw">as </span>u64),
+                                    <span class="comment">// file system type in human readable form
+                                    </span><span class="string">&#39;T&#39; </span>=&gt; OutputType::Str(pretty_fstype(meta.fs_type()).into()),
+                                    <span class="kw">_ </span>=&gt; OutputType::Unknown,
+                                };
+
+                                print_it(<span class="kw-2">&amp;</span>output, flag, width, precision);
+                            }
+                        }
+                    }
+                }
+                <span class="prelude-val">Err</span>(e) =&gt; {
+                    <span class="macro">show_error!</span>(
+                        <span class="string">&quot;cannot read file system information for {}: {}&quot;</span>,
+                        display_name.quote(),
+                        e
+                    );
+                    <span class="kw">return </span><span class="number">1</span>;
+                }
+            }
+        } <span class="kw">else </span>{
             <span class="kw">let </span>result = <span class="kw">if </span><span class="self">self</span>.follow || stdin_is_fifo &amp;&amp; display_name == <span class="string">&quot;-&quot; </span>{
                 fs::metadata(<span class="kw-2">&amp;</span>file)
             } <span class="kw">else </span>{
@@ -1592,66 +1652,6 @@
                 }
                 <span class="prelude-val">Err</span>(e) =&gt; {
                     <span class="macro">show_error!</span>(<span class="string">&quot;cannot stat {}: {}&quot;</span>, display_name.quote(), e);
-                    <span class="kw">return </span><span class="number">1</span>;
-                }
-            }
-        } <span class="kw">else </span>{
-            <span class="attr">#[cfg(unix)]
-            </span><span class="kw">let </span>p = file.as_bytes();
-            <span class="attr">#[cfg(not(unix))]
-            </span><span class="kw">let </span>p = file.into_string().unwrap();
-            <span class="kw">match </span>statfs(p) {
-                <span class="prelude-val">Ok</span>(meta) =&gt; {
-                    <span class="kw">let </span>tokens = <span class="kw-2">&amp;</span><span class="self">self</span>.default_tokens;
-
-                    <span class="kw">for </span>t <span class="kw">in </span>tokens.iter() {
-                        <span class="kw">match </span><span class="kw-2">*</span>t {
-                            Token::Char(c) =&gt; <span class="macro">print!</span>(<span class="string">&quot;{c}&quot;</span>),
-                            Token::Directive {
-                                flag,
-                                width,
-                                precision,
-                                format,
-                            } =&gt; {
-                                <span class="kw">let </span>output = <span class="kw">match </span>format {
-                                    <span class="comment">// free blocks available to non-superuser
-                                    </span><span class="string">&#39;a&#39; </span>=&gt; OutputType::Unsigned(meta.avail_blocks()),
-                                    <span class="comment">// total data blocks in file system
-                                    </span><span class="string">&#39;b&#39; </span>=&gt; OutputType::Unsigned(meta.total_blocks()),
-                                    <span class="comment">// total file nodes in file system
-                                    </span><span class="string">&#39;c&#39; </span>=&gt; OutputType::Unsigned(meta.total_file_nodes()),
-                                    <span class="comment">// free file nodes in file system
-                                    </span><span class="string">&#39;d&#39; </span>=&gt; OutputType::Unsigned(meta.free_file_nodes()),
-                                    <span class="comment">// free blocks in file system
-                                    </span><span class="string">&#39;f&#39; </span>=&gt; OutputType::Unsigned(meta.free_blocks()),
-                                    <span class="comment">// file system ID in hex
-                                    </span><span class="string">&#39;i&#39; </span>=&gt; OutputType::UnsignedHex(meta.fsid()),
-                                    <span class="comment">// maximum length of filenames
-                                    </span><span class="string">&#39;l&#39; </span>=&gt; OutputType::Unsigned(meta.namelen()),
-                                    <span class="comment">// file name
-                                    </span><span class="string">&#39;n&#39; </span>=&gt; OutputType::Str(display_name.to_string()),
-                                    <span class="comment">// block size (for faster transfers)
-                                    </span><span class="string">&#39;s&#39; </span>=&gt; OutputType::Unsigned(meta.io_size()),
-                                    <span class="comment">// fundamental block size (for block counts)
-                                    </span><span class="string">&#39;S&#39; </span>=&gt; OutputType::Integer(meta.block_size()),
-                                    <span class="comment">// file system type in hex
-                                    </span><span class="string">&#39;t&#39; </span>=&gt; OutputType::UnsignedHex(meta.fs_type() <span class="kw">as </span>u64),
-                                    <span class="comment">// file system type in human readable form
-                                    </span><span class="string">&#39;T&#39; </span>=&gt; OutputType::Str(pretty_fstype(meta.fs_type()).into()),
-                                    <span class="kw">_ </span>=&gt; OutputType::Unknown,
-                                };
-
-                                print_it(<span class="kw-2">&amp;</span>output, flag, width, precision);
-                            }
-                        }
-                    }
-                }
-                <span class="prelude-val">Err</span>(e) =&gt; {
-                    <span class="macro">show_error!</span>(
-                        <span class="string">&quot;cannot read file system information for {}: {}&quot;</span>,
-                        display_name.quote(),
-                        e
-                    );
                     <span class="kw">return </span><span class="number">1</span>;
                 }
             }
@@ -1869,4 +1869,4 @@
     }
 }
 </code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uu_stat" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.1 (8460ca823 2023-03-20)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-08ddfdda51b8ee2e.css" ></div></body></html>
+</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uu_stat" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.2 (9eb3afe9e 2023-03-27)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-08ddfdda51b8ee2e.css" ></div></body></html>

@@ -673,6 +673,18 @@
 <a href="#673" id="673">673</a>
 <a href="#674" id="674">674</a>
 <a href="#675" id="675">675</a>
+<a href="#676" id="676">676</a>
+<a href="#677" id="677">677</a>
+<a href="#678" id="678">678</a>
+<a href="#679" id="679">679</a>
+<a href="#680" id="680">680</a>
+<a href="#681" id="681">681</a>
+<a href="#682" id="682">682</a>
+<a href="#683" id="683">683</a>
+<a href="#684" id="684">684</a>
+<a href="#685" id="685">685</a>
+<a href="#686" id="686">686</a>
+<a href="#687" id="687">687</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Alex Lyon &lt;arcterus@mail.com&gt;
@@ -722,6 +734,7 @@
     strict: bool,
     warn: bool,
     output_bits: usize,
+    zero: bool,
 }
 
 <span class="attr">#[allow(clippy::cognitive_complexity)]
@@ -944,6 +957,7 @@
     <span class="kw">let </span>quiet = matches.get_flag(<span class="string">&quot;quiet&quot;</span>) || status;
     <span class="kw">let </span>strict = matches.get_flag(<span class="string">&quot;strict&quot;</span>);
     <span class="kw">let </span>warn = matches.get_flag(<span class="string">&quot;warn&quot;</span>) &amp;&amp; !status;
+    <span class="kw">let </span>zero = matches.get_flag(<span class="string">&quot;zero&quot;</span>);
 
     <span class="kw">let </span>opts = Options {
         algoname: name,
@@ -957,6 +971,7 @@
         quiet,
         strict,
         warn,
+        zero,
     };
 
     <span class="kw">match </span>matches.get_many::&lt;OsString&gt;(<span class="string">&quot;FILE&quot;</span>) {
@@ -1032,6 +1047,13 @@
                 .short(<span class="string">&#39;w&#39;</span>)
                 .long(<span class="string">&quot;warn&quot;</span>)
                 .help(<span class="string">&quot;warn about improperly formatted checksum lines&quot;</span>)
+                .action(ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new(<span class="string">&quot;zero&quot;</span>)
+                .short(<span class="string">&#39;z&#39;</span>)
+                .long(<span class="string">&quot;zero&quot;</span>)
+                .help(<span class="string">&quot;end each output line with NUL, not newline&quot;</span>)
                 .action(ArgAction::SetTrue),
         )
         .arg(
@@ -1288,6 +1310,8 @@
                 <span class="macro">println!</span>(<span class="string">&quot;{} ({}) = {}&quot;</span>, options.algoname, filename.display(), sum);
             } <span class="kw">else if </span>options.nonames {
                 <span class="macro">println!</span>(<span class="string">&quot;{sum}&quot;</span>);
+            } <span class="kw">else if </span>options.zero {
+                <span class="macro">print!</span>(<span class="string">&quot;{} {}{}\0&quot;</span>, sum, binary_marker, filename.display());
             } <span class="kw">else </span>{
                 <span class="macro">println!</span>(<span class="string">&quot;{} {}{}&quot;</span>, sum, binary_marker, filename.display());
             }
@@ -1349,4 +1373,4 @@
     }
 }
 </code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uu_hashsum" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.1 (8460ca823 2023-03-20)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-08ddfdda51b8ee2e.css" ></div></body></html>
+</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uu_hashsum" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.2 (9eb3afe9e 2023-03-27)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-08ddfdda51b8ee2e.css" ></div></body></html>
