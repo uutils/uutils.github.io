@@ -469,7 +469,7 @@
 <span class="kw">use </span>std::io::{BufRead, BufReader};
 <span class="kw">use </span>std::path::PathBuf;
 <span class="kw">use </span>uucore::display::Quotable;
-<span class="attr">#[cfg(not(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;redox&quot;</span>)))]
+<span class="attr">#[cfg(not(any(target_os = <span class="string">&quot;redox&quot;</span>)))]
 </span><span class="kw">use </span>uucore::error::FromIo;
 <span class="kw">use </span>uucore::error::{UResult, USimpleError};
 <span class="kw">use </span>uucore::{format_usage, help_about, help_usage, show};
@@ -669,19 +669,19 @@
                 <span class="kw">let </span>iter = std::iter::once(date);
                 Box::new(iter)
             }
-            DateSource::File(<span class="kw-2">ref </span>path) =&gt; <span class="kw">match </span>File::open(path) {
-                <span class="prelude-val">Ok</span>(file) =&gt; {
-                    <span class="kw">let </span>lines = BufReader::new(file).lines();
-                    <span class="kw">let </span>iter = lines.filter_map(Result::ok).map(parse_date);
-                    Box::new(iter)
-                }
-                <span class="prelude-val">Err</span>(_err) =&gt; {
+            DateSource::File(<span class="kw-2">ref </span>path) =&gt; {
+                <span class="kw">if </span>path.is_dir() {
                     <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
                         <span class="number">2</span>,
-                        <span class="macro">format!</span>(<span class="string">&quot;{}: No such file or directory&quot;</span>, path.display()),
+                        <span class="macro">format!</span>(<span class="string">&quot;expected file, got directory {}&quot;</span>, path.quote()),
                     ));
                 }
-            },
+                <span class="kw">let </span>file = File::open(path)
+                    .map_err_context(|| path.as_os_str().to_string_lossy().to_string())<span class="question-mark">?</span>;
+                <span class="kw">let </span>lines = BufReader::new(file).lines();
+                <span class="kw">let </span>iter = lines.map_while(Result::ok).map(parse_date);
+                Box::new(iter)
+            }
             DateSource::Now =&gt; {
                 <span class="kw">let </span>iter = std::iter::once(<span class="prelude-val">Ok</span>(now));
                 Box::new(iter)
