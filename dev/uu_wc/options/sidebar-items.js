@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"static":[["BYTES",""],["CHAR",""],["FILES0_FROM",""],["LINES",""],["MAX_LINE_LENGTH",""],["WORDS",""]]};
+window.SIDEBAR_ITEMS = {"static":[["BYTES",""],["CHAR",""],["FILES0_FROM",""],["LINES",""],["MAX_LINE_LENGTH",""],["TOTAL",""],["WORDS",""]]};

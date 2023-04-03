@@ -650,6 +650,61 @@
 <a href="#650" id="650">650</a>
 <a href="#651" id="651">651</a>
 <a href="#652" id="652">652</a>
+<a href="#653" id="653">653</a>
+<a href="#654" id="654">654</a>
+<a href="#655" id="655">655</a>
+<a href="#656" id="656">656</a>
+<a href="#657" id="657">657</a>
+<a href="#658" id="658">658</a>
+<a href="#659" id="659">659</a>
+<a href="#660" id="660">660</a>
+<a href="#661" id="661">661</a>
+<a href="#662" id="662">662</a>
+<a href="#663" id="663">663</a>
+<a href="#664" id="664">664</a>
+<a href="#665" id="665">665</a>
+<a href="#666" id="666">666</a>
+<a href="#667" id="667">667</a>
+<a href="#668" id="668">668</a>
+<a href="#669" id="669">669</a>
+<a href="#670" id="670">670</a>
+<a href="#671" id="671">671</a>
+<a href="#672" id="672">672</a>
+<a href="#673" id="673">673</a>
+<a href="#674" id="674">674</a>
+<a href="#675" id="675">675</a>
+<a href="#676" id="676">676</a>
+<a href="#677" id="677">677</a>
+<a href="#678" id="678">678</a>
+<a href="#679" id="679">679</a>
+<a href="#680" id="680">680</a>
+<a href="#681" id="681">681</a>
+<a href="#682" id="682">682</a>
+<a href="#683" id="683">683</a>
+<a href="#684" id="684">684</a>
+<a href="#685" id="685">685</a>
+<a href="#686" id="686">686</a>
+<a href="#687" id="687">687</a>
+<a href="#688" id="688">688</a>
+<a href="#689" id="689">689</a>
+<a href="#690" id="690">690</a>
+<a href="#691" id="691">691</a>
+<a href="#692" id="692">692</a>
+<a href="#693" id="693">693</a>
+<a href="#694" id="694">694</a>
+<a href="#695" id="695">695</a>
+<a href="#696" id="696">696</a>
+<a href="#697" id="697">697</a>
+<a href="#698" id="698">698</a>
+<a href="#699" id="699">699</a>
+<a href="#700" id="700">700</a>
+<a href="#701" id="701">701</a>
+<a href="#702" id="702">702</a>
+<a href="#703" id="703">703</a>
+<a href="#704" id="704">704</a>
+<a href="#705" id="705">705</a>
+<a href="#706" id="706">706</a>
+<a href="#707" id="707">707</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Boden Garman &lt;bpgarman@gmail.com&gt;
@@ -694,6 +749,7 @@
     show_max_line_length: bool,
     files0_from_stdin_mode: bool,
     title_quoting_style: QuotingStyle,
+    total_when: TotalWhen,
 }
 
 <span class="kw">impl </span>Settings {
@@ -717,6 +773,7 @@
             show_max_line_length: matches.get_flag(options::MAX_LINE_LENGTH),
             files0_from_stdin_mode,
             title_quoting_style,
+            total_when: matches.get_one::&lt;String&gt;(options::TOTAL).unwrap().into(),
         };
 
         <span class="kw">if </span>settings.show_bytes
@@ -736,6 +793,7 @@
             show_max_line_length: <span class="bool-val">false</span>,
             files0_from_stdin_mode,
             title_quoting_style: settings.title_quoting_style,
+            total_when: settings.total_when,
         }
     }
 
@@ -759,6 +817,7 @@
     <span class="kw">pub static </span>FILES0_FROM: <span class="kw-2">&amp;</span>str = <span class="string">&quot;files0-from&quot;</span>;
     <span class="kw">pub static </span>LINES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;lines&quot;</span>;
     <span class="kw">pub static </span>MAX_LINE_LENGTH: <span class="kw-2">&amp;</span>str = <span class="string">&quot;max-line-length&quot;</span>;
+    <span class="kw">pub static </span>TOTAL: <span class="kw-2">&amp;</span>str = <span class="string">&quot;total&quot;</span>;
     <span class="kw">pub static </span>WORDS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;words&quot;</span>;
 }
 
@@ -808,6 +867,37 @@
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Path(path) =&gt; escape_name(<span class="kw-2">&amp;</span>path.clone().into_os_string(), quoting_style),
             <span class="self">Self</span>::Stdin(<span class="kw">_</span>) =&gt; escape_name(OsStr::new(<span class="string">&quot;standard input&quot;</span>), quoting_style),
+        }
+    }
+}
+
+<span class="doccomment">/// When to show the &quot;total&quot; line
+</span><span class="attr">#[derive(PartialEq)]
+</span><span class="kw">enum </span>TotalWhen {
+    Auto,
+    Always,
+    Only,
+    Never,
+}
+
+<span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span>String&gt; <span class="kw">for </span>TotalWhen {
+    <span class="kw">fn </span>from(s: <span class="kw-2">&amp;</span>String) -&gt; <span class="self">Self </span>{
+        <span class="kw">match </span>s.as_ref() {
+            <span class="string">&quot;auto&quot; </span>=&gt; <span class="self">Self</span>::Auto,
+            <span class="string">&quot;always&quot; </span>=&gt; <span class="self">Self</span>::Always,
+            <span class="string">&quot;only&quot; </span>=&gt; <span class="self">Self</span>::Only,
+            <span class="string">&quot;never&quot; </span>=&gt; <span class="self">Self</span>::Never,
+            <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Should have been caught by clap&quot;</span>),
+        }
+    }
+}
+
+<span class="kw">impl </span>TotalWhen {
+    <span class="kw">fn </span>is_total_row_visible(<span class="kw-2">&amp;</span><span class="self">self</span>, num_inputs: usize) -&gt; bool {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::Auto =&gt; num_inputs &gt; <span class="number">1</span>,
+            <span class="self">Self</span>::Always | <span class="self">Self</span>::Only =&gt; <span class="bool-val">true</span>,
+            <span class="self">Self</span>::Never =&gt; <span class="bool-val">false</span>,
         }
     }
 }
@@ -897,6 +987,15 @@
                 .long(options::MAX_LINE_LENGTH)
                 .help(<span class="string">&quot;print the length of the longest line&quot;</span>)
                 .action(ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new(options::TOTAL)
+                .long(options::TOTAL)
+                .value_parser([<span class="string">&quot;auto&quot;</span>, <span class="string">&quot;always&quot;</span>, <span class="string">&quot;only&quot;</span>, <span class="string">&quot;never&quot;</span>])
+                .default_value(<span class="string">&quot;auto&quot;</span>)
+                .hide_default_value(<span class="bool-val">true</span>)
+                .value_name(<span class="string">&quot;WHEN&quot;</span>)
+                .help(<span class="string">&quot;when to print a line with total counts&quot;</span>),
         )
         .arg(
             Arg::new(options::WORDS)
@@ -1213,11 +1312,19 @@
 }
 
 <span class="kw">fn </span>wc(inputs: <span class="kw-2">&amp;</span>[Input], settings: <span class="kw-2">&amp;</span>Settings) -&gt; UResult&lt;()&gt; {
-    <span class="kw">let </span>number_width = compute_number_width(inputs, settings);
-
     <span class="kw">let </span><span class="kw-2">mut </span>total_word_count = WordCount::default();
 
-    <span class="kw">let </span>num_inputs = inputs.len();
+    <span class="kw">let </span>(number_width, are_stats_visible, total_row_title) =
+        <span class="kw">if </span>settings.total_when == TotalWhen::Only {
+            (<span class="number">1</span>, <span class="bool-val">false</span>, <span class="prelude-val">None</span>)
+        } <span class="kw">else </span>{
+            <span class="kw">let </span>number_width = compute_number_width(inputs, settings);
+            <span class="kw">let </span>title = <span class="prelude-val">Some</span>(String::from(<span class="string">&quot;total&quot;</span>));
+
+            (number_width, <span class="bool-val">true</span>, title)
+        };
+
+    <span class="kw">let </span>is_total_row_visible = settings.total_when.is_total_row_visible(inputs.len());
 
     <span class="kw">for </span>input <span class="kw">in </span>inputs {
         <span class="kw">let </span>word_count = <span class="kw">match </span>word_count_from_input(input, settings) {
@@ -1247,20 +1354,23 @@
         };
         total_word_count += word_count;
         <span class="kw">let </span>result = word_count.with_title(input.to_title(<span class="kw-2">&amp;</span>settings.title_quoting_style));
-        <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = print_stats(settings, <span class="kw-2">&amp;</span>result, number_width) {
-            <span class="macro">show!</span>(USimpleError::new(
-                <span class="number">1</span>,
-                <span class="macro">format!</span>(
-                    <span class="string">&quot;failed to print result for {}: {}&quot;</span>,
-                    <span class="kw-2">&amp;</span>result.title.unwrap_or_else(|| String::from(<span class="string">&quot;&lt;stdin&gt;&quot;</span>)),
-                    err,
-                ),
-            ));
+
+        <span class="kw">if </span>are_stats_visible {
+            <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = print_stats(settings, <span class="kw-2">&amp;</span>result, number_width) {
+                <span class="macro">show!</span>(USimpleError::new(
+                    <span class="number">1</span>,
+                    <span class="macro">format!</span>(
+                        <span class="string">&quot;failed to print result for {}: {}&quot;</span>,
+                        <span class="kw-2">&amp;</span>result.title.unwrap_or_else(|| String::from(<span class="string">&quot;&lt;stdin&gt;&quot;</span>)),
+                        err,
+                    ),
+                ));
+            }
         }
     }
 
-    <span class="kw">if </span>num_inputs &gt; <span class="number">1 </span>{
-        <span class="kw">let </span>total_result = total_word_count.with_title(<span class="prelude-val">Some</span>(String::from(<span class="string">&quot;total&quot;</span>)));
+    <span class="kw">if </span>is_total_row_visible {
+        <span class="kw">let </span>total_result = total_word_count.with_title(total_row_title);
         <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = print_stats(settings, <span class="kw-2">&amp;</span>total_result, number_width) {
             <span class="macro">show!</span>(USimpleError::new(
                 <span class="number">1</span>,
