@@ -441,6 +441,17 @@
 <a href="#441" id="441">441</a>
 <a href="#442" id="442">442</a>
 <a href="#443" id="443">443</a>
+<a href="#444" id="444">444</a>
+<a href="#445" id="445">445</a>
+<a href="#446" id="446">446</a>
+<a href="#447" id="447">447</a>
+<a href="#448" id="448">448</a>
+<a href="#449" id="449">449</a>
+<a href="#450" id="450">450</a>
+<a href="#451" id="451">451</a>
+<a href="#452" id="452">452</a>
+<a href="#453" id="453">453</a>
+<a href="#454" id="454">454</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;
@@ -455,6 +466,7 @@
 <span class="kw">use </span>std::env;
 <span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::io::{BufRead, BufReader};
+<span class="kw">use </span>std::path::Path;
 
 <span class="kw">use </span>clap::{crate_version, Arg, ArgAction, Command};
 <span class="kw">use </span>uucore::display::Quotable;
@@ -485,7 +497,6 @@
 }
 
 <span class="kw">pub fn </span>guess_syntax() -&gt; OutputFmt {
-    <span class="kw">use </span>std::path::Path;
     <span class="kw">match </span>env::var(<span class="string">&quot;SHELL&quot;</span>) {
         <span class="prelude-val">Ok</span>(<span class="kw-2">ref </span>s) <span class="kw">if </span>!s.is_empty() =&gt; {
             <span class="kw">let </span>shell_path: <span class="kw-2">&amp;</span>Path = s.as_ref();
@@ -581,15 +592,26 @@
         <span class="kw">let </span>fin = BufReader::new(std::io::stdin());
         result = parse(fin.lines().filter_map(Result::ok), <span class="kw-2">&amp;</span>out_format, files[<span class="number">0</span>]);
     } <span class="kw">else </span>{
-        <span class="kw">match </span>File::open(files[<span class="number">0</span>]) {
+        <span class="kw">let </span>path = Path::new(files[<span class="number">0</span>]);
+        <span class="kw">if </span>path.is_dir() {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
+                <span class="number">2</span>,
+                <span class="macro">format!</span>(<span class="string">&quot;expected file, got directory {}&quot;</span>, path.quote()),
+            ));
+        }
+        <span class="kw">match </span>File::open(path) {
             <span class="prelude-val">Ok</span>(f) =&gt; {
                 <span class="kw">let </span>fin = BufReader::new(f);
-                result = parse(fin.lines().filter_map(Result::ok), <span class="kw-2">&amp;</span>out_format, files[<span class="number">0</span>]);
+                result = parse(
+                    fin.lines().map_while(Result::ok),
+                    <span class="kw-2">&amp;</span>out_format,
+                    <span class="kw-2">&amp;</span>path.to_string_lossy(),
+                );
             }
             <span class="prelude-val">Err</span>(e) =&gt; {
                 <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
                     <span class="number">1</span>,
-                    <span class="macro">format!</span>(<span class="string">&quot;{}: {}&quot;</span>, files[<span class="number">0</span>].maybe_quote(), e),
+                    <span class="macro">format!</span>(<span class="string">&quot;{}: {}&quot;</span>, path.maybe_quote(), e),
                 ));
             }
         }
