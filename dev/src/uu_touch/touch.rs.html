@@ -594,6 +594,35 @@
 <a href="#594" id="594">594</a>
 <a href="#595" id="595">595</a>
 <a href="#596" id="596">596</a>
+<a href="#597" id="597">597</a>
+<a href="#598" id="598">598</a>
+<a href="#599" id="599">599</a>
+<a href="#600" id="600">600</a>
+<a href="#601" id="601">601</a>
+<a href="#602" id="602">602</a>
+<a href="#603" id="603">603</a>
+<a href="#604" id="604">604</a>
+<a href="#605" id="605">605</a>
+<a href="#606" id="606">606</a>
+<a href="#607" id="607">607</a>
+<a href="#608" id="608">608</a>
+<a href="#609" id="609">609</a>
+<a href="#610" id="610">610</a>
+<a href="#611" id="611">611</a>
+<a href="#612" id="612">612</a>
+<a href="#613" id="613">613</a>
+<a href="#614" id="614">614</a>
+<a href="#615" id="615">615</a>
+<a href="#616" id="616">616</a>
+<a href="#617" id="617">617</a>
+<a href="#618" id="618">618</a>
+<a href="#619" id="619">619</a>
+<a href="#620" id="620">620</a>
+<a href="#621" id="621">621</a>
+<a href="#622" id="622">622</a>
+<a href="#623" id="623">623</a>
+<a href="#624" id="624">624</a>
+<a href="#625" id="625">625</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Nick Platt &lt;platt.nicholas@gmail.com&gt;
@@ -673,19 +702,57 @@
             ),
         )
     })<span class="question-mark">?</span>;
-    <span class="kw">let </span>(<span class="kw-2">mut </span>atime, <span class="kw-2">mut </span>mtime) =
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(reference) = matches.get_one::&lt;OsString&gt;(options::sources::REFERENCE) {
+    <span class="kw">let </span>(<span class="kw-2">mut </span>atime, <span class="kw-2">mut </span>mtime) = <span class="kw">match </span>(
+        matches.get_one::&lt;OsString&gt;(options::sources::REFERENCE),
+        matches.get_one::&lt;String&gt;(options::sources::DATE),
+    ) {
+        (<span class="prelude-val">Some</span>(reference), <span class="prelude-val">Some</span>(date)) =&gt; {
+            <span class="kw">let </span>(atime, mtime) = stat(Path::new(reference), !matches.get_flag(options::NO_DEREF))<span class="question-mark">?</span>;
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(offset) = parse_relative_time(date) {
+                <span class="kw">let </span><span class="kw-2">mut </span>seconds = offset.whole_seconds();
+                <span class="kw">let </span><span class="kw-2">mut </span>nanos = offset.subsec_nanoseconds();
+                <span class="kw">if </span>nanos &lt; <span class="number">0 </span>{
+                    nanos += <span class="number">1_000_000_000</span>;
+                    seconds -= <span class="number">1</span>;
+                }
+
+                <span class="kw">let </span>ref_atime_secs = atime.unix_seconds();
+                <span class="kw">let </span>ref_atime_nanos = atime.nanoseconds();
+                <span class="kw">let </span>atime = FileTime::from_unix_time(
+                    ref_atime_secs + seconds,
+                    ref_atime_nanos + nanos <span class="kw">as </span>u32,
+                );
+
+                <span class="kw">let </span>ref_mtime_secs = mtime.unix_seconds();
+                <span class="kw">let </span>ref_mtime_nanos = mtime.nanoseconds();
+                <span class="kw">let </span>mtime = FileTime::from_unix_time(
+                    ref_mtime_secs + seconds,
+                    ref_mtime_nanos + nanos <span class="kw">as </span>u32,
+                );
+
+                (atime, mtime)
+            } <span class="kw">else </span>{
+                <span class="kw">let </span>timestamp = parse_date(date)<span class="question-mark">?</span>;
+                (timestamp, timestamp)
+            }
+        }
+        (<span class="prelude-val">Some</span>(reference), <span class="prelude-val">None</span>) =&gt; {
             stat(Path::new(reference), !matches.get_flag(options::NO_DEREF))<span class="question-mark">?
-        </span>} <span class="kw">else </span>{
-            <span class="kw">let </span>timestamp = <span class="kw">if let </span><span class="prelude-val">Some</span>(date) = matches.get_one::&lt;String&gt;(options::sources::DATE) {
-                parse_date(date)<span class="question-mark">?
-            </span>} <span class="kw">else if let </span><span class="prelude-val">Some</span>(current) = matches.get_one::&lt;String&gt;(options::sources::CURRENT) {
-                parse_timestamp(current)<span class="question-mark">?
-            </span>} <span class="kw">else </span>{
-                local_dt_to_filetime(time::OffsetDateTime::now_local().unwrap())
-            };
+        </span>}
+        (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(date)) =&gt; {
+            <span class="kw">let </span>timestamp = parse_date(date)<span class="question-mark">?</span>;
             (timestamp, timestamp)
-        };
+        }
+        (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; {
+            <span class="kw">let </span>timestamp =
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(current) = matches.get_one::&lt;String&gt;(options::sources::CURRENT) {
+                    parse_timestamp(current)<span class="question-mark">?
+                </span>} <span class="kw">else </span>{
+                    local_dt_to_filetime(time::OffsetDateTime::now_local().unwrap())
+                };
+            (timestamp, timestamp)
+        }
+    };
 
     <span class="kw">for </span>filename <span class="kw">in </span>files {
         <span class="comment">// FIXME: find a way to avoid having to clone the path
@@ -798,7 +865,8 @@
                 .long(options::sources::DATE)
                 .allow_hyphen_values(<span class="bool-val">true</span>)
                 .help(<span class="string">&quot;parse argument and use it instead of current time&quot;</span>)
-                .value_name(<span class="string">&quot;STRING&quot;</span>),
+                .value_name(<span class="string">&quot;STRING&quot;</span>)
+                .conflicts_with(options::sources::CURRENT),
         )
         .arg(
             Arg::new(options::MODIFICATION)
@@ -830,7 +898,8 @@
                 .help(<span class="string">&quot;use this file&#39;s times instead of the current time&quot;</span>)
                 .value_name(<span class="string">&quot;FILE&quot;</span>)
                 .value_parser(ValueParser::os_string())
-                .value_hint(clap::ValueHint::AnyPath),
+                .value_hint(clap::ValueHint::AnyPath)
+                .conflicts_with(options::sources::CURRENT),
         )
         .arg(
             Arg::new(options::TIME)
@@ -850,11 +919,15 @@
                 .value_parser(ValueParser::os_string())
                 .value_hint(clap::ValueHint::AnyPath),
         )
-        .group(ArgGroup::new(options::SOURCES).args([
-            options::sources::CURRENT,
-            options::sources::DATE,
-            options::sources::REFERENCE,
-        ]))
+        .group(
+            ArgGroup::new(options::SOURCES)
+                .args([
+                    options::sources::CURRENT,
+                    options::sources::DATE,
+                    options::sources::REFERENCE,
+                ])
+                .multiple(<span class="bool-val">true</span>),
+        )
 }
 
 <span class="kw">fn </span>stat(path: <span class="kw-2">&amp;</span>Path, follow: bool) -&gt; UResult&lt;(FileTime, FileTime)&gt; {
@@ -980,33 +1053,22 @@
         }
     }
 
-    <span class="comment">// Relative day, like &quot;today&quot;, &quot;tomorrow&quot;, or &quot;yesterday&quot;.
-    </span><span class="kw">match </span>s {
-        <span class="string">&quot;now&quot; </span>| <span class="string">&quot;today&quot; </span>=&gt; {
-            <span class="kw">let </span>now_local = time::OffsetDateTime::now_local().unwrap();
-            <span class="kw">return </span><span class="prelude-val">Ok</span>(local_dt_to_filetime(now_local));
-        }
-        <span class="string">&quot;tomorrow&quot; </span>=&gt; {
-            <span class="kw">let </span>duration = time::Duration::days(<span class="number">1</span>);
-            <span class="kw">let </span>now_local = time::OffsetDateTime::now_local().unwrap();
-            <span class="kw">let </span>diff = now_local.checked_add(duration).unwrap();
-            <span class="kw">return </span><span class="prelude-val">Ok</span>(local_dt_to_filetime(diff));
-        }
-        <span class="string">&quot;yesterday&quot; </span>=&gt; {
-            <span class="kw">let </span>duration = time::Duration::days(<span class="number">1</span>);
-            <span class="kw">let </span>now_local = time::OffsetDateTime::now_local().unwrap();
-            <span class="kw">let </span>diff = now_local.checked_sub(duration).unwrap();
-            <span class="kw">return </span><span class="prelude-val">Ok</span>(local_dt_to_filetime(diff));
-        }
-        <span class="kw">_ </span>=&gt; {}
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(duration) = parse_relative_time(s) {
+        <span class="kw">let </span>now_local = time::OffsetDateTime::now_local().unwrap();
+        <span class="kw">let </span>diff = now_local.checked_add(duration).unwrap();
+        <span class="kw">return </span><span class="prelude-val">Ok</span>(local_dt_to_filetime(diff));
     }
 
+    <span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;Unable to parse date: {s}&quot;</span>)))
+}
+
+<span class="kw">fn </span>parse_relative_time(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;Duration&gt; {
     <span class="comment">// Relative time, like &quot;-1 hour&quot; or &quot;+3 days&quot;.
     //
     // TODO Add support for &quot;year&quot; and &quot;month&quot;.
     // TODO Add support for times without spaces like &quot;-1hour&quot;.
     </span><span class="kw">let </span>tokens: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = s.split_whitespace().collect();
-    <span class="kw">let </span>maybe_duration = <span class="kw">match </span><span class="kw-2">&amp;</span>tokens[..] {
+    <span class="kw">match </span><span class="kw-2">&amp;</span>tokens[..] {
         [num_str, <span class="string">&quot;fortnight&quot; </span>| <span class="string">&quot;fortnights&quot;</span>] =&gt; num_str
             .parse::&lt;i64&gt;()
             .ok()
@@ -1026,15 +1088,11 @@
             num_str.parse::&lt;i64&gt;().ok().map(time::Duration::seconds)
         }
         [<span class="string">&quot;second&quot; </span>| <span class="string">&quot;seconds&quot; </span>| <span class="string">&quot;sec&quot; </span>| <span class="string">&quot;secs&quot;</span>] =&gt; <span class="prelude-val">Some</span>(time::Duration::seconds(<span class="number">1</span>)),
+        [<span class="string">&quot;now&quot; </span>| <span class="string">&quot;today&quot;</span>] =&gt; <span class="prelude-val">Some</span>(time::Duration::ZERO),
+        [<span class="string">&quot;yesterday&quot;</span>] =&gt; <span class="prelude-val">Some</span>(time::Duration::days(-<span class="number">1</span>)),
+        [<span class="string">&quot;tomorrow&quot;</span>] =&gt; <span class="prelude-val">Some</span>(time::Duration::days(<span class="number">1</span>)),
         <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
-    };
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(duration) = maybe_duration {
-        <span class="kw">let </span>now_local = time::OffsetDateTime::now_local().unwrap();
-        <span class="kw">let </span>diff = now_local.checked_add(duration).unwrap();
-        <span class="kw">return </span><span class="prelude-val">Ok</span>(local_dt_to_filetime(diff));
     }
-
-    <span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;Unable to parse date: {s}&quot;</span>)))
 }
 
 <span class="kw">fn </span>parse_timestamp(s: <span class="kw-2">&amp;</span>str) -&gt; UResult&lt;FileTime&gt; {
