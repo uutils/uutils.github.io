@@ -3048,6 +3048,70 @@
 <a href="#3048" id="3048">3048</a>
 <a href="#3049" id="3049">3049</a>
 <a href="#3050" id="3050">3050</a>
+<a href="#3051" id="3051">3051</a>
+<a href="#3052" id="3052">3052</a>
+<a href="#3053" id="3053">3053</a>
+<a href="#3054" id="3054">3054</a>
+<a href="#3055" id="3055">3055</a>
+<a href="#3056" id="3056">3056</a>
+<a href="#3057" id="3057">3057</a>
+<a href="#3058" id="3058">3058</a>
+<a href="#3059" id="3059">3059</a>
+<a href="#3060" id="3060">3060</a>
+<a href="#3061" id="3061">3061</a>
+<a href="#3062" id="3062">3062</a>
+<a href="#3063" id="3063">3063</a>
+<a href="#3064" id="3064">3064</a>
+<a href="#3065" id="3065">3065</a>
+<a href="#3066" id="3066">3066</a>
+<a href="#3067" id="3067">3067</a>
+<a href="#3068" id="3068">3068</a>
+<a href="#3069" id="3069">3069</a>
+<a href="#3070" id="3070">3070</a>
+<a href="#3071" id="3071">3071</a>
+<a href="#3072" id="3072">3072</a>
+<a href="#3073" id="3073">3073</a>
+<a href="#3074" id="3074">3074</a>
+<a href="#3075" id="3075">3075</a>
+<a href="#3076" id="3076">3076</a>
+<a href="#3077" id="3077">3077</a>
+<a href="#3078" id="3078">3078</a>
+<a href="#3079" id="3079">3079</a>
+<a href="#3080" id="3080">3080</a>
+<a href="#3081" id="3081">3081</a>
+<a href="#3082" id="3082">3082</a>
+<a href="#3083" id="3083">3083</a>
+<a href="#3084" id="3084">3084</a>
+<a href="#3085" id="3085">3085</a>
+<a href="#3086" id="3086">3086</a>
+<a href="#3087" id="3087">3087</a>
+<a href="#3088" id="3088">3088</a>
+<a href="#3089" id="3089">3089</a>
+<a href="#3090" id="3090">3090</a>
+<a href="#3091" id="3091">3091</a>
+<a href="#3092" id="3092">3092</a>
+<a href="#3093" id="3093">3093</a>
+<a href="#3094" id="3094">3094</a>
+<a href="#3095" id="3095">3095</a>
+<a href="#3096" id="3096">3096</a>
+<a href="#3097" id="3097">3097</a>
+<a href="#3098" id="3098">3098</a>
+<a href="#3099" id="3099">3099</a>
+<a href="#3100" id="3100">3100</a>
+<a href="#3101" id="3101">3101</a>
+<a href="#3102" id="3102">3102</a>
+<a href="#3103" id="3103">3103</a>
+<a href="#3104" id="3104">3104</a>
+<a href="#3105" id="3105">3105</a>
+<a href="#3106" id="3106">3106</a>
+<a href="#3107" id="3107">3107</a>
+<a href="#3108" id="3108">3108</a>
+<a href="#3109" id="3109">3109</a>
+<a href="#3110" id="3110">3110</a>
+<a href="#3111" id="3111">3111</a>
+<a href="#3112" id="3112">3112</a>
+<a href="#3113" id="3113">3113</a>
+<a href="#3114" id="3114">3114</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Jeremiah Peschka &lt;jeremiah.peschka@gmail.com&gt;
@@ -3476,36 +3540,234 @@
     block_size: usize,
 }
 
+<span class="doccomment">/// Extracts the format to display the information based on the options provided.
+///
+/// # Returns
+///
+/// A tuple containing the Format variant and an Option containing a &amp;&#39;static str
+/// which corresponds to the option used to define the format.
+</span><span class="kw">fn </span>extract_format(options: <span class="kw-2">&amp;</span>clap::ArgMatches) -&gt; (Format, <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt;) {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(format_) = options.get_one::&lt;String&gt;(options::FORMAT) {
+        (
+            <span class="kw">match </span>format_.as_str() {
+                <span class="string">&quot;long&quot; </span>| <span class="string">&quot;verbose&quot; </span>=&gt; Format::Long,
+                <span class="string">&quot;single-column&quot; </span>=&gt; Format::OneLine,
+                <span class="string">&quot;columns&quot; </span>| <span class="string">&quot;vertical&quot; </span>=&gt; Format::Columns,
+                <span class="string">&quot;across&quot; </span>| <span class="string">&quot;horizontal&quot; </span>=&gt; Format::Across,
+                <span class="string">&quot;commas&quot; </span>=&gt; Format::Commas,
+                <span class="comment">// below should never happen as clap already restricts the values.
+                </span><span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Invalid field for --format&quot;</span>),
+            },
+            <span class="prelude-val">Some</span>(options::FORMAT),
+        )
+    } <span class="kw">else if </span>options.get_flag(options::format::LONG) {
+        (Format::Long, <span class="prelude-val">Some</span>(options::format::LONG))
+    } <span class="kw">else if </span>options.get_flag(options::format::ACROSS) {
+        (Format::Across, <span class="prelude-val">Some</span>(options::format::ACROSS))
+    } <span class="kw">else if </span>options.get_flag(options::format::COMMAS) {
+        (Format::Commas, <span class="prelude-val">Some</span>(options::format::COMMAS))
+    } <span class="kw">else if </span>options.get_flag(options::format::COLUMNS) {
+        (Format::Columns, <span class="prelude-val">Some</span>(options::format::COLUMNS))
+    } <span class="kw">else if </span>std::io::stdout().is_terminal() {
+        (Format::Columns, <span class="prelude-val">None</span>)
+    } <span class="kw">else </span>{
+        (Format::OneLine, <span class="prelude-val">None</span>)
+    }
+}
+
+<span class="doccomment">/// Extracts the type of files to display
+///
+/// # Returns
+///
+/// A Files variant representing the type of files to display.
+</span><span class="kw">fn </span>extract_files(options: <span class="kw-2">&amp;</span>clap::ArgMatches) -&gt; Files {
+    <span class="kw">if </span>options.get_flag(options::files::ALL) {
+        Files::All
+    } <span class="kw">else if </span>options.get_flag(options::files::ALMOST_ALL) {
+        Files::AlmostAll
+    } <span class="kw">else </span>{
+        Files::Normal
+    }
+}
+
+<span class="doccomment">/// Extracts the sorting method to use based on the options provided.
+///
+/// # Returns
+///
+/// A Sort variant representing the sorting method to use.
+</span><span class="kw">fn </span>extract_sort(options: <span class="kw-2">&amp;</span>clap::ArgMatches) -&gt; Sort {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(field) = options.get_one::&lt;String&gt;(options::SORT) {
+        <span class="kw">match </span>field.as_str() {
+            <span class="string">&quot;none&quot; </span>=&gt; Sort::None,
+            <span class="string">&quot;name&quot; </span>=&gt; Sort::Name,
+            <span class="string">&quot;time&quot; </span>=&gt; Sort::Time,
+            <span class="string">&quot;size&quot; </span>=&gt; Sort::Size,
+            <span class="string">&quot;version&quot; </span>=&gt; Sort::Version,
+            <span class="string">&quot;extension&quot; </span>=&gt; Sort::Extension,
+            <span class="comment">// below should never happen as clap already restricts the values.
+            </span><span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Invalid field for --sort&quot;</span>),
+        }
+    } <span class="kw">else if </span>options.get_flag(options::sort::TIME) {
+        Sort::Time
+    } <span class="kw">else if </span>options.get_flag(options::sort::SIZE) {
+        Sort::Size
+    } <span class="kw">else if </span>options.get_flag(options::sort::NONE) {
+        Sort::None
+    } <span class="kw">else if </span>options.get_flag(options::sort::VERSION) {
+        Sort::Version
+    } <span class="kw">else if </span>options.get_flag(options::sort::EXTENSION) {
+        Sort::Extension
+    } <span class="kw">else </span>{
+        Sort::Name
+    }
+}
+
+<span class="doccomment">/// Extracts the time to use based on the options provided.
+///
+/// # Returns
+///
+/// A Time variant representing the time to use.
+</span><span class="kw">fn </span>extract_time(options: <span class="kw-2">&amp;</span>clap::ArgMatches) -&gt; Time {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(field) = options.get_one::&lt;String&gt;(options::TIME) {
+        <span class="kw">match </span>field.as_str() {
+            <span class="string">&quot;ctime&quot; </span>| <span class="string">&quot;status&quot; </span>=&gt; Time::Change,
+            <span class="string">&quot;access&quot; </span>| <span class="string">&quot;atime&quot; </span>| <span class="string">&quot;use&quot; </span>=&gt; Time::Access,
+            <span class="string">&quot;birth&quot; </span>| <span class="string">&quot;creation&quot; </span>=&gt; Time::Birth,
+            <span class="comment">// below should never happen as clap already restricts the values.
+            </span><span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Invalid field for --time&quot;</span>),
+        }
+    } <span class="kw">else if </span>options.get_flag(options::time::ACCESS) {
+        Time::Access
+    } <span class="kw">else if </span>options.get_flag(options::time::CHANGE) {
+        Time::Change
+    } <span class="kw">else </span>{
+        Time::Modification
+    }
+}
+
+<span class="doccomment">/// Extracts the color option to use based on the options provided.
+///
+/// # Returns
+///
+/// A boolean representing whether or not to use color.
+</span><span class="kw">fn </span>extract_color(options: <span class="kw-2">&amp;</span>clap::ArgMatches) -&gt; bool {
+    <span class="kw">match </span>options.get_one::&lt;String&gt;(options::COLOR) {
+        <span class="prelude-val">None </span>=&gt; options.contains_id(options::COLOR),
+        <span class="prelude-val">Some</span>(val) =&gt; <span class="kw">match </span>val.as_str() {
+            <span class="string">&quot;&quot; </span>| <span class="string">&quot;always&quot; </span>| <span class="string">&quot;yes&quot; </span>| <span class="string">&quot;force&quot; </span>=&gt; <span class="bool-val">true</span>,
+            <span class="string">&quot;auto&quot; </span>| <span class="string">&quot;tty&quot; </span>| <span class="string">&quot;if-tty&quot; </span>=&gt; std::io::stdout().is_terminal(),
+            <span class="comment">/* &quot;never&quot; | &quot;no&quot; | &quot;none&quot; | */ </span><span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
+        },
+    }
+}
+
+<span class="doccomment">/// Extracts the quoting style to use based on the options provided.
+///
+/// # Arguments
+///
+/// * `options` - A reference to a clap::ArgMatches object containing command line arguments.
+/// * `show_control` - A boolean value representing whether or not to show control characters.
+///
+/// # Returns
+///
+/// A QuotingStyle variant representing the quoting style to use.
+</span><span class="kw">fn </span>extract_quoting_style(options: <span class="kw-2">&amp;</span>clap::ArgMatches, show_control: bool) -&gt; QuotingStyle {
+    <span class="kw">let </span>opt_quoting_style = options
+        .get_one::&lt;String&gt;(options::QUOTING_STYLE)
+        .map(|cmd_line_qs| cmd_line_qs.to_owned());
+
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(style) = opt_quoting_style {
+        <span class="kw">match </span>style.as_str() {
+            <span class="string">&quot;literal&quot; </span>=&gt; QuotingStyle::Literal { show_control },
+            <span class="string">&quot;shell&quot; </span>=&gt; QuotingStyle::Shell {
+                escape: <span class="bool-val">false</span>,
+                always_quote: <span class="bool-val">false</span>,
+                show_control,
+            },
+            <span class="string">&quot;shell-always&quot; </span>=&gt; QuotingStyle::Shell {
+                escape: <span class="bool-val">false</span>,
+                always_quote: <span class="bool-val">true</span>,
+                show_control,
+            },
+            <span class="string">&quot;shell-escape&quot; </span>=&gt; QuotingStyle::Shell {
+                escape: <span class="bool-val">true</span>,
+                always_quote: <span class="bool-val">false</span>,
+                show_control,
+            },
+            <span class="string">&quot;shell-escape-always&quot; </span>=&gt; QuotingStyle::Shell {
+                escape: <span class="bool-val">true</span>,
+                always_quote: <span class="bool-val">true</span>,
+                show_control,
+            },
+            <span class="string">&quot;c&quot; </span>=&gt; QuotingStyle::C {
+                quotes: quoting_style::Quotes::Double,
+            },
+            <span class="string">&quot;escape&quot; </span>=&gt; QuotingStyle::C {
+                quotes: quoting_style::Quotes::None,
+            },
+            <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Should have been caught by Clap&quot;</span>),
+        }
+    } <span class="kw">else if </span>options.get_flag(options::quoting::LITERAL) {
+        QuotingStyle::Literal { show_control }
+    } <span class="kw">else if </span>options.get_flag(options::quoting::ESCAPE) {
+        QuotingStyle::C {
+            quotes: quoting_style::Quotes::None,
+        }
+    } <span class="kw">else if </span>options.get_flag(options::quoting::C) {
+        QuotingStyle::C {
+            quotes: quoting_style::Quotes::Double,
+        }
+    } <span class="kw">else </span>{
+        <span class="comment">// TODO: use environment variable if available
+        </span>QuotingStyle::Shell {
+            escape: <span class="bool-val">true</span>,
+            always_quote: <span class="bool-val">false</span>,
+            show_control,
+        }
+    }
+}
+
+<span class="doccomment">/// Extracts the indicator style to use based on the options provided.
+///
+/// # Returns
+///
+/// An IndicatorStyle variant representing the indicator style to use.
+</span><span class="kw">fn </span>extract_indicator_style(options: <span class="kw-2">&amp;</span>clap::ArgMatches) -&gt; IndicatorStyle {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(field) = options.get_one::&lt;String&gt;(options::INDICATOR_STYLE) {
+        <span class="kw">match </span>field.as_str() {
+            <span class="string">&quot;none&quot; </span>=&gt; IndicatorStyle::None,
+            <span class="string">&quot;file-type&quot; </span>=&gt; IndicatorStyle::FileType,
+            <span class="string">&quot;classify&quot; </span>=&gt; IndicatorStyle::Classify,
+            <span class="string">&quot;slash&quot; </span>=&gt; IndicatorStyle::Slash,
+            <span class="kw-2">&amp;</span><span class="kw">_ </span>=&gt; IndicatorStyle::None,
+        }
+    } <span class="kw">else if let </span><span class="prelude-val">Some</span>(field) = options.get_one::&lt;String&gt;(options::indicator_style::CLASSIFY) {
+        <span class="kw">match </span>field.as_str() {
+            <span class="string">&quot;never&quot; </span>| <span class="string">&quot;no&quot; </span>| <span class="string">&quot;none&quot; </span>=&gt; IndicatorStyle::None,
+            <span class="string">&quot;always&quot; </span>| <span class="string">&quot;yes&quot; </span>| <span class="string">&quot;force&quot; </span>=&gt; IndicatorStyle::Classify,
+            <span class="string">&quot;auto&quot; </span>| <span class="string">&quot;tty&quot; </span>| <span class="string">&quot;if-tty&quot; </span>=&gt; {
+                <span class="kw">if </span>std::io::stdout().is_terminal() {
+                    IndicatorStyle::Classify
+                } <span class="kw">else </span>{
+                    IndicatorStyle::None
+                }
+            }
+            <span class="kw-2">&amp;</span><span class="kw">_ </span>=&gt; IndicatorStyle::None,
+        }
+    } <span class="kw">else if </span>options.get_flag(options::indicator_style::SLASH) {
+        IndicatorStyle::Slash
+    } <span class="kw">else if </span>options.get_flag(options::indicator_style::FILE_TYPE) {
+        IndicatorStyle::FileType
+    } <span class="kw">else </span>{
+        IndicatorStyle::None
+    }
+}
+
 <span class="kw">impl </span>Config {
-    <span class="attr">#[allow(clippy::cognitive_complexity)]
-    </span><span class="kw">pub fn </span>from(options: <span class="kw-2">&amp;</span>clap::ArgMatches) -&gt; UResult&lt;<span class="self">Self</span>&gt; {
+    <span class="kw">pub fn </span>from(options: <span class="kw-2">&amp;</span>clap::ArgMatches) -&gt; UResult&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>context = options.get_flag(options::CONTEXT);
-        <span class="kw">let </span>(<span class="kw-2">mut </span>format, opt) = <span class="kw">if let </span><span class="prelude-val">Some</span>(format_) = options.get_one::&lt;String&gt;(options::FORMAT) {
-            (
-                <span class="kw">match </span>format_.as_str() {
-                    <span class="string">&quot;long&quot; </span>| <span class="string">&quot;verbose&quot; </span>=&gt; Format::Long,
-                    <span class="string">&quot;single-column&quot; </span>=&gt; Format::OneLine,
-                    <span class="string">&quot;columns&quot; </span>| <span class="string">&quot;vertical&quot; </span>=&gt; Format::Columns,
-                    <span class="string">&quot;across&quot; </span>| <span class="string">&quot;horizontal&quot; </span>=&gt; Format::Across,
-                    <span class="string">&quot;commas&quot; </span>=&gt; Format::Commas,
-                    <span class="comment">// below should never happen as clap already restricts the values.
-                    </span><span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Invalid field for --format&quot;</span>),
-                },
-                <span class="prelude-val">Some</span>(options::FORMAT),
-            )
-        } <span class="kw">else if </span>options.get_flag(options::format::LONG) {
-            (Format::Long, <span class="prelude-val">Some</span>(options::format::LONG))
-        } <span class="kw">else if </span>options.get_flag(options::format::ACROSS) {
-            (Format::Across, <span class="prelude-val">Some</span>(options::format::ACROSS))
-        } <span class="kw">else if </span>options.get_flag(options::format::COMMAS) {
-            (Format::Commas, <span class="prelude-val">Some</span>(options::format::COMMAS))
-        } <span class="kw">else if </span>options.get_flag(options::format::COLUMNS) {
-            (Format::Columns, <span class="prelude-val">Some</span>(options::format::COLUMNS))
-        } <span class="kw">else if </span>std::io::stdout().is_terminal() {
-            (Format::Columns, <span class="prelude-val">None</span>)
-        } <span class="kw">else </span>{
-            (Format::OneLine, <span class="prelude-val">None</span>)
-        };
+        <span class="kw">let </span>(<span class="kw-2">mut </span>format, opt) = extract_format(options);
+        <span class="kw">let </span>files = extract_files(options);
 
         <span class="comment">// The -o, -n and -g options are tricky. They cannot override with each
         // other because it&#39;s possible to combine them. For example, the option
@@ -3554,63 +3816,11 @@
             }
         }
 
-        <span class="kw">let </span>files = <span class="kw">if </span>options.get_flag(options::files::ALL) {
-            Files::All
-        } <span class="kw">else if </span>options.get_flag(options::files::ALMOST_ALL) {
-            Files::AlmostAll
-        } <span class="kw">else </span>{
-            Files::Normal
-        };
+        <span class="kw">let </span>sort = extract_sort(options);
 
-        <span class="kw">let </span>sort = <span class="kw">if let </span><span class="prelude-val">Some</span>(field) = options.get_one::&lt;String&gt;(options::SORT) {
-            <span class="kw">match </span>field.as_str() {
-                <span class="string">&quot;none&quot; </span>=&gt; Sort::None,
-                <span class="string">&quot;name&quot; </span>=&gt; Sort::Name,
-                <span class="string">&quot;time&quot; </span>=&gt; Sort::Time,
-                <span class="string">&quot;size&quot; </span>=&gt; Sort::Size,
-                <span class="string">&quot;version&quot; </span>=&gt; Sort::Version,
-                <span class="string">&quot;extension&quot; </span>=&gt; Sort::Extension,
-                <span class="comment">// below should never happen as clap already restricts the values.
-                </span><span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Invalid field for --sort&quot;</span>),
-            }
-        } <span class="kw">else if </span>options.get_flag(options::sort::TIME) {
-            Sort::Time
-        } <span class="kw">else if </span>options.get_flag(options::sort::SIZE) {
-            Sort::Size
-        } <span class="kw">else if </span>options.get_flag(options::sort::NONE) {
-            Sort::None
-        } <span class="kw">else if </span>options.get_flag(options::sort::VERSION) {
-            Sort::Version
-        } <span class="kw">else if </span>options.get_flag(options::sort::EXTENSION) {
-            Sort::Extension
-        } <span class="kw">else </span>{
-            Sort::Name
-        };
+        <span class="kw">let </span>time = extract_time(options);
 
-        <span class="kw">let </span>time = <span class="kw">if let </span><span class="prelude-val">Some</span>(field) = options.get_one::&lt;String&gt;(options::TIME) {
-            <span class="kw">match </span>field.as_str() {
-                <span class="string">&quot;ctime&quot; </span>| <span class="string">&quot;status&quot; </span>=&gt; Time::Change,
-                <span class="string">&quot;access&quot; </span>| <span class="string">&quot;atime&quot; </span>| <span class="string">&quot;use&quot; </span>=&gt; Time::Access,
-                <span class="string">&quot;birth&quot; </span>| <span class="string">&quot;creation&quot; </span>=&gt; Time::Birth,
-                <span class="comment">// below should never happen as clap already restricts the values.
-                </span><span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Invalid field for --time&quot;</span>),
-            }
-        } <span class="kw">else if </span>options.get_flag(options::time::ACCESS) {
-            Time::Access
-        } <span class="kw">else if </span>options.get_flag(options::time::CHANGE) {
-            Time::Change
-        } <span class="kw">else </span>{
-            Time::Modification
-        };
-
-        <span class="kw">let </span><span class="kw-2">mut </span>needs_color = <span class="kw">match </span>options.get_one::&lt;String&gt;(options::COLOR) {
-            <span class="prelude-val">None </span>=&gt; options.contains_id(options::COLOR),
-            <span class="prelude-val">Some</span>(val) =&gt; <span class="kw">match </span>val.as_str() {
-                <span class="string">&quot;&quot; </span>| <span class="string">&quot;always&quot; </span>| <span class="string">&quot;yes&quot; </span>| <span class="string">&quot;force&quot; </span>=&gt; <span class="bool-val">true</span>,
-                <span class="string">&quot;auto&quot; </span>| <span class="string">&quot;tty&quot; </span>| <span class="string">&quot;if-tty&quot; </span>=&gt; std::io::stdout().is_terminal(),
-                <span class="comment">/* &quot;never&quot; | &quot;no&quot; | &quot;none&quot; | */ </span><span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
-            },
-        };
+        <span class="kw">let </span><span class="kw-2">mut </span>needs_color = extract_color(options);
 
         <span class="kw">let </span>cmd_line_bs = options.get_one::&lt;String&gt;(options::size::BLOCK_SIZE);
         <span class="kw">let </span>opt_si = cmd_line_bs.is_some()
@@ -3731,90 +3941,8 @@
             !std::io::stdout().is_terminal()
         };
 
-        <span class="kw">let </span>opt_quoting_style = options
-            .get_one::&lt;String&gt;(options::QUOTING_STYLE)
-            .map(|cmd_line_qs| cmd_line_qs.to_owned());
-
-        <span class="kw">let </span><span class="kw-2">mut </span>quoting_style = <span class="kw">if let </span><span class="prelude-val">Some</span>(style) = opt_quoting_style {
-            <span class="kw">match </span>style.as_str() {
-                <span class="string">&quot;literal&quot; </span>=&gt; QuotingStyle::Literal { show_control },
-                <span class="string">&quot;shell&quot; </span>=&gt; QuotingStyle::Shell {
-                    escape: <span class="bool-val">false</span>,
-                    always_quote: <span class="bool-val">false</span>,
-                    show_control,
-                },
-                <span class="string">&quot;shell-always&quot; </span>=&gt; QuotingStyle::Shell {
-                    escape: <span class="bool-val">false</span>,
-                    always_quote: <span class="bool-val">true</span>,
-                    show_control,
-                },
-                <span class="string">&quot;shell-escape&quot; </span>=&gt; QuotingStyle::Shell {
-                    escape: <span class="bool-val">true</span>,
-                    always_quote: <span class="bool-val">false</span>,
-                    show_control,
-                },
-                <span class="string">&quot;shell-escape-always&quot; </span>=&gt; QuotingStyle::Shell {
-                    escape: <span class="bool-val">true</span>,
-                    always_quote: <span class="bool-val">true</span>,
-                    show_control,
-                },
-                <span class="string">&quot;c&quot; </span>=&gt; QuotingStyle::C {
-                    quotes: quoting_style::Quotes::Double,
-                },
-                <span class="string">&quot;escape&quot; </span>=&gt; QuotingStyle::C {
-                    quotes: quoting_style::Quotes::None,
-                },
-                <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Should have been caught by Clap&quot;</span>),
-            }
-        } <span class="kw">else if </span>options.get_flag(options::quoting::LITERAL) {
-            QuotingStyle::Literal { show_control }
-        } <span class="kw">else if </span>options.get_flag(options::quoting::ESCAPE) {
-            QuotingStyle::C {
-                quotes: quoting_style::Quotes::None,
-            }
-        } <span class="kw">else if </span>options.get_flag(options::quoting::C) {
-            QuotingStyle::C {
-                quotes: quoting_style::Quotes::Double,
-            }
-        } <span class="kw">else </span>{
-            <span class="comment">// TODO: use environment variable if available
-            </span>QuotingStyle::Shell {
-                escape: <span class="bool-val">true</span>,
-                always_quote: <span class="bool-val">false</span>,
-                show_control,
-            }
-        };
-
-        <span class="kw">let </span>indicator_style = <span class="kw">if let </span><span class="prelude-val">Some</span>(field) =
-            options.get_one::&lt;String&gt;(options::INDICATOR_STYLE)
-        {
-            <span class="kw">match </span>field.as_str() {
-                <span class="string">&quot;none&quot; </span>=&gt; IndicatorStyle::None,
-                <span class="string">&quot;file-type&quot; </span>=&gt; IndicatorStyle::FileType,
-                <span class="string">&quot;classify&quot; </span>=&gt; IndicatorStyle::Classify,
-                <span class="string">&quot;slash&quot; </span>=&gt; IndicatorStyle::Slash,
-                <span class="kw-2">&amp;</span><span class="kw">_ </span>=&gt; IndicatorStyle::None,
-            }
-        } <span class="kw">else if let </span><span class="prelude-val">Some</span>(field) = options.get_one::&lt;String&gt;(options::indicator_style::CLASSIFY) {
-            <span class="kw">match </span>field.as_str() {
-                <span class="string">&quot;never&quot; </span>| <span class="string">&quot;no&quot; </span>| <span class="string">&quot;none&quot; </span>=&gt; IndicatorStyle::None,
-                <span class="string">&quot;always&quot; </span>| <span class="string">&quot;yes&quot; </span>| <span class="string">&quot;force&quot; </span>=&gt; IndicatorStyle::Classify,
-                <span class="string">&quot;auto&quot; </span>| <span class="string">&quot;tty&quot; </span>| <span class="string">&quot;if-tty&quot; </span>=&gt; {
-                    <span class="kw">if </span>std::io::stdout().is_terminal() {
-                        IndicatorStyle::Classify
-                    } <span class="kw">else </span>{
-                        IndicatorStyle::None
-                    }
-                }
-                <span class="kw-2">&amp;</span><span class="kw">_ </span>=&gt; IndicatorStyle::None,
-            }
-        } <span class="kw">else if </span>options.get_flag(options::indicator_style::SLASH) {
-            IndicatorStyle::Slash
-        } <span class="kw">else if </span>options.get_flag(options::indicator_style::FILE_TYPE) {
-            IndicatorStyle::FileType
-        } <span class="kw">else </span>{
-            IndicatorStyle::None
-        };
+        <span class="kw">let </span><span class="kw-2">mut </span>quoting_style = extract_quoting_style(options, show_control);
+        <span class="kw">let </span>indicator_style = extract_indicator_style(options);
         <span class="kw">let </span>time_style = parse_time_style(options)<span class="question-mark">?</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>ignore_patterns: Vec&lt;Pattern&gt; = Vec::new();
