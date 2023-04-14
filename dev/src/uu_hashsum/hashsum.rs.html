@@ -685,6 +685,42 @@
 <a href="#685" id="685">685</a>
 <a href="#686" id="686">686</a>
 <a href="#687" id="687">687</a>
+<a href="#688" id="688">688</a>
+<a href="#689" id="689">689</a>
+<a href="#690" id="690">690</a>
+<a href="#691" id="691">691</a>
+<a href="#692" id="692">692</a>
+<a href="#693" id="693">693</a>
+<a href="#694" id="694">694</a>
+<a href="#695" id="695">695</a>
+<a href="#696" id="696">696</a>
+<a href="#697" id="697">697</a>
+<a href="#698" id="698">698</a>
+<a href="#699" id="699">699</a>
+<a href="#700" id="700">700</a>
+<a href="#701" id="701">701</a>
+<a href="#702" id="702">702</a>
+<a href="#703" id="703">703</a>
+<a href="#704" id="704">704</a>
+<a href="#705" id="705">705</a>
+<a href="#706" id="706">706</a>
+<a href="#707" id="707">707</a>
+<a href="#708" id="708">708</a>
+<a href="#709" id="709">709</a>
+<a href="#710" id="710">710</a>
+<a href="#711" id="711">711</a>
+<a href="#712" id="712">712</a>
+<a href="#713" id="713">713</a>
+<a href="#714" id="714">714</a>
+<a href="#715" id="715">715</a>
+<a href="#716" id="716">716</a>
+<a href="#717" id="717">717</a>
+<a href="#718" id="718">718</a>
+<a href="#719" id="719">719</a>
+<a href="#720" id="720">720</a>
+<a href="#721" id="721">721</a>
+<a href="#722" id="722">722</a>
+<a href="#723" id="723">723</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Alex Lyon &lt;arcterus@mail.com&gt;
@@ -752,7 +788,28 @@
         <span class="string">&quot;sha256sum&quot; </span>=&gt; (<span class="string">&quot;SHA256&quot;</span>, Box::new(Sha256::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">256</span>),
         <span class="string">&quot;sha384sum&quot; </span>=&gt; (<span class="string">&quot;SHA384&quot;</span>, Box::new(Sha384::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">384</span>),
         <span class="string">&quot;sha512sum&quot; </span>=&gt; (<span class="string">&quot;SHA512&quot;</span>, Box::new(Sha512::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">512</span>),
-        <span class="string">&quot;b2sum&quot; </span>=&gt; (<span class="string">&quot;BLAKE2&quot;</span>, Box::new(Blake2b::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">512</span>),
+        <span class="string">&quot;b2sum&quot; </span>=&gt; <span class="kw">match </span>matches.get_one::&lt;usize&gt;(<span class="string">&quot;length&quot;</span>) {
+            <span class="comment">// by default, blake2 uses 64 bytes (512 bits)
+            // --length=0 falls back to default behavior
+            </span><span class="prelude-val">Some</span>(<span class="number">0</span>) | <span class="prelude-val">None </span>=&gt; (<span class="string">&quot;BLAKE2&quot;</span>, Box::new(Blake2b::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">512</span>),
+            <span class="prelude-val">Some</span>(length_in_bits) =&gt; {
+                <span class="kw">if </span><span class="kw-2">*</span>length_in_bits &gt; <span class="number">512 </span>{
+                    <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;Invalid length (maximum digest length is 512 bits)&quot;</span>)
+                }
+
+                <span class="comment">// blake2 output size must be a multiple of 8 bits
+                </span><span class="kw">if </span>length_in_bits % <span class="number">8 </span>== <span class="number">0 </span>{
+                    <span class="kw">let </span>length_in_bytes = length_in_bits / <span class="number">8</span>;
+                    (
+                        <span class="string">&quot;BLAKE2&quot;</span>,
+                        Box::new(Blake2b::with_output_bytes(length_in_bytes)),
+                        <span class="kw-2">*</span>length_in_bits,
+                    )
+                } <span class="kw">else </span>{
+                    <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;Invalid length (expected a multiple of 8)&quot;</span>)
+                }
+            }
+        },
         <span class="string">&quot;b3sum&quot; </span>=&gt; (<span class="string">&quot;BLAKE3&quot;</span>, Box::new(Blake3::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">256</span>),
         <span class="string">&quot;sha3sum&quot; </span>=&gt; <span class="kw">match </span>matches.get_one::&lt;usize&gt;(<span class="string">&quot;bits&quot;</span>) {
             <span class="prelude-val">Some</span>(<span class="number">224</span>) =&gt; (
@@ -1066,6 +1123,21 @@
         )
 }
 
+<span class="kw">pub fn </span>uu_app_length() -&gt; Command {
+    uu_app_opt_length(uu_app_common())
+}
+
+<span class="kw">fn </span>uu_app_opt_length(command: Command) -&gt; Command {
+    command.arg(
+        Arg::new(<span class="string">&quot;length&quot;</span>)
+            .short(<span class="string">&#39;l&#39;</span>)
+            .long(<span class="string">&quot;length&quot;</span>)
+            .help(<span class="string">&quot;digest length in bits; must not exceed the max for the blake2 algorithm (512) and must be a multiple of 8&quot;</span>)
+            .value_name(<span class="string">&quot;BITS&quot;</span>)
+            .value_parser(parse_bit_num),
+    )
+}
+
 <span class="kw">pub fn </span>uu_app_b3sum() -&gt; Command {
     uu_app_b3sum_opts(uu_app_common())
 }
@@ -1141,8 +1213,8 @@
             uu_app_common()
         }
         <span class="comment">// b2sum supports the md5sum options plus -l/--length.
-        </span><span class="string">&quot;b2sum&quot; </span>=&gt; uu_app_common(), <span class="comment">// TODO: Implement -l/--length
-        // These have never been part of GNU Coreutils, but can function with the same
+        </span><span class="string">&quot;b2sum&quot; </span>=&gt; uu_app_length(),
+        <span class="comment">// These have never been part of GNU Coreutils, but can function with the same
         // options as md5sum.
         </span><span class="string">&quot;sha3-224sum&quot; </span>| <span class="string">&quot;sha3-256sum&quot; </span>| <span class="string">&quot;sha3-384sum&quot; </span>| <span class="string">&quot;sha3-512sum&quot; </span>=&gt; uu_app_common(),
         <span class="comment">// These have never been part of GNU Coreutils, and require an additional --bits

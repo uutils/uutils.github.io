@@ -963,6 +963,45 @@
 <a href="#963" id="963">963</a>
 <a href="#964" id="964">964</a>
 <a href="#965" id="965">965</a>
+<a href="#966" id="966">966</a>
+<a href="#967" id="967">967</a>
+<a href="#968" id="968">968</a>
+<a href="#969" id="969">969</a>
+<a href="#970" id="970">970</a>
+<a href="#971" id="971">971</a>
+<a href="#972" id="972">972</a>
+<a href="#973" id="973">973</a>
+<a href="#974" id="974">974</a>
+<a href="#975" id="975">975</a>
+<a href="#976" id="976">976</a>
+<a href="#977" id="977">977</a>
+<a href="#978" id="978">978</a>
+<a href="#979" id="979">979</a>
+<a href="#980" id="980">980</a>
+<a href="#981" id="981">981</a>
+<a href="#982" id="982">982</a>
+<a href="#983" id="983">983</a>
+<a href="#984" id="984">984</a>
+<a href="#985" id="985">985</a>
+<a href="#986" id="986">986</a>
+<a href="#987" id="987">987</a>
+<a href="#988" id="988">988</a>
+<a href="#989" id="989">989</a>
+<a href="#990" id="990">990</a>
+<a href="#991" id="991">991</a>
+<a href="#992" id="992">992</a>
+<a href="#993" id="993">993</a>
+<a href="#994" id="994">994</a>
+<a href="#995" id="995">995</a>
+<a href="#996" id="996">996</a>
+<a href="#997" id="997">997</a>
+<a href="#998" id="998">998</a>
+<a href="#999" id="999">999</a>
+<a href="#1000" id="1000">1000</a>
+<a href="#1001" id="1001">1001</a>
+<a href="#1002" id="1002">1002</a>
+<a href="#1003" id="1003">1003</a>
+<a href="#1004" id="1004">1004</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Derek Chiang &lt;derekchiang93@gmail.com&gt;
@@ -998,7 +1037,7 @@
 <span class="kw">use </span>std::{error::Error, fmt::Display};
 <span class="kw">use </span>uucore::display::{print_verbatim, Quotable};
 <span class="kw">use </span>uucore::error::FromIo;
-<span class="kw">use </span>uucore::error::{UError, UResult};
+<span class="kw">use </span>uucore::error::{set_exit_code, UError, UResult};
 <span class="kw">use </span>uucore::parse_glob;
 <span class="kw">use </span>uucore::parse_size::{parse_size, ParseSizeError};
 <span class="kw">use </span>uucore::{
@@ -1033,6 +1072,7 @@
     <span class="kw">pub const </span>TIME_STYLE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;time-style&quot;</span>;
     <span class="kw">pub const </span>ONE_FILE_SYSTEM: <span class="kw-2">&amp;</span>str = <span class="string">&quot;one-file-system&quot;</span>;
     <span class="kw">pub const </span>DEREFERENCE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;dereference&quot;</span>;
+    <span class="kw">pub const </span>DEREFERENCE_ARGS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;dereference-args&quot;</span>;
     <span class="kw">pub const </span>INODES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;inodes&quot;</span>;
     <span class="kw">pub const </span>EXCLUDE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;exclude&quot;</span>;
     <span class="kw">pub const </span>EXCLUDE_FROM: <span class="kw-2">&amp;</span>str = <span class="string">&quot;exclude-from&quot;</span>;
@@ -1053,9 +1093,16 @@
     total: bool,
     separate_dirs: bool,
     one_file_system: bool,
-    dereference: bool,
+    dereference: Deref,
     inodes: bool,
     verbose: bool,
+}
+
+<span class="attr">#[derive(PartialEq)]
+</span><span class="kw">enum </span>Deref {
+    All,
+    Args(Vec&lt;PathBuf&gt;),
+    <span class="prelude-val">None</span>,
 }
 
 <span class="attr">#[derive(PartialEq, Eq, Hash, Clone, Copy)]
@@ -1077,12 +1124,21 @@
 }
 
 <span class="kw">impl </span>Stat {
-    <span class="kw">fn </span>new(path: PathBuf, options: <span class="kw-2">&amp;</span>Options) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span>metadata = <span class="kw">if </span>options.dereference {
-            fs::metadata(<span class="kw-2">&amp;</span>path)<span class="question-mark">?
-        </span>} <span class="kw">else </span>{
-            fs::symlink_metadata(<span class="kw-2">&amp;</span>path)<span class="question-mark">?
-        </span>};
+    <span class="kw">fn </span>new(path: <span class="kw-2">&amp;</span>Path, options: <span class="kw-2">&amp;</span>Options) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="comment">// Determine whether to dereference (follow) the symbolic link
+        </span><span class="kw">let </span>should_dereference = <span class="kw">match </span><span class="kw-2">&amp;</span>options.dereference {
+            Deref::All =&gt; <span class="bool-val">true</span>,
+            Deref::Args(paths) =&gt; paths.contains(<span class="kw-2">&amp;</span>path.to_path_buf()),
+            Deref::None =&gt; <span class="bool-val">false</span>,
+        };
+
+        <span class="kw">let </span>metadata = <span class="kw">if </span>should_dereference {
+            <span class="comment">// Get metadata, following symbolic links if necessary
+            </span>fs::metadata(path)
+        } <span class="kw">else </span>{
+            <span class="comment">// Get metadata without following symbolic links
+            </span>fs::symlink_metadata(path)
+        }<span class="question-mark">?</span>;
 
         <span class="attr">#[cfg(not(windows))]
         </span><span class="kw">let </span>file_info = FileInfo {
@@ -1091,7 +1147,7 @@
         };
         <span class="attr">#[cfg(not(windows))]
         </span><span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-            path,
+            path: path.to_path_buf(),
             is_dir: metadata.is_dir(),
             size: metadata.len(),
             blocks: metadata.blocks(),
@@ -1103,12 +1159,12 @@
         });
 
         <span class="attr">#[cfg(windows)]
-        </span><span class="kw">let </span>size_on_disk = get_size_on_disk(<span class="kw-2">&amp;</span>path);
+        </span><span class="kw">let </span>size_on_disk = get_size_on_disk(path);
         <span class="attr">#[cfg(windows)]
-        </span><span class="kw">let </span>file_info = get_file_info(<span class="kw-2">&amp;</span>path);
+        </span><span class="kw">let </span>file_info = get_file_info(path);
         <span class="attr">#[cfg(windows)]
         </span><span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-            path,
+            path: path.to_path_buf(),
             is_dir: metadata.is_dir(),
             size: metadata.len(),
             blocks: size_on_disk / <span class="number">1024 </span>* <span class="number">2</span>,
@@ -1261,7 +1317,7 @@
         <span class="lifetime">&#39;file_loop</span>: <span class="kw">for </span>f <span class="kw">in </span>read {
             <span class="kw">match </span>f {
                 <span class="prelude-val">Ok</span>(entry) =&gt; {
-                    <span class="kw">match </span>Stat::new(entry.path(), options) {
+                    <span class="kw">match </span>Stat::new(<span class="kw-2">&amp;</span>entry.path(), options) {
                         <span class="prelude-val">Ok</span>(this_stat) =&gt; {
                             <span class="comment">// We have an exclude list
                             </span><span class="kw">for </span>pattern <span class="kw">in </span>exclude {
@@ -1362,6 +1418,20 @@
     <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, ((size <span class="kw">as </span>f64) / (block_size <span class="kw">as </span>f64)).ceil())
 }
 
+<span class="kw">fn </span>get_convert_size_fn(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; Box&lt;<span class="kw">dyn </span>Fn(u64, u64, u64) -&gt; String&gt; {
+    <span class="kw">if </span>matches.get_flag(options::HUMAN_READABLE) || matches.get_flag(options::SI) {
+        Box::new(convert_size_human)
+    } <span class="kw">else if </span>matches.get_flag(options::BYTES) {
+        Box::new(convert_size_b)
+    } <span class="kw">else if </span>matches.get_flag(options::BLOCK_SIZE_1K) {
+        Box::new(convert_size_k)
+    } <span class="kw">else if </span>matches.get_flag(options::BLOCK_SIZE_1M) {
+        Box::new(convert_size_m)
+    } <span class="kw">else </span>{
+        Box::new(convert_size_other)
+    }
+}
+
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">enum </span>DuError {
     InvalidMaxDepthArg(String),
@@ -1455,7 +1525,6 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
 }
 
 <span class="attr">#[uucore::main]
-#[allow(clippy::cognitive_complexity)]
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
     <span class="kw">let </span>args = args.collect_ignore();
 
@@ -1470,24 +1539,31 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
         summarize,
     )<span class="question-mark">?</span>;
 
+    <span class="kw">let </span>files = <span class="kw">match </span>matches.get_one::&lt;String&gt;(options::FILE) {
+        <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; matches
+            .get_many::&lt;String&gt;(options::FILE)
+            .unwrap()
+            .map(PathBuf::from)
+            .collect(),
+        <span class="prelude-val">None </span>=&gt; <span class="macro">vec!</span>[PathBuf::from(<span class="string">&quot;.&quot;</span>)],
+    };
+
     <span class="kw">let </span>options = Options {
         all: matches.get_flag(options::ALL),
         max_depth,
         total: matches.get_flag(options::TOTAL),
         separate_dirs: matches.get_flag(options::SEPARATE_DIRS),
         one_file_system: matches.get_flag(options::ONE_FILE_SYSTEM),
-        dereference: matches.get_flag(options::DEREFERENCE),
+        dereference: <span class="kw">if </span>matches.get_flag(options::DEREFERENCE) {
+            Deref::All
+        } <span class="kw">else if </span>matches.get_flag(options::DEREFERENCE_ARGS) {
+            <span class="comment">// We don&#39;t care about the cost of cloning as it is rarely used
+            </span>Deref::Args(files.clone())
+        } <span class="kw">else </span>{
+            Deref::None
+        },
         inodes: matches.get_flag(options::INODES),
         verbose: matches.get_flag(options::VERBOSE),
-    };
-
-    <span class="kw">let </span>files = <span class="kw">match </span>matches.get_one::&lt;String&gt;(options::FILE) {
-        <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; matches
-            .get_many::&lt;String&gt;(options::FILE)
-            .unwrap()
-            .map(|s| s.as_str())
-            .collect(),
-        <span class="prelude-val">None </span>=&gt; <span class="macro">vec!</span>[<span class="string">&quot;.&quot;</span>],
     };
 
     <span class="kw">if </span>options.inodes
@@ -1512,19 +1588,9 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
     </span>} <span class="kw">else </span>{
         <span class="number">1024
     </span>};
-    <span class="kw">let </span>convert_size_fn = {
-        <span class="kw">if </span>matches.get_flag(options::HUMAN_READABLE) || matches.get_flag(options::SI) {
-            convert_size_human
-        } <span class="kw">else if </span>matches.get_flag(options::BYTES) {
-            convert_size_b
-        } <span class="kw">else if </span>matches.get_flag(options::BLOCK_SIZE_1K) {
-            convert_size_k
-        } <span class="kw">else if </span>matches.get_flag(options::BLOCK_SIZE_1M) {
-            convert_size_m
-        } <span class="kw">else </span>{
-            convert_size_other
-        }
-    };
+
+    <span class="kw">let </span>convert_size_fn = get_convert_size_fn(<span class="kw-2">&amp;</span>matches);
+
     <span class="kw">let </span>convert_size = |size: u64| {
         <span class="kw">if </span>options.inodes {
             size.to_string()
@@ -1545,11 +1611,12 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
     <span class="kw">let </span>excludes = build_exclude_patterns(<span class="kw-2">&amp;</span>matches)<span class="question-mark">?</span>;
 
     <span class="kw">let </span><span class="kw-2">mut </span>grand_total = <span class="number">0</span>;
-    <span class="lifetime">&#39;loop_file</span>: <span class="kw">for </span>path_string <span class="kw">in </span>files {
+    <span class="lifetime">&#39;loop_file</span>: <span class="kw">for </span>path <span class="kw">in </span>files {
         <span class="comment">// Skip if we don&#39;t want to ignore anything
         </span><span class="kw">if </span>!<span class="kw-2">&amp;</span>excludes.is_empty() {
+            <span class="kw">let </span>path_string = path.to_string_lossy();
             <span class="kw">for </span>pattern <span class="kw">in </span><span class="kw-2">&amp;</span>excludes {
-                <span class="kw">if </span>pattern.matches(path_string) {
+                <span class="kw">if </span>pattern.matches(<span class="kw-2">&amp;</span>path_string) {
                     <span class="comment">// if the directory is ignored, leave early
                     </span><span class="kw">if </span>options.verbose {
                         <span class="macro">println!</span>(<span class="string">&quot;{} ignored&quot;</span>, path_string.quote());
@@ -1559,9 +1626,8 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
             }
         }
 
-        <span class="kw">let </span>path = PathBuf::from(<span class="kw-2">&amp;</span>path_string);
         <span class="comment">// Check existence of path provided in argument
-        </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(stat) = Stat::new(path, <span class="kw-2">&amp;</span>options) {
+        </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(stat) = Stat::new(<span class="kw-2">&amp;</span>path, <span class="kw-2">&amp;</span>options) {
             <span class="comment">// Kick off the computation of disk usage from the initial path
             </span><span class="kw">let </span><span class="kw-2">mut </span>inodes: HashSet&lt;FileInfo&gt; = HashSet::new();
             <span class="kw">if let </span><span class="prelude-val">Some</span>(inode) = stat.inode {
@@ -1581,20 +1647,11 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
 
                 <span class="kw">if </span>matches.contains_id(options::TIME) {
                     <span class="kw">let </span>tm = {
-                        <span class="kw">let </span>secs = {
-                            <span class="kw">match </span>matches.get_one::&lt;String&gt;(options::TIME) {
-                                <span class="prelude-val">Some</span>(s) =&gt; <span class="kw">match </span>s.as_str() {
-                                    <span class="string">&quot;ctime&quot; </span>| <span class="string">&quot;status&quot; </span>=&gt; stat.modified,
-                                    <span class="string">&quot;access&quot; </span>| <span class="string">&quot;atime&quot; </span>| <span class="string">&quot;use&quot; </span>=&gt; stat.accessed,
-                                    <span class="string">&quot;birth&quot; </span>| <span class="string">&quot;creation&quot; </span>=&gt; stat
-                                        .created
-                                        .ok_or_else(|| DuError::InvalidTimeArg(s.into()))<span class="question-mark">?</span>,
-                                    <span class="comment">// below should never happen as clap already restricts the values.
-                                    </span><span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Invalid field for --time&quot;</span>),
-                                },
-                                <span class="prelude-val">None </span>=&gt; stat.modified,
-                            }
-                        };
+                        <span class="kw">let </span>secs = matches
+                            .get_one::&lt;String&gt;(options::TIME)
+                            .map(|s| get_time_secs(s, <span class="kw-2">&amp;</span>stat))
+                            .transpose()<span class="question-mark">?
+                            </span>.unwrap_or(stat.modified);
                         DateTime::&lt;Local&gt;::from(UNIX_EPOCH + Duration::from_secs(secs))
                     };
                     <span class="kw">if </span>!summarize || index == len - <span class="number">1 </span>{
@@ -1617,9 +1674,10 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
         } <span class="kw">else </span>{
             <span class="macro">show_error!</span>(
                 <span class="string">&quot;{}: {}&quot;</span>,
-                path_string.maybe_quote(),
+                path.to_string_lossy().maybe_quote(),
                 <span class="string">&quot;No such file or directory&quot;
             </span>);
+            set_exit_code(<span class="number">1</span>);
         }
     }
 
@@ -1629,6 +1687,19 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
     }
 
     <span class="prelude-val">Ok</span>(())
+}
+
+<span class="kw">fn </span>get_time_secs(s: <span class="kw-2">&amp;</span>str, stat: <span class="kw-2">&amp;</span>Stat) -&gt; std::result::Result&lt;u64, DuError&gt; {
+    <span class="kw">let </span>secs = <span class="kw">match </span>s {
+        <span class="string">&quot;ctime&quot; </span>| <span class="string">&quot;status&quot; </span>=&gt; stat.modified,
+        <span class="string">&quot;access&quot; </span>| <span class="string">&quot;atime&quot; </span>| <span class="string">&quot;use&quot; </span>=&gt; stat.accessed,
+        <span class="string">&quot;birth&quot; </span>| <span class="string">&quot;creation&quot; </span>=&gt; stat
+            .created
+            .ok_or_else(|| DuError::InvalidTimeArg(s.into()))<span class="question-mark">?</span>,
+        <span class="comment">// below should never happen as clap already restricts the values.
+        </span><span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Invalid field for --time&quot;</span>),
+    };
+    <span class="prelude-val">Ok</span>(secs)
 }
 
 <span class="kw">fn </span>parse_time_style(s: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; UResult&lt;<span class="kw-2">&amp;</span>str&gt; {
@@ -1751,6 +1822,13 @@ Try &#39;{} --help&#39; for more information.&quot;</span>,
                 .short(<span class="string">&#39;L&#39;</span>)
                 .long(options::DEREFERENCE)
                 .help(<span class="string">&quot;dereference all symbolic links&quot;</span>)
+                .action(ArgAction::SetTrue)
+        )
+        .arg(
+            Arg::new(options::DEREFERENCE_ARGS)
+                .short(<span class="string">&#39;D&#39;</span>)
+                .long(options::DEREFERENCE_ARGS)
+                .help(<span class="string">&quot;dereference only symlinks that are listed on the command line&quot;</span>)
                 .action(ArgAction::SetTrue)
         )
         <span class="comment">// .arg(
