@@ -198,7 +198,7 @@ var sourcesIndex = JSON.parse('{\
 "uu_uptime":["",[],["uptime.rs"]],\
 "uu_users":["",[],["users.rs"]],\
 "uu_vdir":["",[],["vdir.rs"]],\
-"uu_wc":["",[],["count_fast.rs","countable.rs","wc.rs","word_count.rs"]],\
+"uu_wc":["",[["utf8",[],["mod.rs","read.rs"]]],["count_fast.rs","countable.rs","wc.rs","word_count.rs"]],\
 "uu_who":["",[],["who.rs"]],\
 "uu_whoami":["",[["platform",[],["mod.rs","unix.rs"]]],["whoami.rs"]],\
 "uu_yes":["",[],["splice.rs","yes.rs"]],\
