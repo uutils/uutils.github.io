@@ -357,6 +357,41 @@
 <a href="#357" id="357">357</a>
 <a href="#358" id="358">358</a>
 <a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of `fmt` from the uutils coreutils package.
 //  *
 //  * (c) kwantam &lt;kwantam@gmail.com&gt;
@@ -370,7 +405,7 @@
 <span class="kw">use </span>std::cmp;
 <span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::io::{stdin, stdout, Write};
-<span class="kw">use </span>std::io::{BufReader, BufWriter, Read};
+<span class="kw">use </span>std::io::{BufReader, BufWriter, Read, Stdout};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{FromIo, UResult, USimpleError};
 <span class="kw">use </span>uucore::{format_usage, help_about, help_usage, show_warning};
@@ -419,10 +454,16 @@
     goal: usize,
     tabwidth: usize,
 }
-
-<span class="attr">#[uucore::main]
-#[allow(clippy::cognitive_complexity)]
-</span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
+<span class="doccomment">/// Parse the command line arguments and return the list of files and formatting options.
+///
+/// # Arguments
+///
+/// * `args` - Command line arguments.
+///
+/// # Returns
+///
+/// A tuple containing a vector of file names and a `FmtOptions` struct.
+</span><span class="kw">fn </span>parse_arguments(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;(Vec&lt;String&gt;, FmtOptions)&gt; {
     <span class="kw">let </span>matches = uu_app().try_get_matches_from(args)<span class="question-mark">?</span>;
 
     <span class="kw">let </span><span class="kw-2">mut </span>files: Vec&lt;String&gt; = matches
@@ -536,39 +577,68 @@
         files.push(<span class="string">&quot;-&quot;</span>.to_owned());
     }
 
+    <span class="prelude-val">Ok</span>((files, fmt_opts))
+}
+
+<span class="doccomment">/// Process the content of a file and format it according to the provided options.
+///
+/// # Arguments
+///
+/// * `file_name` - The name of the file to process. A value of &quot;-&quot; represents the standard input.
+/// * `fmt_opts` - A reference to a `FmtOptions` struct containing the formatting options.
+/// * `ostream` - A mutable reference to a `BufWriter` wrapping the standard output.
+///
+/// # Returns
+///
+/// A `UResult&lt;()&gt;` indicating success or failure.
+</span><span class="kw">fn </span>process_file(
+    file_name: <span class="kw-2">&amp;</span>str,
+    fmt_opts: <span class="kw-2">&amp;</span>FmtOptions,
+    ostream: <span class="kw-2">&amp;mut </span>BufWriter&lt;Stdout&gt;,
+) -&gt; UResult&lt;()&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>fp = <span class="kw">match </span>file_name {
+        <span class="string">&quot;-&quot; </span>=&gt; BufReader::new(Box::new(stdin()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Read + <span class="lifetime">&#39;static</span>&gt;),
+        <span class="kw">_ </span>=&gt; <span class="kw">match </span>File::open(file_name) {
+            <span class="prelude-val">Ok</span>(f) =&gt; BufReader::new(Box::new(f) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Read + <span class="lifetime">&#39;static</span>&gt;),
+            <span class="prelude-val">Err</span>(e) =&gt; {
+                <span class="macro">show_warning!</span>(<span class="string">&quot;{}: {}&quot;</span>, file_name.maybe_quote(), e);
+                <span class="kw">return </span><span class="prelude-val">Ok</span>(());
+            }
+        },
+    };
+
+    <span class="kw">let </span>p_stream = ParagraphStream::new(fmt_opts, <span class="kw-2">&amp;mut </span>fp);
+    <span class="kw">for </span>para_result <span class="kw">in </span>p_stream {
+        <span class="kw">match </span>para_result {
+            <span class="prelude-val">Err</span>(s) =&gt; {
+                ostream
+                    .write_all(s.as_bytes())
+                    .map_err_context(|| <span class="string">&quot;failed to write output&quot;</span>.to_string())<span class="question-mark">?</span>;
+                ostream
+                    .write_all(<span class="string">b&quot;\n&quot;</span>)
+                    .map_err_context(|| <span class="string">&quot;failed to write output&quot;</span>.to_string())<span class="question-mark">?</span>;
+            }
+            <span class="prelude-val">Ok</span>(para) =&gt; break_lines(<span class="kw-2">&amp;</span>para, fmt_opts, ostream)
+                .map_err_context(|| <span class="string">&quot;failed to write output&quot;</span>.to_string())<span class="question-mark">?</span>,
+        }
+    }
+
+    <span class="comment">// flush the output after each file
+    </span>ostream
+        .flush()
+        .map_err_context(|| <span class="string">&quot;failed to write output&quot;</span>.to_string())<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(())
+}
+
+<span class="attr">#[uucore::main]
+</span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
+    <span class="kw">let </span>(files, fmt_opts) = parse_arguments(args)<span class="question-mark">?</span>;
+
     <span class="kw">let </span><span class="kw-2">mut </span>ostream = BufWriter::new(stdout());
 
-    <span class="kw">for </span>i <span class="kw">in </span>files.iter().map(|x| <span class="kw-2">&amp;</span>x[..]) {
-        <span class="kw">let </span><span class="kw-2">mut </span>fp = <span class="kw">match </span>i {
-            <span class="string">&quot;-&quot; </span>=&gt; BufReader::new(Box::new(stdin()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Read + <span class="lifetime">&#39;static</span>&gt;),
-            <span class="kw">_ </span>=&gt; <span class="kw">match </span>File::open(i) {
-                <span class="prelude-val">Ok</span>(f) =&gt; BufReader::new(Box::new(f) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Read + <span class="lifetime">&#39;static</span>&gt;),
-                <span class="prelude-val">Err</span>(e) =&gt; {
-                    <span class="macro">show_warning!</span>(<span class="string">&quot;{}: {}&quot;</span>, i.maybe_quote(), e);
-                    <span class="kw">continue</span>;
-                }
-            },
-        };
-        <span class="kw">let </span>p_stream = ParagraphStream::new(<span class="kw-2">&amp;</span>fmt_opts, <span class="kw-2">&amp;mut </span>fp);
-        <span class="kw">for </span>para_result <span class="kw">in </span>p_stream {
-            <span class="kw">match </span>para_result {
-                <span class="prelude-val">Err</span>(s) =&gt; {
-                    ostream
-                        .write_all(s.as_bytes())
-                        .map_err_context(|| <span class="string">&quot;failed to write output&quot;</span>.to_string())<span class="question-mark">?</span>;
-                    ostream
-                        .write_all(<span class="string">b&quot;\n&quot;</span>)
-                        .map_err_context(|| <span class="string">&quot;failed to write output&quot;</span>.to_string())<span class="question-mark">?</span>;
-                }
-                <span class="prelude-val">Ok</span>(para) =&gt; break_lines(<span class="kw-2">&amp;</span>para, <span class="kw-2">&amp;</span>fmt_opts, <span class="kw-2">&amp;mut </span>ostream)
-                    .map_err_context(|| <span class="string">&quot;failed to write output&quot;</span>.to_string())<span class="question-mark">?</span>,
-            }
-        }
-
-        <span class="comment">// flush the output after each file
-        </span>ostream
-            .flush()
-            .map_err_context(|| <span class="string">&quot;failed to write output&quot;</span>.to_string())<span class="question-mark">?</span>;
+    <span class="kw">for </span>file_name <span class="kw">in </span><span class="kw-2">&amp;</span>files {
+        process_file(file_name, <span class="kw-2">&amp;</span>fmt_opts, <span class="kw-2">&amp;mut </span>ostream)<span class="question-mark">?</span>;
     }
 
     <span class="prelude-val">Ok</span>(())

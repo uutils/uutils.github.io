@@ -721,6 +721,55 @@
 <a href="#721" id="721">721</a>
 <a href="#722" id="722">722</a>
 <a href="#723" id="723">723</a>
+<a href="#724" id="724">724</a>
+<a href="#725" id="725">725</a>
+<a href="#726" id="726">726</a>
+<a href="#727" id="727">727</a>
+<a href="#728" id="728">728</a>
+<a href="#729" id="729">729</a>
+<a href="#730" id="730">730</a>
+<a href="#731" id="731">731</a>
+<a href="#732" id="732">732</a>
+<a href="#733" id="733">733</a>
+<a href="#734" id="734">734</a>
+<a href="#735" id="735">735</a>
+<a href="#736" id="736">736</a>
+<a href="#737" id="737">737</a>
+<a href="#738" id="738">738</a>
+<a href="#739" id="739">739</a>
+<a href="#740" id="740">740</a>
+<a href="#741" id="741">741</a>
+<a href="#742" id="742">742</a>
+<a href="#743" id="743">743</a>
+<a href="#744" id="744">744</a>
+<a href="#745" id="745">745</a>
+<a href="#746" id="746">746</a>
+<a href="#747" id="747">747</a>
+<a href="#748" id="748">748</a>
+<a href="#749" id="749">749</a>
+<a href="#750" id="750">750</a>
+<a href="#751" id="751">751</a>
+<a href="#752" id="752">752</a>
+<a href="#753" id="753">753</a>
+<a href="#754" id="754">754</a>
+<a href="#755" id="755">755</a>
+<a href="#756" id="756">756</a>
+<a href="#757" id="757">757</a>
+<a href="#758" id="758">758</a>
+<a href="#759" id="759">759</a>
+<a href="#760" id="760">760</a>
+<a href="#761" id="761">761</a>
+<a href="#762" id="762">762</a>
+<a href="#763" id="763">763</a>
+<a href="#764" id="764">764</a>
+<a href="#765" id="765">765</a>
+<a href="#766" id="766">766</a>
+<a href="#767" id="767">767</a>
+<a href="#768" id="768">768</a>
+<a href="#769" id="769">769</a>
+<a href="#770" id="770">770</a>
+<a href="#771" id="771">771</a>
+<a href="#772" id="772">772</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Alex Lyon &lt;arcterus@mail.com&gt;
@@ -773,71 +822,140 @@
     zero: bool,
 }
 
-<span class="attr">#[allow(clippy::cognitive_complexity)]
+<span class="doccomment">/// Creates a Blake2b hasher instance based on the specified length argument.
+///
+/// # Returns
+///
+/// Returns a tuple containing the algorithm name, the hasher instance, and the output length in bits.
+///
+/// # Panics
+///
+/// Panics if the length is not a multiple of 8 or if it is greater than 512.
+</span><span class="kw">fn </span>create_blake2b(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; (<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, Box&lt;<span class="kw">dyn </span>Digest&gt;, usize) {
+    <span class="kw">match </span>matches.get_one::&lt;usize&gt;(<span class="string">&quot;length&quot;</span>) {
+        <span class="prelude-val">Some</span>(<span class="number">0</span>) | <span class="prelude-val">None </span>=&gt; (<span class="string">&quot;BLAKE2&quot;</span>, Box::new(Blake2b::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">512</span>),
+        <span class="prelude-val">Some</span>(length_in_bits) =&gt; {
+            <span class="kw">if </span><span class="kw-2">*</span>length_in_bits &gt; <span class="number">512 </span>{
+                <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;Invalid length (maximum digest length is 512 bits)&quot;</span>)
+            }
+
+            <span class="kw">if </span>length_in_bits % <span class="number">8 </span>== <span class="number">0 </span>{
+                <span class="kw">let </span>length_in_bytes = length_in_bits / <span class="number">8</span>;
+                (
+                    <span class="string">&quot;BLAKE2&quot;</span>,
+                    Box::new(Blake2b::with_output_bytes(length_in_bytes)),
+                    <span class="kw-2">*</span>length_in_bits,
+                )
+            } <span class="kw">else </span>{
+                <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;Invalid length (expected a multiple of 8)&quot;</span>)
+            }
+        }
+    }
+}
+
+<span class="doccomment">/// Creates a SHA3 hasher instance based on the specified bits argument.
+///
+/// # Returns
+///
+/// Returns a tuple containing the algorithm name, the hasher instance, and the output length in bits.
+///
+/// # Panics
+///
+/// Panics if an unsupported output size is provided, or if the `--bits` flag is missing.
+</span><span class="kw">fn </span>create_sha3(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; (<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, Box&lt;<span class="kw">dyn </span>Digest&gt;, usize) {
+    <span class="kw">match </span>matches.get_one::&lt;usize&gt;(<span class="string">&quot;bits&quot;</span>) {
+        <span class="prelude-val">Some</span>(<span class="number">224</span>) =&gt; (
+            <span class="string">&quot;SHA3-224&quot;</span>,
+            Box::new(Sha3_224::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
+            <span class="number">224</span>,
+        ),
+        <span class="prelude-val">Some</span>(<span class="number">256</span>) =&gt; (
+            <span class="string">&quot;SHA3-256&quot;</span>,
+            Box::new(Sha3_256::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
+            <span class="number">256</span>,
+        ),
+        <span class="prelude-val">Some</span>(<span class="number">384</span>) =&gt; (
+            <span class="string">&quot;SHA3-384&quot;</span>,
+            Box::new(Sha3_384::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
+            <span class="number">384</span>,
+        ),
+        <span class="prelude-val">Some</span>(<span class="number">512</span>) =&gt; (
+            <span class="string">&quot;SHA3-512&quot;</span>,
+            Box::new(Sha3_512::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
+            <span class="number">512</span>,
+        ),
+        <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="macro">crash!</span>(
+            <span class="number">1</span>,
+            <span class="string">&quot;Invalid output size for SHA3 (expected 224, 256, 384, or 512)&quot;
+        </span>),
+        <span class="prelude-val">None </span>=&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHA3&quot;</span>),
+    }
+}
+
+<span class="doccomment">/// Creates a SHAKE-128 hasher instance based on the specified bits argument.
+///
+/// # Returns
+///
+/// Returns a tuple containing the algorithm name, the hasher instance, and the output length in bits.
+///
+/// # Panics
+///
+/// Panics if the `--bits` flag is missing.
+</span><span class="kw">fn </span>create_shake128(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; (<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, Box&lt;<span class="kw">dyn </span>Digest&gt;, usize) {
+    <span class="kw">match </span>matches.get_one::&lt;usize&gt;(<span class="string">&quot;bits&quot;</span>) {
+        <span class="prelude-val">Some</span>(bits) =&gt; (
+            <span class="string">&quot;SHAKE128&quot;</span>,
+            Box::new(Shake128::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
+            <span class="kw-2">*</span>bits,
+        ),
+        <span class="prelude-val">None </span>=&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHAKE-128&quot;</span>),
+    }
+}
+
+<span class="doccomment">/// Creates a SHAKE-256 hasher instance based on the specified bits argument.
+///
+/// # Returns
+///
+/// Returns a tuple containing the algorithm name, the hasher instance, and the output length in bits.
+///
+/// # Panics
+///
+/// Panics if the `--bits` flag is missing.
+</span><span class="kw">fn </span>create_shake256(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; (<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, Box&lt;<span class="kw">dyn </span>Digest&gt;, usize) {
+    <span class="kw">match </span>matches.get_one::&lt;usize&gt;(<span class="string">&quot;bits&quot;</span>) {
+        <span class="prelude-val">Some</span>(bits) =&gt; (
+            <span class="string">&quot;SHAKE256&quot;</span>,
+            Box::new(Shake256::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
+            <span class="kw-2">*</span>bits,
+        ),
+        <span class="prelude-val">None </span>=&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHAKE-256&quot;</span>),
+    }
+}
+
+<span class="doccomment">/// Detects the hash algorithm from the program name or command-line arguments.
+///
+/// # Arguments
+///
+/// * `program` - A string slice containing the program name.
+/// * `matches` - A reference to the `ArgMatches` object containing the command-line arguments.
+///
+/// # Returns
+///
+/// Returns a tuple containing the algorithm name, the hasher instance, and the output length in bits.
 </span><span class="kw">fn </span>detect_algo(
     program: <span class="kw-2">&amp;</span>str,
     matches: <span class="kw-2">&amp;</span>ArgMatches,
 ) -&gt; (<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, Box&lt;<span class="kw">dyn </span>Digest + <span class="lifetime">&#39;static</span>&gt;, usize) {
-    <span class="kw">let </span><span class="kw-2">mut </span>alg: <span class="prelude-ty">Option</span>&lt;Box&lt;<span class="kw">dyn </span>Digest&gt;&gt; = <span class="prelude-val">None</span>;
-    <span class="kw">let </span><span class="kw-2">mut </span>name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;&quot;</span>;
-    <span class="kw">let </span><span class="kw-2">mut </span>output_bits = <span class="number">0</span>;
-    <span class="kw">match </span>program {
+    <span class="kw">let </span>(name, alg, output_bits) = <span class="kw">match </span>program {
         <span class="string">&quot;md5sum&quot; </span>=&gt; (<span class="string">&quot;MD5&quot;</span>, Box::new(Md5::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">128</span>),
         <span class="string">&quot;sha1sum&quot; </span>=&gt; (<span class="string">&quot;SHA1&quot;</span>, Box::new(Sha1::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">160</span>),
         <span class="string">&quot;sha224sum&quot; </span>=&gt; (<span class="string">&quot;SHA224&quot;</span>, Box::new(Sha224::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">224</span>),
         <span class="string">&quot;sha256sum&quot; </span>=&gt; (<span class="string">&quot;SHA256&quot;</span>, Box::new(Sha256::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">256</span>),
         <span class="string">&quot;sha384sum&quot; </span>=&gt; (<span class="string">&quot;SHA384&quot;</span>, Box::new(Sha384::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">384</span>),
         <span class="string">&quot;sha512sum&quot; </span>=&gt; (<span class="string">&quot;SHA512&quot;</span>, Box::new(Sha512::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">512</span>),
-        <span class="string">&quot;b2sum&quot; </span>=&gt; <span class="kw">match </span>matches.get_one::&lt;usize&gt;(<span class="string">&quot;length&quot;</span>) {
-            <span class="comment">// by default, blake2 uses 64 bytes (512 bits)
-            // --length=0 falls back to default behavior
-            </span><span class="prelude-val">Some</span>(<span class="number">0</span>) | <span class="prelude-val">None </span>=&gt; (<span class="string">&quot;BLAKE2&quot;</span>, Box::new(Blake2b::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">512</span>),
-            <span class="prelude-val">Some</span>(length_in_bits) =&gt; {
-                <span class="kw">if </span><span class="kw-2">*</span>length_in_bits &gt; <span class="number">512 </span>{
-                    <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;Invalid length (maximum digest length is 512 bits)&quot;</span>)
-                }
-
-                <span class="comment">// blake2 output size must be a multiple of 8 bits
-                </span><span class="kw">if </span>length_in_bits % <span class="number">8 </span>== <span class="number">0 </span>{
-                    <span class="kw">let </span>length_in_bytes = length_in_bits / <span class="number">8</span>;
-                    (
-                        <span class="string">&quot;BLAKE2&quot;</span>,
-                        Box::new(Blake2b::with_output_bytes(length_in_bytes)),
-                        <span class="kw-2">*</span>length_in_bits,
-                    )
-                } <span class="kw">else </span>{
-                    <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;Invalid length (expected a multiple of 8)&quot;</span>)
-                }
-            }
-        },
+        <span class="string">&quot;b2sum&quot; </span>=&gt; create_blake2b(matches),
         <span class="string">&quot;b3sum&quot; </span>=&gt; (<span class="string">&quot;BLAKE3&quot;</span>, Box::new(Blake3::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;, <span class="number">256</span>),
-        <span class="string">&quot;sha3sum&quot; </span>=&gt; <span class="kw">match </span>matches.get_one::&lt;usize&gt;(<span class="string">&quot;bits&quot;</span>) {
-            <span class="prelude-val">Some</span>(<span class="number">224</span>) =&gt; (
-                <span class="string">&quot;SHA3-224&quot;</span>,
-                Box::new(Sha3_224::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
-                <span class="number">224</span>,
-            ),
-            <span class="prelude-val">Some</span>(<span class="number">256</span>) =&gt; (
-                <span class="string">&quot;SHA3-256&quot;</span>,
-                Box::new(Sha3_256::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
-                <span class="number">256</span>,
-            ),
-            <span class="prelude-val">Some</span>(<span class="number">384</span>) =&gt; (
-                <span class="string">&quot;SHA3-384&quot;</span>,
-                Box::new(Sha3_384::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
-                <span class="number">384</span>,
-            ),
-            <span class="prelude-val">Some</span>(<span class="number">512</span>) =&gt; (
-                <span class="string">&quot;SHA3-512&quot;</span>,
-                Box::new(Sha3_512::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
-                <span class="number">512</span>,
-            ),
-            <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="macro">crash!</span>(
-                <span class="number">1</span>,
-                <span class="string">&quot;Invalid output size for SHA3 (expected 224, 256, 384, or 512)&quot;
-            </span>),
-            <span class="prelude-val">None </span>=&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHA3&quot;</span>),
-        },
+        <span class="string">&quot;sha3sum&quot; </span>=&gt; create_sha3(matches),
         <span class="string">&quot;sha3-224sum&quot; </span>=&gt; (
             <span class="string">&quot;SHA3-224&quot;</span>,
             Box::new(Sha3_224::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
@@ -858,114 +976,94 @@
             Box::new(Sha3_512::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
             <span class="number">512</span>,
         ),
-        <span class="string">&quot;shake128sum&quot; </span>=&gt; <span class="kw">match </span>matches.get_one::&lt;usize&gt;(<span class="string">&quot;bits&quot;</span>) {
-            <span class="prelude-val">Some</span>(bits) =&gt; (
-                <span class="string">&quot;SHAKE128&quot;</span>,
-                Box::new(Shake128::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
-                <span class="kw-2">*</span>bits,
-            ),
+        <span class="string">&quot;shake128sum&quot; </span>=&gt; create_shake128(matches),
+        <span class="string">&quot;shake256sum&quot; </span>=&gt; create_shake256(matches),
+        <span class="kw">_ </span>=&gt; create_algorithm_from_flags(matches),
+    };
+    (name, alg, output_bits)
+}
+
+<span class="doccomment">/// Creates a hasher instance based on the command-line flags.
+///
+/// # Arguments
+///
+/// * `matches` - A reference to the `ArgMatches` object containing the command-line arguments.
+///
+/// # Returns
+///
+/// Returns a tuple containing the algorithm name, the hasher instance, and the output length in bits.
+///
+/// # Panics
+///
+/// Panics if multiple hash algorithms are specified or if a required flag is missing.
+</span><span class="kw">fn </span>create_algorithm_from_flags(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; (<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, Box&lt;<span class="kw">dyn </span>Digest&gt;, usize) {
+    <span class="kw">let </span><span class="kw-2">mut </span>alg: <span class="prelude-ty">Option</span>&lt;Box&lt;<span class="kw">dyn </span>Digest&gt;&gt; = <span class="prelude-val">None</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;&quot;</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>output_bits = <span class="number">0</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>set_or_crash = |n, val, bits| {
+        <span class="kw">if </span>alg.is_some() {
+            <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;You cannot combine multiple hash algorithms!&quot;</span>);
+        };
+        name = n;
+        alg = <span class="prelude-val">Some</span>(val);
+        output_bits = bits;
+    };
+
+    <span class="kw">if </span>matches.get_flag(<span class="string">&quot;md5&quot;</span>) {
+        set_or_crash(<span class="string">&quot;MD5&quot;</span>, Box::new(Md5::new()), <span class="number">128</span>);
+    }
+    <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha1&quot;</span>) {
+        set_or_crash(<span class="string">&quot;SHA1&quot;</span>, Box::new(Sha1::new()), <span class="number">160</span>);
+    }
+    <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha224&quot;</span>) {
+        set_or_crash(<span class="string">&quot;SHA224&quot;</span>, Box::new(Sha224::new()), <span class="number">224</span>);
+    }
+    <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha256&quot;</span>) {
+        set_or_crash(<span class="string">&quot;SHA256&quot;</span>, Box::new(Sha256::new()), <span class="number">256</span>);
+    }
+    <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha384&quot;</span>) {
+        set_or_crash(<span class="string">&quot;SHA384&quot;</span>, Box::new(Sha384::new()), <span class="number">384</span>);
+    }
+    <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha512&quot;</span>) {
+        set_or_crash(<span class="string">&quot;SHA512&quot;</span>, Box::new(Sha512::new()), <span class="number">512</span>);
+    }
+    <span class="kw">if </span>matches.get_flag(<span class="string">&quot;b2sum&quot;</span>) {
+        set_or_crash(<span class="string">&quot;BLAKE2&quot;</span>, Box::new(Blake2b::new()), <span class="number">512</span>);
+    }
+    <span class="kw">if </span>matches.get_flag(<span class="string">&quot;b3sum&quot;</span>) {
+        set_or_crash(<span class="string">&quot;BLAKE3&quot;</span>, Box::new(Blake3::new()), <span class="number">256</span>);
+    }
+    <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha3&quot;</span>) {
+        <span class="kw">let </span>(n, val, bits) = create_sha3(matches);
+        set_or_crash(n, val, bits);
+    }
+    <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha3-224&quot;</span>) {
+        set_or_crash(<span class="string">&quot;SHA3-224&quot;</span>, Box::new(Sha3_224::new()), <span class="number">224</span>);
+    }
+    <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha3-256&quot;</span>) {
+        set_or_crash(<span class="string">&quot;SHA3-256&quot;</span>, Box::new(Sha3_256::new()), <span class="number">256</span>);
+    }
+    <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha3-384&quot;</span>) {
+        set_or_crash(<span class="string">&quot;SHA3-384&quot;</span>, Box::new(Sha3_384::new()), <span class="number">384</span>);
+    }
+    <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha3-512&quot;</span>) {
+        set_or_crash(<span class="string">&quot;SHA3-512&quot;</span>, Box::new(Sha3_512::new()), <span class="number">512</span>);
+    }
+    <span class="kw">if </span>matches.get_flag(<span class="string">&quot;shake128&quot;</span>) {
+        <span class="kw">match </span>matches.get_one::&lt;usize&gt;(<span class="string">&quot;bits&quot;</span>) {
+            <span class="prelude-val">Some</span>(bits) =&gt; set_or_crash(<span class="string">&quot;SHAKE128&quot;</span>, Box::new(Shake128::new()), <span class="kw-2">*</span>bits),
             <span class="prelude-val">None </span>=&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHAKE-128&quot;</span>),
-        },
-        <span class="string">&quot;shake256sum&quot; </span>=&gt; <span class="kw">match </span>matches.get_one::&lt;usize&gt;(<span class="string">&quot;bits&quot;</span>) {
-            <span class="prelude-val">Some</span>(bits) =&gt; (
-                <span class="string">&quot;SHAKE256&quot;</span>,
-                Box::new(Shake256::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
-                <span class="kw-2">*</span>bits,
-            ),
-            <span class="prelude-val">None </span>=&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHAKE-256&quot;</span>),
-        },
-        <span class="kw">_ </span>=&gt; {
-            {
-                <span class="kw">let </span><span class="kw-2">mut </span>set_or_crash = |n, val, bits| {
-                    <span class="kw">if </span>alg.is_some() {
-                        <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;You cannot combine multiple hash algorithms!&quot;</span>)
-                    };
-                    name = n;
-                    alg = <span class="prelude-val">Some</span>(val);
-                    output_bits = bits;
-                };
-                <span class="kw">if </span>matches.get_flag(<span class="string">&quot;md5&quot;</span>) {
-                    set_or_crash(<span class="string">&quot;MD5&quot;</span>, Box::new(Md5::new()), <span class="number">128</span>);
-                }
-                <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha1&quot;</span>) {
-                    set_or_crash(<span class="string">&quot;SHA1&quot;</span>, Box::new(Sha1::new()), <span class="number">160</span>);
-                }
-                <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha224&quot;</span>) {
-                    set_or_crash(<span class="string">&quot;SHA224&quot;</span>, Box::new(Sha224::new()), <span class="number">224</span>);
-                }
-                <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha256&quot;</span>) {
-                    set_or_crash(<span class="string">&quot;SHA256&quot;</span>, Box::new(Sha256::new()), <span class="number">256</span>);
-                }
-                <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha384&quot;</span>) {
-                    set_or_crash(<span class="string">&quot;SHA384&quot;</span>, Box::new(Sha384::new()), <span class="number">384</span>);
-                }
-                <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha512&quot;</span>) {
-                    set_or_crash(<span class="string">&quot;SHA512&quot;</span>, Box::new(Sha512::new()), <span class="number">512</span>);
-                }
-                <span class="kw">if </span>matches.get_flag(<span class="string">&quot;b2sum&quot;</span>) {
-                    set_or_crash(<span class="string">&quot;BLAKE2&quot;</span>, Box::new(Blake2b::new()), <span class="number">512</span>);
-                }
-                <span class="kw">if </span>matches.get_flag(<span class="string">&quot;b3sum&quot;</span>) {
-                    set_or_crash(<span class="string">&quot;BLAKE3&quot;</span>, Box::new(Blake3::new()), <span class="number">256</span>);
-                }
-                <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha3&quot;</span>) {
-                    <span class="kw">match </span>matches.get_one::&lt;usize&gt;(<span class="string">&quot;bits&quot;</span>) {
-                        <span class="prelude-val">Some</span>(<span class="number">224</span>) =&gt; set_or_crash(
-                            <span class="string">&quot;SHA3-224&quot;</span>,
-                            Box::new(Sha3_224::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
-                            <span class="number">224</span>,
-                        ),
-                        <span class="prelude-val">Some</span>(<span class="number">256</span>) =&gt; set_or_crash(
-                            <span class="string">&quot;SHA3-256&quot;</span>,
-                            Box::new(Sha3_256::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
-                            <span class="number">256</span>,
-                        ),
-                        <span class="prelude-val">Some</span>(<span class="number">384</span>) =&gt; set_or_crash(
-                            <span class="string">&quot;SHA3-384&quot;</span>,
-                            Box::new(Sha3_384::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
-                            <span class="number">384</span>,
-                        ),
-                        <span class="prelude-val">Some</span>(<span class="number">512</span>) =&gt; set_or_crash(
-                            <span class="string">&quot;SHA3-512&quot;</span>,
-                            Box::new(Sha3_512::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Digest&gt;,
-                            <span class="number">512</span>,
-                        ),
-                        <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="macro">crash!</span>(
-                            <span class="number">1</span>,
-                            <span class="string">&quot;Invalid output size for SHA3 (expected 224, 256, 384, or 512)&quot;
-                        </span>),
-                        <span class="prelude-val">None </span>=&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHA3&quot;</span>),
-                    }
-                }
-                <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha3-224&quot;</span>) {
-                    set_or_crash(<span class="string">&quot;SHA3-224&quot;</span>, Box::new(Sha3_224::new()), <span class="number">224</span>);
-                }
-                <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha3-256&quot;</span>) {
-                    set_or_crash(<span class="string">&quot;SHA3-256&quot;</span>, Box::new(Sha3_256::new()), <span class="number">256</span>);
-                }
-                <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha3-384&quot;</span>) {
-                    set_or_crash(<span class="string">&quot;SHA3-384&quot;</span>, Box::new(Sha3_384::new()), <span class="number">384</span>);
-                }
-                <span class="kw">if </span>matches.get_flag(<span class="string">&quot;sha3-512&quot;</span>) {
-                    set_or_crash(<span class="string">&quot;SHA3-512&quot;</span>, Box::new(Sha3_512::new()), <span class="number">512</span>);
-                }
-                <span class="kw">if </span>matches.get_flag(<span class="string">&quot;shake128&quot;</span>) {
-                    <span class="kw">match </span>matches.get_one::&lt;usize&gt;(<span class="string">&quot;bits&quot;</span>) {
-                        <span class="prelude-val">Some</span>(bits) =&gt; set_or_crash(<span class="string">&quot;SHAKE128&quot;</span>, Box::new(Shake128::new()), <span class="kw-2">*</span>bits),
-                        <span class="prelude-val">None </span>=&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHAKE-128&quot;</span>),
-                    }
-                }
-                <span class="kw">if </span>matches.get_flag(<span class="string">&quot;shake256&quot;</span>) {
-                    <span class="kw">match </span>matches.get_one::&lt;usize&gt;(<span class="string">&quot;bits&quot;</span>) {
-                        <span class="prelude-val">Some</span>(bits) =&gt; set_or_crash(<span class="string">&quot;SHAKE256&quot;</span>, Box::new(Shake256::new()), <span class="kw-2">*</span>bits),
-                        <span class="prelude-val">None </span>=&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHAKE-256&quot;</span>),
-                    }
-                }
-            }
-            <span class="kw">let </span>alg = alg.unwrap_or_else(|| <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;You must specify hash algorithm!&quot;</span>));
-            (name, alg, output_bits)
         }
     }
+    <span class="kw">if </span>matches.get_flag(<span class="string">&quot;shake256&quot;</span>) {
+        <span class="kw">match </span>matches.get_one::&lt;usize&gt;(<span class="string">&quot;bits&quot;</span>) {
+            <span class="prelude-val">Some</span>(bits) =&gt; set_or_crash(<span class="string">&quot;SHAKE256&quot;</span>, Box::new(Shake256::new()), <span class="kw-2">*</span>bits),
+            <span class="prelude-val">None </span>=&gt; <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;--bits required for SHAKE-256&quot;</span>),
+        }
+    }
+
+    <span class="kw">let </span>alg = alg.unwrap_or_else(|| <span class="macro">crash!</span>(<span class="number">1</span>, <span class="string">&quot;You must specify hash algorithm!&quot;</span>));
+    (name, alg, output_bits)
 }
 
 <span class="comment">// TODO: return custom error type
