@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"static":[["C",""],["ESCAPE",""],["LITERAL",""]]};
+window.SIDEBAR_ITEMS = {"static":["C","ESCAPE","LITERAL"]};

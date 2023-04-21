@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":[["COMPUTE",""],["RANGE",""],["ROLE",""],["TYPE",""],["USER",""]]};
+window.SIDEBAR_ITEMS = {"constant":["COMPUTE","RANGE","ROLE","TYPE","USER"]};

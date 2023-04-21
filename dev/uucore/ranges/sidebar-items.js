@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["complement",""],["contain","Test if at least one of the given Ranges contain the supplied value."]],"struct":[["Range",""]]};
+window.SIDEBAR_ITEMS = {"fn":["complement","contain"],"struct":["Range"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["OverwriteMode",""]],"fn":[["uu_app",""],["uumain",""]],"struct":[["Behavior",""]]};
+window.SIDEBAR_ITEMS = {"enum":["OverwriteMode"],"fn":["uu_app","uumain"],"struct":["Behavior"]};

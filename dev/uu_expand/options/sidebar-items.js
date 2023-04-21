@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"static":[["FILES",""],["INITIAL",""],["NO_UTF8",""],["TABS",""]]};
+window.SIDEBAR_ITEMS = {"static":["FILES","INITIAL","NO_UTF8","TABS"]};

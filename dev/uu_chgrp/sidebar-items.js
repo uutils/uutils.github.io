@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["uu_app",""],["uumain",""]],"mod":[["entries","Get password/group file entry"]]};
+window.SIDEBAR_ITEMS = {"fn":["uu_app","uumain"],"mod":["entries"]};

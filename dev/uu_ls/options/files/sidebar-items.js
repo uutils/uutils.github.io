@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"static":[["ALL",""],["ALMOST_ALL",""]]};
+window.SIDEBAR_ITEMS = {"static":["ALL","ALMOST_ALL"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["sources",""]],"static":[["ACCESS",""],["HELP",""],["MODIFICATION",""],["NO_CREATE",""],["NO_DEREF",""],["SOURCES",""],["TIME",""]]};
+window.SIDEBAR_ITEMS = {"mod":["sources"],"static":["ACCESS","HELP","MODIFICATION","NO_CREATE","NO_DEREF","SOURCES","TIME"]};

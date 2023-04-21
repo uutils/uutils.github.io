@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"static":[["FILES",""]]};
+window.SIDEBAR_ITEMS = {"static":["FILES"]};

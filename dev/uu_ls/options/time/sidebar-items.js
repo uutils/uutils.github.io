@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"static":[["ACCESS",""],["CHANGE",""]]};
+window.SIDEBAR_ITEMS = {"static":["ACCESS","CHANGE"]};

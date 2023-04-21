@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["NumfmtError",""]]};
+window.SIDEBAR_ITEMS = {"enum":["NumfmtError"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["uumain",""]],"mod":[["args",""],["chunks","Iterating over a file by chunks, either starting at the end of the file with [`ReverseChunks`] or at the end of piped stdin with [`LinesChunk`] or [`BytesChunk`]."],["text",""]]};
+window.SIDEBAR_ITEMS = {"fn":["uumain"],"mod":["args","chunks","text"]};

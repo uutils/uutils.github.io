@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["print_verbatim","Like `println_verbatim`, without the trailing newline."],["println_verbatim","Print a path (or `OsStr`-like object) directly to stdout, with a trailing newline, without losing any information if its encoding is invalid."]],"struct":[["Quoted","A wrapper around string types for displaying with quoting and escaping applied."]],"trait":[["Quotable","An extension trait to apply quoting to strings."]]};
+window.SIDEBAR_ITEMS = {"fn":["print_verbatim","println_verbatim"],"struct":["Quoted"],"trait":["Quotable"]};

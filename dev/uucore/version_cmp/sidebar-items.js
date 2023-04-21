@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["version_cmp",""]]};
+window.SIDEBAR_ITEMS = {"fn":["version_cmp"]};

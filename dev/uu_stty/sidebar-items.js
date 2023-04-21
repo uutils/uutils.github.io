@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["tiocgwinsz","Get terminal window size"],["tiocswinsz","Set terminal window size"],["uu_app",""],["uumain",""]],"struct":[["Flag",""],["TermSize",""]]};
+window.SIDEBAR_ITEMS = {"fn":["tiocgwinsz","tiocswinsz","uu_app","uumain"],"struct":["Flag","TermSize"]};

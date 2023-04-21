@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["uu_app",""],["uumain",""]]};
+window.SIDEBAR_ITEMS = {"fn":["uu_app","uumain"]};

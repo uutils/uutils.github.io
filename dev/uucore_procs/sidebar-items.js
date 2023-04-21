@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"attr":[["main",""]],"macro":[["help_about","Get the about text from the help file."],["help_section","Reads a section from a file of the util as a `str` literal."],["help_usage","Get the usage from the help file."]]};
+window.SIDEBAR_ITEMS = {"attr":["main"],"macro":["help_about","help_section","help_usage"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["uu_app",""],["uumain",""]],"mod":[["errors",""],["format",""],["options",""]]};
+window.SIDEBAR_ITEMS = {"fn":["uu_app","uumain"],"mod":["errors","format","options"]};

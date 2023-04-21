@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["StatFs",""],["pretty_filetype",""],["pretty_fstype",""],["pretty_time",""],["read_fs_list","Read file system list."],["statfs",""],["statfs_fn",""]],"struct":[["FsUsage",""],["MountInfo",""],["StatFs",""],["statfs_fn",""]],"trait":[["BirthTime",""],["FsMeta",""]]};
+window.SIDEBAR_ITEMS = {"fn":["StatFs","pretty_filetype","pretty_fstype","pretty_time","read_fs_list","statfs","statfs_fn"],"struct":["FsUsage","MountInfo","StatFs","statfs_fn"],"trait":["BirthTime","FsMeta"]};

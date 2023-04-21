@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"static":[["SINCE",""]]};
+window.SIDEBAR_ITEMS = {"static":["SINCE"]};

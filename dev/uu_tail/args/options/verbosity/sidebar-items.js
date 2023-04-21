@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"static":[["QUIET",""],["VERBOSE",""]]};
+window.SIDEBAR_ITEMS = {"static":["QUIET","VERBOSE"]};

@@ -34,6 +34,7 @@ var sourcesIndex = JSON.parse('{\
 "groups":["",[],["main.rs"]],\
 "hashsum":["",[],["main.rs"]],\
 "head":["",[],["main.rs"]],\
+"help_parser":["",[],["lib.rs"]],\
 "hostid":["",[],["main.rs"]],\
 "hostname":["",[],["main.rs"]],\
 "id":["",[],["main.rs"]],\

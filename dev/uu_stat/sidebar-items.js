@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["OutputType",""]],"fn":[["uu_app",""],["uumain",""]]};
+window.SIDEBAR_ITEMS = {"enum":["OutputType"],"fn":["uu_app","uumain"]};
