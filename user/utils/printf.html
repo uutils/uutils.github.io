@@ -206,6 +206,246 @@ output replaces anonymous fields with the next unused argument, formatted accord
 and substitution field sequences with passed arguments</p>
 <p>literally, with the exception of the below
 escaped character sequences, and the substitution sequences described further down.</p>
+<h3 id="escape-sequences"><a class="header" href="#escape-sequences">ESCAPE SEQUENCES</a></h3>
+<p>The following escape sequences, organized here in alphabetical order,
+will print the corresponding character literal:</p>
+<ul>
+<li>
+<p><code>\&quot;</code>      double quote</p>
+</li>
+<li>
+<p><code>\\\\</code>    backslash</p>
+</li>
+<li>
+<p><code>\\a</code>     alert (BEL)</p>
+</li>
+<li>
+<p><code>\\b</code>     backspace</p>
+</li>
+<li>
+<p><code>\\c</code>     End-of-Input</p>
+</li>
+<li>
+<p><code>\\e</code>     escape</p>
+</li>
+<li>
+<p><code>\\f</code>     form feed</p>
+</li>
+<li>
+<p><code>\\n</code>     new line</p>
+</li>
+<li>
+<p><code>\\r</code>     carriage return</p>
+</li>
+<li>
+<p><code>\\t</code>     horizontal tab</p>
+</li>
+<li>
+<p><code>\\v</code>     vertical tab</p>
+</li>
+<li>
+<p><code>\\NNN</code>   byte with value expressed in octal value NNN (1 to 3 digits)
+values greater than 256 will be treated</p>
+</li>
+<li>
+<p><code>\\xHH</code>   byte with value expressed in hexadecimal value NN (1 to 2 digits)</p>
+</li>
+<li>
+<p><code>\\uHHHH</code> Unicode (IEC 10646) character with value expressed in hexadecimal value HHHH (4 digits)</p>
+</li>
+<li>
+<p><code>\\uHHHH</code> Unicode character with value expressed in hexadecimal value HHHH (8 digits)</p>
+</li>
+<li>
+<p><code>%%</code>      a single %</p>
+</li>
+</ul>
+<h3 id="substitutions"><a class="header" href="#substitutions">SUBSTITUTIONS</a></h3>
+<h4 id="substitution-quick-reference"><a class="header" href="#substitution-quick-reference">SUBSTITUTION QUICK REFERENCE</a></h4>
+<p>Fields</p>
+<ul>
+<li>
+<p><code>%s</code>: string</p>
+</li>
+<li>
+<p><code>%b</code>: string parsed for literals second parameter is max length</p>
+</li>
+<li>
+<p><code>%c</code>: char no second parameter</p>
+</li>
+<li>
+<p><code>%i</code> or <code>%d</code>: 64-bit integer</p>
+</li>
+<li>
+<p><code>%u</code>:       64 bit unsigned integer</p>
+</li>
+<li>
+<p><code>%x</code> or <code>%X</code>: 64-bit unsigned integer as hex</p>
+</li>
+<li>
+<p><code>%o</code>:       64-bit unsigned integer as octal
+second parameter is min-width, integer
+output below that width is padded with leading zeroes</p>
+</li>
+<li>
+<p><code>%f</code> or <code>%F</code>: decimal floating point value</p>
+</li>
+<li>
+<p><code>%e</code> or <code>%E</code>: scientific notation floating point value</p>
+</li>
+<li>
+<p><code>%g</code> or <code>%G</code>: shorter of specially interpreted decimal or SciNote floating point value.
+second parameter is
+<code>-max</code> places after decimal point for floating point output
+<code>-max</code> number of significant digits for scientific notation output</p>
+</li>
+</ul>
+<p>parameterizing fields</p>
+<p>examples:</p>
+<pre><code>printf '%4.3i' 7
+</code></pre>
+<p>It has a first parameter of 4 and a second parameter of 3 and will result in ' 007'</p>
+<pre><code>printf '%.1s' abcde
+</code></pre>
+<p>It has no first parameter and a second parameter of 1 and will result in 'a'</p>
+<pre><code>printf '%4c' q
+</code></pre>
+<p>It has a first parameter of 4 and no second parameter and will result in  '   q'</p>
+<p>The first parameter of a field is the minimum width to pad the output to
+if the output is less than this absolute value of this width,
+it will be padded with leading spaces, or, if the argument is negative,
+with trailing spaces. the default is zero.</p>
+<p>The second parameter of a field is particular to the output field type.
+defaults can be found in the full substitution help below</p>
+<p>special prefixes to numeric arguments</p>
+<ul>
+<li><code>0</code>:  (e.g. 010)   interpret argument as octal (integer output fields only)</li>
+<li><code>0x</code>: (e.g. 0xABC) interpret argument as hex (numeric output fields only)</li>
+<li><code>\'</code>: (e.g. 'a)   interpret argument as a character constant</li>
+</ul>
+<h4 id="how-to-use-substitutions"><a class="header" href="#how-to-use-substitutions">HOW TO USE SUBSTITUTIONS</a></h4>
+<p>Substitutions are used to pass additional argument(s) into the FORMAT string, to be formatted a
+particular way. E.g.</p>
+<pre><code>printf 'the letter %X comes before the letter %X' 10 11
+</code></pre>
+<p>will print</p>
+<pre><code>the letter A comes before the letter B
+</code></pre>
+<p>because the substitution field <code>%X</code> means
+'take an integer argument and write it as a hexadecimal number'</p>
+<p>Passing more arguments than are in the format string will cause the format string to be
+repeated for the remaining substitutions</p>
+<pre><code>printf 'it is %i F in %s \n' 22 Portland 25 Boston 27 New York
+</code></pre>
+<p>will print</p>
+<pre><code>it is 22 F in Portland
+it is 25 F in Boston
+it is 27 F in Boston
+</code></pre>
+<p>If a format string is printed but there are less arguments remaining
+than there are substitution fields, substitution fields without
+an argument will default to empty strings, or for numeric fields
+the value 0</p>
+<h4 id="available-substitutions"><a class="header" href="#available-substitutions">AVAILABLE SUBSTITUTIONS</a></h4>
+<p>This program, like GNU coreutils printf,
+interprets a modified subset of the POSIX C printf spec,
+a quick reference to substitutions is below.</p>
+<h4 id="string-substitutions"><a class="header" href="#string-substitutions">STRING SUBSTITUTIONS</a></h4>
+<p>All string fields have a 'max width' parameter
+<code>%.3s</code> means 'print no more than three characters of the original input'</p>
+<ul>
+<li>
+<p><code>%s</code>: string</p>
+</li>
+<li>
+<p><code>%b</code>: escaped string - the string will be checked for any escaped literals from
+the escaped literal list above, and translate them to literal characters.
+e.g. <code>\\n</code> will be transformed into a newline character.
+One special rule about <code>%b</code> mode is that octal literals are interpreted differently
+In arguments passed by <code>%b</code>, pass octal-interpreted literals must be in the form of <code>\\0NNN</code>
+instead of <code>\\NNN</code>. (Although, for legacy reasons, octal literals in the form of <code>\\NNN</code> will
+still be interpreted and not throw a warning, you will have problems if you use this for a
+literal whose code begins with zero, as it will be viewed as in <code>\\0NNN</code> form.)</p>
+</li>
+</ul>
+<h4 id="char-substitutions"><a class="header" href="#char-substitutions">CHAR SUBSTITUTIONS</a></h4>
+<p>The character field does not have a secondary parameter.</p>
+<ul>
+<li><code>%c</code>: a single character</li>
+</ul>
+<h4 id="integer-substitutions"><a class="header" href="#integer-substitutions">INTEGER SUBSTITUTIONS</a></h4>
+<p>All integer fields have a 'pad with zero' parameter
+<code>%.4i</code> means an integer which if it is less than 4 digits in length,
+is padded with leading zeros until it is 4 digits in length.</p>
+<ul>
+<li>
+<p><code>%d</code> or <code>%i</code>: 64-bit integer</p>
+</li>
+<li>
+<p><code>%u</code>: 64-bit unsigned integer</p>
+</li>
+<li>
+<p><code>%x</code> or <code>%X</code>: 64-bit unsigned integer printed in Hexadecimal (base 16)
+<code>%X</code> instead of <code>%x</code> means to use uppercase letters for 'a' through 'f'</p>
+</li>
+<li>
+<p><code>%o</code>: 64-bit unsigned integer printed in octal (base 8)</p>
+</li>
+</ul>
+<h4 id="floating-point-substitutions"><a class="header" href="#floating-point-substitutions">FLOATING POINT SUBSTITUTIONS</a></h4>
+<p>All floating point fields have a 'max decimal places / max significant digits' parameter
+<code>%.10f</code> means a decimal floating point with 7 decimal places past 0
+<code>%.10e</code> means a scientific notation number with 10 significant digits
+<code>%.10g</code> means the same behavior for decimal and Sci. Note, respectively, and provides the shortest
+of each's output.</p>
+<p>Like with GNU coreutils, the value after the decimal point is these outputs is parsed as a
+double first before being rendered to text. For both implementations do not expect meaningful
+precision past the 18th decimal place. When using a number of decimal places that is 18 or
+higher, you can expect variation in output between GNU coreutils printf and this printf at the
+18th decimal place of +/- 1</p>
+<ul>
+<li>
+<p><code>%f</code>: floating point value presented in decimal, truncated and displayed to 6 decimal places by
+default. There is not past-double behavior parity with Coreutils printf, values are not
+estimated or adjusted beyond input values.</p>
+</li>
+<li>
+<p><code>%e</code> or <code>%E</code>: floating point value presented in scientific notation
+7 significant digits by default
+<code>%E</code> means use to use uppercase E for the mantissa.</p>
+</li>
+<li>
+<p><code>%g</code> or <code>%G</code>: floating point value presented in the shortest of decimal and scientific notation
+behaves differently from <code>%f</code> and <code>%E</code>, please see posix printf spec for full details,
+some examples of different behavior:
+Sci Note has 6 significant digits by default
+Trailing zeroes are removed
+Instead of being truncated, digit after last is rounded</p>
+</li>
+</ul>
+<p>Like other behavior in this utility, the design choices of floating point
+behavior in this utility is selected to reproduce in exact
+the behavior of GNU coreutils' printf from an inputs and outputs standpoint.</p>
+<h3 id="using-parameters"><a class="header" href="#using-parameters">USING PARAMETERS</a></h3>
+<p>Most substitution fields can be parameterized using up to 2 numbers that can
+be passed to the field, between the % sign and the field letter.</p>
+<p>The 1st parameter always indicates the minimum width of output, it is useful for creating
+columnar output. Any output that would be less than this minimum width is padded with
+leading spaces
+The 2nd parameter is proceeded by a dot.
+You do not have to use parameters</p>
+<h3 id="special-forms-of-input"><a class="header" href="#special-forms-of-input">SPECIAL FORMS OF INPUT</a></h3>
+<p>For numeric input, the following additional forms of input are accepted besides decimal:</p>
+<p>Octal (only with integer): if the argument begins with a 0 the proceeding characters
+will be interpreted as octal (base 8) for integer fields</p>
+<p>Hexadecimal: if the argument begins with 0x the proceeding characters will be interpreted
+will be interpreted as hex (base 16) for any numeric fields
+for float fields, hexadecimal input results in a precision
+limit (in converting input past the decimal point) of 10^-15</p>
+<p>Character Constant: if the argument begins with a single quote character, the first byte
+of the next character will be interpreted as an 8-bit unsigned integer. If there are
+additional bytes, they will throw an error (unless the environment variable POSIXLY_CORRECT
+is set)</p>
 <h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
 <p>Print a text message:</p>
 <pre><code class="language-shell">printf &quot;{{%s\n}}&quot; &quot;{{Hello world}}&quot;

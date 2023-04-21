@@ -536,7 +536,7 @@ Make to uninstall.</p>
 make PREFIX=/my/path uninstall
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><!-- markdownlint-disable MD041 -->
-<!-- spell-checker:ignore reimplementing toybox RUNTEST -->
+<!-- spell-checker:ignore reimplementing toybox RUNTEST CARGOFLAGS nextest -->
 <h1 id="contributing-to-coreutils"><a class="header" href="#contributing-to-coreutils">Contributing to coreutils</a></h1>
 <p>Contributions are very welcome via Pull Requests. If you don't know where to
 start, take a look at the
@@ -632,6 +632,11 @@ specific tests, run:</p>
 <p>If you also want to test the core utilities:</p>
 <pre><code class="language-shell">cargo test  -p uucore -p coreutils
 </code></pre>
+<p>Running the complete test suite might take a while. We use <a href="https://nexte.st/index.html">nextest</a> in
+the CI and you might want to try it out locally. It can speed up the execution time of the whole
+test run significantly if the cpu has multiple cores.</p>
+<pre><code class="language-shell">cargo nextest run --features unix --no-fail-fast
+</code></pre>
 <p>To debug:</p>
 <pre><code class="language-shell">gdb --args target/debug/coreutils ls
 (gdb) b ls.rs:79
@@ -649,6 +654,12 @@ specific tests, run:</p>
 </code></pre>
 <p>To include tests for unimplemented behavior:</p>
 <pre><code class="language-shell">make UTILS='UTILITY_1 UTILITY_2' SPEC=y test
+</code></pre>
+<p>To run tests with <code>nextest</code> just use the nextest target. Note you'll need to
+<a href="https://nexte.st/book/installation.html">install</a> <code>nextest</code> first. The <code>nextest</code> target accepts the
+same arguments like the default <code>test</code> target, so it's possible to pass arguments to <code>nextest run</code>
+via <code>CARGOFLAGS</code>:</p>
+<pre><code class="language-shell">make CARGOFLAGS='--no-fail-fast' UTILS='UTILITY_1 UTILITY_2' nextest
 </code></pre>
 <h3 id="run-busybox-tests"><a class="header" href="#run-busybox-tests">Run Busybox Tests</a></h3>
 <p>This testing functionality is only available on *nix operating systems and
@@ -774,7 +785,7 @@ then add <code>-Z-Zinstrument-coverage</code> flag to <code>RUSTFLAGS</code> env
 <li><a href="https://github.com/SerenityOS/serenity/tree/master/Userland/Utilities">SerenityOS</a></li>
 <li><a href="https://github.com/dspinellis/unix-history-repo">Initial Unix</a></li>
 </ul>
-<p>However, when reimplementing the tools/options in Rust, don't read their source codes 
+<p>However, when reimplementing the tools/options in Rust, don't read their source codes
 when they are using reciprocal licenses (ex: GNU GPL, GNU LGPL, etc).</p>
 <h2 id="licensing"><a class="header" href="#licensing">Licensing</a></h2>
 <p>uutils is distributed under the terms of the MIT License; see the <code>LICENSE</code> file
@@ -868,15 +879,7 @@ the regular arguments to the util can be passed.</p>
 </code></pre>
 <p>Display machine architecture</p>
 <h2 id="options"><a class="header" href="#options">Options</a></h2>
-<dl><dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
-</dl>
+<dl></dl>
 <p>Determine architecture name for current machine.</p>
 <h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
 <p>Display the system's architecture:</p>
@@ -896,9 +899,6 @@ the regular arguments to the util can be passed.</p>
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>b2sum [OPTIONS] [FILE]...
-</code></pre>
-<p>Compute and check message digests.</p>
 <h2 id="options-1"><a class="header" href="#options-1">Options</a></h2>
 <dl><dt><code>--binary</code>, <code>-b</code></dt>
 <dd>
@@ -939,14 +939,6 @@ the regular arguments to the util can be passed.</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-1"><a class="header" href="#examples-1">Examples</a></h2>
 <p>Calculate the BLAKE2 checksum for a file:</p>
@@ -981,9 +973,6 @@ the regular arguments to the util can be passed.</p>
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>b3sum [OPTIONS] [FILE]...
-</code></pre>
-<p>Compute and check message digests.</p>
 <h2 id="options-2"><a class="header" href="#options-2">Options</a></h2>
 <dl><dt><code>--binary</code>, <code>-b</code></dt>
 <dd>
@@ -1027,14 +1016,6 @@ the regular arguments to the util can be passed.</p>
 <dt><code>--no-names</code></dt>
 <dd>
 <p>Omits filenames in the output (option not present in GNU/Coreutils)</p>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-2"><a class="header" href="#examples-2">Examples</a></h2>
@@ -1092,14 +1073,6 @@ encoded stream.</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-3"><a class="header" href="#examples-3">Examples</a></h2>
 <p>Encode a file:</p>
@@ -1132,9 +1105,9 @@ encoded stream.</p>
 </code></pre>
 <p>encode/decode data and print to standard output
 With no FILE, or when FILE is -, read standard input.</p>
-<p>The data are encoded as described for the base32 alphabet in RFC 4648.
+<p>The data are encoded as described for the base64 alphabet in RFC 3548.
 When decoding, the input may contain newlines in addition
-to the bytes of the formal base32 alphabet. Use --ignore-garbage
+to the bytes of the formal base64 alphabet. Use --ignore-garbage
 to attempt to recover from any other non-alphabet bytes in the
 encoded stream.</p>
 <h2 id="options-4"><a class="header" href="#options-4">Options</a></h2>
@@ -1152,14 +1125,6 @@ encoded stream.</p>
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-4"><a class="header" href="#examples-4">Examples</a></h2>
@@ -1209,14 +1174,6 @@ If specified, also remove a trailing SUFFIX</p>
 <dt><code>--zero</code>, <code>-z</code></dt>
 <dd>
 <p>end each output line with NUL, not newline</p>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-5"><a class="header" href="#examples-5">Examples</a></h2>
@@ -1290,14 +1247,6 @@ from any other non-alphabet bytes in the encoded stream.</p>
 <dt><code>--z85</code></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="cat"><a class="header" href="#cat">cat</a></h1>
 <div class="additional">
@@ -1352,14 +1301,6 @@ With no FILE, or when FILE is -, read standard input.</p>
 <dt><code>--show-nonprinting</code>, <code>-v</code></dt>
 <dd>
 <p>use ^ and M- notation, except for LF (\n) and TAB (\t)</p>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-6"><a class="header" href="#examples-6">Examples</a></h2>
@@ -1460,10 +1401,6 @@ With --reference, change the security context of each FILE to that of RFILE.</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-7"><a class="header" href="#examples-7">Examples</a></h2>
 <p>View security context of a file:</p>
@@ -1559,10 +1496,6 @@ chgrp --reference=RFILE FILE...
 <dd>
 <p>traverse every symbolic link to a directory encountered</p>
 </dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-8"><a class="header" href="#examples-8">Examples</a></h2>
 <p>Change the owner group of a file/directory:</p>
@@ -1630,14 +1563,6 @@ With --reference, change the mode of each FILE to that of RFILE.</p>
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <p>Each MODE is of the form '[ugoa]*(<a href="utils/%5BrwxXst%5D*%7C%5Bugo%5D">-+=</a>)+|[-+=]?[0-7]+'.</p>
@@ -1743,10 +1668,6 @@ chown [OPTION]... --reference=RFILE FILE...
 <dd>
 <p>output a diagnostic for every file processed</p>
 </dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-10"><a class="header" href="#examples-10">Examples</a></h2>
 <p>Change the owner user of a file/directory:</p>
@@ -1807,14 +1728,6 @@ chown [OPTION]... --reference=RFILE FILE...
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-11"><a class="header" href="#examples-11">Examples</a></h2>
 <p>Run command as new root directory:</p>
@@ -1847,14 +1760,6 @@ chown [OPTION]... --reference=RFILE FILE...
 <dt><code>--algorithm=&lt;ALGORITHM&gt;</code>, <code>-a &lt;ALGORITHM&gt;</code></dt>
 <dd>
 <p>select the digest type to use. See DIGEST below</p>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <p>DIGEST determines the digest algorithm and default output format:</p>
@@ -1926,14 +1831,6 @@ and column three contains lines common to both files.</p>
 <dt><code>--total</code></dt>
 <dd>
 <p>output a summary</p>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-13"><a class="header" href="#examples-13">Examples</a></h2>
@@ -2099,14 +1996,6 @@ cp [OPTION]... -t DIRECTORY SOURCE...
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-14"><a class="header" href="#examples-14">Examples</a></h2>
 <p>Copy a file to another location:</p>
@@ -2185,14 +2074,6 @@ cp [OPTION]... -t DIRECTORY SOURCE...
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <p>Output pieces of FILE separated by PATTERN(s) to files 'xx00', 'xx01', ..., and output byte counts of each piece to standard output.</p>
 <h2 id="examples-15"><a class="header" href="#examples-15">Examples</a></h2>
@@ -2268,17 +2149,69 @@ cp [OPTION]... -t DIRECTORY SOURCE...
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <p>Each call must specify a mode (what to use for columns),
 a sequence (which columns to print), and provide a data source</p>
+<h3 id="specifying-a-mode"><a class="header" href="#specifying-a-mode">Specifying a mode</a></h3>
+<p>Use <code>--bytes</code> (<code>-b</code>) or <code>--characters</code> (<code>-c</code>) to specify byte mode</p>
+<p>Use <code>--fields</code> (<code>-f</code>) to specify field mode, where each line is broken into
+fields identified by a delimiter character. For example for a typical CSV
+you could use this in combination with setting comma as the delimiter</p>
+<h3 id="specifying-a-sequence"><a class="header" href="#specifying-a-sequence">Specifying a sequence</a></h3>
+<p>A sequence is a group of 1 or more numbers or inclusive ranges separated
+by a commas.</p>
+<pre><code>cut -f 2,5-7 some_file.txt
+</code></pre>
+<p>will display the 2nd, 5th, 6th, and 7th field for each source line</p>
+<p>Ranges can extend to the end of the row by excluding the second number</p>
+<pre><code>cut -f 3- some_file.txt
+</code></pre>
+<p>will display the 3rd field and all fields after for each source line</p>
+<p>The first number of a range can be excluded, and this is effectively the
+same as using 1 as the first number: it causes the range to begin at the
+first column. Ranges can also display a single column</p>
+<pre><code>cut -f 1,3-5 some_file.txt
+</code></pre>
+<p>will display the 1st, 3rd, 4th, and 5th field for each source line</p>
+<p>The <code>--complement</code> option, when used, inverts the effect of the sequence</p>
+<pre><code>cut --complement -f 4-6 some_file.txt
+</code></pre>
+<p>will display the every field but the 4th, 5th, and 6th</p>
+<h3 id="specifying-a-data-source"><a class="header" href="#specifying-a-data-source">Specifying a data source</a></h3>
+<p>If no <code>sourcefile</code> arguments are specified, stdin is used as the source of
+lines to print</p>
+<p>If <code>sourcefile</code> arguments are specified, stdin is ignored and all files are
+read in consecutively if a <code>sourcefile</code> is not successfully read, a warning
+will print to stderr, and the eventual status code will be 1, but cut
+will continue to read through proceeding <code>sourcefiles</code></p>
+<p>To print columns from both STDIN and a file argument, use <code>-</code> (dash) as a
+<code>sourcefile</code> argument to represent stdin.</p>
+<h3 id="field-mode-options"><a class="header" href="#field-mode-options">Field Mode options</a></h3>
+<p>The fields in each line are identified by a delimiter (separator)</p>
+<h4 id="set-the-delimiter"><a class="header" href="#set-the-delimiter">Set the delimiter</a></h4>
+<p>Set the delimiter which separates fields in the file using the
+<code>--delimiter</code> (<code>-d</code>) option. Setting the delimiter is optional.
+If not set, a default delimiter of Tab will be used.</p>
+<p>If the <code>-w</code> option is provided, fields will be separated by any number
+of whitespace characters (Space and Tab). The output delimiter will
+be a Tab unless explicitly specified. Only one of <code>-d</code> or <code>-w</code> option can be specified.
+This is an extension adopted from FreeBSD.</p>
+<h4 id="optionally-filter-based-on-delimiter"><a class="header" href="#optionally-filter-based-on-delimiter">Optionally Filter based on delimiter</a></h4>
+<p>If the <code>--only-delimited</code> (<code>-s</code>) flag is provided, only lines which
+contain the delimiter will be printed</p>
+<h4 id="replace-the-delimiter"><a class="header" href="#replace-the-delimiter">Replace the delimiter</a></h4>
+<p>If the <code>--output-delimiter</code> option is provided, the argument used for
+it will replace the delimiter character in each line printed. This is
+useful for transforming tabular data - e.g. to convert a CSV to a
+TSV (tab-separated file)</p>
+<h3 id="line-endings"><a class="header" href="#line-endings">Line endings</a></h3>
+<p>When the <code>--zero-terminated</code> (<code>-z</code>) option is used, cut sees \0 (null) as the
+'line ending' character (both for the purposes of reading lines and
+separating printed lines) instead of \n (newline). This is useful for
+tabular data where some of the cells may contain newlines</p>
+<pre><code>echo 'ab\\0cd' | cut -z -c 1
+</code></pre>
+<p>will result in 'a\0c\0'</p>
 <h2 id="examples-16"><a class="header" href="#examples-16">Examples</a></h2>
 <p>Print a specific character/field range of each line:</p>
 <pre><code class="language-shell">{{command}} | cut --{{characters|fields}}={{1|1,10|1-10|1-|-10}}
@@ -2347,14 +2280,6 @@ date [OPTION]... [MMDDhhmm[[CC]YY][.ss]]
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-17"><a class="header" href="#examples-17">Examples</a></h2>
 <p>Display the current date using the default locale's format:</p>
@@ -2403,86 +2328,78 @@ dd OPTION
 <dl><dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h3 id="operands"><a class="header" href="#operands">Operands</a></h3>
 <ul>
 <li>
-<p>Bs=BYTES : read and write up to BYTES bytes at a time (default: 512);
-overwrites ibs and obs.</p>
+<p><code>Bs=BYTES</code> : read and write up to BYTES bytes at a time (default: 512);
+overwrites <code>ibs</code> and <code>obs</code>.</p>
 </li>
 <li>
-<p>cbs=BYTES : the 'conversion block size' in bytes. Applies to the
-conv=block, and conv=unblock operations.</p>
+<p><code>cbs=BYTES</code> : the 'conversion block size' in bytes. Applies to the
+<code>conv=block</code>, and <code>conv=unblock</code> operations.</p>
 </li>
 <li>
-<p>conv=CONVS : a comma-separated list of conversion options or (for legacy
+<p><code>conv=CONVS</code> : a comma-separated list of conversion options or (for legacy
 reasons) file flags.</p>
 </li>
 <li>
-<p>count=N : stop reading input after N ibs-sized read operations rather
-than proceeding until EOF. See iflag=count_bytes if stopping after N bytes
+<p><code>count=N</code> : stop reading input after N ibs-sized read operations rather
+than proceeding until EOF. See <code>iflag=count_bytes</code> if stopping after N bytes
 is preferred</p>
 </li>
 <li>
-<p>ibs=N : the size of buffer used for reads (default: 512)</p>
+<p><code>ibs=N</code> : the size of buffer used for reads (default: 512)</p>
 </li>
 <li>
-<p>if=FILE : the file used for input. When not specified, stdin is used instead</p>
+<p><code>if=FILE</code> : the file used for input. When not specified, stdin is used instead</p>
 </li>
 <li>
-<p>iflag=FLAGS : a comma-separated list of input flags which specify how the
+<p><code>iflag=FLAGS</code> : a comma-separated list of input flags which specify how the
 input source is treated. FLAGS may be any of the input-flags or general-flags
 specified below.</p>
 </li>
 <li>
-<p>skip=N (or iseek=N) : skip N ibs-sized records into input before beginning
+<p><code>skip=N</code> (or <code>iseek=N</code>) : skip N ibs-sized records into input before beginning
 copy/convert operations. See iflag=seek_bytes if seeking N bytes is preferred.</p>
 </li>
 <li>
-<p>obs=N : the size of buffer used for writes (default: 512)</p>
+<p><code>obs=N</code> : the size of buffer used for writes (default: 512)</p>
 </li>
 <li>
-<p>of=FILE : the file used for output. When not specified, stdout is used
+<p><code>of=FILE</code> : the file used for output. When not specified, stdout is used
 instead</p>
 </li>
 <li>
-<p>oflag=FLAGS : comma separated list of output flags which specify how the
+<p><code>oflag=FLAGS</code> : comma separated list of output flags which specify how the
 output source is treated. FLAGS may be any of the output flags or general
 flags specified below</p>
 </li>
 <li>
-<p>seek=N (or oseek=N) : seeks N obs-sized records into output before
+<p><code>seek=N</code> (or <code>oseek=N</code>) : seeks N obs-sized records into output before
 beginning copy/convert operations. See oflag=seek_bytes if seeking N bytes is
 preferred</p>
 </li>
 <li>
-<p>status=LEVEL : controls whether volume and performance stats are written to
+<p><code>status=LEVEL</code> : controls whether volume and performance stats are written to
 stderr.</p>
 <p>When unspecified, dd will print stats upon completion. An example is below.</p>
-<p>plain
-6+0 records in
-16+0 records out
-8192 bytes (8.2 kB, 8.0 KiB) copied, 0.00057009 s,
-14.4 MB/s</p>
+<pre><code class="language-plain">  6+0 records in
+  16+0 records out
+  8192 bytes (8.2 kB, 8.0 KiB) copied, 0.00057009 s,
+  14.4 MB/s
+</code></pre>
 <p>The first two lines are the 'volume' stats and the final line is the
 'performance' stats.
 The volume stats indicate the number of complete and partial ibs-sized reads,
 or obs-sized writes that took place during the copy. The format of the volume
-stats is <complete>+<partial>. If records have been truncated (see
-conv=block), the volume stats will contain the number of truncated records.</p>
+stats is <code>&lt;complete&gt;+&lt;partial&gt;</code>. If records have been truncated (see
+<code>conv=block</code>), the volume stats will contain the number of truncated records.</p>
 <p>Possible LEVEL values are:</p>
 <ul>
-<li>progress : Print periodic performance stats as the copy proceeds.</li>
-<li>noxfer : Print final volume stats, but not performance stats.</li>
-<li>none : Do not print any stats.</li>
+<li><code>progress</code> : Print periodic performance stats as the copy proceeds.</li>
+<li><code>noxfer</code> : Print final volume stats, but not performance stats.</li>
+<li><code>none</code> : Do not print any stats.</li>
 </ul>
 <p>Printing performance stats is also triggered by the INFO signal (where supported),
 or the USR1 signal. Setting the POSIXLY_CORRECT environment variable to any value
@@ -2492,90 +2409,90 @@ or the USR1 signal. Setting the POSIXLY_CORRECT environment variable to any valu
 <h3 id="conversion-options"><a class="header" href="#conversion-options">Conversion Options</a></h3>
 <ul>
 <li>
-<p>ascii : convert from EBCDIC to ASCII. This is the inverse of the ebcdic
-option. Implies conv=unblock.</p>
+<p><code>ascii</code> : convert from EBCDIC to ASCII. This is the inverse of the <code>ebcdic</code>
+option. Implies <code>conv=unblock</code>.</p>
 </li>
 <li>
-<p>ebcdic : convert from ASCII to EBCDIC. This is the inverse of the ascii
-option. Implies conv=block.</p>
+<p><code>ebcdic</code> : convert from ASCII to EBCDIC. This is the inverse of the <code>ascii</code>
+option. Implies <code>conv=block</code>.</p>
 </li>
 <li>
-<p>ibm : convert from ASCII to EBCDIC, applying the conventions for [, ]
-and ~ specified in POSIX. Implies conv=block.</p>
+<p><code>ibm</code> : convert from ASCII to EBCDIC, applying the conventions for <code>[</code>, <code>]</code>
+and <code>~</code> specified in POSIX. Implies <code>conv=block</code>.</p>
 </li>
 <li>
-<p>ucase : convert from lower-case to upper-case.</p>
+<p><code>ucase</code> : convert from lower-case to upper-case.</p>
 </li>
 <li>
-<p>lcase : converts from upper-case to lower-case.</p>
+<p><code>lcase</code> : converts from upper-case to lower-case.</p>
 </li>
 <li>
-<p>block : for each newline less than the size indicated by cbs=BYTES, remove
+<p><code>block</code> : for each newline less than the size indicated by cbs=BYTES, remove
 the newline and pad with spaces up to cbs. Lines longer than cbs are truncated.</p>
 </li>
 <li>
-<p>unblock : for each block of input of the size indicated by cbs=BYTES, remove
+<p><code>unblock</code> : for each block of input of the size indicated by cbs=BYTES, remove
 right-trailing spaces and replace with a newline character.</p>
 </li>
 <li>
-<p>sparse : attempts to seek the output when an obs-sized block consists of
+<p><code>sparse</code> : attempts to seek the output when an obs-sized block consists of
 only zeros.</p>
 </li>
 <li>
-<p>swab : swaps each adjacent pair of bytes. If an odd number of bytes is
+<p><code>swab</code> : swaps each adjacent pair of bytes. If an odd number of bytes is
 present, the final byte is omitted.</p>
 </li>
 <li>
-<p>sync : pad each ibs-sided block with zeros. If block or unblock is
+<p><code>sync</code> : pad each ibs-sided block with zeros. If <code>block</code> or <code>unblock</code> is
 specified, pad with spaces instead.</p>
 </li>
 <li>
-<p>excl : the output file must be created. Fail if the output file is already
+<p><code>excl</code> : the output file must be created. Fail if the output file is already
 present.</p>
 </li>
 <li>
-<p>nocreat : the output file will not be created. Fail if the output file in
+<p><code>nocreat</code> : the output file will not be created. Fail if the output file in
 not already present.</p>
 </li>
 <li>
-<p>notrunc : the output file will not be truncated. If this option is not
+<p><code>notrunc</code> : the output file will not be truncated. If this option is not
 present, output will be truncated when opened.</p>
 </li>
 <li>
-<p>noerror : all read errors will be ignored. If this option is not present,
+<p><code>noerror</code> : all read errors will be ignored. If this option is not present,
 dd will only ignore Error::Interrupted.</p>
 </li>
 <li>
-<p>fdatasync : data will be written before finishing.</p>
+<p><code>fdatasync</code> : data will be written before finishing.</p>
 </li>
 <li>
-<p>fsync : data and metadata will be written before finishing.</p>
+<p><code>fsync</code> : data and metadata will be written before finishing.</p>
 </li>
 </ul>
 <h3 id="input-flags"><a class="header" href="#input-flags">Input flags</a></h3>
 <ul>
-<li>count_bytes : a value to count=N will be interpreted as bytes.</li>
-<li>skip_bytes : a value to skip=N will be interpreted as bytes.</li>
-<li>fullblock : wait for ibs bytes from each read. zero-length reads are still
+<li><code>count_bytes</code> : a value to <code>count=N</code> will be interpreted as bytes.</li>
+<li><code>skip_bytes</code> : a value to <code>skip=N</code> will be interpreted as bytes.</li>
+<li><code>fullblock</code> : wait for ibs bytes from each read. zero-length reads are still
 considered EOF.</li>
 </ul>
 <h3 id="output-flags"><a class="header" href="#output-flags">Output flags</a></h3>
 <ul>
-<li>append : open file in append mode. Consider setting conv=notrunc as well.</li>
-<li>seek_bytes : a value to seek=N will be interpreted as bytes.</li>
+<li><code>append</code> : open file in append mode. Consider setting conv=notrunc as well.</li>
+<li><code>seek_bytes</code> : a value to seek=N will be interpreted as bytes.</li>
 </ul>
 <h3 id="general-flags"><a class="header" href="#general-flags">General Flags</a></h3>
 <ul>
-<li>Direct : use direct I/O for data.</li>
-<li>directory : fail unless the given input (if used as an iflag) or
+<li><code>Direct</code> : use direct I/O for data.</li>
+<li><code>directory</code> : fail unless the given input (if used as an iflag) or
 output (if used as an oflag) is a directory.</li>
-<li>dsync : use synchronized I/O for data.</li>
-<li>sync : use synchronized I/O for data and metadata.</li>
-<li>nonblock : use non-blocking I/O.</li>
-<li>noatime : do not update access time.</li>
-<li>nocache : request that OS drop cache.</li>
-<li>noctty : do not assign a controlling tty.</li>
-<li>nofollow : do not follow system links.</li>
+<li><code>dsync</code> : use synchronized I/O for data.</li>
+<li><code>sync</code> : use synchronized I/O for data and metadata.</li>
+<li><code>nonblock</code> : use non-blocking I/O.</li>
+<li><code>noatime</code> : do not update access time.</li>
+<li><code>nocache</code> : request that OS drop cache.</li>
+<li><code>noctty</code> : do not assign a controlling tty.</li>
+<li><code>nofollow</code> : do not follow system links.</li>
 </ul>
 <h2 id="examples-18"><a class="header" href="#examples-18">Examples</a></h2>
 <p>Make a bootable USB drive from an isohybrid file (such like <code>archlinux-xxx.iso</code>):</p>
@@ -2682,10 +2599,6 @@ or all file systems by default.</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <p>Display values are in units of the first available SIZE from --block-size,
 and the DF_BLOCK_SIZE, BLOCK_SIZE and BLOCKSIZE environment variables.
@@ -2723,10 +2636,6 @@ of 1000).</p>
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>dir [OPTION]... [FILE]...
-</code></pre>
-<p>List directory contents.
-Ignore files and directories starting with a '.' by default</p>
 <h2 id="options-21"><a class="header" href="#options-21">Options</a></h2>
 <dl><dt><code>--help</code></dt>
 <dd>
@@ -2958,12 +2867,7 @@ Ignore files and directories starting with a '.' by default</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
-<p>The TIME_STYLE argument can be full-iso, long-iso, iso, locale or +FORMAT. FORMAT is interpreted like in date. Also the TIME_STYLE environment variable sets the default style to use.</p>
 <h2 id="examples-20"><a class="header" href="#examples-20">Examples</a></h2>
 <p>List all files, including hidden files:</p>
 <pre><code class="language-shell">dir -all
@@ -3017,14 +2921,6 @@ Ignore files and directories starting with a '.' by default</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <p>If FILE is specified, read it to determine which colors to use for which
 file types and extensions.  Otherwise, a precompiled database is used.
@@ -3069,14 +2965,6 @@ For details on the format of these files, run 'dircolors --print-database'</p>
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <p>Output each NAME with its last non-slash component and trailing slashes
@@ -3213,10 +3101,6 @@ du [OPTION]... --files0-from=F
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <p>Display values are in units of the first available SIZE from --block-size,
 and the DU_BLOCK_SIZE, BLOCK_SIZE and BLOCKSIZE environment variables.
@@ -3280,14 +3164,6 @@ are supported:
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <p>Echo the STRING(s) to standard output.</p>
@@ -3361,14 +3237,6 @@ are supported:
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <p>A mere - implies -i. If no COMMAND, print the resulting environment.</p>
 <h2 id="examples-25"><a class="header" href="#examples-25">Examples</a></h2>
@@ -3423,14 +3291,6 @@ With no <code>FILE</code>, or when <code>FILE</code> is <code>-</code>, read sta
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-26"><a class="header" href="#examples-26">Examples</a></h2>
@@ -3572,10 +3432,6 @@ If none are specified, read from standard input.</p>
 <dd>
 <p>Print help information.</p>
 </dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-28"><a class="header" href="#examples-28">Examples</a></h2>
 <p>Display the prime-factorization of a number:</p>
@@ -3691,14 +3547,6 @@ the program will also return <code>1</code>.</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-30"><a class="header" href="#examples-30">Examples</a></h2>
 <p>Reformat a file:</p>
@@ -3747,14 +3595,6 @@ to standard output whilst breaking long lines</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-31"><a class="header" href="#examples-31">Examples</a></h2>
 <p>Wrap each line to default width (80 characters):</p>
@@ -3786,14 +3626,6 @@ the current process (which may differ if the groups data‐base has changed).</p
 <h2 id="options-33"><a class="header" href="#options-33">Options</a></h2>
 <dl><dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-32"><a class="header" href="#examples-32">Examples</a></h2>
@@ -3928,14 +3760,6 @@ the current process (which may differ if the groups data‐base has changed).</p
 <dd>
 <p>work with BLAKE3</p>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="head"><a class="header" href="#head">head</a></h1>
 <div class="additional">
@@ -3980,14 +3804,6 @@ With no <code>FILE</code>, or when <code>FILE</code> is <code>-</code>, read sta
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-33"><a class="header" href="#examples-33">Examples</a></h2>
 <p>Output the first few lines of a file:</p>
@@ -4009,15 +3825,7 @@ With no <code>FILE</code>, or when <code>FILE</code> is <code>-</code>, read sta
 </code></pre>
 <p>Print the numeric identifier (in hexadecimal) for the current host</p>
 <h2 id="options-36"><a class="header" href="#options-36">Options</a></h2>
-<dl><dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
-</dl>
+<dl></dl>
 <h2 id="examples-34"><a class="header" href="#examples-34">Examples</a></h2>
 <p>Display the numeric identifier for the current host in hexadecimal:</p>
 <pre><code class="language-shell">hostid
@@ -4058,14 +3866,6 @@ With no <code>FILE</code>, or when <code>FILE</code> is <code>-</code>, read sta
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-35"><a class="header" href="#examples-35">Examples</a></h2>
@@ -4144,14 +3944,6 @@ or (when <code>USER</code> omitted) for the current user.</p>
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <p>The id utility displays the user and group names and numeric IDs, of the
@@ -4266,14 +4058,6 @@ DIRECTORY, while setting permission modes and owner/group</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-37"><a class="header" href="#examples-37">Examples</a></h2>
 <p>Copy files to the destination:</p>
@@ -4372,14 +4156,6 @@ standard output. The default join field is the first, delimited by blanks.</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-38"><a class="header" href="#examples-38">Examples</a></h2>
 <p>Join two files on the first (default) field:</p>
@@ -4429,14 +4205,6 @@ standard output. The default join field is the first, delimited by blanks.</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-39"><a class="header" href="#examples-39">Examples</a></h2>
 <p>Terminate a program using the default SIGTERM (terminate) signal:</p>
@@ -4483,14 +4251,6 @@ standard output. The default join field is the first, delimited by blanks.</p>
 <h2 id="options-42"><a class="header" href="#options-42">Options</a></h2>
 <dl><dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-40"><a class="header" href="#examples-40">Examples</a></h2>
@@ -4573,14 +4333,6 @@ ln [OPTION]... -t DIRECTORY TARGET...
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <p>In the 1st form, create a link to TARGET with the name LINK_NAME.
 In the 2nd form, create a link to TARGET in the current directory.
@@ -4617,15 +4369,7 @@ interpreted in relation to its parent directory.</p>
 </code></pre>
 <p>Print user's login name</p>
 <h2 id="options-44"><a class="header" href="#options-44">Options</a></h2>
-<dl><dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
-</dl>
+<dl></dl>
 <h2 id="examples-42"><a class="header" href="#examples-42">Examples</a></h2>
 <p>Display the currently logged in user's name:</p>
 <pre><code class="language-shell">logname
@@ -4879,10 +4623,6 @@ Ignore files and directories starting with a '.' by default</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <p>The TIME_STYLE argument can be full-iso, long-iso, iso, locale or +FORMAT. FORMAT is interpreted like in date. Also the TIME_STYLE environment variable sets the default style to use.</p>
 <h2 id="examples-43"><a class="header" href="#examples-43">Examples</a></h2>
@@ -4924,9 +4664,6 @@ Ignore files and directories starting with a '.' by default</p>
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>md5sum [OPTIONS] [FILE]...
-</code></pre>
-<p>Compute and check message digests.</p>
 <h2 id="options-46"><a class="header" href="#options-46">Options</a></h2>
 <dl><dt><code>--binary</code>, <code>-b</code></dt>
 <dd>
@@ -4966,14 +4703,6 @@ Ignore files and directories starting with a '.' by default</p>
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-44"><a class="header" href="#examples-44">Examples</a></h2>
@@ -5028,14 +4757,6 @@ Ignore files and directories starting with a '.' by default</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <p>Each MODE is of the form '[ugoa]*(<a href="utils/%5BrwxXst%5D*%7C%5Bugo%5D">-+=</a>)+|[-+=]?[0-7]+'.</p>
 <h2 id="examples-45"><a class="header" href="#examples-45">Examples</a></h2>
@@ -5080,14 +4801,6 @@ Ignore files and directories starting with a '.' by default</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-46"><a class="header" href="#examples-46">Examples</a></h2>
 <p>Create a named pipe at a given path:</p>
@@ -5129,14 +4842,6 @@ Ignore files and directories starting with a '.' by default</p>
 <dt></dt>
 <dd>
 <p>minor file type</p>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <p>Mandatory arguments to long options are mandatory for short options too.
@@ -5211,14 +4916,6 @@ for details about the options it supports.</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-48"><a class="header" href="#examples-48">Examples</a></h2>
 <p>Create an empty temporary file and print the absolute path to it:</p>
@@ -5255,14 +4952,6 @@ for details about the options it supports.</p>
 <dt></dt>
 <dd>
 <p>Path to the files to be read</p>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-49"><a class="header" href="#examples-49">Examples</a></h2>
@@ -5358,14 +5047,6 @@ mv [OPTION]... -t DIRECTORY SOURCE...
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-50"><a class="header" href="#examples-50">Examples</a></h2>
 <p>Rename a file or directory when the target is not an existing directory:</p>
@@ -5415,14 +5096,6 @@ process).</p>
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-51"><a class="header" href="#examples-51">Examples</a></h2>
@@ -5498,10 +5171,6 @@ process).</p>
 <dd>
 <p>use NUMBER columns for line numbers</p>
 </dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-52"><a class="header" href="#examples-52">Examples</a></h2>
 <p>Number non-blank lines in a file:</p>
@@ -5539,14 +5208,6 @@ nohup FLAG
 <h2 id="options-55"><a class="header" href="#options-55">Options</a></h2>
 <dl><dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <p>If standard input is terminal, it'll be replaced with /dev/null.
@@ -5593,14 +5254,6 @@ they will determine the minimum and maximum returned value respectively.</p>
 <dt><code>--ignore=&lt;N&gt;</code></dt>
 <dd>
 <p>ignore up to N cores</p>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-54"><a class="header" href="#examples-54">Examples</a></h2>
@@ -5677,14 +5330,6 @@ they will determine the minimum and maximum returned value respectively.</p>
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <p><code>UNIT</code> options:</p>
@@ -5874,10 +5519,6 @@ od --traditional [OPTION]... [FILENAME] [[+][0x]OFFSET[.][b] [[+][0x]LABEL[.][b]
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <p>Displays data in various human-readable formats. If multiple formats are
 specified, the output will contain all formats in the order they appear on the
@@ -5962,14 +5603,6 @@ exit code will be non-zero.</p>
 <dd>
 <p>line delimiter is NUL, not newline</p>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-57"><a class="header" href="#examples-57">Examples</a></h2>
 <p>Join all the lines into a single line, using TAB as delimiter:</p>
@@ -6018,14 +5651,6 @@ exit code will be non-zero.</p>
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-58"><a class="header" href="#examples-58">Examples</a></h2>
@@ -6100,10 +5725,6 @@ exit code will be non-zero.</p>
 <dt><code>--help</code></dt>
 <dd>
 <p>Print help information</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-59"><a class="header" href="#examples-59">Examples</a></h2>
@@ -6222,10 +5843,6 @@ exit code will be non-zero.</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <p><code>+PAGE</code>           Begin output at page number page of the formatted input.
 <code>-COLUMN</code>         Produce multi-column output. See <code>--column</code></p>
@@ -6286,14 +5903,6 @@ Lines are not truncated under single column output.</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-61"><a class="header" href="#examples-61">Examples</a></h2>
 <p>Display key-value pairs of all environment variables:</p>
@@ -6346,6 +5955,246 @@ output replaces anonymous fields with the next unused argument, formatted accord
 and substitution field sequences with passed arguments</p>
 <p>literally, with the exception of the below
 escaped character sequences, and the substitution sequences described further down.</p>
+<h3 id="escape-sequences"><a class="header" href="#escape-sequences">ESCAPE SEQUENCES</a></h3>
+<p>The following escape sequences, organized here in alphabetical order,
+will print the corresponding character literal:</p>
+<ul>
+<li>
+<p><code>\&quot;</code>      double quote</p>
+</li>
+<li>
+<p><code>\\\\</code>    backslash</p>
+</li>
+<li>
+<p><code>\\a</code>     alert (BEL)</p>
+</li>
+<li>
+<p><code>\\b</code>     backspace</p>
+</li>
+<li>
+<p><code>\\c</code>     End-of-Input</p>
+</li>
+<li>
+<p><code>\\e</code>     escape</p>
+</li>
+<li>
+<p><code>\\f</code>     form feed</p>
+</li>
+<li>
+<p><code>\\n</code>     new line</p>
+</li>
+<li>
+<p><code>\\r</code>     carriage return</p>
+</li>
+<li>
+<p><code>\\t</code>     horizontal tab</p>
+</li>
+<li>
+<p><code>\\v</code>     vertical tab</p>
+</li>
+<li>
+<p><code>\\NNN</code>   byte with value expressed in octal value NNN (1 to 3 digits)
+values greater than 256 will be treated</p>
+</li>
+<li>
+<p><code>\\xHH</code>   byte with value expressed in hexadecimal value NN (1 to 2 digits)</p>
+</li>
+<li>
+<p><code>\\uHHHH</code> Unicode (IEC 10646) character with value expressed in hexadecimal value HHHH (4 digits)</p>
+</li>
+<li>
+<p><code>\\uHHHH</code> Unicode character with value expressed in hexadecimal value HHHH (8 digits)</p>
+</li>
+<li>
+<p><code>%%</code>      a single %</p>
+</li>
+</ul>
+<h3 id="substitutions"><a class="header" href="#substitutions">SUBSTITUTIONS</a></h3>
+<h4 id="substitution-quick-reference"><a class="header" href="#substitution-quick-reference">SUBSTITUTION QUICK REFERENCE</a></h4>
+<p>Fields</p>
+<ul>
+<li>
+<p><code>%s</code>: string</p>
+</li>
+<li>
+<p><code>%b</code>: string parsed for literals second parameter is max length</p>
+</li>
+<li>
+<p><code>%c</code>: char no second parameter</p>
+</li>
+<li>
+<p><code>%i</code> or <code>%d</code>: 64-bit integer</p>
+</li>
+<li>
+<p><code>%u</code>:       64 bit unsigned integer</p>
+</li>
+<li>
+<p><code>%x</code> or <code>%X</code>: 64-bit unsigned integer as hex</p>
+</li>
+<li>
+<p><code>%o</code>:       64-bit unsigned integer as octal
+second parameter is min-width, integer
+output below that width is padded with leading zeroes</p>
+</li>
+<li>
+<p><code>%f</code> or <code>%F</code>: decimal floating point value</p>
+</li>
+<li>
+<p><code>%e</code> or <code>%E</code>: scientific notation floating point value</p>
+</li>
+<li>
+<p><code>%g</code> or <code>%G</code>: shorter of specially interpreted decimal or SciNote floating point value.
+second parameter is
+<code>-max</code> places after decimal point for floating point output
+<code>-max</code> number of significant digits for scientific notation output</p>
+</li>
+</ul>
+<p>parameterizing fields</p>
+<p>examples:</p>
+<pre><code>printf '%4.3i' 7
+</code></pre>
+<p>It has a first parameter of 4 and a second parameter of 3 and will result in ' 007'</p>
+<pre><code>printf '%.1s' abcde
+</code></pre>
+<p>It has no first parameter and a second parameter of 1 and will result in 'a'</p>
+<pre><code>printf '%4c' q
+</code></pre>
+<p>It has a first parameter of 4 and no second parameter and will result in  '   q'</p>
+<p>The first parameter of a field is the minimum width to pad the output to
+if the output is less than this absolute value of this width,
+it will be padded with leading spaces, or, if the argument is negative,
+with trailing spaces. the default is zero.</p>
+<p>The second parameter of a field is particular to the output field type.
+defaults can be found in the full substitution help below</p>
+<p>special prefixes to numeric arguments</p>
+<ul>
+<li><code>0</code>:  (e.g. 010)   interpret argument as octal (integer output fields only)</li>
+<li><code>0x</code>: (e.g. 0xABC) interpret argument as hex (numeric output fields only)</li>
+<li><code>\'</code>: (e.g. 'a)   interpret argument as a character constant</li>
+</ul>
+<h4 id="how-to-use-substitutions"><a class="header" href="#how-to-use-substitutions">HOW TO USE SUBSTITUTIONS</a></h4>
+<p>Substitutions are used to pass additional argument(s) into the FORMAT string, to be formatted a
+particular way. E.g.</p>
+<pre><code>printf 'the letter %X comes before the letter %X' 10 11
+</code></pre>
+<p>will print</p>
+<pre><code>the letter A comes before the letter B
+</code></pre>
+<p>because the substitution field <code>%X</code> means
+'take an integer argument and write it as a hexadecimal number'</p>
+<p>Passing more arguments than are in the format string will cause the format string to be
+repeated for the remaining substitutions</p>
+<pre><code>printf 'it is %i F in %s \n' 22 Portland 25 Boston 27 New York
+</code></pre>
+<p>will print</p>
+<pre><code>it is 22 F in Portland
+it is 25 F in Boston
+it is 27 F in Boston
+</code></pre>
+<p>If a format string is printed but there are less arguments remaining
+than there are substitution fields, substitution fields without
+an argument will default to empty strings, or for numeric fields
+the value 0</p>
+<h4 id="available-substitutions"><a class="header" href="#available-substitutions">AVAILABLE SUBSTITUTIONS</a></h4>
+<p>This program, like GNU coreutils printf,
+interprets a modified subset of the POSIX C printf spec,
+a quick reference to substitutions is below.</p>
+<h4 id="string-substitutions"><a class="header" href="#string-substitutions">STRING SUBSTITUTIONS</a></h4>
+<p>All string fields have a 'max width' parameter
+<code>%.3s</code> means 'print no more than three characters of the original input'</p>
+<ul>
+<li>
+<p><code>%s</code>: string</p>
+</li>
+<li>
+<p><code>%b</code>: escaped string - the string will be checked for any escaped literals from
+the escaped literal list above, and translate them to literal characters.
+e.g. <code>\\n</code> will be transformed into a newline character.
+One special rule about <code>%b</code> mode is that octal literals are interpreted differently
+In arguments passed by <code>%b</code>, pass octal-interpreted literals must be in the form of <code>\\0NNN</code>
+instead of <code>\\NNN</code>. (Although, for legacy reasons, octal literals in the form of <code>\\NNN</code> will
+still be interpreted and not throw a warning, you will have problems if you use this for a
+literal whose code begins with zero, as it will be viewed as in <code>\\0NNN</code> form.)</p>
+</li>
+</ul>
+<h4 id="char-substitutions"><a class="header" href="#char-substitutions">CHAR SUBSTITUTIONS</a></h4>
+<p>The character field does not have a secondary parameter.</p>
+<ul>
+<li><code>%c</code>: a single character</li>
+</ul>
+<h4 id="integer-substitutions"><a class="header" href="#integer-substitutions">INTEGER SUBSTITUTIONS</a></h4>
+<p>All integer fields have a 'pad with zero' parameter
+<code>%.4i</code> means an integer which if it is less than 4 digits in length,
+is padded with leading zeros until it is 4 digits in length.</p>
+<ul>
+<li>
+<p><code>%d</code> or <code>%i</code>: 64-bit integer</p>
+</li>
+<li>
+<p><code>%u</code>: 64-bit unsigned integer</p>
+</li>
+<li>
+<p><code>%x</code> or <code>%X</code>: 64-bit unsigned integer printed in Hexadecimal (base 16)
+<code>%X</code> instead of <code>%x</code> means to use uppercase letters for 'a' through 'f'</p>
+</li>
+<li>
+<p><code>%o</code>: 64-bit unsigned integer printed in octal (base 8)</p>
+</li>
+</ul>
+<h4 id="floating-point-substitutions"><a class="header" href="#floating-point-substitutions">FLOATING POINT SUBSTITUTIONS</a></h4>
+<p>All floating point fields have a 'max decimal places / max significant digits' parameter
+<code>%.10f</code> means a decimal floating point with 7 decimal places past 0
+<code>%.10e</code> means a scientific notation number with 10 significant digits
+<code>%.10g</code> means the same behavior for decimal and Sci. Note, respectively, and provides the shortest
+of each's output.</p>
+<p>Like with GNU coreutils, the value after the decimal point is these outputs is parsed as a
+double first before being rendered to text. For both implementations do not expect meaningful
+precision past the 18th decimal place. When using a number of decimal places that is 18 or
+higher, you can expect variation in output between GNU coreutils printf and this printf at the
+18th decimal place of +/- 1</p>
+<ul>
+<li>
+<p><code>%f</code>: floating point value presented in decimal, truncated and displayed to 6 decimal places by
+default. There is not past-double behavior parity with Coreutils printf, values are not
+estimated or adjusted beyond input values.</p>
+</li>
+<li>
+<p><code>%e</code> or <code>%E</code>: floating point value presented in scientific notation
+7 significant digits by default
+<code>%E</code> means use to use uppercase E for the mantissa.</p>
+</li>
+<li>
+<p><code>%g</code> or <code>%G</code>: floating point value presented in the shortest of decimal and scientific notation
+behaves differently from <code>%f</code> and <code>%E</code>, please see posix printf spec for full details,
+some examples of different behavior:
+Sci Note has 6 significant digits by default
+Trailing zeroes are removed
+Instead of being truncated, digit after last is rounded</p>
+</li>
+</ul>
+<p>Like other behavior in this utility, the design choices of floating point
+behavior in this utility is selected to reproduce in exact
+the behavior of GNU coreutils' printf from an inputs and outputs standpoint.</p>
+<h3 id="using-parameters"><a class="header" href="#using-parameters">USING PARAMETERS</a></h3>
+<p>Most substitution fields can be parameterized using up to 2 numbers that can
+be passed to the field, between the % sign and the field letter.</p>
+<p>The 1st parameter always indicates the minimum width of output, it is useful for creating
+columnar output. Any output that would be less than this minimum width is padded with
+leading spaces
+The 2nd parameter is proceeded by a dot.
+You do not have to use parameters</p>
+<h3 id="special-forms-of-input"><a class="header" href="#special-forms-of-input">SPECIAL FORMS OF INPUT</a></h3>
+<p>For numeric input, the following additional forms of input are accepted besides decimal:</p>
+<p>Octal (only with integer): if the argument begins with a 0 the proceeding characters
+will be interpreted as octal (base 8) for integer fields</p>
+<p>Hexadecimal: if the argument begins with 0x the proceeding characters will be interpreted
+will be interpreted as hex (base 16) for any numeric fields
+for float fields, hexadecimal input results in a precision
+limit (in converting input past the decimal point) of 10^-15</p>
+<p>Character Constant: if the argument begins with a single quote character, the first byte
+of the next character will be interpreted as an 8-bit unsigned integer. If there are
+additional bytes, they will throw an error (unless the environment variable POSIXLY_CORRECT
+is set)</p>
 <h2 id="examples-62"><a class="header" href="#examples-62">Examples</a></h2>
 <p>Print a text message:</p>
 <pre><code class="language-shell">printf &quot;{{%s\n}}&quot; &quot;{{Hello world}}&quot;
@@ -6451,14 +6300,6 @@ With no FILE, or when FILE is -, read standard input. Default is '-F /'.</p>
 <dd>
 <p>output width in columns, reference excluded</p>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-63"><a class="header" href="#examples-63">Examples</a></h2>
 <p>Generate a permuted index where the first field of each line is an index reference:</p>
@@ -6502,14 +6343,6 @@ With no FILE, or when FILE is -, read standard input. Default is '-F /'.</p>
 <dd>
 <p>avoid all symlinks</p>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-64"><a class="header" href="#examples-64">Examples</a></h2>
 <p>Print the current directory:</p>
@@ -6532,9 +6365,6 @@ With no FILE, or when FILE is -, read standard input. Default is '-F /'.</p>
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>readlink [OPTIONS] [files]...
-</code></pre>
-<p>Print value of a symbolic link or canonical file name.</p>
 <h2 id="options-67"><a class="header" href="#options-67">Options</a></h2>
 <dl><dt><code>--canonicalize</code>, <code>-f</code></dt>
 <dd>
@@ -6570,14 +6400,6 @@ With no FILE, or when FILE is -, read standard input. Default is '-F /'.</p>
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-65"><a class="header" href="#examples-65">Examples</a></h2>
@@ -6644,14 +6466,6 @@ With no FILE, or when FILE is -, read standard input. Default is '-F /'.</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-66"><a class="header" href="#examples-66">Examples</a></h2>
 <p>Display the absolute path for a file or directory:</p>
@@ -6697,14 +6511,6 @@ If FROM path is omitted, current working dir will be used.</p>
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="rm"><a class="header" href="#rm">rm</a></h1>
@@ -6767,14 +6573,6 @@ If FROM path is omitted, current working dir will be used.</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <p>By default, rm does not remove directories.  Use the --recursive (-r or -R)
 option to remove each listed directory, too, along with all of its contents</p>
@@ -6834,14 +6632,6 @@ assurance that the contents are truly unrecoverable, consider using shred.</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-68"><a class="header" href="#examples-68">Examples</a></h2>
 <p>Remove specific directories:</p>
@@ -6862,10 +6652,6 @@ assurance that the contents are truly unrecoverable, consider using shred.</p>
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>runcon [CONTEXT COMMAND [ARG...]]
-runcon [-c] [-u USER] [-r ROLE] [-t TYPE] [-l RANGE] COMMAND [ARG...]
-</code></pre>
-<p>Run command with specified security context.</p>
 <h2 id="options-72"><a class="header" href="#options-72">Options</a></h2>
 <dl><dt><code>--compute</code>, <code>-c</code></dt>
 <dd>
@@ -6890,19 +6676,7 @@ runcon [-c] [-u USER] [-r ROLE] [-t TYPE] [-l RANGE] COMMAND [ARG...]
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
-<p>Run COMMAND with completely-specified CONTEXT, or with current or transitioned security context modified by one or more of LEVEL, ROLE, TYPE, and USER.</p>
-<p>If none of --compute, --type, --user, --role or --range is specified, then the first argument is used as the complete context.</p>
-<p>Note that only carefully-chosen contexts are likely to successfully run.</p>
-<p>With neither CONTEXT nor COMMAND are specified, then this prints the current security context.</p>
 <h2 id="examples-69"><a class="header" href="#examples-69">Examples</a></h2>
 <p>Determine the current domain:</p>
 <pre><code class="language-shell">runcon
@@ -6930,11 +6704,6 @@ runcon [-c] [-u USER] [-r ROLE] [-t TYPE] [-l RANGE] COMMAND [ARG...]
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>seq [OPTION]... LAST
-seq [OPTION]... FIRST LAST
-seq [OPTION]... FIRST INCREMENT LAST
-</code></pre>
-<p>Display numbers from FIRST to LAST, in steps of INCREMENT.</p>
 <h2 id="options-73"><a class="header" href="#options-73">Options</a></h2>
 <dl><dt><code>--separator</code>, <code>-s</code></dt>
 <dd>
@@ -6954,14 +6723,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-70"><a class="header" href="#examples-70">Examples</a></h2>
@@ -6991,9 +6752,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>sha1sum [OPTIONS] [FILE]...
-</code></pre>
-<p>Compute and check message digests.</p>
 <h2 id="options-74"><a class="header" href="#options-74">Options</a></h2>
 <dl><dt><code>--binary</code>, <code>-b</code></dt>
 <dd>
@@ -7034,14 +6792,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-71"><a class="header" href="#examples-71">Examples</a></h2>
 <p>Calculate the SHA1 checksum for a file:</p>
@@ -7076,9 +6826,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>sha224sum [OPTIONS] [FILE]...
-</code></pre>
-<p>Compute and check message digests.</p>
 <h2 id="options-75"><a class="header" href="#options-75">Options</a></h2>
 <dl><dt><code>--binary</code>, <code>-b</code></dt>
 <dd>
@@ -7119,14 +6866,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-72"><a class="header" href="#examples-72">Examples</a></h2>
 <p>Calculate the SHA224 checksum for a file:</p>
@@ -7161,9 +6900,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>sha256sum [OPTIONS] [FILE]...
-</code></pre>
-<p>Compute and check message digests.</p>
 <h2 id="options-76"><a class="header" href="#options-76">Options</a></h2>
 <dl><dt><code>--binary</code>, <code>-b</code></dt>
 <dd>
@@ -7204,14 +6940,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-73"><a class="header" href="#examples-73">Examples</a></h2>
 <p>Calculate the SHA256 checksum for a file:</p>
@@ -7246,9 +6974,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>sha3-224sum [OPTIONS] [FILE]...
-</code></pre>
-<p>Compute and check message digests.</p>
 <h2 id="options-77"><a class="header" href="#options-77">Options</a></h2>
 <dl><dt><code>--binary</code>, <code>-b</code></dt>
 <dd>
@@ -7289,14 +7014,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="sha3-256sum"><a class="header" href="#sha3-256sum">sha3-256sum</a></h1>
 <div class="additional">
@@ -7308,9 +7025,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>sha3-256sum [OPTIONS] [FILE]...
-</code></pre>
-<p>Compute and check message digests.</p>
 <h2 id="options-78"><a class="header" href="#options-78">Options</a></h2>
 <dl><dt><code>--binary</code>, <code>-b</code></dt>
 <dd>
@@ -7351,14 +7065,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="sha3-384sum"><a class="header" href="#sha3-384sum">sha3-384sum</a></h1>
 <div class="additional">
@@ -7370,9 +7076,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>sha3-384sum [OPTIONS] [FILE]...
-</code></pre>
-<p>Compute and check message digests.</p>
 <h2 id="options-79"><a class="header" href="#options-79">Options</a></h2>
 <dl><dt><code>--binary</code>, <code>-b</code></dt>
 <dd>
@@ -7413,14 +7116,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="sha3-512sum"><a class="header" href="#sha3-512sum">sha3-512sum</a></h1>
 <div class="additional">
@@ -7432,9 +7127,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>sha3-512sum [OPTIONS] [FILE]...
-</code></pre>
-<p>Compute and check message digests.</p>
 <h2 id="options-80"><a class="header" href="#options-80">Options</a></h2>
 <dl><dt><code>--binary</code>, <code>-b</code></dt>
 <dd>
@@ -7475,14 +7167,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="sha384sum"><a class="header" href="#sha384sum">sha384sum</a></h1>
 <div class="additional">
@@ -7494,9 +7178,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>sha384sum [OPTIONS] [FILE]...
-</code></pre>
-<p>Compute and check message digests.</p>
 <h2 id="options-81"><a class="header" href="#options-81">Options</a></h2>
 <dl><dt><code>--binary</code>, <code>-b</code></dt>
 <dd>
@@ -7537,14 +7218,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-74"><a class="header" href="#examples-74">Examples</a></h2>
 <p>Calculate the SHA384 checksum for a file:</p>
@@ -7579,9 +7252,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>sha3sum [OPTIONS] [FILE]...
-</code></pre>
-<p>Compute and check message digests.</p>
 <h2 id="options-82"><a class="header" href="#options-82">Options</a></h2>
 <dl><dt><code>--binary</code>, <code>-b</code></dt>
 <dd>
@@ -7626,14 +7296,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <dd>
 <p>set the size of the output (only for SHAKE)</p>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="sha512sum"><a class="header" href="#sha512sum">sha512sum</a></h1>
 <div class="additional">
@@ -7645,9 +7307,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>sha512sum [OPTIONS] [FILE]...
-</code></pre>
-<p>Compute and check message digests.</p>
 <h2 id="options-83"><a class="header" href="#options-83">Options</a></h2>
 <dl><dt><code>--binary</code>, <code>-b</code></dt>
 <dd>
@@ -7688,14 +7347,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-75"><a class="header" href="#examples-75">Examples</a></h2>
 <p>Calculate the SHA512 checksum for a file:</p>
@@ -7730,9 +7381,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>shake128sum [OPTIONS] [FILE]...
-</code></pre>
-<p>Compute and check message digests.</p>
 <h2 id="options-84"><a class="header" href="#options-84">Options</a></h2>
 <dl><dt><code>--binary</code>, <code>-b</code></dt>
 <dd>
@@ -7777,14 +7425,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <dd>
 <p>set the size of the output (only for SHAKE)</p>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="shake256sum"><a class="header" href="#shake256sum">shake256sum</a></h1>
 <div class="additional">
@@ -7796,9 +7436,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>shake256sum [OPTIONS] [FILE]...
-</code></pre>
-<p>Compute and check message digests.</p>
 <h2 id="options-85"><a class="header" href="#options-85">Options</a></h2>
 <dl><dt><code>--binary</code>, <code>-b</code></dt>
 <dd>
@@ -7842,14 +7479,6 @@ seq [OPTION]... FIRST INCREMENT LAST
 <dt><code>--bits=&lt;BITS&gt;</code></dt>
 <dd>
 <p>set the size of the output (only for SHAKE)</p>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="shred"><a class="header" href="#shred">shred</a></h1>
@@ -7897,14 +7526,6 @@ very expensive hardware probing to recover the data.</p>
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <p>Delete <code>FILE(s)</code> if <code>--remove</code> (<code>-u</code>) is specified.  The default is not to remove
@@ -8010,14 +7631,6 @@ With no FILE, or when FILE is -, read standard input.</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-77"><a class="header" href="#examples-77">Examples</a></h2>
 <p>Randomize the order of lines in a file and output the result:</p>
@@ -8055,14 +7668,6 @@ sleep OPTION
 <dd>
 <p>pause for NUMBER seconds</p>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <p>Pause for NUMBER seconds.  SUFFIX may be 's' for seconds (the default),
 'm' for minutes, 'h' for hours or 'd' for days.  Unlike most implementations
@@ -8090,9 +7695,6 @@ specified by the sum of their values.</p>
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>sort [OPTION]... [FILE]...
-</code></pre>
-<p>Display sorted concatenation of all FILE(s). With no FILE, or when FILE is -, read standard input.</p>
 <h2 id="options-89"><a class="header" href="#options-89">Options</a></h2>
 <dl><dt><code>--help</code></dt>
 <dd>
@@ -8217,12 +7819,6 @@ specified by the sum of their values.</p>
 <dd>
 </dd>
 </dl>
-<p>The key format is FIELD[.CHAR][OPTIONS][,FIELD[.CHAR]][OPTIONS].</p>
-<p>Fields by default are separated by the first whitespace after a non-whitespace character. Use -t to specify a custom separator.
-In the default case, whitespace is appended at the beginning of each field. Custom separators however are not included in fields.</p>
-<p>FIELD and CHAR both start at 1 (i.e. they are 1-indexed). If there is no end specified after a comma, the end will be the end of the line.
-If CHAR is set 0, it means the end of the field. CHAR defaults to 1 for the start position and to 0 for the end position.</p>
-<p>Valid options are: MbdfhnRrV. They override the global options for this key.</p>
 <h2 id="examples-79"><a class="header" href="#examples-79">Examples</a></h2>
 <p>Sort a file in ascending order:</p>
 <pre><code class="language-shell">sort {{path/to/file}}
@@ -8262,9 +7858,6 @@ If CHAR is set 0, it means the end of the field. CHAR defaults to 1 for the star
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>split [OPTION]... [INPUT [PREFIX]]
-</code></pre>
-<p>Create output files containing consecutive or interleaved sections of input</p>
 <h2 id="options-90"><a class="header" href="#options-90">Options</a></h2>
 <dl><dt><code>--bytes=&lt;SIZE&gt;</code>, <code>-b &lt;SIZE&gt;</code></dt>
 <dd>
@@ -8322,16 +7915,7 @@ If CHAR is set 0, it means the end of the field. CHAR defaults to 1 for the star
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
-<p>Output fixed-size pieces of INPUT to PREFIXaa, PREFIXab, ...; default size is 1000, and default PREFIX is 'x'. With no INPUT, or when INPUT is -, read standard input.</p>
 <h2 id="examples-80"><a class="header" href="#examples-80">Examples</a></h2>
 <p>Split a file, each split having 10 lines (except the last split):</p>
 <pre><code class="language-shell">split -l {{10}} {{path/to/file}}
@@ -8385,14 +7969,6 @@ If CHAR is set 0, it means the end of the field. CHAR defaults to 1 for the star
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-81"><a class="header" href="#examples-81">Examples</a></h2>
 <p>Display properties about a specific file such as size, permissions, creation and access dates among others:</p>
@@ -8426,10 +8002,6 @@ If CHAR is set 0, it means the end of the field. CHAR defaults to 1 for the star
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>stdbuf OPTION... COMMAND
-</code></pre>
-<p>Run COMMAND, with modified buffering operations for its standard streams.</p>
-<p>Mandatory arguments to long options are mandatory for short options too.</p>
 <h2 id="options-92"><a class="header" href="#options-92">Options</a></h2>
 <dl><dt><code>--input=&lt;MODE&gt;</code>, <code>-i &lt;MODE&gt;</code></dt>
 <dd>
@@ -8446,23 +8018,7 @@ If CHAR is set 0, it means the end of the field. CHAR defaults to 1 for the star
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
-<p>If MODE is 'L' the corresponding stream will be line buffered.
-This option is invalid with standard input.</p>
-<p>If MODE is '0' the corresponding stream will be unbuffered.</p>
-<p>Otherwise MODE is a number which may be followed by one of the following:</p>
-<p>KB 1000, K 1024, MB 1000<em>1000, M 1024</em>1024, and so on for G, T, P, E, Z, Y.
-In this case the corresponding stream will be fully buffered with the buffer size set to MODE bytes.</p>
-<p>NOTE: If COMMAND adjusts the buffering of its standard streams ('tee' does for e.g.) then that will override corresponding settings changed by 'stdbuf'.
-Also some filters (like 'dd' and 'cat' etc.) don't use streams for I/O, and are thus unaffected by 'stdbuf' settings.</p>
 <h2 id="examples-82"><a class="header" href="#examples-82">Examples</a></h2>
 <p>Change the standard input buffer size to 512 KiB:</p>
 <pre><code class="language-shell">stdbuf --input={{512K}} {{command}}
@@ -8486,11 +8042,6 @@ Also some filters (like 'dd' and 'cat' etc.) don't use streams for I/O, and are 
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>stty [-F DEVICE | --file=DEVICE] [SETTING]...
-stty [-F DEVICE | --file=DEVICE] [-a|--all]
-stty [-F DEVICE | --file=DEVICE] [-g|--save]
-</code></pre>
-<p>Print or change terminal characteristics.</p>
 <h2 id="options-93"><a class="header" href="#options-93">Options</a></h2>
 <dl><dt><code>--all</code>, <code>-a</code></dt>
 <dd>
@@ -8507,14 +8058,6 @@ stty [-F DEVICE | --file=DEVICE] [-g|--save]
 <dt></dt>
 <dd>
 <p>settings to change</p>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-83"><a class="header" href="#examples-83">Examples</a></h2>
@@ -8544,10 +8087,6 @@ stty [-F DEVICE | --file=DEVICE] [-g|--save]
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>sum [OPTION]... [FILE]...
-</code></pre>
-<p>Checksum and count the blocks in a file.</p>
-<p>With no FILE, or when FILE is -, read standard input.</p>
 <h2 id="options-94"><a class="header" href="#options-94">Options</a></h2>
 <dl><dt></dt>
 <dd>
@@ -8559,14 +8098,6 @@ stty [-F DEVICE | --file=DEVICE] [-g|--save]
 <dt><code>--sysv</code>, <code>-s</code></dt>
 <dd>
 <p>use System V sum algorithm, use 512 bytes blocks</p>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-84"><a class="header" href="#examples-84">Examples</a></h2>
@@ -8590,9 +8121,6 @@ stty [-F DEVICE | --file=DEVICE] [-g|--save]
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>sync [OPTION]... FILE...
-</code></pre>
-<p>Synchronize cached writes to persistent storage</p>
 <h2 id="options-95"><a class="header" href="#options-95">Options</a></h2>
 <dl><dt><code>--file-system</code>, <code>-f</code></dt>
 <dd>
@@ -8604,14 +8132,6 @@ stty [-F DEVICE | --file=DEVICE] [-g|--save]
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-85"><a class="header" href="#examples-85">Examples</a></h2>
@@ -8653,14 +8173,6 @@ stty [-F DEVICE | --file=DEVICE] [-g|--save]
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-86"><a class="header" href="#examples-86">Examples</a></h2>
@@ -8754,14 +8266,6 @@ With no FILE, or when FILE is -, read standard input.</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-87"><a class="header" href="#examples-87">Examples</a></h2>
 <p>Show last 'count' lines in file:</p>
@@ -8819,14 +8323,6 @@ With no FILE, or when FILE is -, read standard input.</p>
 <dd>
 <p>set write error behavior</p>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help (see more with '--help')</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <p>If a FILE is -, it refers to a file named - .</p>
 <h2 id="examples-88"><a class="header" href="#examples-88">Examples</a></h2>
@@ -8856,74 +8352,8 @@ With no FILE, or when FILE is -, read standard input.</p>
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>test EXPRESSION
-test
-[ EXPRESSION ]
-[ ]
-[ OPTION
-</code></pre>
-<p>Check file types and compare values.</p>
 <h2 id="options-99"><a class="header" href="#options-99">Options</a></h2>
-<dl><dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
-</dl>
-<p>Exit with the status determined by EXPRESSION.</p>
-<p>An omitted EXPRESSION defaults to false.  Otherwise,
-EXPRESSION is true or false and sets exit status.  It is one of:</p>
-<p>( EXPRESSION )               EXPRESSION is true
-! EXPRESSION                 EXPRESSION is false
-EXPRESSION1 -a EXPRESSION2   both EXPRESSION1 and EXPRESSION2 are true
-EXPRESSION1 -o EXPRESSION2   either EXPRESSION1 or EXPRESSION2 is true</p>
-<p>-n STRING            the length of STRING is nonzero
-STRING               equivalent to -n STRING
--z STRING            the length of STRING is zero
-STRING1 = STRING2    the strings are equal
-STRING1 != STRING2   the strings are not equal</p>
-<p>INTEGER1 -eq INTEGER2   INTEGER1 is equal to INTEGER2
-INTEGER1 -ge INTEGER2   INTEGER1 is greater than or equal to INTEGER2
-INTEGER1 -gt INTEGER2   INTEGER1 is greater than INTEGER2
-INTEGER1 -le INTEGER2   INTEGER1 is less than or equal to INTEGER2
-INTEGER1 -lt INTEGER2   INTEGER1 is less than INTEGER2
-INTEGER1 -ne INTEGER2   INTEGER1 is not equal to INTEGER2</p>
-<p>FILE1 -ef FILE2   FILE1 and FILE2 have the same device and inode numbers
-FILE1 -nt FILE2   FILE1 is newer (modification date) than FILE2
-FILE1 -ot FILE2   FILE1 is older than FILE2</p>
-<p>-b FILE     FILE exists and is block special
--c FILE     FILE exists and is character special
--d FILE     FILE exists and is a directory
--e FILE     FILE exists
--f FILE     FILE exists and is a regular file
--g FILE     FILE exists and is set-group-ID
--G FILE     FILE exists and is owned by the effective group ID
--h FILE     FILE exists and is a symbolic link (same as -L)
--k FILE     FILE exists and has its sticky bit set
--L FILE     FILE exists and is a symbolic link (same as -h)
--N FILE     FILE exists and has been modified since it was last read
--O FILE     FILE exists and is owned by the effective user ID
--p FILE     FILE exists and is a named pipe
--r FILE     FILE exists and read permission is granted
--s FILE     FILE exists and has a size greater than zero
--S FILE     FILE exists and is a socket
--t FD       file descriptor FD is opened on a terminal
--u FILE     FILE exists and its set-user-ID bit is set
--w FILE     FILE exists and write permission is granted
--x FILE     FILE exists and execute (or search) permission is granted</p>
-<p>Except for -h and -L, all FILE-related tests dereference symbolic links.
-Beware that parentheses need to be escaped (e.g., by backslashes) for shells.
-INTEGER may also be -l STRING, which evaluates to the length of STRING.</p>
-<p>NOTE: Binary -a and -o are inherently ambiguous.  Use 'test EXPR1 &amp;&amp; test
-EXPR2' or 'test EXPR1 || test EXPR2' instead.</p>
-<p>NOTE: [ honors the --help and --version options, but test does not.
-test treats each of those as it treats any other nonempty STRING.</p>
-<p>NOTE: your shell may have its own version of test and/or [, which usually supersedes
-the version described here.  Please refer to your shell's documentation
-for details about the options it supports.</p>
+<dl></dl>
 <h2 id="examples-89"><a class="header" href="#examples-89">Examples</a></h2>
 <p>Test if a given variable is equal to a given string:</p>
 <pre><code class="language-shell">test &quot;{{$MY_VAR}}&quot; == &quot;{{/bin/zsh}}&quot;
@@ -8953,9 +8383,6 @@ for details about the options it supports.</p>
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>timeout [OPTION] DURATION COMMAND...
-</code></pre>
-<p>Start COMMAND, and kill it if still running after DURATION.</p>
 <h2 id="options-100"><a class="header" href="#options-100">Options</a></h2>
 <dl><dt><code>--foreground</code></dt>
 <dd>
@@ -8982,14 +8409,6 @@ for details about the options it supports.</p>
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-90"><a class="header" href="#examples-90">Examples</a></h2>
@@ -9056,10 +8475,6 @@ for details about the options it supports.</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-91"><a class="header" href="#examples-91">Examples</a></h2>
 <p>Create specific files:</p>
@@ -9088,9 +8503,6 @@ for details about the options it supports.</p>
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>tr [OPTION]... SET1 [SET2]
-</code></pre>
-<p>Translate or delete characters</p>
 <h2 id="options-102"><a class="header" href="#options-102">Options</a></h2>
 <dl><dt><code>--complement</code>, <code>-c</code>, <code>-C</code></dt>
 <dd>
@@ -9110,14 +8522,6 @@ for details about the options it supports.</p>
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-92"><a class="header" href="#examples-92">Examples</a></h2>
@@ -9213,14 +8617,6 @@ operation causes the program to return <code>1</code> instead.</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <p>SIZE is an integer with an optional prefix and optional unit.
 The available units (K, M, G, T, P, E, Z, and Y) use the following format:
@@ -9268,22 +8664,9 @@ file based on its current size:
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>tsort [OPTIONS] FILE
-</code></pre>
-<p>Topological sort the strings in FILE.
-Strings are defined as any sequence of tokens separated by whitespace (tab, space, or newline).
-If FILE is not passed in, stdin is used instead.</p>
 <h2 id="options-105"><a class="header" href="#options-105">Options</a></h2>
 <dl><dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-95"><a class="header" href="#examples-95">Examples</a></h2>
@@ -9303,21 +8686,10 @@ If FILE is not passed in, stdin is used instead.</p>
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>tty [OPTION]...
-</code></pre>
-<p>Print the file name of the terminal connected to standard input.</p>
 <h2 id="options-106"><a class="header" href="#options-106">Options</a></h2>
 <dl><dt><code>--silent</code>, <code>--quiet</code>, <code>-s</code></dt>
 <dd>
 <p>print nothing, only return an exit status</p>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-96"><a class="header" href="#examples-96">Examples</a></h2>
@@ -9379,14 +8751,6 @@ With no OPTION, same as -s.</p>
 <dd>
 <p>print the hardware platform (non-portable)</p>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-97"><a class="header" href="#examples-97">Examples</a></h2>
 <p>Print kernel name:</p>
@@ -9441,14 +8805,6 @@ With no <code>FILE</code>, or when <code>FILE</code> is <code>-</code>, read sta
 <dt><code>--no-utf8</code>, <code>-U</code></dt>
 <dd>
 <p>interpret input file as 8-bit ASCII rather than UTF-8</p>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-98"><a class="header" href="#examples-98">Examples</a></h2>
@@ -9528,14 +8884,6 @@ With no <code>FILE</code>, or when <code>FILE</code> is <code>-</code>, read sta
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <p>Filter adjacent matching lines from <code>INPUT</code> (or standard input),
 writing to <code>OUTPUT</code> (or standard output).</p>
@@ -9578,14 +8926,6 @@ You may want to sort the input first, or use <code>sort -u</code> without <code>
 <dl><dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-100"><a class="header" href="#examples-100">Examples</a></h2>
 <p>Remove the specified file if it is the last link:</p>
@@ -9613,14 +8953,6 @@ in the run queue over the last 1, 5 and 15 minutes.</p>
 <dl><dt><code>--since</code>, <code>-s</code></dt>
 <dd>
 <p>system up since</p>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-101"><a class="header" href="#examples-101">Examples</a></h2>
@@ -9656,14 +8988,6 @@ in the run queue over the last 1, 5 and 15 minutes.</p>
 <dl><dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-102"><a class="header" href="#examples-102">Examples</a></h2>
 <p>Print logged in usernames:</p>
@@ -9686,10 +9010,6 @@ in the run queue over the last 1, 5 and 15 minutes.</p>
 <div class="version">v0.0.18
 </div>
 </div>
-<pre><code>vdir [OPTION]... [FILE]...
-</code></pre>
-<p>List directory contents.
-Ignore files and directories starting with a '.' by default</p>
 <h2 id="options-113"><a class="header" href="#options-113">Options</a></h2>
 <dl><dt><code>--help</code></dt>
 <dd>
@@ -9921,12 +9241,7 @@ Ignore files and directories starting with a '.' by default</p>
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
-<p>The TIME_STYLE argument can be full-iso, long-iso, iso, locale or +FORMAT. FORMAT is interpreted like in date. Also the TIME_STYLE environment variable sets the default style to use.</p>
 <h2 id="examples-103"><a class="header" href="#examples-103">Examples</a></h2>
 <p>List files and directories in the current directory, one per line, with details:</p>
 <pre><code class="language-shell">vdir
@@ -9998,14 +9313,6 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
 </dd>
 <dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
 </dd>
 </dl>
 <h2 id="examples-104"><a class="header" href="#examples-104">Examples</a></h2>
@@ -10103,14 +9410,6 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <h2 id="examples-105"><a class="header" href="#examples-105">Examples</a></h2>
 <p>Display the username, line, and time of all currently logged-in sessions:</p>
@@ -10143,15 +9442,7 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
 </code></pre>
 <p>Print the current username.</p>
 <h2 id="options-116"><a class="header" href="#options-116">Options</a></h2>
-<dl><dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
-</dl>
+<dl></dl>
 <h2 id="examples-106"><a class="header" href="#examples-106">Examples</a></h2>
 <p>Display currently logged username:</p>
 <pre><code class="language-shell">whoami
@@ -10176,10 +9467,6 @@ more than one FILE is specified. With no FILE, or when FILE is -, read standard 
 <h2 id="options-117"><a class="header" href="#options-117">Options</a></h2>
 <dl><dt></dt>
 <dd>
-</dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
 </dd>
 </dl>
 <h2 id="examples-107"><a class="header" href="#examples-107">Examples</a></h2>

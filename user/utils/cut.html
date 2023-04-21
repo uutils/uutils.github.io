@@ -222,17 +222,69 @@
 <dt></dt>
 <dd>
 </dd>
-<dt><code>--help</code>, <code>-h</code></dt>
-<dd>
-<p>Print help</p>
-</dd>
-<dt><code>--version</code>, <code>-V</code></dt>
-<dd>
-<p>Print version</p>
-</dd>
 </dl>
 <p>Each call must specify a mode (what to use for columns),
 a sequence (which columns to print), and provide a data source</p>
+<h3 id="specifying-a-mode"><a class="header" href="#specifying-a-mode">Specifying a mode</a></h3>
+<p>Use <code>--bytes</code> (<code>-b</code>) or <code>--characters</code> (<code>-c</code>) to specify byte mode</p>
+<p>Use <code>--fields</code> (<code>-f</code>) to specify field mode, where each line is broken into
+fields identified by a delimiter character. For example for a typical CSV
+you could use this in combination with setting comma as the delimiter</p>
+<h3 id="specifying-a-sequence"><a class="header" href="#specifying-a-sequence">Specifying a sequence</a></h3>
+<p>A sequence is a group of 1 or more numbers or inclusive ranges separated
+by a commas.</p>
+<pre><code>cut -f 2,5-7 some_file.txt
+</code></pre>
+<p>will display the 2nd, 5th, 6th, and 7th field for each source line</p>
+<p>Ranges can extend to the end of the row by excluding the second number</p>
+<pre><code>cut -f 3- some_file.txt
+</code></pre>
+<p>will display the 3rd field and all fields after for each source line</p>
+<p>The first number of a range can be excluded, and this is effectively the
+same as using 1 as the first number: it causes the range to begin at the
+first column. Ranges can also display a single column</p>
+<pre><code>cut -f 1,3-5 some_file.txt
+</code></pre>
+<p>will display the 1st, 3rd, 4th, and 5th field for each source line</p>
+<p>The <code>--complement</code> option, when used, inverts the effect of the sequence</p>
+<pre><code>cut --complement -f 4-6 some_file.txt
+</code></pre>
+<p>will display the every field but the 4th, 5th, and 6th</p>
+<h3 id="specifying-a-data-source"><a class="header" href="#specifying-a-data-source">Specifying a data source</a></h3>
+<p>If no <code>sourcefile</code> arguments are specified, stdin is used as the source of
+lines to print</p>
+<p>If <code>sourcefile</code> arguments are specified, stdin is ignored and all files are
+read in consecutively if a <code>sourcefile</code> is not successfully read, a warning
+will print to stderr, and the eventual status code will be 1, but cut
+will continue to read through proceeding <code>sourcefiles</code></p>
+<p>To print columns from both STDIN and a file argument, use <code>-</code> (dash) as a
+<code>sourcefile</code> argument to represent stdin.</p>
+<h3 id="field-mode-options"><a class="header" href="#field-mode-options">Field Mode options</a></h3>
+<p>The fields in each line are identified by a delimiter (separator)</p>
+<h4 id="set-the-delimiter"><a class="header" href="#set-the-delimiter">Set the delimiter</a></h4>
+<p>Set the delimiter which separates fields in the file using the
+<code>--delimiter</code> (<code>-d</code>) option. Setting the delimiter is optional.
+If not set, a default delimiter of Tab will be used.</p>
+<p>If the <code>-w</code> option is provided, fields will be separated by any number
+of whitespace characters (Space and Tab). The output delimiter will
+be a Tab unless explicitly specified. Only one of <code>-d</code> or <code>-w</code> option can be specified.
+This is an extension adopted from FreeBSD.</p>
+<h4 id="optionally-filter-based-on-delimiter"><a class="header" href="#optionally-filter-based-on-delimiter">Optionally Filter based on delimiter</a></h4>
+<p>If the <code>--only-delimited</code> (<code>-s</code>) flag is provided, only lines which
+contain the delimiter will be printed</p>
+<h4 id="replace-the-delimiter"><a class="header" href="#replace-the-delimiter">Replace the delimiter</a></h4>
+<p>If the <code>--output-delimiter</code> option is provided, the argument used for
+it will replace the delimiter character in each line printed. This is
+useful for transforming tabular data - e.g. to convert a CSV to a
+TSV (tab-separated file)</p>
+<h3 id="line-endings"><a class="header" href="#line-endings">Line endings</a></h3>
+<p>When the <code>--zero-terminated</code> (<code>-z</code>) option is used, cut sees \0 (null) as the
+'line ending' character (both for the purposes of reading lines and
+separating printed lines) instead of \n (newline). This is useful for
+tabular data where some of the cells may contain newlines</p>
+<pre><code>echo 'ab\\0cd' | cut -z -c 1
+</code></pre>
+<p>will result in 'a\0c\0'</p>
 <h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
 <p>Print a specific character/field range of each line:</p>
 <pre><code class="language-shell">{{command}} | cut --{{characters|fields}}={{1|1,10|1-10|1-|-10}}

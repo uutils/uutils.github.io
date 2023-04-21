@@ -170,7 +170,7 @@
                 <div id="content" class="content">
                     <main>
                         <!-- markdownlint-disable MD041 -->
-<!-- spell-checker:ignore reimplementing toybox RUNTEST -->
+<!-- spell-checker:ignore reimplementing toybox RUNTEST CARGOFLAGS nextest -->
 <h1 id="contributing-to-coreutils"><a class="header" href="#contributing-to-coreutils">Contributing to coreutils</a></h1>
 <p>Contributions are very welcome via Pull Requests. If you don't know where to
 start, take a look at the
@@ -266,6 +266,11 @@ specific tests, run:</p>
 <p>If you also want to test the core utilities:</p>
 <pre><code class="language-shell">cargo test  -p uucore -p coreutils
 </code></pre>
+<p>Running the complete test suite might take a while. We use <a href="https://nexte.st/index.html">nextest</a> in
+the CI and you might want to try it out locally. It can speed up the execution time of the whole
+test run significantly if the cpu has multiple cores.</p>
+<pre><code class="language-shell">cargo nextest run --features unix --no-fail-fast
+</code></pre>
 <p>To debug:</p>
 <pre><code class="language-shell">gdb --args target/debug/coreutils ls
 (gdb) b ls.rs:79
@@ -283,6 +288,12 @@ specific tests, run:</p>
 </code></pre>
 <p>To include tests for unimplemented behavior:</p>
 <pre><code class="language-shell">make UTILS='UTILITY_1 UTILITY_2' SPEC=y test
+</code></pre>
+<p>To run tests with <code>nextest</code> just use the nextest target. Note you'll need to
+<a href="https://nexte.st/book/installation.html">install</a> <code>nextest</code> first. The <code>nextest</code> target accepts the
+same arguments like the default <code>test</code> target, so it's possible to pass arguments to <code>nextest run</code>
+via <code>CARGOFLAGS</code>:</p>
+<pre><code class="language-shell">make CARGOFLAGS='--no-fail-fast' UTILS='UTILITY_1 UTILITY_2' nextest
 </code></pre>
 <h3 id="run-busybox-tests"><a class="header" href="#run-busybox-tests">Run Busybox Tests</a></h3>
 <p>This testing functionality is only available on *nix operating systems and
@@ -408,7 +419,7 @@ then add <code>-Z-Zinstrument-coverage</code> flag to <code>RUSTFLAGS</code> env
 <li><a href="https://github.com/SerenityOS/serenity/tree/master/Userland/Utilities">SerenityOS</a></li>
 <li><a href="https://github.com/dspinellis/unix-history-repo">Initial Unix</a></li>
 </ul>
-<p>However, when reimplementing the tools/options in Rust, don't read their source codes 
+<p>However, when reimplementing the tools/options in Rust, don't read their source codes
 when they are using reciprocal licenses (ex: GNU GPL, GNU LGPL, etc).</p>
 <h2 id="licensing"><a class="header" href="#licensing">Licensing</a></h2>
 <p>uutils is distributed under the terms of the MIT License; see the <code>LICENSE</code> file
