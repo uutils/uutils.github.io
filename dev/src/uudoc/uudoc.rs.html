@@ -494,7 +494,7 @@
 
     <span class="kw">fn </span>usage(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(markdown) = <span class="kw-2">&amp;</span><span class="self">self</span>.markdown {
-            <span class="kw">let </span>usage = help_parser::parse_usage(<span class="kw-2">&amp;</span>markdown);
+            <span class="kw">let </span>usage = help_parser::parse_usage(markdown);
             <span class="kw">let </span>usage = usage.replace(<span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.name);
 
             <span class="macro">writeln!</span>(<span class="self">self</span>.w, <span class="string">&quot;\n```&quot;</span>)<span class="question-mark">?</span>;
@@ -507,7 +507,7 @@
 
     <span class="kw">fn </span>about(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(markdown) = <span class="kw-2">&amp;</span><span class="self">self</span>.markdown {
-            <span class="macro">writeln!</span>(<span class="self">self</span>.w, <span class="string">&quot;{}&quot;</span>, help_parser::parse_about(<span class="kw-2">&amp;</span>markdown))
+            <span class="macro">writeln!</span>(<span class="self">self</span>.w, <span class="string">&quot;{}&quot;</span>, help_parser::parse_about(markdown))
         } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
@@ -515,7 +515,7 @@
 
     <span class="kw">fn </span>after_help(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; io::Result&lt;()&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(markdown) = <span class="kw-2">&amp;</span><span class="self">self</span>.markdown {
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(after_help) = help_parser::parse_section(<span class="string">&quot;after help&quot;</span>, <span class="kw-2">&amp;</span>markdown) {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(after_help) = help_parser::parse_section(<span class="string">&quot;after help&quot;</span>, markdown) {
                 <span class="kw">return </span><span class="macro">writeln!</span>(<span class="self">self</span>.w, <span class="string">&quot;\n\n{after_help}&quot;</span>);
             }
         }
@@ -570,10 +570,10 @@
             <span class="macro">write!</span>(<span class="self">self</span>.w, <span class="string">&quot;&lt;dt&gt;&quot;</span>)<span class="question-mark">?</span>;
             <span class="kw">let </span><span class="kw-2">mut </span>first = <span class="bool-val">true</span>;
             <span class="kw">for </span>l <span class="kw">in </span>arg.get_long_and_visible_aliases().unwrap_or_default() {
-                <span class="kw">if </span>!first {
-                    <span class="macro">write!</span>(<span class="self">self</span>.w, <span class="string">&quot;, &quot;</span>)<span class="question-mark">?</span>;
-                } <span class="kw">else </span>{
+                <span class="kw">if </span>first {
                     first = <span class="bool-val">false</span>;
+                } <span class="kw">else </span>{
+                    <span class="macro">write!</span>(<span class="self">self</span>.w, <span class="string">&quot;, &quot;</span>)<span class="question-mark">?</span>;
                 }
                 <span class="macro">write!</span>(<span class="self">self</span>.w, <span class="string">&quot;&lt;code&gt;&quot;</span>)<span class="question-mark">?</span>;
                 <span class="macro">write!</span>(<span class="self">self</span>.w, <span class="string">&quot;--{}&quot;</span>, l)<span class="question-mark">?</span>;
@@ -591,10 +591,10 @@
                 <span class="macro">write!</span>(<span class="self">self</span>.w, <span class="string">&quot;&lt;/code&gt;&quot;</span>)<span class="question-mark">?</span>;
             }
             <span class="kw">for </span>s <span class="kw">in </span>arg.get_short_and_visible_aliases().unwrap_or_default() {
-                <span class="kw">if </span>!first {
-                    <span class="macro">write!</span>(<span class="self">self</span>.w, <span class="string">&quot;, &quot;</span>)<span class="question-mark">?</span>;
-                } <span class="kw">else </span>{
+                <span class="kw">if </span>first {
                     first = <span class="bool-val">false</span>;
+                } <span class="kw">else </span>{
+                    <span class="macro">write!</span>(<span class="self">self</span>.w, <span class="string">&quot;, &quot;</span>)<span class="question-mark">?</span>;
                 }
                 <span class="macro">write!</span>(<span class="self">self</span>.w, <span class="string">&quot;&lt;code&gt;&quot;</span>)<span class="question-mark">?</span>;
                 <span class="macro">write!</span>(<span class="self">self</span>.w, <span class="string">&quot;-{}&quot;</span>, s)<span class="question-mark">?</span>;
