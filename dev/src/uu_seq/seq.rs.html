@@ -356,14 +356,10 @@
 <a href="#356" id="356">356</a>
 <a href="#357" id="357">357</a>
 <a href="#358" id="358">358</a>
-<a href="#359" id="359">359</a>
-<a href="#360" id="360">360</a>
-<a href="#361" id="361">361</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
 //  * file that was distributed with this source code.
-// TODO: Support -f flag
 // spell-checker:ignore (ToDO) istr chiter argptr ilen extendedbigdecimal extendedbigint numberparse
 </span><span class="kw">use </span>std::io::{stdout, ErrorKind, Write};
 <span class="kw">use </span>std::process::exit;
@@ -373,9 +369,9 @@
 
 <span class="kw">use </span>uucore::error::FromIo;
 <span class="kw">use </span>uucore::error::UResult;
-<span class="kw">use </span>uucore::format_usage;
 <span class="kw">use </span>uucore::memo::printf;
 <span class="kw">use </span>uucore::show;
+<span class="kw">use </span>uucore::{format_usage, help_about, help_usage};
 
 <span class="kw">mod </span>error;
 <span class="kw">mod </span>extendedbigdecimal;
@@ -388,17 +384,15 @@
 <span class="kw">use </span><span class="kw">crate</span>::number::Number;
 <span class="kw">use </span><span class="kw">crate</span>::number::PreciseNumber;
 
-<span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Display numbers from FIRST to LAST, in steps of INCREMENT.&quot;</span>;
-<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;\
-    {} [OPTION]... LAST
-    {} [OPTION]... FIRST LAST
-    {} [OPTION]... FIRST INCREMENT LAST&quot;</span>;
-<span class="kw">static </span>OPT_SEPARATOR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;separator&quot;</span>;
-<span class="kw">static </span>OPT_TERMINATOR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;terminator&quot;</span>;
-<span class="kw">static </span>OPT_WIDTHS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;widths&quot;</span>;
-<span class="kw">static </span>OPT_FORMAT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;format&quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;seq.md&quot;</span>);
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;seq.md&quot;</span>);
 
-<span class="kw">static </span>ARG_NUMBERS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;numbers&quot;</span>;
+<span class="kw">const </span>OPT_SEPARATOR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;separator&quot;</span>;
+<span class="kw">const </span>OPT_TERMINATOR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;terminator&quot;</span>;
+<span class="kw">const </span>OPT_WIDTHS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;widths&quot;</span>;
+<span class="kw">const </span>OPT_FORMAT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;format&quot;</span>;
+
+<span class="kw">const </span>ARG_NUMBERS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;numbers&quot;</span>;
 
 <span class="attr">#[derive(Clone)]
 </span><span class="kw">struct </span>SeqOptions&lt;<span class="lifetime">&#39;a</span>&gt; {
