@@ -1432,8 +1432,6 @@
 <a href="#1432" id="1432">1432</a>
 <a href="#1433" id="1433">1433</a>
 <a href="#1434" id="1434">1434</a>
-<a href="#1435" id="1435">1435</a>
-<a href="#1436" id="1436">1436</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Akira Hayakawa &lt;ruby.wktk@gmail.com&gt;
@@ -1441,7 +1439,7 @@
 //  * For the full copyright and license information, please view the LICENSE
 //  * file that was distributed with this source code.
 
-// spell-checker:ignore (ToDO) PREFIXaa PREFIXab nbbbb ncccc
+// spell-checker:ignore nbbbb ncccc
 
 </span><span class="kw">mod </span>filenames;
 <span class="kw">mod </span>number;
@@ -1459,9 +1457,9 @@
 <span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{FromIo, UIoError, UResult, USimpleError, UUsageError};
-<span class="kw">use </span>uucore::format_usage;
 <span class="kw">use </span>uucore::parse_size::{parse_size, ParseSizeError};
 <span class="kw">use </span>uucore::uio_error;
+<span class="kw">use </span>uucore::{format_usage, help_about, help_section, help_usage};
 
 <span class="kw">static </span>OPT_BYTES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;bytes&quot;</span>;
 <span class="kw">static </span>OPT_LINE_BYTES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;line-bytes&quot;</span>;
@@ -1483,11 +1481,9 @@
 <span class="kw">static </span>ARG_INPUT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;input&quot;</span>;
 <span class="kw">static </span>ARG_PREFIX: <span class="kw-2">&amp;</span>str = <span class="string">&quot;prefix&quot;</span>;
 
-<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;{} [OPTION]... [INPUT [PREFIX]]&quot;</span>;
-<span class="kw">const </span>AFTER_HELP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;\
-    Output fixed-size pieces of INPUT to PREFIXaa, PREFIXab, ...; default \
-    size is 1000, and default PREFIX is &#39;x&#39;. With no INPUT, or when INPUT is \
-    -, read standard input.&quot;</span>;
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;split.md&quot;</span>);
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;split.md&quot;</span>);
+<span class="kw">const </span>AFTER_HELP: <span class="kw-2">&amp;</span>str = <span class="macro">help_section!</span>(<span class="string">&quot;after help&quot;</span>, <span class="string">&quot;split.md&quot;</span>);
 
 <span class="attr">#[uucore::main]
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
@@ -1502,7 +1498,7 @@
 <span class="kw">pub fn </span>uu_app() -&gt; Command {
     Command::new(uucore::util_name())
         .version(<span class="macro">crate_version!</span>())
-        .about(<span class="string">&quot;Create output files containing consecutive or interleaved sections of input&quot;</span>)
+        .about(ABOUT)
         .after_help(AFTER_HELP)
         .override_usage(format_usage(USAGE))
         .infer_long_args(<span class="bool-val">true</span>)
