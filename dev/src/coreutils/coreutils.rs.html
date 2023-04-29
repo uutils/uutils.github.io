@@ -213,6 +213,9 @@
 <a href="#213" id="213">213</a>
 <a href="#214" id="214">214</a>
 <a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Michael Gehring &lt;mg@ebfe.org&gt;
@@ -258,8 +261,8 @@
     }
 }
 
-<span class="kw">fn </span>name(binary_path: <span class="kw-2">&amp;</span>Path) -&gt; <span class="kw-2">&amp;</span>str {
-    binary_path.file_stem().unwrap().to_str().unwrap()
+<span class="kw">fn </span>name(binary_path: <span class="kw-2">&amp;</span>Path) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+    binary_path.file_stem()<span class="question-mark">?</span>.to_str()
 }
 
 <span class="kw">fn </span>main() {
@@ -269,7 +272,10 @@
     <span class="kw">let </span><span class="kw-2">mut </span>args = uucore::args_os();
 
     <span class="kw">let </span>binary = binary_path(<span class="kw-2">&amp;mut </span>args);
-    <span class="kw">let </span>binary_as_util = name(<span class="kw-2">&amp;</span>binary);
+    <span class="kw">let </span>binary_as_util = name(<span class="kw-2">&amp;</span>binary).unwrap_or_else(|| {
+        usage(<span class="kw-2">&amp;</span>utils, <span class="string">&quot;&lt;unknown binary name&gt;&quot;</span>);
+        process::exit(<span class="number">0</span>);
+    });
 
     <span class="comment">// binary name equals util name?
     </span><span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>(uumain, <span class="kw">_</span>)) = utils.get(binary_as_util) {

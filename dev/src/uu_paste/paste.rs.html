@@ -229,6 +229,14 @@
 <a href="#229" id="229">229</a>
 <a href="#230" id="230">230</a>
 <a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Alex Lyon &lt;arcterus@mail.com&gt;
@@ -243,7 +251,7 @@
 <span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::io::{stdin, stdout, BufRead, BufReader, Read, Write};
 <span class="kw">use </span>std::path::Path;
-<span class="kw">use </span>uucore::error::{FromIo, UResult};
+<span class="kw">use </span>uucore::error::{FromIo, UResult, USimpleError};
 <span class="kw">use </span>uucore::{format_usage, help_about, help_usage};
 
 <span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;paste.md&quot;</span>);
@@ -360,6 +368,16 @@
         files.push(file);
     }
 
+    <span class="kw">if </span>delimiters.ends_with(<span class="string">&#39;\\&#39;</span>) &amp;&amp; !delimiters.ends_with(<span class="string">&quot;\\\\&quot;</span>) {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
+            <span class="number">1</span>,
+            <span class="macro">format!</span>(
+                <span class="string">&quot;delimiter list ends with an unescaped backslash: {}&quot;</span>,
+                delimiters
+            ),
+        ));
+    }
+
     <span class="kw">let </span>delimiters: Vec&lt;char&gt; = unescape(delimiters).chars().collect();
     <span class="kw">let </span><span class="kw-2">mut </span>delim_count = <span class="number">0</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>delim_length = <span class="number">1</span>;
@@ -453,12 +471,10 @@
 }
 
 <span class="comment">// Unescape all special characters
-// TODO: this will need work to conform to GNU implementation
 </span><span class="kw">fn </span>unescape(s: <span class="kw-2">&amp;</span>str) -&gt; String {
     s.replace(<span class="string">&quot;\\n&quot;</span>, <span class="string">&quot;\n&quot;</span>)
         .replace(<span class="string">&quot;\\t&quot;</span>, <span class="string">&quot;\t&quot;</span>)
         .replace(<span class="string">&quot;\\\\&quot;</span>, <span class="string">&quot;\\&quot;</span>)
-        .replace(<span class="string">&#39;\\&#39;</span>, <span class="string">&quot;&quot;</span>)
 }
 </code></pre></div>
 </section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uu_paste" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0 (84c898d65 2023-04-16)" data-search-js="search-8a59a8356673ec1f.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
