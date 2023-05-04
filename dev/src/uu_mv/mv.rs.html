@@ -603,6 +603,9 @@
 <a href="#603" id="603">603</a>
 <a href="#604" id="604">604</a>
 <a href="#605" id="605">605</a>
+<a href="#606" id="606">606</a>
+<a href="#607" id="607">607</a>
+<a href="#608" id="608">608</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Orvar Segerström &lt;orvarsegerstrom@gmail.com&gt;
@@ -630,7 +633,8 @@
 <span class="kw">use </span>uucore::backup_control::{<span class="self">self</span>, BackupMode};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{set_exit_code, FromIo, UError, UResult, USimpleError, UUsageError};
-<span class="kw">use </span>uucore::{format_usage, help_about, help_usage, prompt_yes, show};
+<span class="kw">use </span>uucore::update_control::{<span class="self">self</span>, UpdateMode};
+<span class="kw">use </span>uucore::{format_usage, help_about, help_section, help_usage, prompt_yes, show};
 
 <span class="kw">use </span>fs_extra::dir::{
     get_size <span class="kw">as </span>dir_get_size, move_dir, move_dir_with_progress, CopyOptions <span class="kw">as </span>DirCopyOptions,
@@ -643,7 +647,7 @@
     overwrite: OverwriteMode,
     backup: BackupMode,
     suffix: String,
-    update: bool,
+    update: UpdateMode,
     target_dir: <span class="prelude-ty">Option</span>&lt;OsString&gt;,
     no_target_dir: bool,
     verbose: bool,
@@ -660,6 +664,7 @@
 
 <span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;mv.md&quot;</span>);
 <span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;mv.md&quot;</span>);
+<span class="kw">const </span>AFTER_HELP: <span class="kw-2">&amp;</span>str = <span class="macro">help_section!</span>(<span class="string">&quot;after help&quot;</span>, <span class="string">&quot;mv.md&quot;</span>);
 
 <span class="kw">static </span>OPT_FORCE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;force&quot;</span>;
 <span class="kw">static </span>OPT_INTERACTIVE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;interactive&quot;</span>;
@@ -667,7 +672,6 @@
 <span class="kw">static </span>OPT_STRIP_TRAILING_SLASHES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;strip-trailing-slashes&quot;</span>;
 <span class="kw">static </span>OPT_TARGET_DIRECTORY: <span class="kw-2">&amp;</span>str = <span class="string">&quot;target-directory&quot;</span>;
 <span class="kw">static </span>OPT_NO_TARGET_DIRECTORY: <span class="kw-2">&amp;</span>str = <span class="string">&quot;no-target-directory&quot;</span>;
-<span class="kw">static </span>OPT_UPDATE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;update&quot;</span>;
 <span class="kw">static </span>OPT_VERBOSE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;verbose&quot;</span>;
 <span class="kw">static </span>OPT_PROGRESS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;progress&quot;</span>;
 <span class="kw">static </span>ARG_FILES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;files&quot;</span>;
@@ -701,6 +705,7 @@
 
     <span class="kw">let </span>overwrite_mode = determine_overwrite_mode(<span class="kw-2">&amp;</span>matches);
     <span class="kw">let </span>backup_mode = backup_control::determine_backup_mode(<span class="kw-2">&amp;</span>matches)<span class="question-mark">?</span>;
+    <span class="kw">let </span>update_mode = update_control::determine_update_mode(<span class="kw-2">&amp;</span>matches);
 
     <span class="kw">if </span>overwrite_mode == OverwriteMode::NoClobber &amp;&amp; backup_mode != BackupMode::NoBackup {
         <span class="kw">return </span><span class="prelude-val">Err</span>(UUsageError::new(
@@ -725,7 +730,7 @@
         overwrite: overwrite_mode,
         backup: backup_mode,
         suffix: backup_suffix,
-        update: matches.get_flag(OPT_UPDATE),
+        update: update_mode,
         target_dir,
         no_target_dir: matches.get_flag(OPT_NO_TARGET_DIRECTORY),
         verbose: matches.get_flag(OPT_VERBOSE),
@@ -741,9 +746,8 @@
         .version(<span class="macro">crate_version!</span>())
         .about(ABOUT)
         .override_usage(format_usage(USAGE))
+        .after_help(AFTER_HELP)
         .infer_long_args(<span class="bool-val">true</span>)
-        .arg(backup_control::arguments::backup())
-        .arg(backup_control::arguments::backup_no_args())
         .arg(
             Arg::new(OPT_FORCE)
                 .short(<span class="string">&#39;f&#39;</span>)
@@ -771,7 +775,11 @@
                 .help(<span class="string">&quot;remove any trailing slashes from each SOURCE argument&quot;</span>)
                 .action(ArgAction::SetTrue),
         )
+        .arg(backup_control::arguments::backup())
+        .arg(backup_control::arguments::backup_no_args())
         .arg(backup_control::arguments::suffix())
+        .arg(update_control::arguments::update())
+        .arg(update_control::arguments::update_no_args())
         .arg(
             Arg::new(OPT_TARGET_DIRECTORY)
                 .short(<span class="string">&#39;t&#39;</span>)
@@ -787,16 +795,6 @@
                 .short(<span class="string">&#39;T&#39;</span>)
                 .long(OPT_NO_TARGET_DIRECTORY)
                 .help(<span class="string">&quot;treat DEST as a normal file&quot;</span>)
-                .action(ArgAction::SetTrue),
-        )
-        .arg(
-            Arg::new(OPT_UPDATE)
-                .short(<span class="string">&#39;u&#39;</span>)
-                .long(OPT_UPDATE)
-                .help(
-                    <span class="string">&quot;move only when the SOURCE file is newer than the destination file \
-                       or when the destination file is missing&quot;</span>,
-                )
                 .action(ArgAction::SetTrue),
         )
         .arg(
@@ -1025,10 +1023,22 @@
     <span class="kw">let </span><span class="kw-2">mut </span>backup_path = <span class="prelude-val">None</span>;
 
     <span class="kw">if </span>to.exists() {
-        <span class="kw">if </span>b.update &amp;&amp; b.overwrite == OverwriteMode::Interactive {
+        <span class="kw">if </span>(b.update == UpdateMode::ReplaceIfOlder || b.update == UpdateMode::ReplaceNone)
+            &amp;&amp; b.overwrite == OverwriteMode::Interactive
+        {
             <span class="comment">// `mv -i --update old new` when `new` exists doesn&#39;t move anything
             // and exit with 0
             </span><span class="kw">return </span><span class="prelude-val">Ok</span>(());
+        }
+
+        <span class="kw">if </span>b.update == UpdateMode::ReplaceNone {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
+        }
+
+        <span class="kw">if </span>(b.update == UpdateMode::ReplaceIfOlder)
+            &amp;&amp; fs::metadata(from)<span class="question-mark">?</span>.modified()<span class="question-mark">? </span>&lt;= fs::metadata(to)<span class="question-mark">?</span>.modified()<span class="question-mark">?
+        </span>{
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
 
         <span class="kw">match </span>b.overwrite {
@@ -1049,10 +1059,6 @@
         backup_path = backup_control::get_backup_path(b.backup, to, <span class="kw-2">&amp;</span>b.suffix);
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>backup_path) = backup_path {
             rename_with_fallback(to, backup_path, multi_progress)<span class="question-mark">?</span>;
-        }
-
-        <span class="kw">if </span>b.update &amp;&amp; fs::metadata(from)<span class="question-mark">?</span>.modified()<span class="question-mark">? </span>&lt;= fs::metadata(to)<span class="question-mark">?</span>.modified()<span class="question-mark">? </span>{
-            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
     }
 
