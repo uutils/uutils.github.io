@@ -1932,9 +1932,13 @@ cp [OPTION]... -t DIRECTORY SOURCE...
 <dd>
 <p>override the usual backup suffix</p>
 </dd>
-<dt><code>--update</code>, <code>-u</code></dt>
+<dt><code>--update</code></dt>
 <dd>
-<p>copy only when the SOURCE file is newer than the destination file or when the destination file is missing</p>
+<p>move only when the SOURCE file is newer than the destination file or when the destination file is missing</p>
+</dd>
+<dt><code>-u</code></dt>
+<dd>
+<p>like --update but does not accept an argument</p>
 </dd>
 <dt><code>--reflink=&lt;WHEN&gt;</code></dt>
 <dd>
@@ -2004,6 +2008,20 @@ cp [OPTION]... -t DIRECTORY SOURCE...
 <dd>
 </dd>
 </dl>
+<p>Do not copy a non-directory that has an existing destination with the same or newer modification timestamp;
+instead, silently skip the file without failing. If timestamps are being preserved, the comparison is to the
+source timestamp truncated to the resolutions of the destination file system and of the system calls used to
+update timestamps; this avoids duplicate work if several <code>cp -pu</code> commands are executed with the same source
+and destination. This option is ignored if the <code>-n</code> or <code>--no-clobber</code> option is also specified. Also, if
+<code>--preserve=links</code> is also specified (like with <code>cp -au</code> for example), that will take precedence; consequently,
+depending on the order that files are processed from the source, newer files in the destination may be replaced,
+to mirror hard links in the source. which gives more control over which existing files in the destination are
+replaced, and its value can be one of the following:</p>
+<ul>
+<li><code>all</code>    This is the default operation when an <code>--update</code> option is not specified, and results in all existing files in the destination being replaced.</li>
+<li><code>none</code>   This is similar to the <code>--no-clobber</code> option, in that no files in the destination are replaced, but also skipping a file does not induce a failure.</li>
+<li><code>older</code>  This is the default operation when <code>--update</code> is specified, and results in files being replaced if they’re older than the corresponding source file.</li>
+</ul>
 <h2 id="examples-14"><a class="header" href="#examples-14">Examples</a></h2>
 <p>Copy a file to another location:</p>
 <pre><code class="language-shell">cp {{path/to/source_file.ext}} {{path/to/target_file.ext}}
@@ -5003,15 +5021,7 @@ mv [OPTION]... -t DIRECTORY SOURCE...
 </code></pre>
 <p>Move <code>SOURCE</code> to <code>DEST</code>, or multiple <code>SOURCE</code>(s) to <code>DIRECTORY</code>.</p>
 <h2 id="options-52"><a class="header" href="#options-52">Options</a></h2>
-<dl><dt><code>--backup=&lt;CONTROL&gt;</code></dt>
-<dd>
-<p>make a backup of each existing destination file</p>
-</dd>
-<dt><code>-b</code></dt>
-<dd>
-<p>like --backup but does not accept an argument</p>
-</dd>
-<dt><code>--force</code>, <code>-f</code></dt>
+<dl><dt><code>--force</code>, <code>-f</code></dt>
 <dd>
 <p>do not prompt before overwriting</p>
 </dd>
@@ -5027,9 +5037,25 @@ mv [OPTION]... -t DIRECTORY SOURCE...
 <dd>
 <p>remove any trailing slashes from each SOURCE argument</p>
 </dd>
+<dt><code>--backup=&lt;CONTROL&gt;</code></dt>
+<dd>
+<p>make a backup of each existing destination file</p>
+</dd>
+<dt><code>-b</code></dt>
+<dd>
+<p>like --backup but does not accept an argument</p>
+</dd>
 <dt><code>--suffix=&lt;SUFFIX&gt;</code>, <code>-S &lt;SUFFIX&gt;</code></dt>
 <dd>
 <p>override the usual backup suffix</p>
+</dd>
+<dt><code>--update</code></dt>
+<dd>
+<p>move only when the SOURCE file is newer than the destination file or when the destination file is missing</p>
+</dd>
+<dt><code>-u</code></dt>
+<dd>
+<p>like --update but does not accept an argument</p>
 </dd>
 <dt><code>--target-directory=&lt;DIRECTORY&gt;</code>, <code>-t &lt;DIRECTORY&gt;</code></dt>
 <dd>
@@ -5038,10 +5064,6 @@ mv [OPTION]... -t DIRECTORY SOURCE...
 <dt><code>--no-target-directory</code>, <code>-T</code></dt>
 <dd>
 <p>treat DEST as a normal file</p>
-</dd>
-<dt><code>--update</code>, <code>-u</code></dt>
-<dd>
-<p>move only when the SOURCE file is newer than the destination file or when the destination file is missing</p>
 </dd>
 <dt><code>--verbose</code>, <code>-v</code></dt>
 <dd>
@@ -5055,6 +5077,17 @@ mv [OPTION]... -t DIRECTORY SOURCE...
 <dd>
 </dd>
 </dl>
+<p>Do not move a non-directory that has an existing destination with the same or newer modification timestamp;
+instead, silently skip the file without failing. If the move is across file system boundaries, the comparison is
+to the source timestamp truncated to the resolutions of the destination file system and of the system calls used
+to update timestamps; this avoids duplicate work if several <code>mv -u</code> commands are executed with the same source
+and destination. This option is ignored if the <code>-n</code> or <code>--no-clobber</code> option is also specified. which gives more control
+over which existing files in the destination are replaced, and its value can be one of the following:</p>
+<ul>
+<li><code>all</code>    This is the default operation when an <code>--update</code> option is not specified, and results in all existing files in the destination being replaced.</li>
+<li><code>none</code>   This is similar to the <code>--no-clobber</code> option, in that no files in the destination are replaced, but also skipping a file does not induce a failure.</li>
+<li><code>older</code>  This is the default operation when <code>--update</code> is specified, and results in files being replaced if they’re older than the corresponding source file.</li>
+</ul>
 <h2 id="examples-50"><a class="header" href="#examples-50">Examples</a></h2>
 <p>Rename a file or directory when the target is not an existing directory:</p>
 <pre><code class="language-shell">mv {{source}} {{target}}
