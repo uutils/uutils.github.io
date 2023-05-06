@@ -1887,6 +1887,7 @@
 <a href="#1887" id="1887">1887</a>
 <a href="#1888" id="1888">1888</a>
 <a href="#1889" id="1889">1889</a>
+<a href="#1890" id="1890">1890</a>
 </pre><pre class="rust"><code><span class="attr">#![allow(clippy::missing_safety_doc)]
 #![allow(clippy::extra_unused_lifetimes)]
 
@@ -2188,7 +2189,10 @@
         .version(<span class="macro">crate_version!</span>())
         .about(ABOUT)
         .override_usage(format_usage(USAGE))
-        .after_help(AFTER_HELP)
+        .after_help(<span class="macro">format!</span>(
+            <span class="string">&quot;{AFTER_HELP}\n\n{}&quot;</span>,
+            backup_control::BACKUP_CONTROL_LONG_HELP
+        ))
         .infer_long_args(<span class="bool-val">true</span>)
         .arg(
             Arg::new(options::TARGET_DIRECTORY)
@@ -2450,13 +2454,11 @@
 
 <span class="attr">#[uucore::main]
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
-    <span class="kw">let </span>matches = uu_app()
-        .after_help(backup_control::BACKUP_CONTROL_LONG_HELP)
-        .try_get_matches_from(args);
+    <span class="kw">let </span>matches = uu_app().try_get_matches_from(args);
 
     <span class="comment">// The error is parsed here because we do not want version or help being printed to stderr.
     </span><span class="kw">if let </span><span class="prelude-val">Err</span>(e) = matches {
-        <span class="kw">let </span><span class="kw-2">mut </span>app = uu_app().after_help(backup_control::BACKUP_CONTROL_LONG_HELP);
+        <span class="kw">let </span><span class="kw-2">mut </span>app = uu_app();
 
         <span class="kw">match </span>e.kind() {
             clap::error::ErrorKind::DisplayHelp =&gt; {
