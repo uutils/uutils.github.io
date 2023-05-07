@@ -452,6 +452,7 @@
 <a href="#452" id="452">452</a>
 <a href="#453" id="453">453</a>
 <a href="#454" id="454">454</a>
+<a href="#455" id="455">455</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;
@@ -590,7 +591,7 @@
         ));
     } <span class="kw">else if </span>files[<span class="number">0</span>].eq(<span class="string">&quot;-&quot;</span>) {
         <span class="kw">let </span>fin = BufReader::new(std::io::stdin());
-        result = parse(fin.lines().filter_map(Result::ok), <span class="kw-2">&amp;</span>out_format, files[<span class="number">0</span>]);
+        result = parse(fin.lines().map_while(Result::ok), <span class="kw-2">&amp;</span>out_format, files[<span class="number">0</span>]);
     } <span class="kw">else </span>{
         <span class="kw">let </span>path = Path::new(files[<span class="number">0</span>]);
         <span class="kw">if </span>path.is_dir() {
@@ -738,7 +739,8 @@
 <span class="kw">use </span>std::collections::HashMap;
 <span class="kw">use </span>uucore::{format_usage, parse_glob};
 
-<span class="kw">fn </span>parse&lt;T&gt;(lines: T, fmt: <span class="kw-2">&amp;</span>OutputFmt, fp: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt;
+<span class="attr">#[allow(clippy::cognitive_complexity)]
+</span><span class="kw">fn </span>parse&lt;T&gt;(lines: T, fmt: <span class="kw-2">&amp;</span>OutputFmt, fp: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt;
 <span class="kw">where
     </span>T: IntoIterator,
     T::Item: Borrow&lt;str&gt;,

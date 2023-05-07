@@ -606,6 +606,13 @@
 <a href="#606" id="606">606</a>
 <a href="#607" id="607">607</a>
 <a href="#608" id="608">608</a>
+<a href="#609" id="609">609</a>
+<a href="#610" id="610">610</a>
+<a href="#611" id="611">611</a>
+<a href="#612" id="612">612</a>
+<a href="#613" id="613">613</a>
+<a href="#614" id="614">614</a>
+<a href="#615" id="615">615</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Orvar Segerström &lt;orvarsegerstrom@gmail.com&gt;
@@ -678,7 +685,7 @@
 
 <span class="attr">#[uucore::main]
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>app = uu_app().after_help(backup_control::BACKUP_CONTROL_LONG_HELP);
+    <span class="kw">let </span><span class="kw-2">mut </span>app = uu_app();
     <span class="kw">let </span>matches = app.try_get_matches_from_mut(args)<span class="question-mark">?</span>;
 
     <span class="kw">if </span>!matches.contains_id(OPT_TARGET_DIRECTORY)
@@ -746,13 +753,17 @@
         .version(<span class="macro">crate_version!</span>())
         .about(ABOUT)
         .override_usage(format_usage(USAGE))
-        .after_help(AFTER_HELP)
+        .after_help(<span class="macro">format!</span>(
+            <span class="string">&quot;{AFTER_HELP}\n\n{}&quot;</span>,
+            backup_control::BACKUP_CONTROL_LONG_HELP
+        ))
         .infer_long_args(<span class="bool-val">true</span>)
         .arg(
             Arg::new(OPT_FORCE)
                 .short(<span class="string">&#39;f&#39;</span>)
                 .long(OPT_FORCE)
                 .help(<span class="string">&quot;do not prompt before overwriting&quot;</span>)
+                .overrides_with_all([OPT_INTERACTIVE, OPT_NO_CLOBBER])
                 .action(ArgAction::SetTrue),
         )
         .arg(
@@ -760,6 +771,7 @@
                 .short(<span class="string">&#39;i&#39;</span>)
                 .long(OPT_INTERACTIVE)
                 .help(<span class="string">&quot;prompt before override&quot;</span>)
+                .overrides_with_all([OPT_FORCE, OPT_NO_CLOBBER])
                 .action(ArgAction::SetTrue),
         )
         .arg(
@@ -767,6 +779,7 @@
                 .short(<span class="string">&#39;n&#39;</span>)
                 .long(OPT_NO_CLOBBER)
                 .help(<span class="string">&quot;do not overwrite an existing file&quot;</span>)
+                .overrides_with_all([OPT_FORCE, OPT_INTERACTIVE])
                 .action(ArgAction::SetTrue),
         )
         .arg(
@@ -929,7 +942,8 @@
     }
 }
 
-<span class="kw">fn </span>move_files_into_dir(files: <span class="kw-2">&amp;</span>[PathBuf], target_dir: <span class="kw-2">&amp;</span>Path, b: <span class="kw-2">&amp;</span>Behavior) -&gt; UResult&lt;()&gt; {
+<span class="attr">#[allow(clippy::cognitive_complexity)]
+</span><span class="kw">fn </span>move_files_into_dir(files: <span class="kw-2">&amp;</span>[PathBuf], target_dir: <span class="kw-2">&amp;</span>Path, b: <span class="kw-2">&amp;</span>Behavior) -&gt; UResult&lt;()&gt; {
     <span class="kw">if </span>!target_dir.is_dir() {
         <span class="kw">return </span><span class="prelude-val">Err</span>(MvError::NotADirectory(target_dir.quote().to_string()).into());
     }
