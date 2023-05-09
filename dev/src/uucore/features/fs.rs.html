@@ -770,6 +770,79 @@
 <a href="#770" id="770">770</a>
 <a href="#771" id="771">771</a>
 <a href="#772" id="772">772</a>
+<a href="#773" id="773">773</a>
+<a href="#774" id="774">774</a>
+<a href="#775" id="775">775</a>
+<a href="#776" id="776">776</a>
+<a href="#777" id="777">777</a>
+<a href="#778" id="778">778</a>
+<a href="#779" id="779">779</a>
+<a href="#780" id="780">780</a>
+<a href="#781" id="781">781</a>
+<a href="#782" id="782">782</a>
+<a href="#783" id="783">783</a>
+<a href="#784" id="784">784</a>
+<a href="#785" id="785">785</a>
+<a href="#786" id="786">786</a>
+<a href="#787" id="787">787</a>
+<a href="#788" id="788">788</a>
+<a href="#789" id="789">789</a>
+<a href="#790" id="790">790</a>
+<a href="#791" id="791">791</a>
+<a href="#792" id="792">792</a>
+<a href="#793" id="793">793</a>
+<a href="#794" id="794">794</a>
+<a href="#795" id="795">795</a>
+<a href="#796" id="796">796</a>
+<a href="#797" id="797">797</a>
+<a href="#798" id="798">798</a>
+<a href="#799" id="799">799</a>
+<a href="#800" id="800">800</a>
+<a href="#801" id="801">801</a>
+<a href="#802" id="802">802</a>
+<a href="#803" id="803">803</a>
+<a href="#804" id="804">804</a>
+<a href="#805" id="805">805</a>
+<a href="#806" id="806">806</a>
+<a href="#807" id="807">807</a>
+<a href="#808" id="808">808</a>
+<a href="#809" id="809">809</a>
+<a href="#810" id="810">810</a>
+<a href="#811" id="811">811</a>
+<a href="#812" id="812">812</a>
+<a href="#813" id="813">813</a>
+<a href="#814" id="814">814</a>
+<a href="#815" id="815">815</a>
+<a href="#816" id="816">816</a>
+<a href="#817" id="817">817</a>
+<a href="#818" id="818">818</a>
+<a href="#819" id="819">819</a>
+<a href="#820" id="820">820</a>
+<a href="#821" id="821">821</a>
+<a href="#822" id="822">822</a>
+<a href="#823" id="823">823</a>
+<a href="#824" id="824">824</a>
+<a href="#825" id="825">825</a>
+<a href="#826" id="826">826</a>
+<a href="#827" id="827">827</a>
+<a href="#828" id="828">828</a>
+<a href="#829" id="829">829</a>
+<a href="#830" id="830">830</a>
+<a href="#831" id="831">831</a>
+<a href="#832" id="832">832</a>
+<a href="#833" id="833">833</a>
+<a href="#834" id="834">834</a>
+<a href="#835" id="835">835</a>
+<a href="#836" id="836">836</a>
+<a href="#837" id="837">837</a>
+<a href="#838" id="838">838</a>
+<a href="#839" id="839">839</a>
+<a href="#840" id="840">840</a>
+<a href="#841" id="841">841</a>
+<a href="#842" id="842">842</a>
+<a href="#843" id="843">843</a>
+<a href="#844" id="844">844</a>
+<a href="#845" id="845">845</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Joseph Crail &lt;jbcrail@gmail.com&gt;
@@ -1389,14 +1462,47 @@
     <span class="bool-val">false
 </span>}
 
+<span class="attr">#[cfg(not(unix))]
+</span><span class="comment">// Hard link comparison is not supported on non-Unix platforms
+</span><span class="kw">pub fn </span>are_hardlinks_to_same_file(_source: <span class="kw-2">&amp;</span>Path, _target: <span class="kw-2">&amp;</span>Path) -&gt; bool {
+    <span class="bool-val">false
+</span>}
+
+<span class="doccomment">/// Checks if two paths are hard links to the same file.
+///
+/// # Arguments
+///
+/// * `source` - A reference to a `Path` representing the source path.
+/// * `target` - A reference to a `Path` representing the target path.
+///
+/// # Returns
+///
+/// * `bool` - Returns `true` if the paths are hard links to the same file, and `false` otherwise.
+</span><span class="attr">#[cfg(unix)]
+</span><span class="kw">pub fn </span>are_hardlinks_to_same_file(source: <span class="kw-2">&amp;</span>Path, target: <span class="kw-2">&amp;</span>Path) -&gt; bool {
+    <span class="kw">let </span>source_metadata = <span class="kw">match </span>fs::metadata(source) {
+        <span class="prelude-val">Ok</span>(metadata) =&gt; metadata,
+        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="bool-val">false</span>,
+    };
+
+    <span class="kw">let </span>target_metadata = <span class="kw">match </span>fs::metadata(target) {
+        <span class="prelude-val">Ok</span>(metadata) =&gt; metadata,
+        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="bool-val">false</span>,
+    };
+
+    source_metadata.ino() == target_metadata.ino() &amp;&amp; source_metadata.dev() == target_metadata.dev()
+}
+
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="comment">// Note this useful idiom: importing names from outer (for mod tests) scope.
     </span><span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="attr">#[cfg(unix)]
+    </span><span class="kw">use </span>std::io::Write;
+    <span class="attr">#[cfg(unix)]
     </span><span class="kw">use </span>std::os::unix;
     <span class="attr">#[cfg(unix)]
-    </span><span class="kw">use </span>tempfile::tempdir;
+    </span><span class="kw">use </span>tempfile::{tempdir, NamedTempFile};
 
     <span class="kw">struct </span>NormalizePathTestCase&lt;<span class="lifetime">&#39;a</span>&gt; {
         path: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
@@ -1540,6 +1646,46 @@
         unix::fs::symlink(<span class="kw-2">&amp;</span>symlink2_path, <span class="kw-2">&amp;</span>symlink1_path).unwrap();
 
         <span class="macro">assert!</span>(is_symlink_loop(<span class="kw-2">&amp;</span>symlink1_path));
+    }
+
+    <span class="attr">#[cfg(unix)]
+    #[test]
+    </span><span class="kw">fn </span>test_are_hardlinks_to_same_file_same_file() {
+        <span class="kw">let </span><span class="kw-2">mut </span>temp_file = NamedTempFile::new().unwrap();
+        <span class="macro">writeln!</span>(temp_file, <span class="string">&quot;Test content&quot;</span>).unwrap();
+
+        <span class="kw">let </span>path1 = temp_file.path();
+        <span class="kw">let </span>path2 = temp_file.path();
+
+        <span class="macro">assert_eq!</span>(are_hardlinks_to_same_file(<span class="kw-2">&amp;</span>path1, <span class="kw-2">&amp;</span>path2), <span class="bool-val">true</span>);
+    }
+
+    <span class="attr">#[cfg(unix)]
+    #[test]
+    </span><span class="kw">fn </span>test_are_hardlinks_to_same_file_different_files() {
+        <span class="kw">let </span><span class="kw-2">mut </span>temp_file1 = NamedTempFile::new().unwrap();
+        <span class="macro">writeln!</span>(temp_file1, <span class="string">&quot;Test content 1&quot;</span>).unwrap();
+
+        <span class="kw">let </span><span class="kw-2">mut </span>temp_file2 = NamedTempFile::new().unwrap();
+        <span class="macro">writeln!</span>(temp_file2, <span class="string">&quot;Test content 2&quot;</span>).unwrap();
+
+        <span class="kw">let </span>path1 = temp_file1.path();
+        <span class="kw">let </span>path2 = temp_file2.path();
+
+        <span class="macro">assert_eq!</span>(are_hardlinks_to_same_file(<span class="kw-2">&amp;</span>path1, <span class="kw-2">&amp;</span>path2), <span class="bool-val">false</span>);
+    }
+
+    <span class="attr">#[cfg(unix)]
+    #[test]
+    </span><span class="kw">fn </span>test_are_hardlinks_to_same_file_hard_link() {
+        <span class="kw">let </span><span class="kw-2">mut </span>temp_file = NamedTempFile::new().unwrap();
+        <span class="macro">writeln!</span>(temp_file, <span class="string">&quot;Test content&quot;</span>).unwrap();
+        <span class="kw">let </span>path1 = temp_file.path();
+
+        <span class="kw">let </span>path2 = temp_file.path().with_extension(<span class="string">&quot;hardlink&quot;</span>);
+        fs::hard_link(<span class="kw-2">&amp;</span>path1, <span class="kw-2">&amp;</span>path2).unwrap();
+
+        <span class="macro">assert_eq!</span>(are_hardlinks_to_same_file(<span class="kw-2">&amp;</span>path1, <span class="kw-2">&amp;</span>path2), <span class="bool-val">true</span>);
     }
 }
 </code></pre></div>

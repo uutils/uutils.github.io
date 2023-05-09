@@ -611,8 +611,6 @@
 <a href="#611" id="611">611</a>
 <a href="#612" id="612">612</a>
 <a href="#613" id="613">613</a>
-<a href="#614" id="614">614</a>
-<a href="#615" id="615">615</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Orvar Segerström &lt;orvarsegerstrom@gmail.com&gt;
@@ -640,6 +638,7 @@
 <span class="kw">use </span>uucore::backup_control::{<span class="self">self</span>, BackupMode};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{set_exit_code, FromIo, UError, UResult, USimpleError, UUsageError};
+<span class="kw">use </span>uucore::fs::are_hardlinks_to_same_file;
 <span class="kw">use </span>uucore::update_control::{<span class="self">self</span>, UpdateMode};
 <span class="kw">use </span>uucore::{format_usage, help_about, help_section, help_usage, prompt_yes, show};
 
@@ -852,93 +851,90 @@
     }
 }
 
-<span class="kw">fn </span>exec(files: <span class="kw-2">&amp;</span>[OsString], b: <span class="kw-2">&amp;</span>Behavior) -&gt; UResult&lt;()&gt; {
-    <span class="kw">let </span>paths: Vec&lt;PathBuf&gt; = {
-        <span class="kw">let </span>paths = files.iter().map(Path::new);
+<span class="kw">fn </span>parse_paths(files: <span class="kw-2">&amp;</span>[OsString], b: <span class="kw-2">&amp;</span>Behavior) -&gt; Vec&lt;PathBuf&gt; {
+    <span class="kw">let </span>paths = files.iter().map(Path::new);
 
-        <span class="comment">// Strip slashes from path, if strip opt present
-        </span><span class="kw">if </span>b.strip_slashes {
-            paths
-                .map(|p| p.components().as_path().to_owned())
-                .collect::&lt;Vec&lt;PathBuf&gt;&gt;()
+    <span class="kw">if </span>b.strip_slashes {
+        paths
+            .map(|p| p.components().as_path().to_owned())
+            .collect::&lt;Vec&lt;PathBuf&gt;&gt;()
+    } <span class="kw">else </span>{
+        paths.map(|p| p.to_owned()).collect::&lt;Vec&lt;PathBuf&gt;&gt;()
+    }
+}
+
+<span class="kw">fn </span>handle_two_paths(source: <span class="kw-2">&amp;</span>Path, target: <span class="kw-2">&amp;</span>Path, b: <span class="kw-2">&amp;</span>Behavior) -&gt; UResult&lt;()&gt; {
+    <span class="kw">if </span>source.symlink_metadata().is_err() {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(MvError::NoSuchFile(source.quote().to_string()).into());
+    }
+
+    <span class="kw">if </span>(source.eq(target) || are_hardlinks_to_same_file(source, target))
+        &amp;&amp; b.backup != BackupMode::SimpleBackup
+    {
+        <span class="kw">if </span>source.eq(Path::new(<span class="string">&quot;.&quot;</span>)) || source.ends_with(<span class="string">&quot;/.&quot;</span>) || source.is_file() {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(
+                MvError::SameFile(source.quote().to_string(), target.quote().to_string()).into(),
+            );
         } <span class="kw">else </span>{
-            paths.map(|p| p.to_owned()).collect::&lt;Vec&lt;PathBuf&gt;&gt;()
+            <span class="kw">return </span><span class="prelude-val">Err</span>(MvError::SelfSubdirectory(source.display().to_string()).into());
         }
-    };
+    }
+
+    <span class="kw">if </span>target.is_dir() {
+        <span class="kw">if </span>b.no_target_dir {
+            <span class="kw">if </span>source.is_dir() {
+                rename(source, target, b, <span class="prelude-val">None</span>).map_err_context(|| {
+                    <span class="macro">format!</span>(<span class="string">&quot;cannot move {} to {}&quot;</span>, source.quote(), target.quote())
+                })
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Err</span>(MvError::DirectoryToNonDirectory(target.quote().to_string()).into())
+            }
+        } <span class="kw">else </span>{
+            move_files_into_dir(<span class="kw-2">&amp;</span>[source.to_path_buf()], target, b)
+        }
+    } <span class="kw">else if </span>target.exists() &amp;&amp; source.is_dir() {
+        <span class="kw">match </span>b.overwrite {
+            OverwriteMode::NoClobber =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
+            OverwriteMode::Interactive =&gt; {
+                <span class="kw">if </span>!<span class="macro">prompt_yes!</span>(<span class="string">&quot;overwrite {}? &quot;</span>, target.quote()) {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(io::Error::new(io::ErrorKind::Other, <span class="string">&quot;&quot;</span>).into());
+                }
+            }
+            OverwriteMode::Force =&gt; {}
+        };
+        <span class="prelude-val">Err</span>(MvError::NonDirectoryToDirectory(
+            source.quote().to_string(),
+            target.quote().to_string(),
+        )
+        .into())
+    } <span class="kw">else </span>{
+        rename(source, target, b, <span class="prelude-val">None</span>).map_err(|e| USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{e}&quot;</span>)))
+    }
+}
+
+<span class="kw">fn </span>handle_multiple_paths(paths: <span class="kw-2">&amp;</span>[PathBuf], b: <span class="kw-2">&amp;</span>Behavior) -&gt; UResult&lt;()&gt; {
+    <span class="kw">if </span>b.no_target_dir {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(UUsageError::new(
+            <span class="number">1</span>,
+            <span class="macro">format!</span>(<span class="string">&quot;mv: extra operand {}&quot;</span>, paths[<span class="number">2</span>].quote()),
+        ));
+    }
+    <span class="kw">let </span>target_dir = paths.last().unwrap();
+    <span class="kw">let </span>sources = <span class="kw-2">&amp;</span>paths[..paths.len() - <span class="number">1</span>];
+
+    move_files_into_dir(sources, target_dir, b)
+}
+
+<span class="kw">fn </span>exec(files: <span class="kw-2">&amp;</span>[OsString], b: <span class="kw-2">&amp;</span>Behavior) -&gt; UResult&lt;()&gt; {
+    <span class="kw">let </span>paths = parse_paths(files, b);
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>name) = b.target_dir {
         <span class="kw">return </span>move_files_into_dir(<span class="kw-2">&amp;</span>paths, <span class="kw-2">&amp;</span>PathBuf::from(name), b);
     }
+
     <span class="kw">match </span>paths.len() {
-        <span class="comment">/* case 0/1 are not possible thanks to clap */
-        </span><span class="number">2 </span>=&gt; {
-            <span class="kw">let </span>source = <span class="kw-2">&amp;</span>paths[<span class="number">0</span>];
-            <span class="kw">let </span>target = <span class="kw-2">&amp;</span>paths[<span class="number">1</span>];
-            <span class="comment">// Here we use the `symlink_metadata()` method instead of `exists()`,
-            // since it handles dangling symlinks correctly. The method gives an
-            // `Ok()` results unless the source does not exist, or the user
-            // lacks permission to access metadata.
-            </span><span class="kw">if </span>source.symlink_metadata().is_err() {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(MvError::NoSuchFile(source.quote().to_string()).into());
-            }
-
-            <span class="comment">// GNU semantics are: if the source and target are the same, no move occurs and we print an error
-            </span><span class="kw">if </span>source.eq(target) {
-                <span class="comment">// Done to match GNU semantics for the dot file
-                </span><span class="kw">if </span>source.eq(Path::new(<span class="string">&quot;.&quot;</span>)) || source.ends_with(<span class="string">&quot;/.&quot;</span>) || source.is_file() {
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(MvError::SameFile(
-                        source.quote().to_string(),
-                        target.quote().to_string(),
-                    )
-                    .into());
-                } <span class="kw">else </span>{
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(MvError::SelfSubdirectory(source.display().to_string()).into());
-                }
-            }
-
-            <span class="kw">if </span>target.is_dir() {
-                <span class="kw">if </span>b.no_target_dir {
-                    <span class="kw">if </span>source.is_dir() {
-                        rename(source, target, b, <span class="prelude-val">None</span>).map_err_context(|| {
-                            <span class="macro">format!</span>(<span class="string">&quot;cannot move {} to {}&quot;</span>, source.quote(), target.quote())
-                        })
-                    } <span class="kw">else </span>{
-                        <span class="prelude-val">Err</span>(MvError::DirectoryToNonDirectory(target.quote().to_string()).into())
-                    }
-                } <span class="kw">else </span>{
-                    move_files_into_dir(<span class="kw-2">&amp;</span>[source.clone()], target, b)
-                }
-            } <span class="kw">else if </span>target.exists() &amp;&amp; source.is_dir() {
-                <span class="kw">match </span>b.overwrite {
-                    OverwriteMode::NoClobber =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
-                    OverwriteMode::Interactive =&gt; {
-                        <span class="kw">if </span>!<span class="macro">prompt_yes!</span>(<span class="string">&quot;overwrite {}? &quot;</span>, target.quote()) {
-                            <span class="kw">return </span><span class="prelude-val">Err</span>(io::Error::new(io::ErrorKind::Other, <span class="string">&quot;&quot;</span>).into());
-                        }
-                    }
-                    OverwriteMode::Force =&gt; {}
-                };
-                <span class="prelude-val">Err</span>(MvError::NonDirectoryToDirectory(
-                    source.quote().to_string(),
-                    target.quote().to_string(),
-                )
-                .into())
-            } <span class="kw">else </span>{
-                rename(source, target, b, <span class="prelude-val">None</span>).map_err(|e| USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;{e}&quot;</span>)))
-            }
-        }
-        <span class="kw">_ </span>=&gt; {
-            <span class="kw">if </span>b.no_target_dir {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(UUsageError::new(
-                    <span class="number">1</span>,
-                    <span class="macro">format!</span>(<span class="string">&quot;mv: extra operand {}&quot;</span>, files[<span class="number">2</span>].quote()),
-                ));
-            }
-            <span class="kw">let </span>target_dir = paths.last().unwrap();
-            <span class="kw">let </span>sources = <span class="kw-2">&amp;</span>paths[..paths.len() - <span class="number">1</span>];
-
-            move_files_into_dir(sources, target_dir, b)
-        }
+        <span class="number">2 </span>=&gt; handle_two_paths(<span class="kw-2">&amp;</span>paths[<span class="number">0</span>], <span class="kw-2">&amp;</span>paths[<span class="number">1</span>], b),
+        <span class="kw">_ </span>=&gt; handle_multiple_paths(<span class="kw-2">&amp;</span>paths, b),
     }
 }
 
