@@ -656,6 +656,11 @@
 <a href="#656" id="656">656</a>
 <a href="#657" id="657">657</a>
 <a href="#658" id="658">658</a>
+<a href="#659" id="659">659</a>
+<a href="#660" id="660">660</a>
+<a href="#661" id="661">661</a>
+<a href="#662" id="662">662</a>
+<a href="#663" id="663">663</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
@@ -737,9 +742,9 @@
     /// ```rust,ignore
     /// use std::io::Cursor;
     /// use std::time::Duration;
-    /// use crate::progress::{ProgUpdate, ReadState, WriteStat};
+    /// use crate::progress::{ProgUpdate, ReadStat, WriteStat};
     ///
-    /// let read_stat = ReadStat::new(1, 2, 3);
+    /// let read_stat = ReadStat::new(1, 2, 3, 999);
     /// let write_stat = WriteStat::new(4, 5, 6);
     /// let duration = Duration::new(789, 0);
     /// let prog_update = ProgUpdate {
@@ -779,7 +784,7 @@
     /// ```rust,ignore
     /// use std::io::Cursor;
     /// use std::time::Duration;
-    /// use crate::progress::{ProgUpdate, ReadState, WriteStat};
+    /// use crate::progress::ProgUpdate;
     ///
     /// let prog_update = ProgUpdate {
     ///     read_stat: Default::default(),
@@ -849,7 +854,7 @@
     /// ```rust,ignore
     /// use std::io::Cursor;
     /// use std::time::Duration;
-    /// use crate::progress::{ProgUpdate, ReadState, WriteStat};
+    /// use crate::progress::ProgUpdate;
     ///
     /// let prog_update = ProgUpdate {
     ///     read_stat: Default::default(),
@@ -934,16 +939,20 @@
     ///
     /// A truncated record can only occur in `conv=block` mode.
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) records_truncated: u32,
+
+    <span class="doccomment">/// The total number of bytes read.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) bytes_total: u64,
 }
 
 <span class="kw">impl </span>ReadStat {
     <span class="doccomment">/// Create a new instance.
     </span><span class="attr">#[allow(dead_code)]
-    </span><span class="kw">fn </span>new(complete: u64, partial: u64, truncated: u32) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">fn </span>new(complete: u64, partial: u64, truncated: u32, bytes_total: u64) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             reads_complete: complete,
             reads_partial: partial,
             records_truncated: truncated,
+            bytes_total,
         }
     }
 
@@ -973,6 +982,7 @@
             reads_complete: <span class="self">self</span>.reads_complete + other.reads_complete,
             reads_partial: <span class="self">self</span>.reads_partial + other.reads_partial,
             records_truncated: <span class="self">self</span>.records_truncated + other.records_truncated,
+            bytes_total: <span class="self">self</span>.bytes_total + other.bytes_total,
         }
     }
 }
@@ -1172,7 +1182,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_read_stat_report() {
-        <span class="kw">let </span>read_stat = ReadStat::new(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);
+        <span class="kw">let </span>read_stat = ReadStat::new(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>);
         <span class="kw">let </span><span class="kw-2">mut </span>cursor = Cursor::new(<span class="macro">vec!</span>[]);
         read_stat.report(<span class="kw-2">&amp;mut </span>cursor).unwrap();
         <span class="macro">assert_eq!</span>(cursor.get_ref(), <span class="string">b&quot;1+2 records in\n&quot;</span>);
@@ -1188,7 +1198,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_prog_update_write_io_lines() {
-        <span class="kw">let </span>read_stat = ReadStat::new(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);
+        <span class="kw">let </span>read_stat = ReadStat::new(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>);
         <span class="kw">let </span>write_stat = WriteStat::new(<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>);
         <span class="kw">let </span>duration = Duration::new(<span class="number">789</span>, <span class="number">0</span>);
         <span class="kw">let </span>complete = <span class="bool-val">false</span>;
