@@ -272,6 +272,23 @@
 <a href="#272" id="272">272</a>
 <a href="#273" id="273">273</a>
 <a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Michael Gehring &lt;mg@ebfe.org&gt;
@@ -280,7 +297,7 @@
 // file that was distributed with this source code.
 
 // spell-checker:ignore (ToDO) fname, algo
-</span><span class="kw">use </span>clap::{crate_version, Arg, Command};
+</span><span class="kw">use </span>clap::{crate_version, Arg, ArgAction, Command};
 <span class="kw">use </span>hex::encode;
 <span class="kw">use </span>std::ffi::OsStr;
 <span class="kw">use </span>std::fs::File;
@@ -377,6 +394,7 @@
     algo_name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
     digest: Box&lt;<span class="kw">dyn </span>Digest + <span class="lifetime">&#39;static</span>&gt;,
     output_bits: usize,
+    untagged: bool,
 }
 
 <span class="doccomment">/// Calculate checksum
@@ -435,12 +453,20 @@
             ),
             (ALGORITHM_OPTIONS_CRC, <span class="bool-val">true</span>) =&gt; <span class="macro">println!</span>(<span class="string">&quot;{sum} {sz}&quot;</span>),
             (ALGORITHM_OPTIONS_CRC, <span class="bool-val">false</span>) =&gt; <span class="macro">println!</span>(<span class="string">&quot;{sum} {sz} {}&quot;</span>, filename.display()),
-            (ALGORITHM_OPTIONS_BLAKE2B, <span class="kw">_</span>) =&gt; <span class="macro">println!</span>(<span class="string">&quot;BLAKE2b ({}) = {sum}&quot;</span>, filename.display()),
-            <span class="kw">_ </span>=&gt; <span class="macro">println!</span>(
-                <span class="string">&quot;{} ({}) = {sum}&quot;</span>,
-                options.algo_name.to_ascii_uppercase(),
-                filename.display()
-            ),
+            (ALGORITHM_OPTIONS_BLAKE2B, <span class="kw">_</span>) <span class="kw">if </span>!options.untagged =&gt; {
+                <span class="macro">println!</span>(<span class="string">&quot;BLAKE2b ({}) = {sum}&quot;</span>, filename.display());
+            }
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">if </span>options.untagged {
+                    <span class="macro">println!</span>(<span class="string">&quot;{sum}  {}&quot;</span>, filename.display());
+                } <span class="kw">else </span>{
+                    <span class="macro">println!</span>(
+                        <span class="string">&quot;{} ({}) = {sum}&quot;</span>,
+                        options.algo_name.to_ascii_uppercase(),
+                        filename.display()
+                    );
+                }
+            }
         }
     }
 
@@ -482,8 +508,9 @@
 }
 
 <span class="kw">mod </span>options {
-    <span class="kw">pub static </span>FILE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;file&quot;</span>;
-    <span class="kw">pub static </span>ALGORITHM: <span class="kw-2">&amp;</span>str = <span class="string">&quot;algorithm&quot;</span>;
+    <span class="kw">pub const </span>ALGORITHM: <span class="kw-2">&amp;</span>str = <span class="string">&quot;algorithm&quot;</span>;
+    <span class="kw">pub const </span>FILE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;file&quot;</span>;
+    <span class="kw">pub const </span>UNTAGGED: <span class="kw-2">&amp;</span>str = <span class="string">&quot;untagged&quot;</span>;
 }
 
 <span class="attr">#[uucore::main]
@@ -502,6 +529,7 @@
         algo_name: name,
         digest: algo,
         output_bits: bits,
+        untagged: matches.get_flag(options::UNTAGGED),
     };
 
     <span class="kw">match </span>matches.get_many::&lt;String&gt;(options::FILE) {
@@ -543,6 +571,12 @@
                     ALGORITHM_OPTIONS_BLAKE2B,
                     ALGORITHM_OPTIONS_SM3,
                 ]),
+        )
+        .arg(
+            Arg::new(options::UNTAGGED)
+                .long(options::UNTAGGED)
+                .help(<span class="string">&quot;create a reversed style checksum, without digest type&quot;</span>)
+                .action(ArgAction::SetTrue),
         )
         .after_help(AFTER_HELP)
 }
