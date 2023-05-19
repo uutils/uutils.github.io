@@ -582,6 +582,13 @@
 <a href="#582" id="582">582</a>
 <a href="#583" id="583">583</a>
 <a href="#584" id="584">584</a>
+<a href="#585" id="585">585</a>
+<a href="#586" id="586">586</a>
+<a href="#587" id="587">587</a>
+<a href="#588" id="588">588</a>
+<a href="#589" id="589">589</a>
+<a href="#590" id="590">590</a>
+<a href="#591" id="591">591</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Sunrin SHIMURA
@@ -775,7 +782,14 @@
                     (tmpdir, template.to_string())
                 }
                 <span class="prelude-val">Some</span>(template) =&gt; {
-                    <span class="kw">let </span>tmpdir = matches.get_one::&lt;String&gt;(OPT_TMPDIR).map(String::from);
+                    <span class="kw">let </span>tmpdir = <span class="kw">if </span>matches.contains_id(OPT_TMPDIR) {
+                        matches.get_one::&lt;String&gt;(OPT_TMPDIR).map(String::from)
+                    } <span class="kw">else if </span>matches.get_flag(OPT_T) {
+                        <span class="comment">// mktemp -t foo.xxx should export in TMPDIR
+                        </span><span class="prelude-val">Some</span>(env::temp_dir().display().to_string())
+                    } <span class="kw">else </span>{
+                        matches.get_one::&lt;String&gt;(OPT_TMPDIR).map(String::from)
+                    };
                     (tmpdir, template.to_string())
                 }
             }

@@ -564,6 +564,8 @@
 <a href="#564" id="564">564</a>
 <a href="#565" id="565">565</a>
 <a href="#566" id="566">566</a>
+<a href="#567" id="567">567</a>
+<a href="#568" id="568">568</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Alex Lyon &lt;arcterus@mail.com&gt;
@@ -573,8 +575,9 @@
 
 // spell-checker:ignore (path) eacces
 
-</span><span class="kw">use </span>clap::{crate_version, parser::ValueSource, Arg, ArgAction, Command};
+</span><span class="kw">use </span>clap::{builder::ValueParser, crate_version, parser::ValueSource, Arg, ArgAction, Command};
 <span class="kw">use </span>std::collections::VecDeque;
+<span class="kw">use </span>std::ffi::{OsStr, OsString};
 <span class="kw">use </span>std::fs::{<span class="self">self</span>, File, Metadata};
 <span class="kw">use </span>std::io::ErrorKind;
 <span class="kw">use </span>std::ops::BitOr;
@@ -625,9 +628,9 @@
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
     <span class="kw">let </span>matches = uu_app().after_help(AFTER_HELP).try_get_matches_from(args)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>files: Vec&lt;String&gt; = matches
-        .get_many::&lt;String&gt;(ARG_FILES)
-        .map(|v| v.map(ToString::to_string).collect())
+    <span class="kw">let </span>files: Vec&lt;<span class="kw-2">&amp;</span>OsStr&gt; = matches
+        .get_many::&lt;OsString&gt;(ARG_FILES)
+        .map(|v| v.map(OsString::as_os_str).collect())
         .unwrap_or_default();
 
     <span class="kw">let </span>force_flag = matches.get_flag(OPT_FORCE);
@@ -797,13 +800,14 @@
         .arg(
             Arg::new(ARG_FILES)
                 .action(ArgAction::Append)
+                .value_parser(ValueParser::os_string())
                 .num_args(<span class="number">1</span>..)
                 .value_hint(clap::ValueHint::AnyPath),
         )
 }
 
 <span class="comment">// TODO: implement one-file-system (this may get partially implemented in walkdir)
-</span><span class="kw">fn </span>remove(files: <span class="kw-2">&amp;</span>[String], options: <span class="kw-2">&amp;</span>Options) -&gt; bool {
+</span><span class="kw">fn </span>remove(files: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>OsStr], options: <span class="kw-2">&amp;</span>Options) -&gt; bool {
     <span class="kw">let </span><span class="kw-2">mut </span>had_err = <span class="bool-val">false</span>;
 
     <span class="kw">for </span>filename <span class="kw">in </span>files {
