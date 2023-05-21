@@ -523,6 +523,46 @@
 <a href="#523" id="523">523</a>
 <a href="#524" id="524">524</a>
 <a href="#525" id="525">525</a>
+<a href="#526" id="526">526</a>
+<a href="#527" id="527">527</a>
+<a href="#528" id="528">528</a>
+<a href="#529" id="529">529</a>
+<a href="#530" id="530">530</a>
+<a href="#531" id="531">531</a>
+<a href="#532" id="532">532</a>
+<a href="#533" id="533">533</a>
+<a href="#534" id="534">534</a>
+<a href="#535" id="535">535</a>
+<a href="#536" id="536">536</a>
+<a href="#537" id="537">537</a>
+<a href="#538" id="538">538</a>
+<a href="#539" id="539">539</a>
+<a href="#540" id="540">540</a>
+<a href="#541" id="541">541</a>
+<a href="#542" id="542">542</a>
+<a href="#543" id="543">543</a>
+<a href="#544" id="544">544</a>
+<a href="#545" id="545">545</a>
+<a href="#546" id="546">546</a>
+<a href="#547" id="547">547</a>
+<a href="#548" id="548">548</a>
+<a href="#549" id="549">549</a>
+<a href="#550" id="550">550</a>
+<a href="#551" id="551">551</a>
+<a href="#552" id="552">552</a>
+<a href="#553" id="553">553</a>
+<a href="#554" id="554">554</a>
+<a href="#555" id="555">555</a>
+<a href="#556" id="556">556</a>
+<a href="#557" id="557">557</a>
+<a href="#558" id="558">558</a>
+<a href="#559" id="559">559</a>
+<a href="#560" id="560">560</a>
+<a href="#561" id="561">561</a>
+<a href="#562" id="562">562</a>
+<a href="#563" id="563">563</a>
+<a href="#564" id="564">564</a>
+<a href="#565" id="565">565</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Martin Kysel &lt;code@martinkysel.com&gt;
@@ -539,13 +579,14 @@
     time::Duration,
 };
 
-<span class="kw">use </span>clap::{crate_version, Arg, ArgAction, Command};
+<span class="kw">use </span>clap::{crate_version, Arg, ArgAction, ArgMatches, Command};
 <span class="kw">use </span>crossterm::event::KeyEventKind;
 <span class="kw">use </span>crossterm::{
+    cursor::MoveTo,
     event::{<span class="self">self</span>, Event, KeyCode, KeyEvent, KeyModifiers},
     execute, queue,
     style::Attribute,
-    terminal,
+    terminal::{<span class="self">self</span>, Clear, ClearType},
 };
 
 <span class="kw">use </span>is_terminal::IsTerminal;
@@ -576,12 +617,34 @@
 
 <span class="kw">const </span>MULTI_FILE_TOP_PROMPT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;::::::::::::::\n{}\n::::::::::::::\n&quot;</span>;
 
+<span class="kw">struct </span>Options {
+    silent: bool,
+    clean_print: bool,
+    print_over: bool,
+}
+
+<span class="kw">impl </span>Options {
+    <span class="kw">fn </span>from(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            silent: matches.get_flag(options::SILENT),
+            clean_print: matches.get_flag(options::CLEAN_PRINT),
+            print_over: matches.get_flag(options::PRINT_OVER),
+        }
+    }
+}
+
 <span class="attr">#[uucore::main]
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
-    <span class="kw">let </span>matches = uu_app().get_matches_from(args);
+    <span class="kw">let </span>args = args.collect_lossy();
+    <span class="kw">let </span>matches = <span class="kw">match </span>uu_app().try_get_matches_from(<span class="kw-2">&amp;</span>args) {
+        <span class="prelude-val">Ok</span>(m) =&gt; m,
+        <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(e.into()),
+    };
+
+    <span class="kw">let </span>options = Options::from(<span class="kw-2">&amp;</span>matches);
 
     <span class="kw">let </span><span class="kw-2">mut </span>buff = String::new();
-    <span class="kw">let </span>silent = matches.get_flag(options::SILENT);
+
     <span class="kw">if let </span><span class="prelude-val">Some</span>(files) = matches.get_many::&lt;String&gt;(options::FILES) {
         <span class="kw">let </span><span class="kw-2">mut </span>stdout = setup_term();
         <span class="kw">let </span>length = files.len();
@@ -608,14 +671,14 @@
             }
             <span class="kw">let </span><span class="kw-2">mut </span>reader = BufReader::new(File::open(file).unwrap());
             reader.read_to_string(<span class="kw-2">&amp;mut </span>buff).unwrap();
-            more(<span class="kw-2">&amp;</span>buff, <span class="kw-2">&amp;mut </span>stdout, next_file.copied(), silent)<span class="question-mark">?</span>;
+            more(<span class="kw-2">&amp;</span>buff, <span class="kw-2">&amp;mut </span>stdout, next_file.copied(), <span class="kw-2">&amp;</span>options)<span class="question-mark">?</span>;
             buff.clear();
         }
         reset_term(<span class="kw-2">&amp;mut </span>stdout);
     } <span class="kw">else if </span>!std::io::stdin().is_terminal() {
         stdin().read_to_string(<span class="kw-2">&amp;mut </span>buff).unwrap();
         <span class="kw">let </span><span class="kw-2">mut </span>stdout = setup_term();
-        more(<span class="kw-2">&amp;</span>buff, <span class="kw-2">&amp;mut </span>stdout, <span class="prelude-val">None</span>, silent)<span class="question-mark">?</span>;
+        more(<span class="kw-2">&amp;</span>buff, <span class="kw-2">&amp;mut </span>stdout, <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>options)<span class="question-mark">?</span>;
         reset_term(<span class="kw-2">&amp;mut </span>stdout);
     } <span class="kw">else </span>{
         <span class="kw">return </span><span class="prelude-val">Err</span>(UUsageError::new(<span class="number">1</span>, <span class="string">&quot;bad usage&quot;</span>));
@@ -630,10 +693,24 @@
         .version(<span class="macro">crate_version!</span>())
         .infer_long_args(<span class="bool-val">true</span>)
         .arg(
+            Arg::new(options::PRINT_OVER)
+                .short(<span class="string">&#39;c&#39;</span>)
+                .long(options::PRINT_OVER)
+                .help(<span class="string">&quot;Do not scroll, display text and clean line ends&quot;</span>)
+                .action(ArgAction::SetTrue),
+        )
+        .arg(
             Arg::new(options::SILENT)
                 .short(<span class="string">&#39;d&#39;</span>)
                 .long(options::SILENT)
                 .help(<span class="string">&quot;Display help instead of ringing bell&quot;</span>)
+                .action(ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new(options::CLEAN_PRINT)
+                .short(<span class="string">&#39;p&#39;</span>)
+                .long(options::CLEAN_PRINT)
+                .help(<span class="string">&quot;Do not scroll, clean screen and display text&quot;</span>)
                 .action(ArgAction::SetTrue),
         )
         <span class="comment">// The commented arguments below are unimplemented:
@@ -649,18 +726,6 @@
                 .short(&#39;l&#39;)
                 .long(options::NO_PAUSE)
                 .help(&quot;Suppress pause after form feed&quot;),
-        )
-        .arg(
-            Arg::new(options::PRINT_OVER)
-                .short(&#39;c&#39;)
-                .long(options::PRINT_OVER)
-                .help(&quot;Do not scroll, display text and clean line ends&quot;),
-        )
-        .arg(
-            Arg::new(options::CLEAN_PRINT)
-                .short(&#39;p&#39;)
-                .long(options::CLEAN_PRINT)
-                .help(&quot;Do not scroll, clean screen and display text&quot;),
         )
         .arg(
             Arg::new(options::SQUEEZE)
@@ -734,7 +799,7 @@
 </span><span class="kw">fn </span>reset_term(stdout: <span class="kw-2">&amp;mut </span>std::io::Stdout) {
     terminal::disable_raw_mode().unwrap();
     <span class="comment">// Clear the prompt
-    </span><span class="macro">queue!</span>(stdout, terminal::Clear(terminal::ClearType::CurrentLine)).unwrap();
+    </span><span class="macro">queue!</span>(stdout, terminal::Clear(ClearType::CurrentLine)).unwrap();
     <span class="comment">// Move cursor to the beginning without printing new line
     </span><span class="macro">print!</span>(<span class="string">&quot;\r&quot;</span>);
     stdout.flush().unwrap();
@@ -744,11 +809,16 @@
 #[inline(always)]
 </span><span class="kw">fn </span>reset_term(<span class="kw">_</span>: <span class="kw-2">&amp;mut </span>usize) {}
 
-<span class="kw">fn </span>more(buff: <span class="kw-2">&amp;</span>str, stdout: <span class="kw-2">&amp;mut </span>Stdout, next_file: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;, silent: bool) -&gt; UResult&lt;()&gt; {
+<span class="kw">fn </span>more(
+    buff: <span class="kw-2">&amp;</span>str,
+    stdout: <span class="kw-2">&amp;mut </span>Stdout,
+    next_file: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
+    options: <span class="kw-2">&amp;</span>Options,
+) -&gt; UResult&lt;()&gt; {
     <span class="kw">let </span>(cols, rows) = terminal::size().unwrap();
     <span class="kw">let </span>lines = break_buff(buff, usize::from(cols));
 
-    <span class="kw">let </span><span class="kw-2">mut </span>pager = Pager::new(rows, lines, next_file, silent);
+    <span class="kw">let </span><span class="kw-2">mut </span>pager = Pager::new(rows, lines, next_file, options);
     pager.draw(stdout, <span class="prelude-val">None</span>);
     <span class="kw">if </span>pager.should_close() {
         <span class="kw">return </span><span class="prelude-val">Ok</span>(());
@@ -838,6 +908,16 @@
                 <span class="kw">_ </span>=&gt; <span class="kw">continue</span>,
             }
 
+            <span class="kw">if </span>options.print_over {
+                <span class="macro">execute!</span>(
+                    std::io::stdout(),
+                    MoveTo(<span class="number">0</span>, <span class="number">0</span>),
+                    Clear(ClearType::FromCursorDown)
+                )
+                .unwrap();
+            } <span class="kw">else if </span>options.clean_print {
+                <span class="macro">execute!</span>(std::io::stdout(), Clear(ClearType::All), MoveTo(<span class="number">0</span>, <span class="number">0</span>)).unwrap();
+            }
             pager.draw(stdout, wrong_key);
         }
     }
@@ -855,7 +935,7 @@
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Pager&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">fn </span>new(rows: u16, lines: Vec&lt;String&gt;, next_file: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;, silent: bool) -&gt; <span class="self">Self </span>{
+    <span class="kw">fn </span>new(rows: u16, lines: Vec&lt;String&gt;, next_file: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;, options: <span class="kw-2">&amp;</span>Options) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>line_count = lines.len();
         <span class="self">Self </span>{
             upper_mark: <span class="number">0</span>,
@@ -863,7 +943,7 @@
             lines,
             next_file,
             line_count,
-            silent,
+            silent: options.silent,
         }
     }
 
