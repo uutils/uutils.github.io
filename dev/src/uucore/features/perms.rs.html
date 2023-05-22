@@ -529,6 +529,28 @@
 <a href="#529" id="529">529</a>
 <a href="#530" id="530">530</a>
 <a href="#531" id="531">531</a>
+<a href="#532" id="532">532</a>
+<a href="#533" id="533">533</a>
+<a href="#534" id="534">534</a>
+<a href="#535" id="535">535</a>
+<a href="#536" id="536">536</a>
+<a href="#537" id="537">537</a>
+<a href="#538" id="538">538</a>
+<a href="#539" id="539">539</a>
+<a href="#540" id="540">540</a>
+<a href="#541" id="541">541</a>
+<a href="#542" id="542">542</a>
+<a href="#543" id="543">543</a>
+<a href="#544" id="544">544</a>
+<a href="#545" id="545">545</a>
+<a href="#546" id="546">546</a>
+<a href="#547" id="547">547</a>
+<a href="#548" id="548">548</a>
+<a href="#549" id="549">549</a>
+<a href="#550" id="550">550</a>
+<a href="#551" id="551">551</a>
+<a href="#552" id="552">552</a>
+<a href="#553" id="553">553</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // For the full copyright and license information, please view the LICENSE
@@ -713,7 +735,8 @@
 <span class="kw">pub struct </span>ChownExecutor {
     <span class="kw">pub </span>dest_uid: <span class="prelude-ty">Option</span>&lt;u32&gt;,
     <span class="kw">pub </span>dest_gid: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-    <span class="kw">pub </span>traverse_symlinks: TraverseSymlinks,
+    <span class="kw">pub </span>raw_owner: String, <span class="comment">// The owner of the file as input by the user in the command line.
+    </span><span class="kw">pub </span>traverse_symlinks: TraverseSymlinks,
     <span class="kw">pub </span>verbosity: Verbosity,
     <span class="kw">pub </span>filter: IfFrom,
     <span class="kw">pub </span>files: Vec&lt;String&gt;,
@@ -739,7 +762,16 @@
         <span class="kw">let </span>path = root.as_ref();
         <span class="kw">let </span>meta = <span class="kw">match </span><span class="self">self</span>.obtain_meta(path, <span class="self">self</span>.dereference) {
             <span class="prelude-val">Some</span>(m) =&gt; m,
-            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="number">1</span>,
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">if </span><span class="self">self</span>.verbosity.level == VerbosityLevel::Verbose {
+                    <span class="macro">println!</span>(
+                        <span class="string">&quot;failed to change ownership of {} to {}&quot;</span>,
+                        path.quote(),
+                        <span class="self">self</span>.raw_owner
+                    );
+                }
+                <span class="kw">return </span><span class="number">1</span>;
+            }
         };
 
         <span class="comment">// Prohibit only if:
@@ -945,7 +977,13 @@
     <span class="kw">pub const </span>ARG_FILES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;FILE&quot;</span>;
 }
 
-<span class="kw">type </span>GidUidFilterParser = <span class="kw">fn</span>(<span class="kw-2">&amp;</span>ArgMatches) -&gt; UResult&lt;(<span class="prelude-ty">Option</span>&lt;u32&gt;, <span class="prelude-ty">Option</span>&lt;u32&gt;, IfFrom)&gt;;
+<span class="kw">pub struct </span>GidUidOwnerFilter {
+    <span class="kw">pub </span>dest_gid: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    <span class="kw">pub </span>dest_uid: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    <span class="kw">pub </span>raw_owner: String,
+    <span class="kw">pub </span>filter: IfFrom,
+}
+<span class="kw">type </span>GidUidFilterOwnerParser = <span class="kw">fn</span>(<span class="kw-2">&amp;</span>ArgMatches) -&gt; UResult&lt;GidUidOwnerFilter&gt;;
 
 <span class="doccomment">/// Base implementation for `chgrp` and `chown`.
 ///
@@ -959,7 +997,7 @@
     <span class="kw-2">mut </span>command: Command,
     args: <span class="kw">impl </span><span class="kw">crate</span>::Args,
     add_arg_if_not_reference: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
-    parse_gid_uid_and_filter: GidUidFilterParser,
+    parse_gid_uid_and_filter: GidUidFilterOwnerParser,
     groups_only: bool,
 ) -&gt; UResult&lt;()&gt; {
     <span class="kw">let </span>args: Vec&lt;<span class="kw">_</span>&gt; = args.collect();
@@ -1042,12 +1080,18 @@
     } <span class="kw">else </span>{
         VerbosityLevel::Normal
     };
-    <span class="kw">let </span>(dest_gid, dest_uid, filter) = parse_gid_uid_and_filter(<span class="kw-2">&amp;</span>matches)<span class="question-mark">?</span>;
+    <span class="kw">let </span>GidUidOwnerFilter {
+        dest_gid,
+        dest_uid,
+        raw_owner,
+        filter,
+    } = parse_gid_uid_and_filter(<span class="kw-2">&amp;</span>matches)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>executor = ChownExecutor {
         traverse_symlinks,
         dest_gid,
         dest_uid,
+        raw_owner,
         verbosity: Verbosity {
             groups_only,
             level: verbosity_level,

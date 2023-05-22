@@ -286,6 +286,23 @@
 <a href="#286" id="286">286</a>
 <a href="#287" id="287">287</a>
 <a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;
@@ -297,7 +314,7 @@
 
 </span><span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">pub use </span>uucore::entries::{<span class="self">self</span>, Group, Locate, Passwd};
-<span class="kw">use </span>uucore::perms::{chown_base, options, IfFrom};
+<span class="kw">use </span>uucore::perms::{chown_base, options, GidUidOwnerFilter, IfFrom};
 <span class="kw">use </span>uucore::{format_usage, help_about, help_usage};
 
 <span class="kw">use </span>uucore::error::{FromIo, UResult, USimpleError};
@@ -311,7 +328,7 @@
 
 <span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;chown.md&quot;</span>);
 
-<span class="kw">fn </span>parse_gid_uid_and_filter(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; UResult&lt;(<span class="prelude-ty">Option</span>&lt;u32&gt;, <span class="prelude-ty">Option</span>&lt;u32&gt;, IfFrom)&gt; {
+<span class="kw">fn </span>parse_gid_uid_and_filter(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; UResult&lt;GidUidOwnerFilter&gt; {
     <span class="kw">let </span>filter = <span class="kw">if let </span><span class="prelude-val">Some</span>(spec) = matches.get_one::&lt;String&gt;(options::FROM) {
         <span class="kw">match </span>parse_spec(spec, <span class="string">&#39;:&#39;</span>)<span class="question-mark">? </span>{
             (<span class="prelude-val">Some</span>(uid), <span class="prelude-val">None</span>) =&gt; IfFrom::User(uid),
@@ -325,17 +342,34 @@
 
     <span class="kw">let </span>dest_uid: <span class="prelude-ty">Option</span>&lt;u32&gt;;
     <span class="kw">let </span>dest_gid: <span class="prelude-ty">Option</span>&lt;u32&gt;;
+    <span class="kw">let </span>raw_owner: String;
     <span class="kw">if let </span><span class="prelude-val">Some</span>(file) = matches.get_one::&lt;String&gt;(options::REFERENCE) {
         <span class="kw">let </span>meta = fs::metadata(file)
             .map_err_context(|| <span class="macro">format!</span>(<span class="string">&quot;failed to get attributes of {}&quot;</span>, file.quote()))<span class="question-mark">?</span>;
-        dest_gid = <span class="prelude-val">Some</span>(meta.gid());
-        dest_uid = <span class="prelude-val">Some</span>(meta.uid());
+        <span class="kw">let </span>gid = meta.gid();
+        <span class="kw">let </span>uid = meta.uid();
+        dest_gid = <span class="prelude-val">Some</span>(gid);
+        dest_uid = <span class="prelude-val">Some</span>(uid);
+        raw_owner = <span class="macro">format!</span>(
+            <span class="string">&quot;{}:{}&quot;</span>,
+            entries::uid2usr(uid).unwrap_or_else(|<span class="kw">_</span>| uid.to_string()),
+            entries::gid2grp(gid).unwrap_or_else(|<span class="kw">_</span>| gid.to_string())
+        );
     } <span class="kw">else </span>{
-        <span class="kw">let </span>(u, g) = parse_spec(matches.get_one::&lt;String&gt;(options::ARG_OWNER).unwrap(), <span class="string">&#39;:&#39;</span>)<span class="question-mark">?</span>;
+        raw_owner = matches
+            .get_one::&lt;String&gt;(options::ARG_OWNER)
+            .unwrap()
+            .into();
+        <span class="kw">let </span>(u, g) = parse_spec(<span class="kw-2">&amp;</span>raw_owner, <span class="string">&#39;:&#39;</span>)<span class="question-mark">?</span>;
         dest_uid = u;
         dest_gid = g;
     }
-    <span class="prelude-val">Ok</span>((dest_gid, dest_uid, filter))
+    <span class="prelude-val">Ok</span>(GidUidOwnerFilter {
+        dest_gid,
+        dest_uid,
+        raw_owner,
+        filter,
+    })
 }
 
 <span class="attr">#[uucore::main]
