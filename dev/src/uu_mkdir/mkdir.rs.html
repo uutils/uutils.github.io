@@ -213,6 +213,14 @@
 <a href="#213" id="213">213</a>
 <a href="#214" id="214">214</a>
 <a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Nicholas Juszczak &lt;juszczakn@gmail.com&gt;
@@ -235,7 +243,7 @@
 <span class="kw">use </span>uucore::{display::Quotable, fs::dir_strip_dot_for_creation};
 <span class="kw">use </span>uucore::{format_usage, help_about, help_section, help_usage, show, show_if_err};
 
-<span class="kw">static </span>DEFAULT_PERM: u32 = <span class="number">0o755</span>;
+<span class="kw">static </span>DEFAULT_PERM: u32 = <span class="number">0o777</span>;
 
 <span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;mkdir.md&quot;</span>);
 <span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;mkdir.md&quot;</span>);
@@ -256,7 +264,7 @@
 <span class="attr">#[cfg(not(windows))]
 </span><span class="kw">fn </span>get_mode(matches: <span class="kw-2">&amp;</span>ArgMatches, mode_had_minus_prefix: bool) -&gt; <span class="prelude-ty">Result</span>&lt;u32, String&gt; {
     <span class="kw">let </span>digits: <span class="kw-2">&amp;</span>[char] = <span class="kw-2">&amp;</span>[<span class="string">&#39;0&#39;</span>, <span class="string">&#39;1&#39;</span>, <span class="string">&#39;2&#39;</span>, <span class="string">&#39;3&#39;</span>, <span class="string">&#39;4&#39;</span>, <span class="string">&#39;5&#39;</span>, <span class="string">&#39;6&#39;</span>, <span class="string">&#39;7&#39;</span>, <span class="string">&#39;8&#39;</span>, <span class="string">&#39;9&#39;</span>];
-    <span class="comment">// Translate a ~str in octal form to u16, default to 755
+    <span class="comment">// Translate a ~str in octal form to u16, default to 777
     // Not tested on Windows
     </span><span class="kw">let </span><span class="kw-2">mut </span>new_mode = DEFAULT_PERM;
     <span class="kw">match </span>matches.get_one::&lt;String&gt;(options::MODE) {
@@ -373,7 +381,7 @@
 }
 
 <span class="kw">fn </span>mkdir(path: <span class="kw-2">&amp;</span>Path, recursive: bool, mode: u32, verbose: bool) -&gt; UResult&lt;()&gt; {
-    create_dir(path, recursive, verbose)<span class="question-mark">?</span>;
+    create_dir(path, recursive, verbose, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
     chmod(path, mode)
 }
 
@@ -394,7 +402,9 @@
     </span><span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">fn </span>create_dir(path: <span class="kw-2">&amp;</span>Path, recursive: bool, verbose: bool) -&gt; UResult&lt;()&gt; {
+<span class="comment">// `is_parent` argument is not used on windows
+</span><span class="attr">#[allow(unused_variables)]
+</span><span class="kw">fn </span>create_dir(path: <span class="kw-2">&amp;</span>Path, recursive: bool, verbose: bool, is_parent: bool) -&gt; UResult&lt;()&gt; {
     <span class="kw">if </span>path.exists() &amp;&amp; !recursive {
         <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
             <span class="number">1</span>,
@@ -407,7 +417,7 @@
 
     <span class="kw">if </span>recursive {
         <span class="kw">match </span>path.parent() {
-            <span class="prelude-val">Some</span>(p) =&gt; create_dir(p, recursive, verbose)<span class="question-mark">?</span>,
+            <span class="prelude-val">Some</span>(p) =&gt; create_dir(p, recursive, verbose, <span class="bool-val">true</span>)<span class="question-mark">?</span>,
             <span class="prelude-val">None </span>=&gt; {
                 USimpleError::new(<span class="number">1</span>, <span class="string">&quot;failed to create whole tree&quot;</span>);
             }
@@ -421,6 +431,12 @@
                     uucore::util_name(),
                     path.quote()
                 );
+            }
+            <span class="attr">#[cfg(not(windows))]
+            </span><span class="kw">if </span>is_parent {
+                <span class="comment">// directories created by -p have permission bits set to &#39;=rwx,u+wx&#39;,
+                // which is umask modified by &#39;u+wx&#39;
+                </span>chmod(path, (!mode::get_umask() &amp; <span class="number">0o0777</span>) | <span class="number">0o0300</span>)<span class="question-mark">?</span>;
             }
             <span class="prelude-val">Ok</span>(())
         }

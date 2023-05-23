@@ -589,6 +589,13 @@
 <a href="#589" id="589">589</a>
 <a href="#590" id="590">590</a>
 <a href="#591" id="591">591</a>
+<a href="#592" id="592">592</a>
+<a href="#593" id="593">593</a>
+<a href="#594" id="594">594</a>
+<a href="#595" id="595">595</a>
+<a href="#596" id="596">596</a>
+<a href="#597" id="597">597</a>
+<a href="#598" id="598">598</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Sunrin SHIMURA
@@ -632,6 +639,11 @@
 <span class="kw">static </span>OPT_T: <span class="kw-2">&amp;</span>str = <span class="string">&quot;t&quot;</span>;
 
 <span class="kw">static </span>ARG_TEMPLATE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;template&quot;</span>;
+
+<span class="attr">#[cfg(not(windows))]
+</span><span class="kw">const </span>TMPDIR_ENV_VAR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;TMPDIR&quot;</span>;
+<span class="attr">#[cfg(windows)]
+</span><span class="kw">const </span>TMPDIR_ENV_VAR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;TMP&quot;</span>;
 
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">enum </span>MkTempError {
@@ -782,7 +794,9 @@
                     (tmpdir, template.to_string())
                 }
                 <span class="prelude-val">Some</span>(template) =&gt; {
-                    <span class="kw">let </span>tmpdir = <span class="kw">if </span>matches.contains_id(OPT_TMPDIR) {
+                    <span class="kw">let </span>tmpdir = <span class="kw">if </span>env::var(TMPDIR_ENV_VAR).is_ok() &amp;&amp; matches.get_flag(OPT_T) {
+                        env::var(TMPDIR_ENV_VAR).ok()
+                    } <span class="kw">else if </span>matches.contains_id(OPT_TMPDIR) {
                         matches.get_one::&lt;String&gt;(OPT_TMPDIR).map(String::from)
                     } <span class="kw">else if </span>matches.get_flag(OPT_T) {
                         <span class="comment">// mktemp -t foo.xxx should export in TMPDIR
