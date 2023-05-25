@@ -563,6 +563,16 @@
 <a href="#563" id="563">563</a>
 <a href="#564" id="564">564</a>
 <a href="#565" id="565">565</a>
+<a href="#566" id="566">566</a>
+<a href="#567" id="567">567</a>
+<a href="#568" id="568">568</a>
+<a href="#569" id="569">569</a>
+<a href="#570" id="570">570</a>
+<a href="#571" id="571">571</a>
+<a href="#572" id="572">572</a>
+<a href="#573" id="573">573</a>
+<a href="#574" id="574">574</a>
+<a href="#575" id="575">575</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Martin Kysel &lt;code@martinkysel.com&gt;
@@ -669,7 +679,17 @@
             <span class="kw">if </span>length &gt; <span class="number">1 </span>{
                 buff.push_str(<span class="kw-2">&amp;</span>MULTI_FILE_TOP_PROMPT.replace(<span class="string">&quot;{}&quot;</span>, file.to_str().unwrap()));
             }
-            <span class="kw">let </span><span class="kw-2">mut </span>reader = BufReader::new(File::open(file).unwrap());
+            <span class="kw">let </span>opened_file = <span class="kw">match </span>File::open(file) {
+                <span class="prelude-val">Err</span>(why) =&gt; {
+                    terminal::disable_raw_mode().unwrap();
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
+                        <span class="number">1</span>,
+                        <span class="macro">format!</span>(<span class="string">&quot;cannot open {}: {}&quot;</span>, file.quote(), why.kind()),
+                    ));
+                }
+                <span class="prelude-val">Ok</span>(opened_file) =&gt; opened_file,
+            };
+            <span class="kw">let </span><span class="kw-2">mut </span>reader = BufReader::new(opened_file);
             reader.read_to_string(<span class="kw-2">&amp;mut </span>buff).unwrap();
             more(<span class="kw-2">&amp;</span>buff, <span class="kw-2">&amp;mut </span>stdout, next_file.copied(), <span class="kw-2">&amp;</span>options)<span class="question-mark">?</span>;
             buff.clear();
