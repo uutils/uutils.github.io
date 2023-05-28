@@ -573,6 +573,58 @@
 <a href="#573" id="573">573</a>
 <a href="#574" id="574">574</a>
 <a href="#575" id="575">575</a>
+<a href="#576" id="576">576</a>
+<a href="#577" id="577">577</a>
+<a href="#578" id="578">578</a>
+<a href="#579" id="579">579</a>
+<a href="#580" id="580">580</a>
+<a href="#581" id="581">581</a>
+<a href="#582" id="582">582</a>
+<a href="#583" id="583">583</a>
+<a href="#584" id="584">584</a>
+<a href="#585" id="585">585</a>
+<a href="#586" id="586">586</a>
+<a href="#587" id="587">587</a>
+<a href="#588" id="588">588</a>
+<a href="#589" id="589">589</a>
+<a href="#590" id="590">590</a>
+<a href="#591" id="591">591</a>
+<a href="#592" id="592">592</a>
+<a href="#593" id="593">593</a>
+<a href="#594" id="594">594</a>
+<a href="#595" id="595">595</a>
+<a href="#596" id="596">596</a>
+<a href="#597" id="597">597</a>
+<a href="#598" id="598">598</a>
+<a href="#599" id="599">599</a>
+<a href="#600" id="600">600</a>
+<a href="#601" id="601">601</a>
+<a href="#602" id="602">602</a>
+<a href="#603" id="603">603</a>
+<a href="#604" id="604">604</a>
+<a href="#605" id="605">605</a>
+<a href="#606" id="606">606</a>
+<a href="#607" id="607">607</a>
+<a href="#608" id="608">608</a>
+<a href="#609" id="609">609</a>
+<a href="#610" id="610">610</a>
+<a href="#611" id="611">611</a>
+<a href="#612" id="612">612</a>
+<a href="#613" id="613">613</a>
+<a href="#614" id="614">614</a>
+<a href="#615" id="615">615</a>
+<a href="#616" id="616">616</a>
+<a href="#617" id="617">617</a>
+<a href="#618" id="618">618</a>
+<a href="#619" id="619">619</a>
+<a href="#620" id="620">620</a>
+<a href="#621" id="621">621</a>
+<a href="#622" id="622">622</a>
+<a href="#623" id="623">623</a>
+<a href="#624" id="624">624</a>
+<a href="#625" id="625">625</a>
+<a href="#626" id="626">626</a>
+<a href="#627" id="627">627</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Martin Kysel &lt;code@martinkysel.com&gt;
@@ -631,14 +683,16 @@
     silent: bool,
     clean_print: bool,
     print_over: bool,
+    squeeze: bool,
 }
 
 <span class="kw">impl </span>Options {
     <span class="kw">fn </span>from(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            silent: matches.get_flag(options::SILENT),
             clean_print: matches.get_flag(options::CLEAN_PRINT),
             print_over: matches.get_flag(options::PRINT_OVER),
+            silent: matches.get_flag(options::SILENT),
+            squeeze: matches.get_flag(options::SQUEEZE),
         }
     }
 }
@@ -733,6 +787,13 @@
                 .help(<span class="string">&quot;Do not scroll, clean screen and display text&quot;</span>)
                 .action(ArgAction::SetTrue),
         )
+        .arg(
+            Arg::new(options::SQUEEZE)
+                .short(<span class="string">&#39;s&#39;</span>)
+                .long(options::SQUEEZE)
+                .help(<span class="string">&quot;Squeeze multiple blank lines into one&quot;</span>)
+                .action(ArgAction::SetTrue),
+        )
         <span class="comment">// The commented arguments below are unimplemented:
         /*
         .arg(
@@ -746,12 +807,6 @@
                 .short(&#39;l&#39;)
                 .long(options::NO_PAUSE)
                 .help(&quot;Suppress pause after form feed&quot;),
-        )
-        .arg(
-            Arg::new(options::SQUEEZE)
-                .short(&#39;s&#39;)
-                .long(options::SQUEEZE)
-                .help(&quot;Squeeze multiple blank lines into one&quot;),
         )
         .arg(
             Arg::new(options::PLAIN)
@@ -952,6 +1007,8 @@
     next_file: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;,
     line_count: usize,
     silent: bool,
+    squeeze: bool,
+    line_squeezed: usize,
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Pager&lt;<span class="lifetime">&#39;a</span>&gt; {
@@ -964,6 +1021,8 @@
             next_file,
             line_count,
             silent: options.silent,
+            squeeze: options.squeeze,
+            line_squeezed: <span class="number">0</span>,
         }
     }
 
@@ -989,7 +1048,21 @@
     }
 
     <span class="kw">fn </span>page_up(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-        <span class="self">self</span>.upper_mark = <span class="self">self</span>.upper_mark.saturating_sub(<span class="self">self</span>.content_rows.into());
+        <span class="kw">let </span>content_row_usize: usize = <span class="self">self</span>.content_rows.into();
+        <span class="self">self</span>.upper_mark = <span class="self">self
+            </span>.upper_mark
+            .saturating_sub(content_row_usize.saturating_add(<span class="self">self</span>.line_squeezed));
+
+        <span class="kw">if </span><span class="self">self</span>.squeeze {
+            <span class="kw">let </span>iter = <span class="self">self</span>.lines.iter().take(<span class="self">self</span>.upper_mark).rev();
+            <span class="kw">for </span>line <span class="kw">in </span>iter {
+                <span class="kw">if </span>line.is_empty() {
+                    <span class="self">self</span>.upper_mark = <span class="self">self</span>.upper_mark.saturating_sub(<span class="number">1</span>);
+                } <span class="kw">else </span>{
+                    <span class="kw">break</span>;
+                }
+            }
+        }
     }
 
     <span class="kw">fn </span>next_line(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
@@ -1005,7 +1078,7 @@
         <span class="self">self</span>.content_rows = row.saturating_sub(<span class="number">1</span>);
     }
 
-    <span class="kw">fn </span>draw(<span class="kw-2">&amp;</span><span class="self">self</span>, stdout: <span class="kw-2">&amp;mut </span>std::io::Stdout, wrong_key: <span class="prelude-ty">Option</span>&lt;char&gt;) {
+    <span class="kw">fn </span>draw(<span class="kw-2">&amp;mut </span><span class="self">self</span>, stdout: <span class="kw-2">&amp;mut </span>std::io::Stdout, wrong_key: <span class="prelude-ty">Option</span>&lt;char&gt;) {
         <span class="kw">let </span>lower_mark = <span class="self">self
             </span>.line_count
             .min(<span class="self">self</span>.upper_mark.saturating_add(<span class="self">self</span>.content_rows.into()));
@@ -1014,13 +1087,44 @@
         stdout.flush().unwrap();
     }
 
-    <span class="kw">fn </span>draw_lines(<span class="kw-2">&amp;</span><span class="self">self</span>, stdout: <span class="kw-2">&amp;mut </span>std::io::Stdout) {
+    <span class="kw">fn </span>draw_lines(<span class="kw-2">&amp;mut </span><span class="self">self</span>, stdout: <span class="kw-2">&amp;mut </span>std::io::Stdout) {
         <span class="macro">execute!</span>(stdout, terminal::Clear(terminal::ClearType::CurrentLine)).unwrap();
-        <span class="kw">let </span>displayed_lines = <span class="self">self
-            </span>.lines
-            .iter()
-            .skip(<span class="self">self</span>.upper_mark)
-            .take(<span class="self">self</span>.content_rows.into());
+
+        <span class="self">self</span>.line_squeezed = <span class="number">0</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>previous_line_blank = <span class="bool-val">false</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>displayed_lines = Vec::new();
+        <span class="kw">let </span><span class="kw-2">mut </span>iter = <span class="self">self</span>.lines.iter().skip(<span class="self">self</span>.upper_mark);
+
+        <span class="kw">while </span>displayed_lines.len() &lt; <span class="self">self</span>.content_rows <span class="kw">as </span>usize {
+            <span class="kw">match </span>iter.next() {
+                <span class="prelude-val">Some</span>(line) =&gt; {
+                    <span class="kw">if </span><span class="self">self</span>.squeeze {
+                        <span class="kw">match </span>(line.is_empty(), previous_line_blank) {
+                            (<span class="bool-val">true</span>, <span class="bool-val">false</span>) =&gt; {
+                                previous_line_blank = <span class="bool-val">true</span>;
+                                displayed_lines.push(line);
+                            }
+                            (<span class="bool-val">false</span>, <span class="bool-val">true</span>) =&gt; {
+                                previous_line_blank = <span class="bool-val">false</span>;
+                                displayed_lines.push(line);
+                            }
+                            (<span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; displayed_lines.push(line),
+                            (<span class="bool-val">true</span>, <span class="bool-val">true</span>) =&gt; {
+                                <span class="self">self</span>.line_squeezed += <span class="number">1</span>;
+                                <span class="self">self</span>.upper_mark += <span class="number">1</span>;
+                            }
+                        }
+                    } <span class="kw">else </span>{
+                        displayed_lines.push(line);
+                    }
+                }
+                <span class="comment">// if none the end of the file is reached
+                </span><span class="prelude-val">None </span>=&gt; {
+                    <span class="self">self</span>.upper_mark = <span class="self">self</span>.line_count;
+                    <span class="kw">break</span>;
+                }
+            }
+        }
 
         <span class="kw">for </span>line <span class="kw">in </span>displayed_lines {
             stdout.write_all(<span class="macro">format!</span>(<span class="string">&quot;\r{line}\n&quot;</span>).as_bytes()).unwrap();
