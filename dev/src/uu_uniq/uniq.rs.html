@@ -426,15 +426,6 @@
 <a href="#426" id="426">426</a>
 <a href="#427" id="427">427</a>
 <a href="#428" id="428">428</a>
-<a href="#429" id="429">429</a>
-<a href="#430" id="430">430</a>
-<a href="#431" id="431">431</a>
-<a href="#432" id="432">432</a>
-<a href="#433" id="433">433</a>
-<a href="#434" id="434">434</a>
-<a href="#435" id="435">435</a>
-<a href="#436" id="436">436</a>
-<a href="#437" id="437">437</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Chirag B Jadwani &lt;chirag.jadwani@gmail.com&gt;
@@ -442,10 +433,10 @@
 //  * For the full copyright and license information, please view the LICENSE
 //  * file that was distributed with this source code.
 
-</span><span class="kw">use </span>clap::{crate_version, Arg, ArgAction, ArgMatches, Command};
+</span><span class="kw">use </span>clap::{builder::ValueParser, crate_version, Arg, ArgAction, ArgMatches, Command};
+<span class="kw">use </span>std::ffi::{OsStr, OsString};
 <span class="kw">use </span>std::fs::File;
-<span class="kw">use </span>std::io::{<span class="self">self</span>, stdin, stdout, BufRead, BufReader, BufWriter, Read, Write};
-<span class="kw">use </span>std::path::Path;
+<span class="kw">use </span>std::io::{<span class="self">self</span>, stdin, stdout, BufRead, BufReader, BufWriter, Write};
 <span class="kw">use </span>std::str::FromStr;
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{FromIo, UResult, USimpleError, UUsageError};
@@ -501,11 +492,7 @@
 }
 
 <span class="kw">impl </span>Uniq {
-    <span class="kw">pub fn </span>print_uniq&lt;R: Read, W: Write&gt;(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        reader: <span class="kw-2">&amp;mut </span>BufReader&lt;R&gt;,
-        writer: <span class="kw-2">&amp;mut </span>BufWriter&lt;W&gt;,
-    ) -&gt; UResult&lt;()&gt; {
+    <span class="kw">pub fn </span>print_uniq(<span class="kw-2">&amp;</span><span class="self">self</span>, reader: <span class="kw">impl </span>BufRead, <span class="kw-2">mut </span>writer: <span class="kw">impl </span>Write) -&gt; UResult&lt;()&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>first_line_printed = <span class="bool-val">false</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>group_count = <span class="number">1</span>;
         <span class="kw">let </span>line_terminator = <span class="self">self</span>.get_line_terminator();
@@ -514,6 +501,8 @@
             <span class="prelude-val">Some</span>(l) =&gt; l<span class="question-mark">?</span>,
             <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
         };
+
+        <span class="kw">let </span>writer = <span class="kw-2">&amp;mut </span>writer;
 
         <span class="comment">// compare current `line` with consecutive lines (`next_line`) of the input
         // and if needed, print `line` based on the command line options provided
@@ -559,7 +548,6 @@
                 }
                 <span class="kw">match </span>char_indices.find(|(<span class="kw">_</span>, c)| c.is_whitespace()) {
                     <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="string">&quot;&quot;</span>,
-
                     <span class="prelude-val">Some</span>((next_field_i, <span class="kw">_</span>)) =&gt; i = next_field_i,
                 }
             }
@@ -632,9 +620,9 @@
                 </span>|| <span class="self">self</span>.delimiters == Delimiters::Both)
     }
 
-    <span class="kw">fn </span>print_line&lt;W: Write&gt;(
+    <span class="kw">fn </span>print_line(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        writer: <span class="kw-2">&amp;mut </span>BufWriter&lt;W&gt;,
+        writer: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>Write,
         line: <span class="kw-2">&amp;</span>str,
         count: usize,
         first_line_printed: bool,
@@ -646,7 +634,7 @@
         }
 
         <span class="kw">if </span><span class="self">self</span>.show_counts {
-            writer.write_all(<span class="macro">format!</span>(<span class="string">&quot;{count:7} {line}&quot;</span>).as_bytes())
+            <span class="macro">write!</span>(writer, <span class="string">&quot;{count:7} {line}&quot;</span>)
         } <span class="kw">else </span>{
             writer.write_all(line.as_bytes())
         }
@@ -682,19 +670,12 @@
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
     <span class="kw">let </span>matches = uu_app().after_help(AFTER_HELP).try_get_matches_from(args)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>files: Vec&lt;String&gt; = matches
-        .get_many::&lt;String&gt;(ARG_FILES)
-        .map(|v| v.map(ToString::to_string).collect())
-        .unwrap_or_default();
+    <span class="kw">let </span>files = matches.get_many::&lt;OsString&gt;(ARG_FILES);
 
-    <span class="kw">let </span>(in_file_name, out_file_name) = <span class="kw">match </span>files.len() {
-        <span class="number">0 </span>=&gt; (<span class="string">&quot;-&quot;</span>.to_owned(), <span class="string">&quot;-&quot;</span>.to_owned()),
-        <span class="number">1 </span>=&gt; (files[<span class="number">0</span>].clone(), <span class="string">&quot;-&quot;</span>.to_owned()),
-        <span class="number">2 </span>=&gt; (files[<span class="number">0</span>].clone(), files[<span class="number">1</span>].clone()),
-        <span class="kw">_ </span>=&gt; {
-            <span class="macro">unreachable!</span>() <span class="comment">// Cannot happen as clap will fail earlier
-        </span>}
-    };
+    <span class="kw">let </span>(in_file_name, out_file_name) = files
+        .map(|fi| fi.map(AsRef::as_ref))
+        .map(|<span class="kw-2">mut </span>fi| (fi.next(), fi.next()))
+        .unwrap_or_default();
 
     <span class="kw">let </span>uniq = Uniq {
         repeats_only: matches.get_flag(options::REPEATED)
@@ -719,8 +700,8 @@
     }
 
     uniq.print_uniq(
-        <span class="kw-2">&amp;mut </span>open_input_file(<span class="kw-2">&amp;</span>in_file_name)<span class="question-mark">?</span>,
-        <span class="kw-2">&amp;mut </span>open_output_file(<span class="kw-2">&amp;</span>out_file_name)<span class="question-mark">?</span>,
+        open_input_file(in_file_name)<span class="question-mark">?</span>,
+        open_output_file(out_file_name)<span class="question-mark">?</span>,
     )
 }
 
@@ -824,6 +805,7 @@
         .arg(
             Arg::new(ARG_FILES)
                 .action(ArgAction::Append)
+                .value_parser(ValueParser::os_string())
                 .num_args(<span class="number">0</span>..=<span class="number">2</span>)
                 .value_hint(clap::ValueHint::FilePath),
         )
@@ -849,28 +831,28 @@
     }
 }
 
-<span class="kw">fn </span>open_input_file(in_file_name: <span class="kw-2">&amp;</span>str) -&gt; UResult&lt;BufReader&lt;Box&lt;<span class="kw">dyn </span>Read + <span class="lifetime">&#39;static</span>&gt;&gt;&gt; {
-    <span class="kw">let </span>in_file = <span class="kw">if </span>in_file_name == <span class="string">&quot;-&quot; </span>{
-        Box::new(stdin()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Read&gt;
-    } <span class="kw">else </span>{
-        <span class="kw">let </span>path = Path::new(in_file_name);
-        <span class="kw">let </span>in_file = File::open(path)
-            .map_err_context(|| <span class="macro">format!</span>(<span class="string">&quot;Could not open {}&quot;</span>, in_file_name.maybe_quote()))<span class="question-mark">?</span>;
-        Box::new(in_file) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Read&gt;
-    };
-    <span class="prelude-val">Ok</span>(BufReader::new(in_file))
+<span class="comment">// None or &quot;-&quot; means stdin.
+</span><span class="kw">fn </span>open_input_file(in_file_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>OsStr&gt;) -&gt; UResult&lt;Box&lt;<span class="kw">dyn </span>BufRead&gt;&gt; {
+    <span class="prelude-val">Ok</span>(<span class="kw">match </span>in_file_name {
+        <span class="prelude-val">Some</span>(path) <span class="kw">if </span>path != <span class="string">&quot;-&quot; </span>=&gt; {
+            <span class="kw">let </span>in_file = File::open(path)
+                .map_err_context(|| <span class="macro">format!</span>(<span class="string">&quot;Could not open {}&quot;</span>, path.maybe_quote()))<span class="question-mark">?</span>;
+            Box::new(BufReader::new(in_file))
+        }
+        <span class="kw">_ </span>=&gt; Box::new(stdin().lock()),
+    })
 }
 
-<span class="kw">fn </span>open_output_file(out_file_name: <span class="kw-2">&amp;</span>str) -&gt; UResult&lt;BufWriter&lt;Box&lt;<span class="kw">dyn </span>Write + <span class="lifetime">&#39;static</span>&gt;&gt;&gt; {
-    <span class="kw">let </span>out_file = <span class="kw">if </span>out_file_name == <span class="string">&quot;-&quot; </span>{
-        Box::new(stdout()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Write&gt;
-    } <span class="kw">else </span>{
-        <span class="kw">let </span>path = Path::new(out_file_name);
-        <span class="kw">let </span>out_file = File::create(path)
-            .map_err_context(|| <span class="macro">format!</span>(<span class="string">&quot;Could not create {}&quot;</span>, out_file_name.maybe_quote()))<span class="question-mark">?</span>;
-        Box::new(out_file) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Write&gt;
-    };
-    <span class="prelude-val">Ok</span>(BufWriter::new(out_file))
+<span class="comment">// None or &quot;-&quot; means stdout.
+</span><span class="kw">fn </span>open_output_file(out_file_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>OsStr&gt;) -&gt; UResult&lt;Box&lt;<span class="kw">dyn </span>Write&gt;&gt; {
+    <span class="prelude-val">Ok</span>(<span class="kw">match </span>out_file_name {
+        <span class="prelude-val">Some</span>(path) <span class="kw">if </span>path != <span class="string">&quot;-&quot; </span>=&gt; {
+            <span class="kw">let </span>out_file = File::create(path)
+                .map_err_context(|| <span class="macro">format!</span>(<span class="string">&quot;Could not open {}&quot;</span>, path.maybe_quote()))<span class="question-mark">?</span>;
+            Box::new(BufWriter::new(out_file))
+        }
+        <span class="kw">_ </span>=&gt; Box::new(stdout().lock()),
+    })
 }
 </code></pre></div>
 </section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uu_uniq" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0 (84c898d65 2023-04-16)" data-search-js="search-8a59a8356673ec1f.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
