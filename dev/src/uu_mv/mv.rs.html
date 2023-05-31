@@ -611,6 +611,12 @@
 <a href="#611" id="611">611</a>
 <a href="#612" id="612">612</a>
 <a href="#613" id="613">613</a>
+<a href="#614" id="614">614</a>
+<a href="#615" id="615">615</a>
+<a href="#616" id="616">616</a>
+<a href="#617" id="617">617</a>
+<a href="#618" id="618">618</a>
+<a href="#619" id="619">619</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Orvar Segerström &lt;orvarsegerstrom@gmail.com&gt;
@@ -1053,13 +1059,19 @@
 
         <span class="kw">match </span>b.overwrite {
             OverwriteMode::NoClobber =&gt; {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(io::Error::new(
-                    io::ErrorKind::Other,
-                    <span class="macro">format!</span>(<span class="string">&quot;not replacing {}&quot;</span>, to.quote()),
-                ));
+                <span class="kw">let </span>err_msg = <span class="kw">if </span>b.verbose {
+                    <span class="macro">println!</span>(<span class="string">&quot;skipped {}&quot;</span>, to.quote());
+                    String::new()
+                } <span class="kw">else </span>{
+                    <span class="macro">format!</span>(<span class="string">&quot;not replacing {}&quot;</span>, to.quote())
+                };
+                <span class="kw">return </span><span class="prelude-val">Err</span>(io::Error::new(io::ErrorKind::Other, err_msg));
             }
             OverwriteMode::Interactive =&gt; {
                 <span class="kw">if </span>!<span class="macro">prompt_yes!</span>(<span class="string">&quot;overwrite {}?&quot;</span>, to.quote()) {
+                    <span class="kw">if </span>b.verbose {
+                        <span class="macro">println!</span>(<span class="string">&quot;skipped {}&quot;</span>, to.quote());
+                    }
                     <span class="kw">return </span><span class="prelude-val">Err</span>(io::Error::new(io::ErrorKind::Other, <span class="string">&quot;&quot;</span>));
                 }
             }
