@@ -186,7 +186,6 @@
 <a href="#186" id="186">186</a>
 <a href="#187" id="187">187</a>
 <a href="#188" id="188">188</a>
-<a href="#189" id="189">189</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Joao Oliveira &lt;joaoxsouls@gmail.com&gt;
@@ -202,7 +201,7 @@
 </span><span class="kw">use </span>clap::{crate_version, Arg, ArgAction, Command};
 <span class="kw">use </span>platform_info::<span class="kw-2">*</span>;
 <span class="kw">use </span>uucore::{
-    error::{FromIo, UResult},
+    error::{UResult, USimpleError},
     format_usage, help_about, help_usage,
 };
 
@@ -225,8 +224,8 @@
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
     <span class="kw">let </span>matches = uu_app().try_get_matches_from(args)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>uname =
-        PlatformInfo::new().map_err_context(|| <span class="string">&quot;failed to create PlatformInfo&quot;</span>.to_string())<span class="question-mark">?</span>;
+    <span class="kw">let </span>uname = PlatformInfo::new().map_err(|_e| USimpleError::new(<span class="number">1</span>, <span class="string">&quot;cannot get system name&quot;</span>))<span class="question-mark">?</span>;
+
     <span class="kw">let </span><span class="kw-2">mut </span>output = String::new();
 
     <span class="kw">let </span>all = matches.get_flag(options::ALL);
@@ -250,33 +249,32 @@
         || hardware_platform);
 
     <span class="kw">if </span>kernel_name || all || none {
-        output.push_str(<span class="kw-2">&amp;</span>uname.sysname());
+        output.push_str(<span class="kw-2">&amp;</span>uname.sysname().to_string_lossy());
         output.push(<span class="string">&#39; &#39;</span>);
     }
 
     <span class="kw">if </span>nodename || all {
-        <span class="comment">// maint: [2023-01-14; rivy] remove `.trim_end_matches(&#39;\0&#39;)` when platform-info nodename-NUL bug is fixed (see GH:uutils/platform-info/issues/32)
-        </span>output.push_str(uname.nodename().trim_end_matches(<span class="string">&#39;\0&#39;</span>));
+        output.push_str(<span class="kw-2">&amp;</span>uname.nodename().to_string_lossy());
         output.push(<span class="string">&#39; &#39;</span>);
     }
 
     <span class="kw">if </span>kernel_release || all {
-        output.push_str(<span class="kw-2">&amp;</span>uname.release());
+        output.push_str(<span class="kw-2">&amp;</span>uname.release().to_string_lossy());
         output.push(<span class="string">&#39; &#39;</span>);
     }
 
     <span class="kw">if </span>kernel_version || all {
-        output.push_str(<span class="kw-2">&amp;</span>uname.version());
+        output.push_str(<span class="kw-2">&amp;</span>uname.version().to_string_lossy());
         output.push(<span class="string">&#39; &#39;</span>);
     }
 
     <span class="kw">if </span>machine || all {
-        output.push_str(<span class="kw-2">&amp;</span>uname.machine());
+        output.push_str(<span class="kw-2">&amp;</span>uname.machine().to_string_lossy());
         output.push(<span class="string">&#39; &#39;</span>);
     }
 
     <span class="kw">if </span>os || all {
-        output.push_str(<span class="kw-2">&amp;</span>uname.osname());
+        output.push_str(<span class="kw-2">&amp;</span>uname.osname().to_string_lossy());
         output.push(<span class="string">&#39; &#39;</span>);
     }
 

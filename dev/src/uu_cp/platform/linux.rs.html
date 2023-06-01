@@ -166,6 +166,33 @@
 <a href="#166" id="166">166</a>
 <a href="#167" id="167">167</a>
 <a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
 </pre><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
@@ -181,7 +208,7 @@
 
 <span class="kw">use </span>uucore::mode::get_umask;
 
-<span class="kw">use crate</span>::{CopyResult, ReflinkMode, SparseMode};
+<span class="kw">use crate</span>::{CopyDebug, CopyResult, OffloadReflinkDebug, ReflinkMode, SparseDebug, SparseMode};
 
 <span class="comment">// From /usr/include/linux/fs.h:
 // #define FICLONE		_IOW(0x94, 9, int)
@@ -313,26 +340,53 @@
     sparse_mode: SparseMode,
     context: <span class="kw-2">&amp;</span>str,
     source_is_fifo: bool,
-) -&gt; CopyResult&lt;()&gt; {
+) -&gt; CopyResult&lt;CopyDebug&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>copy_debug = CopyDebug {
+        offload: OffloadReflinkDebug::Unknown,
+        reflink: OffloadReflinkDebug::Unsupported,
+        sparse_detection: SparseDebug::No,
+    };
+
     <span class="kw">let </span>result = <span class="kw">match </span>(reflink_mode, sparse_mode) {
-        (ReflinkMode::Never, SparseMode::Always) =&gt; sparse_copy(source, dest),
-        (ReflinkMode::Never, <span class="kw">_</span>) =&gt; std::fs::copy(source, dest).map(|<span class="kw">_</span>| ()),
-        (ReflinkMode::Auto, SparseMode::Always) =&gt; sparse_copy(source, dest),
+        (ReflinkMode::Never, SparseMode::Always) =&gt; {
+            copy_debug.sparse_detection = SparseDebug::Zeros;
+            copy_debug.offload = OffloadReflinkDebug::Avoided;
+            copy_debug.reflink = OffloadReflinkDebug::No;
+            sparse_copy(source, dest)
+        }
+        (ReflinkMode::Never, <span class="kw">_</span>) =&gt; {
+            copy_debug.sparse_detection = SparseDebug::No;
+            copy_debug.reflink = OffloadReflinkDebug::No;
+            std::fs::copy(source, dest).map(|<span class="kw">_</span>| ())
+        }
+        (ReflinkMode::Auto, SparseMode::Always) =&gt; {
+            copy_debug.offload = OffloadReflinkDebug::Avoided;
+            copy_debug.sparse_detection = SparseDebug::Zeros;
+            copy_debug.reflink = OffloadReflinkDebug::Unsupported;
+            sparse_copy(source, dest)
+        }
 
         (ReflinkMode::Auto, <span class="kw">_</span>) =&gt; {
+            copy_debug.sparse_detection = SparseDebug::No;
+            copy_debug.reflink = OffloadReflinkDebug::Unsupported;
             <span class="kw">if </span>source_is_fifo {
                 copy_fifo_contents(source, dest).map(|<span class="kw">_</span>| ())
             } <span class="kw">else </span>{
                 clone(source, dest, CloneFallback::FSCopy)
             }
         }
-        (ReflinkMode::Always, SparseMode::Auto) =&gt; clone(source, dest, CloneFallback::Error),
+        (ReflinkMode::Always, SparseMode::Auto) =&gt; {
+            copy_debug.sparse_detection = SparseDebug::No;
+            copy_debug.reflink = OffloadReflinkDebug::Yes;
+
+            clone(source, dest, CloneFallback::Error)
+        }
         (ReflinkMode::Always, <span class="kw">_</span>) =&gt; {
             <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">&quot;`--reflink=always` can be used only with --sparse=auto&quot;</span>.into())
         }
     };
     result.context(context)<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(())
+    <span class="prelude-val">Ok</span>(copy_debug)
 }
 </code></pre></div>
 </section></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="uu_cp" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0 (84c898d65 2023-04-16)" data-search-js="search-8a59a8356673ec1f.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>

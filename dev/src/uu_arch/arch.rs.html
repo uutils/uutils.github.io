@@ -31,6 +31,7 @@
 <a href="#31" id="31">31</a>
 <a href="#32" id="32">32</a>
 <a href="#33" id="33">33</a>
+<a href="#34" id="34">34</a>
 </pre><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Smigle00 &lt;smigle00@gmail.com&gt;
@@ -42,7 +43,7 @@
 </span><span class="kw">use </span>platform_info::<span class="kw-2">*</span>;
 
 <span class="kw">use </span>clap::{crate_version, Command};
-<span class="kw">use </span>uucore::error::{FromIo, UResult};
+<span class="kw">use </span>uucore::error::{UResult, USimpleError};
 <span class="kw">use </span>uucore::{help_about, help_section};
 
 <span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;arch.md&quot;</span>);
@@ -52,8 +53,9 @@
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
     uu_app().try_get_matches_from(args)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>uts = PlatformInfo::new().map_err_context(|| <span class="string">&quot;cannot get system name&quot;</span>.to_string())<span class="question-mark">?</span>;
-    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, uts.machine().trim());
+    <span class="kw">let </span>uts = PlatformInfo::new().map_err(|_e| USimpleError::new(<span class="number">1</span>, <span class="string">&quot;cannot get system name&quot;</span>))<span class="question-mark">?</span>;
+
+    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, uts.machine().to_string_lossy().trim());
     <span class="prelude-val">Ok</span>(())
 }
 
