@@ -625,6 +625,34 @@
 <a href="#625" id="625">625</a>
 <a href="#626" id="626">626</a>
 <a href="#627" id="627">627</a>
+<a href="#628" id="628">628</a>
+<a href="#629" id="629">629</a>
+<a href="#630" id="630">630</a>
+<a href="#631" id="631">631</a>
+<a href="#632" id="632">632</a>
+<a href="#633" id="633">633</a>
+<a href="#634" id="634">634</a>
+<a href="#635" id="635">635</a>
+<a href="#636" id="636">636</a>
+<a href="#637" id="637">637</a>
+<a href="#638" id="638">638</a>
+<a href="#639" id="639">639</a>
+<a href="#640" id="640">640</a>
+<a href="#641" id="641">641</a>
+<a href="#642" id="642">642</a>
+<a href="#643" id="643">643</a>
+<a href="#644" id="644">644</a>
+<a href="#645" id="645">645</a>
+<a href="#646" id="646">646</a>
+<a href="#647" id="647">647</a>
+<a href="#648" id="648">648</a>
+<a href="#649" id="649">649</a>
+<a href="#650" id="650">650</a>
+<a href="#651" id="651">651</a>
+<a href="#652" id="652">652</a>
+<a href="#653" id="653">653</a>
+<a href="#654" id="654">654</a>
+<a href="#655" id="655">655</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Martin Kysel &lt;code@martinkysel.com&gt;
@@ -641,10 +669,10 @@
     time::Duration,
 };
 
-<span class="kw">use </span>clap::{crate_version, Arg, ArgAction, ArgMatches, Command};
+<span class="kw">use </span>clap::{crate_version, value_parser, Arg, ArgAction, ArgMatches, Command};
 <span class="kw">use </span>crossterm::event::KeyEventKind;
 <span class="kw">use </span>crossterm::{
-    cursor::MoveTo,
+    cursor::{MoveTo, MoveUp},
     event::{<span class="self">self</span>, Event, KeyCode, KeyEvent, KeyModifiers},
     execute, queue,
     style::Attribute,
@@ -680,16 +708,28 @@
 <span class="kw">const </span>MULTI_FILE_TOP_PROMPT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;::::::::::::::\n{}\n::::::::::::::\n&quot;</span>;
 
 <span class="kw">struct </span>Options {
-    silent: bool,
     clean_print: bool,
+    lines: <span class="prelude-ty">Option</span>&lt;u16&gt;,
     print_over: bool,
+    silent: bool,
     squeeze: bool,
 }
 
 <span class="kw">impl </span>Options {
     <span class="kw">fn </span>from(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>lines = <span class="kw">match </span>(
+            matches.get_one::&lt;u16&gt;(options::LINES).copied(),
+            matches.get_one::&lt;u16&gt;(options::NUMBER).copied(),
+        ) {
+            <span class="comment">// We add 1 to the number of lines to display because the last line
+            // is used for the banner
+            </span>(<span class="prelude-val">Some</span>(number), <span class="kw">_</span>) <span class="kw">if </span>number &gt; <span class="number">0 </span>=&gt; <span class="prelude-val">Some</span>(number + <span class="number">1</span>),
+            (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(number)) <span class="kw">if </span>number &gt; <span class="number">0 </span>=&gt; <span class="prelude-val">Some</span>(number + <span class="number">1</span>),
+            (<span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="prelude-val">None</span>,
+        };
         <span class="self">Self </span>{
             clean_print: matches.get_flag(options::CLEAN_PRINT),
+            lines,
             print_over: matches.get_flag(options::PRINT_OVER),
             silent: matches.get_flag(options::SILENT),
             squeeze: matches.get_flag(options::SQUEEZE),
@@ -794,6 +834,23 @@
                 .help(<span class="string">&quot;Squeeze multiple blank lines into one&quot;</span>)
                 .action(ArgAction::SetTrue),
         )
+        .arg(
+            Arg::new(options::LINES)
+                .short(<span class="string">&#39;n&#39;</span>)
+                .long(options::LINES)
+                .value_name(<span class="string">&quot;number&quot;</span>)
+                .num_args(<span class="number">1</span>)
+                .value_parser(<span class="macro">value_parser!</span>(u16).range(<span class="number">0</span>..))
+                .help(<span class="string">&quot;The number of lines per screen full&quot;</span>),
+        )
+        .arg(
+            Arg::new(options::NUMBER)
+                .long(options::NUMBER)
+                .required(<span class="bool-val">false</span>)
+                .num_args(<span class="number">1</span>)
+                .value_parser(<span class="macro">value_parser!</span>(u16).range(<span class="number">0</span>..))
+                .help(<span class="string">&quot;Same as --lines&quot;</span>),
+        )
         <span class="comment">// The commented arguments below are unimplemented:
         /*
         .arg(
@@ -813,22 +870,6 @@
                 .short(&#39;u&#39;)
                 .long(options::PLAIN)
                 .help(&quot;Suppress underlining and bold&quot;),
-        )
-        .arg(
-            Arg::new(options::LINES)
-                .short(&#39;n&#39;)
-                .long(options::LINES)
-                .value_name(&quot;number&quot;)
-                .takes_value(true)
-                .help(&quot;The number of lines per screen full&quot;),
-        )
-        .arg(
-            Arg::new(options::NUMBER)
-                .allow_hyphen_values(true)
-                .long(options::NUMBER)
-                .required(false)
-                .takes_value(true)
-                .help(&quot;Same as --lines&quot;),
         )
         .arg(
             Arg::new(options::FROM_LINE)
@@ -890,7 +931,11 @@
     next_file: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
     options: <span class="kw-2">&amp;</span>Options,
 ) -&gt; UResult&lt;()&gt; {
-    <span class="kw">let </span>(cols, rows) = terminal::size().unwrap();
+    <span class="kw">let </span>(cols, <span class="kw-2">mut </span>rows) = terminal::size().unwrap();
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(number) = options.lines {
+        rows = number;
+    }
+
     <span class="kw">let </span>lines = break_buff(buff, usize::from(cols));
 
     <span class="kw">let </span><span class="kw-2">mut </span>pager = Pager::new(rows, lines, next_file, options);
@@ -954,6 +999,7 @@
                     ..
                 }) =&gt; {
                     pager.page_up();
+                    paging_add_back_message(options, stdout)<span class="question-mark">?</span>;
                 }
                 Event::Key(KeyEvent {
                     code: KeyCode::Char(<span class="string">&#39;j&#39;</span>),
@@ -974,7 +1020,7 @@
                     pager.prev_line();
                 }
                 Event::Resize(col, row) =&gt; {
-                    pager.page_resize(col, row);
+                    pager.page_resize(col, row, options.lines);
                 }
                 Event::Key(KeyEvent {
                     code: KeyCode::Char(k),
@@ -1074,8 +1120,10 @@
     }
 
     <span class="comment">// TODO: Deal with column size changes.
-    </span><span class="kw">fn </span>page_resize(<span class="kw-2">&amp;mut </span><span class="self">self</span>, <span class="kw">_</span>: u16, row: u16) {
-        <span class="self">self</span>.content_rows = row.saturating_sub(<span class="number">1</span>);
+    </span><span class="kw">fn </span>page_resize(<span class="kw-2">&amp;mut </span><span class="self">self</span>, <span class="kw">_</span>: u16, row: u16, option_line: <span class="prelude-ty">Option</span>&lt;u16&gt;) {
+        <span class="kw">if </span>option_line.is_none() {
+            <span class="self">self</span>.content_rows = row.saturating_sub(<span class="number">1</span>);
+        };
     }
 
     <span class="kw">fn </span>draw(<span class="kw-2">&amp;mut </span><span class="self">self</span>, stdout: <span class="kw-2">&amp;mut </span>std::io::Stdout, wrong_key: <span class="prelude-ty">Option</span>&lt;char&gt;) {
@@ -1161,6 +1209,14 @@
         )
         .unwrap();
     }
+}
+
+<span class="kw">fn </span>paging_add_back_message(options: <span class="kw-2">&amp;</span>Options, stdout: <span class="kw-2">&amp;mut </span>std::io::Stdout) -&gt; UResult&lt;()&gt; {
+    <span class="kw">if </span>options.lines.is_some() {
+        <span class="macro">execute!</span>(stdout, MoveUp(<span class="number">1</span>))<span class="question-mark">?</span>;
+        stdout.write_all(<span class="string">&quot;\n\r...back 1 page\n&quot;</span>.as_bytes())<span class="question-mark">?</span>;
+    }
+    <span class="prelude-val">Ok</span>(())
 }
 
 <span class="comment">// Break the lines on the cols of the terminal

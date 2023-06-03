@@ -1985,6 +1985,14 @@
 <a href="#1985" id="1985">1985</a>
 <a href="#1986" id="1986">1986</a>
 <a href="#1987" id="1987">1987</a>
+<a href="#1988" id="1988">1988</a>
+<a href="#1989" id="1989">1989</a>
+<a href="#1990" id="1990">1990</a>
+<a href="#1991" id="1991">1991</a>
+<a href="#1992" id="1992">1992</a>
+<a href="#1993" id="1993">1993</a>
+<a href="#1994" id="1994">1994</a>
+<a href="#1995" id="1995">1995</a>
 </pre></div><pre class="rust"><code><span class="attr">#![allow(clippy::missing_safety_doc)]
 #![allow(clippy::extra_unused_lifetimes)]
 
@@ -2030,7 +2038,8 @@
 };
 <span class="kw">use </span>uucore::update_control::{<span class="self">self</span>, UpdateMode};
 <span class="kw">use </span>uucore::{
-    crash, format_usage, help_about, help_section, help_usage, prompt_yes, show_error, show_warning,
+    crash, format_usage, help_about, help_section, help_usage, prompt_yes, show_error,
+    show_warning, util_name,
 };
 
 <span class="kw">use </span><span class="kw">crate</span>::copydir::copy_directory;
@@ -3089,24 +3098,22 @@
 }
 
 <span class="doccomment">/// When handling errors, we don&#39;t always want to show them to the user. This function handles that.
-/// If the error is printed, returns true, false otherwise.
-</span><span class="kw">fn </span>show_error_if_needed(error: <span class="kw-2">&amp;</span>Error) -&gt; bool {
+</span><span class="kw">fn </span>show_error_if_needed(error: <span class="kw-2">&amp;</span>Error) {
     <span class="kw">match </span>error {
         <span class="comment">// When using --no-clobber, we don&#39;t want to show
         // an error message
-        </span>Error::NotAllFilesCopied =&gt; (),
+        </span>Error::NotAllFilesCopied =&gt; {
+            <span class="comment">// Need to return an error code
+        </span>}
         Error::Skipped =&gt; {
             <span class="comment">// touch a b &amp;&amp; echo &quot;n&quot;|cp -i a b &amp;&amp; echo $?
             // should return an error from GNU 9.2
-            </span><span class="kw">return </span><span class="bool-val">true</span>;
-        }
+        </span>}
         <span class="kw">_ </span>=&gt; {
             <span class="macro">show_error!</span>(<span class="string">&quot;{}&quot;</span>, error);
-            <span class="kw">return </span><span class="bool-val">true</span>;
         }
     }
-    <span class="bool-val">false
-</span>}
+}
 
 <span class="doccomment">/// Copy all `sources` to `target`.  Returns an
 /// `Err(Error::NotAllFilesCopied)` if at least one non-fatal error was
@@ -3162,9 +3169,8 @@
                     options,
                     <span class="kw-2">&amp;mut </span>symlinked_files,
                 ) {
-                    <span class="kw">if </span>show_error_if_needed(<span class="kw-2">&amp;</span>error) {
-                        non_fatal_errors = <span class="bool-val">true</span>;
-                    }
+                    show_error_if_needed(<span class="kw-2">&amp;</span>error);
+                    non_fatal_errors = <span class="bool-val">true</span>;
                 }
             }
             seen_sources.insert(source);
@@ -3241,13 +3247,23 @@
 }
 
 <span class="kw">impl </span>OverwriteMode {
-    <span class="kw">fn </span>verify(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>Path) -&gt; CopyResult&lt;()&gt; {
+    <span class="kw">fn </span>verify(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>Path, verbose: bool) -&gt; CopyResult&lt;()&gt; {
         <span class="kw">match </span><span class="kw-2">*</span><span class="self">self </span>{
-            <span class="self">Self</span>::NoClobber =&gt; <span class="prelude-val">Err</span>(Error::NotAllFilesCopied),
+            <span class="self">Self</span>::NoClobber =&gt; {
+                <span class="kw">if </span>verbose {
+                    <span class="macro">println!</span>(<span class="string">&quot;skipped {}&quot;</span>, path.quote());
+                } <span class="kw">else </span>{
+                    <span class="macro">eprintln!</span>(<span class="string">&quot;{}: not replacing {}&quot;</span>, util_name(), path.quote());
+                }
+                <span class="prelude-val">Err</span>(Error::NotAllFilesCopied)
+            }
             <span class="self">Self</span>::Interactive(<span class="kw">_</span>) =&gt; {
                 <span class="kw">if </span><span class="macro">prompt_yes!</span>(<span class="string">&quot;overwrite {}?&quot;</span>, path.quote()) {
                     <span class="prelude-val">Ok</span>(())
                 } <span class="kw">else </span>{
+                    <span class="kw">if </span>verbose {
+                        <span class="macro">println!</span>(<span class="string">&quot;skipped {}&quot;</span>, path.quote());
+                    }
                     <span class="prelude-val">Err</span>(Error::Skipped)
                 }
             }
@@ -3455,7 +3471,7 @@
         <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;{} and {} are the same file&quot;</span>, source.quote(), dest.quote()).into());
     }
 
-    options.overwrite.verify(dest)<span class="question-mark">?</span>;
+    options.overwrite.verify(dest, options.verbose)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>backup_path = backup_control::get_backup_path(options.backup, dest, <span class="kw-2">&amp;</span>options.backup_suffix);
     <span class="kw">if let </span><span class="prelude-val">Some</span>(backup_path) = backup_path {
@@ -3813,7 +3829,7 @@
         </span>File::create(dest).context(dest.display().to_string())<span class="question-mark">?</span>;
     } <span class="kw">else if </span>source_is_fifo &amp;&amp; options.recursive &amp;&amp; !options.copy_contents {
         <span class="attr">#[cfg(unix)]
-        </span>copy_fifo(dest, options.overwrite)<span class="question-mark">?</span>;
+        </span>copy_fifo(dest, options.overwrite, options.verbose)<span class="question-mark">?</span>;
     } <span class="kw">else if </span>source_is_symlink {
         copy_link(source, dest, symlinked_files)<span class="question-mark">?</span>;
     } <span class="kw">else </span>{
@@ -3838,9 +3854,9 @@
 <span class="comment">// &quot;Copies&quot; a FIFO by creating a new one. This workaround is because Rust&#39;s
 // built-in fs::copy does not handle FIFOs (see rust-lang/rust/issues/79390).
 </span><span class="attr">#[cfg(unix)]
-</span><span class="kw">fn </span>copy_fifo(dest: <span class="kw-2">&amp;</span>Path, overwrite: OverwriteMode) -&gt; CopyResult&lt;()&gt; {
+</span><span class="kw">fn </span>copy_fifo(dest: <span class="kw-2">&amp;</span>Path, overwrite: OverwriteMode, verbose: bool) -&gt; CopyResult&lt;()&gt; {
     <span class="kw">if </span>dest.exists() {
-        overwrite.verify(dest)<span class="question-mark">?</span>;
+        overwrite.verify(dest, verbose)<span class="question-mark">?</span>;
         fs::remove_file(dest)<span class="question-mark">?</span>;
     }
 
