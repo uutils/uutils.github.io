@@ -451,12 +451,85 @@
 <a href="#451" id="451">451</a>
 <a href="#452" id="452">452</a>
 <a href="#453" id="453">453</a>
+<a href="#454" id="454">454</a>
+<a href="#455" id="455">455</a>
+<a href="#456" id="456">456</a>
+<a href="#457" id="457">457</a>
+<a href="#458" id="458">458</a>
+<a href="#459" id="459">459</a>
+<a href="#460" id="460">460</a>
+<a href="#461" id="461">461</a>
+<a href="#462" id="462">462</a>
+<a href="#463" id="463">463</a>
+<a href="#464" id="464">464</a>
+<a href="#465" id="465">465</a>
+<a href="#466" id="466">466</a>
+<a href="#467" id="467">467</a>
+<a href="#468" id="468">468</a>
+<a href="#469" id="469">469</a>
+<a href="#470" id="470">470</a>
+<a href="#471" id="471">471</a>
+<a href="#472" id="472">472</a>
+<a href="#473" id="473">473</a>
+<a href="#474" id="474">474</a>
+<a href="#475" id="475">475</a>
+<a href="#476" id="476">476</a>
+<a href="#477" id="477">477</a>
+<a href="#478" id="478">478</a>
+<a href="#479" id="479">479</a>
+<a href="#480" id="480">480</a>
+<a href="#481" id="481">481</a>
+<a href="#482" id="482">482</a>
+<a href="#483" id="483">483</a>
+<a href="#484" id="484">484</a>
+<a href="#485" id="485">485</a>
+<a href="#486" id="486">486</a>
+<a href="#487" id="487">487</a>
+<a href="#488" id="488">488</a>
+<a href="#489" id="489">489</a>
+<a href="#490" id="490">490</a>
+<a href="#491" id="491">491</a>
+<a href="#492" id="492">492</a>
+<a href="#493" id="493">493</a>
+<a href="#494" id="494">494</a>
+<a href="#495" id="495">495</a>
+<a href="#496" id="496">496</a>
+<a href="#497" id="497">497</a>
+<a href="#498" id="498">498</a>
+<a href="#499" id="499">499</a>
+<a href="#500" id="500">500</a>
+<a href="#501" id="501">501</a>
+<a href="#502" id="502">502</a>
+<a href="#503" id="503">503</a>
+<a href="#504" id="504">504</a>
+<a href="#505" id="505">505</a>
+<a href="#506" id="506">506</a>
+<a href="#507" id="507">507</a>
+<a href="#508" id="508">508</a>
+<a href="#509" id="509">509</a>
+<a href="#510" id="510">510</a>
+<a href="#511" id="511">511</a>
+<a href="#512" id="512">512</a>
+<a href="#513" id="513">513</a>
+<a href="#514" id="514">514</a>
+<a href="#515" id="515">515</a>
+<a href="#516" id="516">516</a>
+<a href="#517" id="517">517</a>
+<a href="#518" id="518">518</a>
+<a href="#519" id="519">519</a>
+<a href="#520" id="520">520</a>
+<a href="#521" id="521">521</a>
+<a href="#522" id="522">522</a>
+<a href="#523" id="523">523</a>
+<a href="#524" id="524">524</a>
+<a href="#525" id="525">525</a>
+<a href="#526" id="526">526</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
 //  * file that was distributed with this source code.
 
-// spell-checker:ignore (ToDO) hdsf ghead gtail
+// spell-checker:ignore (ToDO) hdsf ghead gtail ACDBK hexdigit
 
 </span><span class="kw">use </span>std::error::Error;
 <span class="kw">use </span>std::fmt;
@@ -476,6 +549,12 @@
     </span><span class="kw">pub </span>allow_list: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;parser </span>[<span class="kw-2">&amp;</span><span class="lifetime">&#39;parser </span>str]&gt;,
     <span class="doccomment">/// Default unit when no suffix is provided
     </span><span class="kw">pub </span>default_unit: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;parser </span>str&gt;,
+}
+
+<span class="kw">enum </span>NumberSystem {
+    Decimal,
+    Octal,
+    Hexadecimal,
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;parser</span>&gt; Parser&lt;<span class="lifetime">&#39;parser</span>&gt; {
@@ -515,32 +594,27 @@
     /// assert_eq!(Ok(123), parse_size(&quot;123&quot;));
     /// assert_eq!(Ok(9 * 1000), parse_size(&quot;9kB&quot;)); // kB is 1000
     /// assert_eq!(Ok(2 * 1024), parse_size(&quot;2K&quot;)); // K is 1024
+    /// assert_eq!(Ok(44251 * 1024), parse_size(&quot;0xACDBK&quot;));
     /// ```
     </span><span class="kw">pub fn </span>parse(<span class="kw-2">&amp;</span><span class="self">self</span>, size: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;u64, ParseSizeError&gt; {
         <span class="kw">if </span>size.is_empty() {
             <span class="kw">return </span><span class="prelude-val">Err</span>(ParseSizeError::parse_failure(size));
         }
-        <span class="comment">// Get the numeric part of the size argument. For example, if the
-        // argument is &quot;123K&quot;, then the numeric part is &quot;123&quot;.
-        </span><span class="kw">let </span>numeric_string: String = size.chars().take_while(|c| c.is_ascii_digit()).collect();
-        <span class="kw">let </span>number: u64 = <span class="kw">if </span>numeric_string.is_empty() {
-            <span class="number">1
-        </span>} <span class="kw">else </span>{
-            <span class="kw">match </span>numeric_string.parse() {
-                <span class="prelude-val">Ok</span>(n) =&gt; n,
-                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(ParseSizeError::parse_failure(size)),
-            }
-        };
 
-        <span class="comment">// Get the alphabetic units part of the size argument and compute
-        // the factor it represents. For example, if the argument is &quot;123K&quot;,
-        // then the unit part is &quot;K&quot; and the factor is 1024. This may be the
-        // empty string, in which case, the factor is 1.
-        //
-        // The lowercase &quot;b&quot; (used by `od`, `head`, `tail`, etc.) means
-        // &quot;block&quot; and the Posix block size is 512. The uppercase &quot;B&quot;
-        // means &quot;byte&quot;.
-        </span><span class="kw">let </span><span class="kw-2">mut </span>unit: <span class="kw-2">&amp;</span>str = <span class="kw-2">&amp;</span>size[numeric_string.len()..];
+        <span class="kw">let </span>number_system: NumberSystem = <span class="self">self</span>.determine_number_system(size);
+
+        <span class="comment">// Split the size argument into numeric and unit parts
+        // For example, if the argument is &quot;123K&quot;, the numeric part is &quot;123&quot;, and
+        // the unit is &quot;K&quot;
+        </span><span class="kw">let </span>numeric_string: String = <span class="kw">match </span>number_system {
+            NumberSystem::Hexadecimal =&gt; size
+                .chars()
+                .take(<span class="number">2</span>)
+                .chain(size.chars().skip(<span class="number">2</span>).take_while(|c| c.is_ascii_hexdigit()))
+                .collect(),
+            <span class="kw">_ </span>=&gt; size.chars().take_while(|c| c.is_ascii_digit()).collect(),
+        };
+        <span class="kw">let </span><span class="kw-2">mut </span>unit: <span class="kw-2">&amp;</span>str = <span class="kw-2">&amp;</span>size[numeric_string.len()..];
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(default_unit) = <span class="self">self</span>.default_unit {
             <span class="comment">// Check if `unit` is empty then assigns `default_unit` to `unit`
@@ -568,7 +642,13 @@
             }
         }
 
-        <span class="kw">let </span>(base, exponent): (u128, u32) = <span class="kw">match </span>unit {
+        <span class="comment">// Compute the factor the unit represents.
+        // empty string means the factor is 1.
+        //
+        // The lowercase &quot;b&quot; (used by `od`, `head`, `tail`, etc.) means
+        // &quot;block&quot; and the Posix block size is 512. The uppercase &quot;B&quot;
+        // means &quot;byte&quot;.
+        </span><span class="kw">let </span>(base, exponent): (u128, u32) = <span class="kw">match </span>unit {
             <span class="string">&quot;&quot; </span>=&gt; (<span class="number">1</span>, <span class="number">0</span>),
             <span class="string">&quot;B&quot; </span><span class="kw">if </span><span class="self">self</span>.capital_b_bytes =&gt; (<span class="number">1</span>, <span class="number">0</span>),
             <span class="string">&quot;b&quot; </span>=&gt; (<span class="number">512</span>, <span class="number">1</span>),
@@ -595,9 +675,61 @@
             <span class="prelude-val">Ok</span>(n) =&gt; n,
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(ParseSizeError::size_too_big(size)),
         };
+
+        <span class="comment">// parse string into u64
+        </span><span class="kw">let </span>number: u64 = <span class="kw">match </span>number_system {
+            NumberSystem::Decimal =&gt; {
+                <span class="kw">if </span>numeric_string.is_empty() {
+                    <span class="number">1
+                </span>} <span class="kw">else </span>{
+                    <span class="self">self</span>.parse_number(<span class="kw-2">&amp;</span>numeric_string, <span class="number">10</span>, size)<span class="question-mark">?
+                </span>}
+            }
+            NumberSystem::Octal =&gt; {
+                <span class="kw">let </span>trimmed_string = numeric_string.trim_start_matches(<span class="string">&#39;0&#39;</span>);
+                <span class="self">self</span>.parse_number(trimmed_string, <span class="number">8</span>, size)<span class="question-mark">?
+            </span>}
+            NumberSystem::Hexadecimal =&gt; {
+                <span class="kw">let </span>trimmed_string = numeric_string.trim_start_matches(<span class="string">&quot;0x&quot;</span>);
+                <span class="self">self</span>.parse_number(trimmed_string, <span class="number">16</span>, size)<span class="question-mark">?
+            </span>}
+        };
+
         number
             .checked_mul(factor)
             .ok_or_else(|| ParseSizeError::size_too_big(size))
+    }
+
+    <span class="kw">fn </span>determine_number_system(<span class="kw-2">&amp;</span><span class="self">self</span>, size: <span class="kw-2">&amp;</span>str) -&gt; NumberSystem {
+        <span class="kw">if </span>size.len() &lt;= <span class="number">1 </span>{
+            <span class="kw">return </span>NumberSystem::Decimal;
+        }
+
+        <span class="kw">if </span>size.starts_with(<span class="string">&quot;0x&quot;</span>) {
+            <span class="kw">return </span>NumberSystem::Hexadecimal;
+        }
+
+        <span class="kw">let </span>num_digits: usize = size
+            .chars()
+            .take_while(|c| c.is_ascii_digit())
+            .collect::&lt;String&gt;()
+            .len();
+        <span class="kw">let </span>all_zeros = size.chars().all(|c| c == <span class="string">&#39;0&#39;</span>);
+        <span class="kw">if </span>size.starts_with(<span class="string">&#39;0&#39;</span>) &amp;&amp; num_digits &gt; <span class="number">1 </span>&amp;&amp; !all_zeros {
+            <span class="kw">return </span>NumberSystem::Octal;
+        }
+
+        NumberSystem::Decimal
+    }
+
+    <span class="kw">fn </span>parse_number(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        numeric_string: <span class="kw-2">&amp;</span>str,
+        radix: u32,
+        original_size: <span class="kw-2">&amp;</span>str,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;u64, ParseSizeError&gt; {
+        u64::from_str_radix(numeric_string, radix)
+            .map_err(|<span class="kw">_</span>| ParseSizeError::ParseFailure(original_size.to_string()))
     }
 }
 
@@ -789,7 +921,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>invalid_suffix() {
-        <span class="kw">let </span>test_strings = [<span class="string">&quot;328hdsf3290&quot;</span>, <span class="string">&quot;5mib&quot;</span>, <span class="string">&quot;1e2&quot;</span>, <span class="string">&quot;1H&quot;</span>, <span class="string">&quot;1.2&quot;</span>];
+        <span class="kw">let </span>test_strings = [<span class="string">&quot;5mib&quot;</span>, <span class="string">&quot;1eb&quot;</span>, <span class="string">&quot;1H&quot;</span>];
         <span class="kw">for </span><span class="kw-2">&amp;</span>test_string <span class="kw">in </span><span class="kw-2">&amp;</span>test_strings {
             <span class="macro">assert_eq!</span>(
                 parse_size(test_string).unwrap_err(),
@@ -902,6 +1034,20 @@
         <span class="macro">assert!</span>(parser.parse(<span class="string">&quot;b&quot;</span>).is_err());
         <span class="macro">assert!</span>(parser.parse(<span class="string">&quot;1B&quot;</span>).is_err());
         <span class="macro">assert!</span>(parser.parse(<span class="string">&quot;B&quot;</span>).is_err());
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>parse_octal_size() {
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">63</span>), parse_size(<span class="string">&quot;077&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">528</span>), parse_size(<span class="string">&quot;01020&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">668 </span>* <span class="number">1024</span>), parse_size(<span class="string">&quot;01234K&quot;</span>));
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>parse_hex_size() {
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">10</span>), parse_size(<span class="string">&quot;0xA&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">94722</span>), parse_size(<span class="string">&quot;0x17202&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(<span class="number">44251 </span>* <span class="number">1024</span>), parse_size(<span class="string">&quot;0xACDBK&quot;</span>));
     }
 }
 </code></pre></div></section></main></body></html>

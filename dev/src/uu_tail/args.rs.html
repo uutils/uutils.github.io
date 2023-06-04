@@ -679,6 +679,7 @@
 <a href="#679" id="679">679</a>
 <a href="#680" id="680">680</a>
 <a href="#681" id="681">681</a>
+<a href="#682" id="682">682</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
@@ -761,7 +762,7 @@
                 <span class="prelude-val">Err</span>(e) =&gt; {
                     <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
                         <span class="number">1</span>,
-                        <span class="macro">format!</span>(<span class="string">&quot;invalid number of bytes: {e}&quot;</span>),
+                        <span class="macro">format!</span>(<span class="string">&quot;invalid number of bytes: &#39;{e}&#39;&quot;</span>),
                     ))
                 }
             }
@@ -1096,16 +1097,17 @@
                 starting_with = <span class="bool-val">true</span>;
             }
         }
-    } <span class="kw">else </span>{
-        <span class="kw">return </span><span class="prelude-val">Err</span>(ParseSizeError::ParseFailure(src.to_string()));
     }
 
-    parse_size(size_string).map(|n| <span class="kw">match </span>(n, starting_with) {
-        (<span class="number">0</span>, <span class="bool-val">true</span>) =&gt; Signum::PlusZero,
-        (<span class="number">0</span>, <span class="bool-val">false</span>) =&gt; Signum::MinusZero,
-        (n, <span class="bool-val">true</span>) =&gt; Signum::Positive(n),
-        (n, <span class="bool-val">false</span>) =&gt; Signum::Negative(n),
-    })
+    <span class="kw">match </span>parse_size(size_string) {
+        <span class="prelude-val">Ok</span>(n) =&gt; <span class="kw">match </span>(n, starting_with) {
+            (<span class="number">0</span>, <span class="bool-val">true</span>) =&gt; <span class="prelude-val">Ok</span>(Signum::PlusZero),
+            (<span class="number">0</span>, <span class="bool-val">false</span>) =&gt; <span class="prelude-val">Ok</span>(Signum::MinusZero),
+            (n, <span class="bool-val">true</span>) =&gt; <span class="prelude-val">Ok</span>(Signum::Positive(n)),
+            (n, <span class="bool-val">false</span>) =&gt; <span class="prelude-val">Ok</span>(Signum::Negative(n)),
+        },
+        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(ParseSizeError::ParseFailure(size_string.to_string())),
+    }
 }
 
 <span class="kw">pub fn </span>parse_args(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;Settings&gt; {
