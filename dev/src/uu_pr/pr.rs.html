@@ -1262,14 +1262,6 @@
 <a href="#1262" id="1262">1262</a>
 <a href="#1263" id="1263">1263</a>
 <a href="#1264" id="1264">1264</a>
-<a href="#1265" id="1265">1265</a>
-<a href="#1266" id="1266">1266</a>
-<a href="#1267" id="1267">1267</a>
-<a href="#1268" id="1268">1268</a>
-<a href="#1269" id="1269">1269</a>
-<a href="#1270" id="1270">1270</a>
-<a href="#1271" id="1271">1271</a>
-<a href="#1272" id="1272">1272</a>
 </pre></div><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // For the full copyright and license information, please view the LICENSE file
@@ -1278,7 +1270,8 @@
 
 // spell-checker:ignore (ToDO) adFfmprt, kmerge
 
-</span><span class="kw">use </span>clap::{crate_version, Arg, ArgAction, ArgMatches, Command};
+</span><span class="kw">use </span>chrono::{DateTime, Local};
+<span class="kw">use </span>clap::{crate_version, Arg, ArgAction, ArgMatches, Command};
 <span class="kw">use </span>itertools::Itertools;
 <span class="kw">use </span>quick_error::ResultExt;
 <span class="kw">use </span>regex::Regex;
@@ -1287,8 +1280,6 @@
 <span class="kw">use </span>std::io::{stdin, stdout, BufRead, BufReader, Lines, Read, Write};
 <span class="attr">#[cfg(unix)]
 </span><span class="kw">use </span>std::os::unix::fs::FileTypeExt;
-<span class="kw">use </span>time::macros::format_description;
-<span class="kw">use </span>time::OffsetDateTime;
 
 <span class="kw">use </span>quick_error::quick_error;
 <span class="kw">use </span>uucore::display::Quotable;
@@ -1309,8 +1300,7 @@
 <span class="kw">const </span>DEFAULT_COLUMN_WIDTH_WITH_S_OPTION: usize = <span class="number">512</span>;
 <span class="kw">const </span>DEFAULT_COLUMN_SEPARATOR: <span class="kw-2">&amp;</span>char = <span class="kw-2">&amp;</span>TAB;
 <span class="kw">const </span>FF: u8 = <span class="number">0x0C_u8</span>;
-<span class="kw">const </span>DATE_TIME_FORMAT: <span class="kw-2">&amp;</span>[time::format_description::FormatItem] =
-    <span class="macro">format_description!</span>(<span class="string">&quot;[month repr:short] [day] [hour]:[minute] [year]&quot;</span>);
+<span class="kw">const </span>DATE_TIME_FORMAT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;%b %d %H:%M %Y&quot;</span>;
 
 <span class="kw">mod </span>options {
     <span class="kw">pub const </span>HEADER: <span class="kw-2">&amp;</span>str = <span class="string">&quot;header&quot;</span>;
@@ -1843,10 +1833,8 @@
     <span class="kw">let </span>line_separator = <span class="string">&quot;\n&quot;</span>.to_string();
 
     <span class="kw">let </span>last_modified_time = <span class="kw">if </span>is_merge_mode || paths[<span class="number">0</span>].eq(FILE_STDIN) {
-        <span class="comment">// let date_time = Local::now();
-        // date_time.format(&quot;%b %d %H:%M %Y&quot;).to_string()
-        </span><span class="kw">let </span>date_time = OffsetDateTime::now_local().unwrap();
-        date_time.format(<span class="kw-2">&amp;</span>DATE_TIME_FORMAT).unwrap()
+        <span class="kw">let </span>date_time = Local::now();
+        date_time.format(DATE_TIME_FORMAT).to_string()
     } <span class="kw">else </span>{
         file_last_modified_time(paths.first().unwrap())
     };
@@ -2487,12 +2475,8 @@
         .map(|i| {
             i.modified()
                 .map(|x| {
-                    <span class="kw">let </span>date_time: OffsetDateTime = x.into();
-                    <span class="kw">let </span>offset = OffsetDateTime::now_local().unwrap().offset();
-                    date_time
-                        .to_offset(offset)
-                        .format(<span class="kw-2">&amp;</span>DATE_TIME_FORMAT)
-                        .unwrap()
+                    <span class="kw">let </span>date_time: DateTime&lt;Local&gt; = x.into();
+                    date_time.format(DATE_TIME_FORMAT).to_string()
                 })
                 .unwrap_or_default()
         })

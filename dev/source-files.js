@@ -34,7 +34,6 @@ var sourcesIndex = JSON.parse('{\
 "groups":["",[],["main.rs"]],\
 "hashsum":["",[],["main.rs"]],\
 "head":["",[],["main.rs"]],\
-"help_parser":["",[],["lib.rs"]],\
 "hostid":["",[],["main.rs"]],\
 "hostname":["",[],["main.rs"]],\
 "id":["",[],["main.rs"]],\
@@ -206,6 +205,7 @@ var sourcesIndex = JSON.parse('{\
 "uucore":["",[["features",[["tokenize",[["num_format",[["formatters",[["base_conv",[],["mod.rs","tests.rs"]]],["cninetyninehexfloatf.rs","decf.rs","float_common.rs","floatf.rs","intf.rs","mod.rs","scif.rs"]]],["format_field.rs","formatter.rs","mod.rs","num_format.rs"]]],["mod.rs","sub.rs","token.rs","unescaped_text.rs"]]],["encoding.rs","entries.rs","fs.rs","fsext.rs","lines.rs","memo.rs","mode.rs","perms.rs","pipes.rs","process.rs","ringbuffer.rs","signals.rs","sum.rs","utmpx.rs"]],["mods",[],["backup_control.rs","display.rs","error.rs","os.rs","panic.rs","quoting_style.rs","ranges.rs","update_control.rs","version_cmp.rs"]],["parser",[],["parse_glob.rs","parse_size.rs","parse_time.rs"]]],["features.rs","lib.rs","macros.rs","mods.rs","parser.rs"]],\
 "uucore_procs":["",[],["lib.rs"]],\
 "uudoc":["",[],["uudoc.rs"]],\
+"uuhelp_parser":["",[],["lib.rs"]],\
 "vdir":["",[],["main.rs"]],\
 "wc":["",[],["main.rs"]],\
 "who":["",[],["main.rs"]],\
