@@ -680,6 +680,9 @@
 <a href="#680" id="680">680</a>
 <a href="#681" id="681">681</a>
 <a href="#682" id="682">682</a>
+<a href="#683" id="683">683</a>
+<a href="#684" id="684">684</a>
+<a href="#685" id="685">685</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
@@ -691,7 +694,7 @@
 <span class="kw">use crate</span>::{parse, platform, Quotable};
 <span class="kw">use </span>clap::crate_version;
 <span class="kw">use </span>clap::{Arg, ArgAction, ArgMatches, Command};
-<span class="kw">use </span>fundu::DurationParser;
+<span class="kw">use </span>fundu::{DurationParser, SaturatingInto};
 <span class="kw">use </span>is_terminal::IsTerminal;
 <span class="kw">use </span>same_file::Handle;
 <span class="kw">use </span>std::collections::VecDeque;
@@ -917,12 +920,15 @@
             //   `DURATION::MAX` or `infinity` was given
             // * not applied here but it supports customizable time units and provides better error
             //   messages
-            </span>settings.sleep_sec =
-                DurationParser::without_time_units()
-                    .parse(source)
-                    .map_err(|<span class="kw">_</span>| {
-                        UUsageError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;invalid number of seconds: &#39;{source}&#39;&quot;</span>))
-                    })<span class="question-mark">?</span>;
+            </span>settings.sleep_sec = <span class="kw">match </span>DurationParser::without_time_units().parse(source) {
+                <span class="prelude-val">Ok</span>(duration) =&gt; SaturatingInto::&lt;std::time::Duration&gt;::saturating_into(duration),
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(UUsageError::new(
+                        <span class="number">1</span>,
+                        <span class="macro">format!</span>(<span class="string">&quot;invalid number of seconds: &#39;{source}&#39;&quot;</span>),
+                    ))
+                }
+            }
         }
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(s) = matches.get_one::&lt;String&gt;(options::MAX_UNCHANGED_STATS) {

@@ -99,6 +99,8 @@
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
 <a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Alex Lyon &lt;arcterus@mail.com&gt;
@@ -115,7 +117,7 @@
 };
 
 <span class="kw">use </span>clap::{crate_version, Arg, ArgAction, Command};
-<span class="kw">use </span>fundu::{<span class="self">self</span>, DurationParser, ParseError};
+<span class="kw">use </span>fundu::{<span class="self">self</span>, DurationParser, ParseError, SaturatingInto};
 
 <span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;sleep.md&quot;</span>);
 <span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;sleep.md&quot;</span>);
@@ -164,7 +166,7 @@
 <span class="kw">fn </span>sleep(args: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str]) -&gt; UResult&lt;()&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>arg_error = <span class="bool-val">false</span>;
 
-    <span class="kw">use </span>fundu::TimeUnit::<span class="kw-2">*</span>;
+    <span class="kw">use </span>fundu::TimeUnit::{Day, Hour, Minute, Second};
     <span class="kw">let </span>parser = DurationParser::with_time_units(<span class="kw-2">&amp;</span>[Second, Minute, Hour, Day]);
 
     <span class="kw">let </span>sleep_dur = args
@@ -192,7 +194,9 @@
                 <span class="prelude-val">None
             </span>}
         })
-        .fold(Duration::ZERO, |acc, n| acc.saturating_add(n));
+        .fold(Duration::ZERO, |acc, n| {
+            acc.saturating_add(SaturatingInto::&lt;std::time::Duration&gt;::saturating_into(n))
+        });
 
     <span class="kw">if </span>arg_error {
         <span class="kw">return </span><span class="prelude-val">Err</span>(UUsageError::new(<span class="number">1</span>, <span class="string">&quot;&quot;</span>));

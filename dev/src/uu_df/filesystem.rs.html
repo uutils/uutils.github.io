@@ -219,6 +219,22 @@
 <a href="#219" id="219">219</a>
 <a href="#220" id="220">220</a>
 <a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
@@ -263,7 +279,7 @@
 /// This function returns the element of `mounts` on which `path` is
 /// mounted. If there are no matches, this function returns
 /// [`None`]. If there are two or more matches, then the single
-/// [`MountInfo`] with the longest mount directory is returned.
+/// [`MountInfo`] with the device name corresponding to the entered path.
 ///
 /// If `canonicalize` is `true`, then the `path` is canonicalized
 /// before checking whether it matches any mount directories.
@@ -289,9 +305,19 @@
         path.as_ref().to_path_buf()
     };
 
-    <span class="kw">let </span>maybe_mount_point = mounts
+    <span class="comment">// Find the potential mount point that matches entered path
+    </span><span class="kw">let </span>maybe_mount_point = mounts
         .iter()
-        .find(|mi| mi.dev_name.eq(<span class="kw-2">&amp;</span>path.to_string_lossy()));
+        <span class="comment">// Create pair MountInfo, canonicalized device name
+        // TODO Abstract from accessing real filesystem to
+        // make code more testable
+        </span>.map(|m| (m, std::fs::canonicalize(<span class="kw-2">&amp;</span>m.dev_name)))
+        <span class="comment">// Ignore non existing paths
+        </span>.filter(|m| m.<span class="number">1</span>.is_ok())
+        .map(|m| (m.<span class="number">0</span>, m.<span class="number">1</span>.ok().unwrap()))
+        <span class="comment">// Try to find canonicalized device name corresponding to entered path
+        </span>.find(|m| m.<span class="number">1</span>.eq(<span class="kw-2">&amp;</span>path))
+        .map(|m| m.<span class="number">0</span>);
 
     maybe_mount_point.or_else(|| {
         mounts
@@ -432,10 +458,16 @@
 
         <span class="attr">#[test]
         </span><span class="kw">fn </span>test_dev_name_match() {
+            <span class="kw">let </span>tmp = tempfile::TempDir::new().expect(<span class="string">&quot;Failed to create temp dir&quot;</span>);
+            <span class="kw">let </span>dev_name = std::fs::canonicalize(tmp.path())
+                .expect(<span class="string">&quot;Failed to canonicalize tmp path&quot;</span>)
+                .to_string_lossy()
+                .to_string();
+
             <span class="kw">let </span><span class="kw-2">mut </span>mount_info = mount_info(<span class="string">&quot;/foo&quot;</span>);
-            mount_info.dev_name = <span class="string">&quot;/dev/sda2&quot;</span>.to_string();
+            mount_info.dev_name = dev_name.clone();
             <span class="kw">let </span>mounts = [mount_info];
-            <span class="kw">let </span>actual = mount_info_from_path(<span class="kw-2">&amp;</span>mounts, <span class="string">&quot;/dev/sda2&quot;</span>, <span class="bool-val">false</span>).unwrap();
+            <span class="kw">let </span>actual = mount_info_from_path(<span class="kw-2">&amp;</span>mounts, dev_name, <span class="bool-val">false</span>).unwrap();
             <span class="macro">assert!</span>(mount_info_eq(actual, <span class="kw-2">&amp;</span>mounts[<span class="number">0</span>]));
         }
     }
