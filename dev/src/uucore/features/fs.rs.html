@@ -843,6 +843,36 @@
 <a href="#843" id="843">843</a>
 <a href="#844" id="844">844</a>
 <a href="#845" id="845">845</a>
+<a href="#846" id="846">846</a>
+<a href="#847" id="847">847</a>
+<a href="#848" id="848">848</a>
+<a href="#849" id="849">849</a>
+<a href="#850" id="850">850</a>
+<a href="#851" id="851">851</a>
+<a href="#852" id="852">852</a>
+<a href="#853" id="853">853</a>
+<a href="#854" id="854">854</a>
+<a href="#855" id="855">855</a>
+<a href="#856" id="856">856</a>
+<a href="#857" id="857">857</a>
+<a href="#858" id="858">858</a>
+<a href="#859" id="859">859</a>
+<a href="#860" id="860">860</a>
+<a href="#861" id="861">861</a>
+<a href="#862" id="862">862</a>
+<a href="#863" id="863">863</a>
+<a href="#864" id="864">864</a>
+<a href="#865" id="865">865</a>
+<a href="#866" id="866">866</a>
+<a href="#867" id="867">867</a>
+<a href="#868" id="868">868</a>
+<a href="#869" id="869">869</a>
+<a href="#870" id="870">870</a>
+<a href="#871" id="871">871</a>
+<a href="#872" id="872">872</a>
+<a href="#873" id="873">873</a>
+<a href="#874" id="874">874</a>
+<a href="#875" id="875">875</a>
 </pre></div><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Joseph Crail &lt;jbcrail@gmail.com&gt;
@@ -1486,6 +1516,36 @@
     };
 
     <span class="kw">let </span>target_metadata = <span class="kw">match </span>fs::metadata(target) {
+        <span class="prelude-val">Ok</span>(metadata) =&gt; metadata,
+        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="bool-val">false</span>,
+    };
+
+    source_metadata.ino() == target_metadata.ino() &amp;&amp; source_metadata.dev() == target_metadata.dev()
+}
+
+<span class="attr">#[cfg(not(unix))]
+</span><span class="kw">pub fn </span>are_hardlinks_or_one_way_symlink_to_same_file(_source: <span class="kw-2">&amp;</span>Path, _target: <span class="kw-2">&amp;</span>Path) -&gt; bool {
+    <span class="bool-val">false
+</span>}
+
+<span class="doccomment">/// Checks if either two paths are hard links to the same file or if the source path is a symbolic link which when fully resolved points to target path
+///
+/// # Arguments
+///
+/// * `source` - A reference to a `Path` representing the source path.
+/// * `target` - A reference to a `Path` representing the target path.
+///
+/// # Returns
+///
+/// * `bool` - Returns `true` if either of above conditions are true, and `false` otherwise.
+</span><span class="attr">#[cfg(unix)]
+</span><span class="kw">pub fn </span>are_hardlinks_or_one_way_symlink_to_same_file(source: <span class="kw-2">&amp;</span>Path, target: <span class="kw-2">&amp;</span>Path) -&gt; bool {
+    <span class="kw">let </span>source_metadata = <span class="kw">match </span>fs::metadata(source) {
+        <span class="prelude-val">Ok</span>(metadata) =&gt; metadata,
+        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="bool-val">false</span>,
+    };
+
+    <span class="kw">let </span>target_metadata = <span class="kw">match </span>fs::symlink_metadata(target) {
         <span class="prelude-val">Ok</span>(metadata) =&gt; metadata,
         <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="bool-val">false</span>,
     };

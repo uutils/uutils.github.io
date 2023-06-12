@@ -644,7 +644,7 @@
 <span class="kw">use </span>uucore::backup_control::{<span class="self">self</span>, BackupMode};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{set_exit_code, FromIo, UError, UResult, USimpleError, UUsageError};
-<span class="kw">use </span>uucore::fs::are_hardlinks_to_same_file;
+<span class="kw">use </span>uucore::fs::are_hardlinks_or_one_way_symlink_to_same_file;
 <span class="kw">use </span>uucore::update_control::{<span class="self">self</span>, UpdateMode};
 <span class="kw">use </span>uucore::{format_usage, help_about, help_section, help_usage, prompt_yes, show};
 
@@ -874,7 +874,7 @@
         <span class="kw">return </span><span class="prelude-val">Err</span>(MvError::NoSuchFile(source.quote().to_string()).into());
     }
 
-    <span class="kw">if </span>(source.eq(target) || are_hardlinks_to_same_file(source, target))
+    <span class="kw">if </span>(source.eq(target) || are_hardlinks_or_one_way_symlink_to_same_file(source, target))
         &amp;&amp; b.backup != BackupMode::SimpleBackup
     {
         <span class="kw">if </span>source.eq(Path::new(<span class="string">&quot;.&quot;</span>)) || source.ends_with(<span class="string">&quot;/.&quot;</span>) || source.is_file() {
