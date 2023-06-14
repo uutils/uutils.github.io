@@ -617,6 +617,8 @@
 <a href="#617" id="617">617</a>
 <a href="#618" id="618">618</a>
 <a href="#619" id="619">619</a>
+<a href="#620" id="620">620</a>
+<a href="#621" id="621">621</a>
 </pre></div><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Orvar Segerström &lt;orvarsegerstrom@gmail.com&gt;
@@ -644,7 +646,7 @@
 <span class="kw">use </span>uucore::backup_control::{<span class="self">self</span>, BackupMode};
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{set_exit_code, FromIo, UError, UResult, USimpleError, UUsageError};
-<span class="kw">use </span>uucore::fs::are_hardlinks_or_one_way_symlink_to_same_file;
+<span class="kw">use </span>uucore::fs::{are_hardlinks_or_one_way_symlink_to_same_file, are_hardlinks_to_same_file};
 <span class="kw">use </span>uucore::update_control::{<span class="self">self</span>, UpdateMode};
 <span class="kw">use </span>uucore::{format_usage, help_about, help_section, help_usage, prompt_yes, show};
 
@@ -874,8 +876,10 @@
         <span class="kw">return </span><span class="prelude-val">Err</span>(MvError::NoSuchFile(source.quote().to_string()).into());
     }
 
-    <span class="kw">if </span>(source.eq(target) || are_hardlinks_or_one_way_symlink_to_same_file(source, target))
-        &amp;&amp; b.backup != BackupMode::SimpleBackup
+    <span class="kw">if </span>(source.eq(target)
+        || are_hardlinks_to_same_file(source, target)
+        || are_hardlinks_or_one_way_symlink_to_same_file(source, target))
+        &amp;&amp; b.backup == BackupMode::NoBackup
     {
         <span class="kw">if </span>source.eq(Path::new(<span class="string">&quot;.&quot;</span>)) || source.ends_with(<span class="string">&quot;/.&quot;</span>) || source.is_file() {
             <span class="kw">return </span><span class="prelude-val">Err</span>(
