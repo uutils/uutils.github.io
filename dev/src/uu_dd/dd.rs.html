@@ -1227,6 +1227,52 @@
 <a href="#1227" id="1227">1227</a>
 <a href="#1228" id="1228">1228</a>
 <a href="#1229" id="1229">1229</a>
+<a href="#1230" id="1230">1230</a>
+<a href="#1231" id="1231">1231</a>
+<a href="#1232" id="1232">1232</a>
+<a href="#1233" id="1233">1233</a>
+<a href="#1234" id="1234">1234</a>
+<a href="#1235" id="1235">1235</a>
+<a href="#1236" id="1236">1236</a>
+<a href="#1237" id="1237">1237</a>
+<a href="#1238" id="1238">1238</a>
+<a href="#1239" id="1239">1239</a>
+<a href="#1240" id="1240">1240</a>
+<a href="#1241" id="1241">1241</a>
+<a href="#1242" id="1242">1242</a>
+<a href="#1243" id="1243">1243</a>
+<a href="#1244" id="1244">1244</a>
+<a href="#1245" id="1245">1245</a>
+<a href="#1246" id="1246">1246</a>
+<a href="#1247" id="1247">1247</a>
+<a href="#1248" id="1248">1248</a>
+<a href="#1249" id="1249">1249</a>
+<a href="#1250" id="1250">1250</a>
+<a href="#1251" id="1251">1251</a>
+<a href="#1252" id="1252">1252</a>
+<a href="#1253" id="1253">1253</a>
+<a href="#1254" id="1254">1254</a>
+<a href="#1255" id="1255">1255</a>
+<a href="#1256" id="1256">1256</a>
+<a href="#1257" id="1257">1257</a>
+<a href="#1258" id="1258">1258</a>
+<a href="#1259" id="1259">1259</a>
+<a href="#1260" id="1260">1260</a>
+<a href="#1261" id="1261">1261</a>
+<a href="#1262" id="1262">1262</a>
+<a href="#1263" id="1263">1263</a>
+<a href="#1264" id="1264">1264</a>
+<a href="#1265" id="1265">1265</a>
+<a href="#1266" id="1266">1266</a>
+<a href="#1267" id="1267">1267</a>
+<a href="#1268" id="1268">1268</a>
+<a href="#1269" id="1269">1269</a>
+<a href="#1270" id="1270">1270</a>
+<a href="#1271" id="1271">1271</a>
+<a href="#1272" id="1272">1272</a>
+<a href="#1273" id="1273">1273</a>
+<a href="#1274" id="1274">1274</a>
+<a href="#1275" id="1275">1275</a>
 </pre></div><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Tyler Steele &lt;tyler.steele@protonmail.com&gt;
@@ -1265,9 +1311,12 @@
     io::{AsRawFd, FromRawFd},
 };
 <span class="kw">use </span>std::path::Path;
-<span class="kw">use </span>std::sync::mpsc;
+<span class="kw">use </span>std::sync::{
+    atomic::{AtomicBool, Ordering::Relaxed},
+    mpsc, Arc,
+};
 <span class="kw">use </span>std::thread;
-<span class="kw">use </span>std::time;
+<span class="kw">use </span>std::time::{Duration, Instant};
 
 <span class="kw">use </span>clap::{crate_version, Arg, Command};
 <span class="kw">use </span>gcd::Gcd;
@@ -1302,6 +1351,45 @@
     oconv: OConvFlags,
     oflags: OFlags,
     status: <span class="prelude-ty">Option</span>&lt;StatusLevel&gt;,
+}
+
+<span class="doccomment">/// A timer which triggers on a given interval
+///
+/// After being constructed with [`Alarm::with_interval`], [`Alarm::is_triggered`]
+/// will return true once per the given [`Duration`].
+///
+/// Can be cloned, but the trigger status is shared across all instances so only
+/// the first caller each interval will yield true.
+///
+/// When all instances are dropped the background thread will exit on the next interval.
+</span><span class="attr">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>Alarm {
+    interval: Duration,
+    trigger: Arc&lt;AtomicBool&gt;,
+}
+
+<span class="kw">impl </span>Alarm {
+    <span class="kw">pub fn </span>with_interval(interval: Duration) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>trigger = Arc::new(AtomicBool::default());
+
+        <span class="kw">let </span>weak_trigger = Arc::downgrade(<span class="kw-2">&amp;</span>trigger);
+        thread::spawn(<span class="kw">move </span>|| {
+            <span class="kw">while let </span><span class="prelude-val">Some</span>(trigger) = weak_trigger.upgrade() {
+                thread::sleep(interval);
+                trigger.store(<span class="bool-val">true</span>, Relaxed);
+            }
+        });
+
+        <span class="self">Self </span>{ interval, trigger }
+    }
+
+    <span class="kw">pub fn </span>is_triggered(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.trigger.swap(<span class="bool-val">false</span>, Relaxed)
+    }
+
+    <span class="kw">pub fn </span>get_interval(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Duration {
+        <span class="self">self</span>.interval
+    }
 }
 
 <span class="doccomment">/// A number in blocks or bytes
@@ -1989,7 +2077,7 @@
     // of its report includes the throughput in bytes per second,
     // which requires knowing how long the process has been
     // running.
-    </span><span class="kw">let </span>start = time::Instant::now();
+    </span><span class="kw">let </span>start = Instant::now();
 
     <span class="comment">// A good buffer size for reading.
     //
@@ -2009,7 +2097,6 @@
     // information.
     </span><span class="kw">let </span>(prog_tx, rx) = mpsc::channel();
     <span class="kw">let </span>output_thread = thread::spawn(gen_prog_updater(rx, i.settings.status));
-    <span class="kw">let </span><span class="kw-2">mut </span>progress_as_secs = <span class="number">0</span>;
 
     <span class="comment">// Optimization: if no blocks are to be written, then don&#39;t
     // bother allocating any buffers.
@@ -2041,6 +2128,12 @@
     <span class="comment">// Create a common buffer with a capacity of the block size.
     // This is the max size needed.
     </span><span class="kw">let </span><span class="kw-2">mut </span>buf = <span class="macro">vec!</span>[BUF_INIT_BYTE; bsize];
+
+    <span class="comment">// Spawn a timer thread to provide a scheduled signal indicating when we
+    // should send an update of our progress to the reporting thread.
+    //
+    // This avoids the need to query the OS monotonic clock for every block.
+    </span><span class="kw">let </span>alarm = Alarm::with_interval(Duration::from_secs(<span class="number">1</span>));
 
     <span class="comment">// Index in the input file where we are reading bytes and in
     // the output file where we are writing bytes.
@@ -2100,9 +2193,8 @@
         // error.
         </span>rstat += rstat_update;
         wstat += wstat_update;
-        <span class="kw">let </span>prog_update = ProgUpdate::new(rstat, wstat, start.elapsed(), <span class="bool-val">false</span>);
-        <span class="kw">if </span>prog_update.duration.as_secs() &gt;= progress_as_secs {
-            progress_as_secs = prog_update.duration.as_secs() + <span class="number">1</span>;
+        <span class="kw">if </span>alarm.is_triggered() {
+            <span class="kw">let </span>prog_update = ProgUpdate::new(rstat, wstat, start.elapsed(), <span class="bool-val">false</span>);
             prog_tx.send(prog_update).unwrap_or(());
         }
     }
@@ -2114,7 +2206,7 @@
     output: <span class="kw-2">&amp;mut </span>Output,
     rstat: ReadStat,
     wstat: WriteStat,
-    start: time::Instant,
+    start: Instant,
     prog_tx: <span class="kw-2">&amp;</span>mpsc::Sender&lt;ProgUpdate&gt;,
     output_thread: thread::JoinHandle&lt;T&gt;,
 ) -&gt; std::io::Result&lt;()&gt; {
