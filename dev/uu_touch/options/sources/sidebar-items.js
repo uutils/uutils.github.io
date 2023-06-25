@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"static":["CURRENT","DATE","REFERENCE"]};
+window.SIDEBAR_ITEMS = {"static":["DATE","REFERENCE","TIMESTAMP"]};

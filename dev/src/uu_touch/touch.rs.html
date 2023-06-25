@@ -615,7 +615,7 @@
 // For the full copyright and license information, please view the LICENSE file
 // that was distributed with this source code.
 
-// spell-checker:ignore (ToDO) filetime strptime utcoff strs datetime MMDDhhmm clapv PWSTR lpszfilepath hresult mktime YYYYMMDDHHMM YYMMDDHHMM DATETIME YYYYMMDDHHMMS subsecond humantime
+// spell-checker:ignore (ToDO) filetime datetime MMDDhhmm lpszfilepath mktime YYYYMMDDHHMM YYMMDDHHMM DATETIME YYYYMMDDHHMMS subsecond humantime
 
 </span><span class="kw">use </span>clap::builder::ValueParser;
 <span class="kw">use </span>clap::{crate_version, Arg, ArgAction, ArgGroup, Command};
@@ -638,7 +638,7 @@
     <span class="kw">pub mod </span>sources {
         <span class="kw">pub static </span>DATE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;date&quot;</span>;
         <span class="kw">pub static </span>REFERENCE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;reference&quot;</span>;
-        <span class="kw">pub static </span>CURRENT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;current&quot;</span>;
+        <span class="kw">pub static </span>TIMESTAMP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;timestamp&quot;</span>;
     }
     <span class="kw">pub static </span>HELP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;help&quot;</span>;
     <span class="kw">pub static </span>ACCESS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;access&quot;</span>;
@@ -729,12 +729,12 @@
             (timestamp, timestamp)
         }
         (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; {
-            <span class="kw">let </span>timestamp =
-                <span class="kw">if let </span><span class="prelude-val">Some</span>(current) = matches.get_one::&lt;String&gt;(options::sources::CURRENT) {
-                    parse_timestamp(current)<span class="question-mark">?
-                </span>} <span class="kw">else </span>{
-                    local_dt_to_filetime(time::OffsetDateTime::now_local().unwrap())
-                };
+            <span class="kw">let </span>timestamp = <span class="kw">if let </span><span class="prelude-val">Some</span>(ts) = matches.get_one::&lt;String&gt;(options::sources::TIMESTAMP)
+            {
+                parse_timestamp(ts)<span class="question-mark">?
+            </span>} <span class="kw">else </span>{
+                local_dt_to_filetime(time::OffsetDateTime::now_local().unwrap())
+            };
             (timestamp, timestamp)
         }
     };
@@ -852,7 +852,7 @@
                 .action(ArgAction::SetTrue),
         )
         .arg(
-            Arg::new(options::sources::CURRENT)
+            Arg::new(options::sources::TIMESTAMP)
                 .short(<span class="string">&#39;t&#39;</span>)
                 .help(<span class="string">&quot;use [[CC]YY]MMDDhhmm[.ss] instead of the current time&quot;</span>)
                 .value_name(<span class="string">&quot;STAMP&quot;</span>),
@@ -864,7 +864,7 @@
                 .allow_hyphen_values(<span class="bool-val">true</span>)
                 .help(<span class="string">&quot;parse argument and use it instead of current time&quot;</span>)
                 .value_name(<span class="string">&quot;STRING&quot;</span>)
-                .conflicts_with(options::sources::CURRENT),
+                .conflicts_with(options::sources::TIMESTAMP),
         )
         .arg(
             Arg::new(options::MODIFICATION)
@@ -897,7 +897,7 @@
                 .value_name(<span class="string">&quot;FILE&quot;</span>)
                 .value_parser(ValueParser::os_string())
                 .value_hint(clap::ValueHint::AnyPath)
-                .conflicts_with(options::sources::CURRENT),
+                .conflicts_with(options::sources::TIMESTAMP),
         )
         .arg(
             Arg::new(options::TIME)
@@ -920,7 +920,7 @@
         .group(
             ArgGroup::new(options::SOURCES)
                 .args([
-                    options::sources::CURRENT,
+                    options::sources::TIMESTAMP,
                     options::sources::DATE,
                     options::sources::REFERENCE,
                 ])

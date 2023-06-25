@@ -401,6 +401,9 @@
 <a href="#401" id="401">401</a>
 <a href="#402" id="402">402</a>
 <a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Tobias Bohumir Schottdorf &lt;tobias.schottdorf@gmail.com&gt;
@@ -408,8 +411,6 @@
 //  * For the full copyright and license information, please view the LICENSE
 //  * file that was distributed with this source code.
 //  *
-
-// spell-checker:ignore (ToDO) corasick memchr
 
 </span><span class="kw">use </span>clap::{crate_version, Arg, ArgAction, Command};
 <span class="kw">use </span>std::fs::File;
@@ -421,8 +422,8 @@
 
 <span class="kw">mod </span>helper;
 
-<span class="kw">static </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;nl.md&quot;</span>);
-<span class="kw">static </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;nl.md&quot;</span>);
+<span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;nl.md&quot;</span>);
+<span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;nl.md&quot;</span>);
 
 <span class="comment">// Settings store options used by nl to produce its output.
 </span><span class="kw">pub struct </span>Settings {
@@ -443,6 +444,24 @@
     renumber: bool,
     <span class="comment">// The string appended to each line number output.
     </span>number_separator: String,
+}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>Settings {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            header_numbering: NumberingStyle::NumberForNone,
+            body_numbering: NumberingStyle::NumberForAll,
+            footer_numbering: NumberingStyle::NumberForNone,
+            section_delimiter: [<span class="string">&#39;\\&#39;</span>, <span class="string">&#39;:&#39;</span>],
+            starting_line_number: <span class="number">1</span>,
+            line_increment: <span class="number">1</span>,
+            join_blank_lines: <span class="number">1</span>,
+            number_width: <span class="number">6</span>,
+            number_format: NumberFormat::Right,
+            renumber: <span class="bool-val">true</span>,
+            number_separator: String::from(<span class="string">&quot;\t&quot;</span>),
+        }
+    }
 }
 
 <span class="comment">// NumberingStyle stores which lines are to be numbered.
@@ -490,20 +509,7 @@
 
     <span class="kw">let </span>matches = uu_app().try_get_matches_from(args)<span class="question-mark">?</span>;
 
-    <span class="comment">// A mutable settings object, initialized with the defaults.
-    </span><span class="kw">let </span><span class="kw-2">mut </span>settings = Settings {
-        header_numbering: NumberingStyle::NumberForNone,
-        body_numbering: NumberingStyle::NumberForAll,
-        footer_numbering: NumberingStyle::NumberForNone,
-        section_delimiter: [<span class="string">&#39;\\&#39;</span>, <span class="string">&#39;:&#39;</span>],
-        starting_line_number: <span class="number">1</span>,
-        line_increment: <span class="number">1</span>,
-        join_blank_lines: <span class="number">1</span>,
-        number_width: <span class="number">6</span>,
-        number_format: NumberFormat::Right,
-        renumber: <span class="bool-val">true</span>,
-        number_separator: String::from(<span class="string">&quot;\t&quot;</span>),
-    };
+    <span class="kw">let </span><span class="kw-2">mut </span>settings = Settings::default();
 
     <span class="comment">// Update the settings from the command line options, and terminate the
     // program if some options could not successfully be parsed.
