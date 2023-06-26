@@ -319,6 +319,7 @@
 <a href="#319" id="319">319</a>
 <a href="#320" id="320">320</a>
 <a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Michael Debertol &lt;michael.debertol..AT..gmail.com&gt;
@@ -337,21 +338,22 @@
 };
 
 <span class="kw">use </span>memchr::memchr_iter;
-<span class="kw">use </span>ouroboros::self_referencing;
+<span class="kw">use </span>self_cell::self_cell;
 <span class="kw">use </span>uucore::error::{UResult, USimpleError};
 
 <span class="kw">use crate</span>::{numeric_str_cmp::NumInfo, GeneralF64ParseResult, GlobalSettings, Line, SortError};
 
-<span class="doccomment">/// The chunk that is passed around between threads.
-/// `lines` consist of slices into `buffer`.
-</span><span class="attr">#[self_referencing(pub_extras)]
-#[derive(Debug)]
-</span><span class="kw">pub struct </span>Chunk {
-    <span class="kw">pub </span>buffer: Vec&lt;u8&gt;,
-    <span class="attr">#[borrows(buffer)]
-    #[covariant]
-    </span><span class="kw">pub </span>contents: ChunkContents&lt;<span class="lifetime">&#39;this</span>&gt;,
-}
+<span class="macro">self_cell!</span>(
+    <span class="doccomment">/// The chunk that is passed around between threads.
+    </span><span class="kw">pub struct </span>Chunk {
+        owner: Vec&lt;u8&gt;,
+
+        <span class="attr">#[covariant]
+        </span>dependent: ChunkContents,
+    }
+
+    <span class="kw">impl </span>{Debug}
+);
 
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>ChunkContents&lt;<span class="lifetime">&#39;a</span>&gt; {
@@ -369,7 +371,7 @@
 <span class="kw">impl </span>Chunk {
     <span class="doccomment">/// Destroy this chunk and return its components to be reused.
     </span><span class="kw">pub fn </span>recycle(<span class="kw-2">mut </span><span class="self">self</span>) -&gt; RecycledChunk {
-        <span class="kw">let </span>recycled_contents = <span class="self">self</span>.with_contents_mut(|contents| {
+        <span class="kw">let </span>recycled_contents = <span class="self">self</span>.with_dependent_mut(|<span class="kw">_</span>, contents| {
             contents.lines.clear();
             contents.line_data.selections.clear();
             contents.line_data.num_infos.clear();
@@ -402,15 +404,15 @@
             selections: recycled_contents.<span class="number">1</span>,
             num_infos: recycled_contents.<span class="number">2</span>,
             parsed_floats: recycled_contents.<span class="number">3</span>,
-            buffer: <span class="self">self</span>.into_heads().buffer,
+            buffer: <span class="self">self</span>.into_owner(),
         }
     }
 
     <span class="kw">pub fn </span>lines(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Vec&lt;Line&gt; {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.borrow_contents().lines
+        <span class="kw-2">&amp;</span><span class="self">self</span>.borrow_dependent().lines
     }
     <span class="kw">pub fn </span>line_data(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>LineData {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.borrow_contents().line_data
+        <span class="kw-2">&amp;</span><span class="self">self</span>.borrow_dependent().line_data
     }
 }
 
