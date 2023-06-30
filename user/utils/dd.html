@@ -110,11 +110,33 @@
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
         <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
                                 <div id="menu-bar-hover-placeholder"></div>
-                <div id="menu-bar" class="menu-bar sticky bordered">
+                <div id="menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
                         <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
                             <i class="fa fa-bars"></i>
@@ -191,7 +213,7 @@ dd OPTION
 <h3 id="operands"><a class="header" href="#operands">Operands</a></h3>
 <ul>
 <li>
-<p><code>Bs=BYTES</code> : read and write up to BYTES bytes at a time (default: 512);
+<p><code>bs=BYTES</code> : read and write up to BYTES bytes at a time (default: 512);
 overwrites <code>ibs</code> and <code>obs</code>.</p>
 </li>
 <li>
@@ -342,7 +364,7 @@ considered EOF.</li>
 </ul>
 <h3 id="general-flags"><a class="header" href="#general-flags">General Flags</a></h3>
 <ul>
-<li><code>Direct</code> : use direct I/O for data.</li>
+<li><code>direct</code> : use direct I/O for data.</li>
 <li><code>directory</code> : fail unless the given input (if used as an iflag) or
 output (if used as an oflag) is a directory.</li>
 <li><code>dsync</code> : use synchronized I/O for data.</li>
