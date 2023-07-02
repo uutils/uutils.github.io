@@ -337,6 +337,47 @@
 <a href="#337" id="337">337</a>
 <a href="#338" id="338">338</a>
 <a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::str::FromStr;
 
 <span class="kw">use </span><span class="kw">crate</span>::units::Unit;
@@ -352,6 +393,7 @@
 <span class="kw">pub const </span>FROM_UNIT_DEFAULT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;1&quot;</span>;
 <span class="kw">pub const </span>HEADER: <span class="kw-2">&amp;</span>str = <span class="string">&quot;header&quot;</span>;
 <span class="kw">pub const </span>HEADER_DEFAULT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;1&quot;</span>;
+<span class="kw">pub const </span>INVALID: <span class="kw-2">&amp;</span>str = <span class="string">&quot;invalid&quot;</span>;
 <span class="kw">pub const </span>NUMBER: <span class="kw-2">&amp;</span>str = <span class="string">&quot;NUMBER&quot;</span>;
 <span class="kw">pub const </span>PADDING: <span class="kw-2">&amp;</span>str = <span class="string">&quot;padding&quot;</span>;
 <span class="kw">pub const </span>ROUND: <span class="kw-2">&amp;</span>str = <span class="string">&quot;round&quot;</span>;
@@ -368,6 +410,14 @@
     <span class="kw">pub </span>to_unit: usize,
 }
 
+<span class="attr">#[derive(Debug, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>InvalidModes {
+    Abort,
+    Fail,
+    Warn,
+    Ignore,
+}
+
 <span class="kw">pub struct </span>NumfmtOptions {
     <span class="kw">pub </span>transform: TransformOptions,
     <span class="kw">pub </span>padding: isize,
@@ -377,6 +427,7 @@
     <span class="kw">pub </span>round: RoundMethod,
     <span class="kw">pub </span>suffix: <span class="prelude-ty">Option</span>&lt;String&gt;,
     <span class="kw">pub </span>format: FormatOptions,
+    <span class="kw">pub </span>invalid: InvalidModes,
 }
 
 <span class="attr">#[derive(Clone, Copy)]
@@ -566,6 +617,20 @@
     }
 }
 
+<span class="kw">impl </span>FromStr <span class="kw">for </span>InvalidModes {
+    <span class="kw">type </span><span class="prelude-val">Err </span>= String;
+
+    <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
+        <span class="kw">match </span>s.to_lowercase().as_str() {
+            <span class="string">&quot;abort&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Abort),
+            <span class="string">&quot;fail&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Fail),
+            <span class="string">&quot;warn&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Warn),
+            <span class="string">&quot;ignore&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Ignore),
+            unknown =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Unknown invalid mode: {unknown}&quot;</span>)),
+        }
+    }
+}
+
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
@@ -674,6 +739,23 @@
         <span class="macro">assert_eq!</span>(expected_options, <span class="string">&quot;%&#39;0f&quot;</span>.parse().unwrap());
         <span class="macro">assert_eq!</span>(expected_options, <span class="string">&quot;%0&#39;0&#39;0&#39;f&quot;</span>.parse().unwrap());
         <span class="macro">assert_eq!</span>(expected_options, <span class="string">&quot;%&#39;0&#39;0&#39;0f&quot;</span>.parse().unwrap());
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_set_invalid_mode() {
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(InvalidModes::Abort), InvalidModes::from_str(<span class="string">&quot;abort&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(InvalidModes::Abort), InvalidModes::from_str(<span class="string">&quot;ABORT&quot;</span>));
+
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(InvalidModes::Fail), InvalidModes::from_str(<span class="string">&quot;fail&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(InvalidModes::Fail), InvalidModes::from_str(<span class="string">&quot;FAIL&quot;</span>));
+
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(InvalidModes::Ignore), InvalidModes::from_str(<span class="string">&quot;ignore&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(InvalidModes::Ignore), InvalidModes::from_str(<span class="string">&quot;IGNORE&quot;</span>));
+
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(InvalidModes::Warn), InvalidModes::from_str(<span class="string">&quot;warn&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Ok</span>(InvalidModes::Warn), InvalidModes::from_str(<span class="string">&quot;WARN&quot;</span>));
+
+        <span class="macro">assert!</span>(InvalidModes::from_str(<span class="string">&quot;something unknown&quot;</span>).is_err());
     }
 }
 </code></pre></div></section></main></body></html>

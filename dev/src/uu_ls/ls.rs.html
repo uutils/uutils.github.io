@@ -3142,6 +3142,20 @@
 <a href="#3142" id="3142">3142</a>
 <a href="#3143" id="3143">3143</a>
 <a href="#3144" id="3144">3144</a>
+<a href="#3145" id="3145">3145</a>
+<a href="#3146" id="3146">3146</a>
+<a href="#3147" id="3147">3147</a>
+<a href="#3148" id="3148">3148</a>
+<a href="#3149" id="3149">3149</a>
+<a href="#3150" id="3150">3150</a>
+<a href="#3151" id="3151">3151</a>
+<a href="#3152" id="3152">3152</a>
+<a href="#3153" id="3153">3153</a>
+<a href="#3154" id="3154">3154</a>
+<a href="#3155" id="3155">3155</a>
+<a href="#3156" id="3156">3156</a>
+<a href="#3157" id="3157">3157</a>
+<a href="#3158" id="3158">3158</a>
 </pre></div><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Jeremiah Peschka &lt;jeremiah.peschka@gmail.com&gt;
@@ -6152,6 +6166,20 @@
 </span><span class="attr">#[allow(unused_variables)]
 </span><span class="kw">fn </span>get_security_context(config: <span class="kw-2">&amp;</span>Config, p_buf: <span class="kw-2">&amp;</span>Path, must_dereference: bool) -&gt; String {
     <span class="kw">let </span>substitute_string = <span class="string">&quot;?&quot;</span>.to_string();
+    <span class="comment">// If we must dereference, ensure that the symlink is actually valid even if the system
+    // does not support SELinux.
+    // Conforms to the GNU coreutils where a dangling symlink results in exit code 1.
+    </span><span class="kw">if </span>must_dereference {
+        <span class="kw">match </span>get_metadata(p_buf, must_dereference) {
+            <span class="prelude-val">Err</span>(err) =&gt; {
+                <span class="comment">// The Path couldn&#39;t be dereferenced, so return early and set exit code 1
+                // to indicate a minor error
+                </span><span class="macro">show!</span>(LsError::IOErrorContext(err, p_buf.to_path_buf(), <span class="bool-val">false</span>));
+                <span class="kw">return </span>substitute_string;
+            }
+            <span class="prelude-val">Ok</span>(md) =&gt; (),
+        }
+    }
     <span class="kw">if </span>config.selinux_supported {
         <span class="attr">#[cfg(feature = <span class="string">&quot;selinux&quot;</span>)]
         </span>{
