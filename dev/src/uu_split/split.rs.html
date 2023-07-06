@@ -1432,6 +1432,21 @@
 <a href="#1432" id="1432">1432</a>
 <a href="#1433" id="1433">1433</a>
 <a href="#1434" id="1434">1434</a>
+<a href="#1435" id="1435">1435</a>
+<a href="#1436" id="1436">1436</a>
+<a href="#1437" id="1437">1437</a>
+<a href="#1438" id="1438">1438</a>
+<a href="#1439" id="1439">1439</a>
+<a href="#1440" id="1440">1440</a>
+<a href="#1441" id="1441">1441</a>
+<a href="#1442" id="1442">1442</a>
+<a href="#1443" id="1443">1443</a>
+<a href="#1444" id="1444">1444</a>
+<a href="#1445" id="1445">1445</a>
+<a href="#1446" id="1446">1446</a>
+<a href="#1447" id="1447">1447</a>
+<a href="#1448" id="1448">1448</a>
+<a href="#1449" id="1449">1449</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Akira Hayakawa &lt;ruby.wktk@gmail.com&gt;
@@ -1701,7 +1716,11 @@
                 <span class="kw">let </span>num_chunks = n_str
                     .parse()
                     .map_err(|<span class="kw">_</span>| NumberTypeError::NumberOfChunks(n_str.to_string()))<span class="question-mark">?</span>;
-                <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Bytes(num_chunks))
+                <span class="kw">if </span>num_chunks &gt; <span class="number">0 </span>{
+                    <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Bytes(num_chunks))
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">Err</span>(NumberTypeError::NumberOfChunks(s.to_string()))
+                }
             }
             [<span class="string">&quot;l&quot;</span>, n_str] =&gt; {
                 <span class="kw">let </span>num_chunks = n_str
@@ -1791,6 +1810,20 @@
 <span class="kw">impl </span>Strategy {
     <span class="doccomment">/// Parse a strategy from the command-line arguments.
     </span><span class="kw">fn </span>from(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, StrategyError&gt; {
+        <span class="kw">fn </span>get_and_parse(
+            matches: <span class="kw-2">&amp;</span>ArgMatches,
+            option: <span class="kw-2">&amp;</span>str,
+            strategy: <span class="kw">fn</span>(u64) -&gt; Strategy,
+            error: <span class="kw">fn</span>(ParseSizeError) -&gt; StrategyError,
+        ) -&gt; <span class="prelude-ty">Result</span>&lt;Strategy, StrategyError&gt; {
+            <span class="kw">let </span>s = matches.get_one::&lt;String&gt;(option).unwrap();
+            <span class="kw">let </span>n = parse_size(s).map_err(error)<span class="question-mark">?</span>;
+            <span class="kw">if </span>n &gt; <span class="number">0 </span>{
+                <span class="prelude-val">Ok</span>(strategy(n))
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Err</span>(error(ParseSizeError::ParseFailure(s.to_string())))
+            }
+        }
         <span class="comment">// Check that the user is not specifying more than one strategy.
         //
         // Note: right now, this exact behavior cannot be handled by
@@ -1804,20 +1837,17 @@
         ) {
             (<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Lines(<span class="number">1000</span>)),
             (<span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
-                <span class="kw">let </span>s = matches.get_one::&lt;String&gt;(OPT_LINES).unwrap();
-                <span class="kw">let </span>n = parse_size(s).map_err(StrategyError::Lines)<span class="question-mark">?</span>;
-                <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Lines(n))
+                get_and_parse(matches, OPT_LINES, <span class="self">Self</span>::Lines, StrategyError::Lines)
             }
             (<span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
-                <span class="kw">let </span>s = matches.get_one::&lt;String&gt;(OPT_BYTES).unwrap();
-                <span class="kw">let </span>n = parse_size(s).map_err(StrategyError::Bytes)<span class="question-mark">?</span>;
-                <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Bytes(n))
+                get_and_parse(matches, OPT_BYTES, <span class="self">Self</span>::Bytes, StrategyError::Bytes)
             }
-            (<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>) =&gt; {
-                <span class="kw">let </span>s = matches.get_one::&lt;String&gt;(OPT_LINE_BYTES).unwrap();
-                <span class="kw">let </span>n = parse_size(s).map_err(StrategyError::Bytes)<span class="question-mark">?</span>;
-                <span class="prelude-val">Ok</span>(<span class="self">Self</span>::LineBytes(n))
-            }
+            (<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>) =&gt; get_and_parse(
+                matches,
+                OPT_LINE_BYTES,
+                <span class="self">Self</span>::LineBytes,
+                StrategyError::Bytes,
+            ),
             (<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>) =&gt; {
                 <span class="kw">let </span>s = matches.get_one::&lt;String&gt;(OPT_NUMBER).unwrap();
                 <span class="kw">let </span>number_type = NumberType::from(s).map_err(StrategyError::NumberType)<span class="question-mark">?</span>;
