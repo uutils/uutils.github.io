@@ -410,19 +410,74 @@
 <a href="#410" id="410">410</a>
 <a href="#411" id="411">411</a>
 <a href="#412" id="412">412</a>
+<a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
+<a href="#415" id="415">415</a>
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
+<a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
+<a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a>
+<a href="#433" id="433">433</a>
+<a href="#434" id="434">434</a>
+<a href="#435" id="435">435</a>
+<a href="#436" id="436">436</a>
+<a href="#437" id="437">437</a>
+<a href="#438" id="438">438</a>
+<a href="#439" id="439">439</a>
+<a href="#440" id="440">440</a>
+<a href="#441" id="441">441</a>
+<a href="#442" id="442">442</a>
+<a href="#443" id="443">443</a>
+<a href="#444" id="444">444</a>
+<a href="#445" id="445">445</a>
+<a href="#446" id="446">446</a>
+<a href="#447" id="447">447</a>
+<a href="#448" id="448">448</a>
+<a href="#449" id="449">449</a>
+<a href="#450" id="450">450</a>
+<a href="#451" id="451">451</a>
+<a href="#452" id="452">452</a>
+<a href="#453" id="453">453</a>
+<a href="#454" id="454">454</a>
+<a href="#455" id="455">455</a>
+<a href="#456" id="456">456</a>
+<a href="#457" id="457">457</a>
+<a href="#458" id="458">458</a>
+<a href="#459" id="459">459</a>
+<a href="#460" id="460">460</a>
+<a href="#461" id="461">461</a>
+<a href="#462" id="462">462</a>
+<a href="#463" id="463">463</a>
+<a href="#464" id="464">464</a>
+<a href="#465" id="465">465</a>
+<a href="#466" id="466">466</a>
 </pre></div><pre class="rust"><code><span class="comment">// * This file is part of the uutils coreutils package.
 // *
 // * For the full copyright and license information, please view the LICENSE file
 // * that was distributed with this source code.
 
-// spell-checker:ignore clocal tcgetattr tcsetattr tcsanow tiocgwinsz tiocswinsz cfgetospeed ushort
+// spell-checker:ignore clocal tcgetattr tcsetattr tcsanow tiocgwinsz tiocswinsz cfgetospeed cfsetospeed ushort
 
 </span><span class="kw">mod </span>flags;
 
 <span class="kw">use </span>clap::{crate_version, Arg, ArgAction, ArgMatches, Command};
 <span class="kw">use </span>nix::libc::{c_ushort, O_NONBLOCK, TIOCGWINSZ, TIOCSWINSZ};
 <span class="kw">use </span>nix::sys::termios::{
-    cfgetospeed, tcgetattr, tcsetattr, ControlFlags, InputFlags, LocalFlags, OutputFlags, Termios,
+    cfgetospeed, cfsetospeed, tcgetattr, tcsetattr, ControlFlags, InputFlags, LocalFlags,
+    OutputFlags, Termios,
 };
 <span class="kw">use </span>nix::{ioctl_read_bad, ioctl_write_ptr_bad};
 <span class="kw">use </span>std::io::{<span class="self">self</span>, stdout};
@@ -656,12 +711,30 @@
     <span class="prelude-val">Ok</span>(())
 }
 
+<span class="kw">fn </span>print_in_save_format(termios: <span class="kw-2">&amp;</span>Termios) {
+    <span class="macro">print!</span>(
+        <span class="string">&quot;{:x}:{:x}:{:x}:{:x}&quot;</span>,
+        termios.input_flags.bits(),
+        termios.output_flags.bits(),
+        termios.control_flags.bits(),
+        termios.local_flags.bits()
+    );
+    <span class="kw">for </span>cc <span class="kw">in </span>termios.control_chars {
+        <span class="macro">print!</span>(<span class="string">&quot;:{cc:x}&quot;</span>);
+    }
+    <span class="macro">println!</span>();
+}
+
 <span class="kw">fn </span>print_settings(termios: <span class="kw-2">&amp;</span>Termios, opts: <span class="kw-2">&amp;</span>Options) -&gt; nix::Result&lt;()&gt; {
-    print_terminal_size(termios, opts)<span class="question-mark">?</span>;
-    print_flags(termios, opts, CONTROL_FLAGS);
-    print_flags(termios, opts, INPUT_FLAGS);
-    print_flags(termios, opts, OUTPUT_FLAGS);
-    print_flags(termios, opts, LOCAL_FLAGS);
+    <span class="kw">if </span>opts.save {
+        print_in_save_format(termios);
+    } <span class="kw">else </span>{
+        print_terminal_size(termios, opts)<span class="question-mark">?</span>;
+        print_flags(termios, opts, CONTROL_FLAGS);
+        print_flags(termios, opts, INPUT_FLAGS);
+        print_flags(termios, opts, OUTPUT_FLAGS);
+        print_flags(termios, opts, LOCAL_FLAGS);
+    }
     <span class="prelude-val">Ok</span>(())
 }
 
@@ -702,6 +775,8 @@
 /// The value inside the `Break` variant of the `ControlFlow` indicates whether
 /// the setting has been applied.
 </span><span class="kw">fn </span>apply_setting(termios: <span class="kw-2">&amp;mut </span>Termios, s: <span class="kw-2">&amp;</span>str) -&gt; ControlFlow&lt;bool&gt; {
+    apply_baud_rate_flag(termios, s)<span class="question-mark">?</span>;
+
     <span class="kw">let </span>(remove, name) = <span class="kw">match </span>s.strip_prefix(<span class="string">&#39;-&#39;</span>) {
         <span class="prelude-val">Some</span>(s) =&gt; (<span class="bool-val">true</span>, s),
         <span class="prelude-val">None </span>=&gt; (<span class="bool-val">false</span>, s),
@@ -738,6 +813,39 @@
                 group.apply(termios, <span class="bool-val">false</span>);
             }
             flag.apply(termios, !remove);
+            <span class="kw">return </span>ControlFlow::Break(<span class="bool-val">true</span>);
+        }
+    }
+    ControlFlow::Continue(())
+}
+
+<span class="kw">fn </span>apply_baud_rate_flag(termios: <span class="kw-2">&amp;mut </span>Termios, input: <span class="kw-2">&amp;</span>str) -&gt; ControlFlow&lt;bool&gt; {
+    <span class="comment">// BSDs use a u32 for the baud rate, so any decimal number applies.
+    </span><span class="attr">#[cfg(any(
+        target_os = <span class="string">&quot;freebsd&quot;</span>,
+        target_os = <span class="string">&quot;dragonfly&quot;</span>,
+        target_os = <span class="string">&quot;ios&quot;</span>,
+        target_os = <span class="string">&quot;macos&quot;</span>,
+        target_os = <span class="string">&quot;netbsd&quot;</span>,
+        target_os = <span class="string">&quot;openbsd&quot;
+    </span>))]
+    </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(n) = input.parse::&lt;u32&gt;() {
+        cfsetospeed(termios, n).expect(<span class="string">&quot;Failed to set baud rate&quot;</span>);
+        <span class="kw">return </span>ControlFlow::Break(<span class="bool-val">true</span>);
+    }
+
+    <span class="comment">// Other platforms use an enum.
+    </span><span class="attr">#[cfg(not(any(
+        target_os = <span class="string">&quot;freebsd&quot;</span>,
+        target_os = <span class="string">&quot;dragonfly&quot;</span>,
+        target_os = <span class="string">&quot;ios&quot;</span>,
+        target_os = <span class="string">&quot;macos&quot;</span>,
+        target_os = <span class="string">&quot;netbsd&quot;</span>,
+        target_os = <span class="string">&quot;openbsd&quot;
+    </span>)))]
+    </span><span class="kw">for </span>(text, baud_rate) <span class="kw">in </span>BAUD_RATES {
+        <span class="kw">if </span><span class="kw-2">*</span>text == input {
+            cfsetospeed(termios, <span class="kw-2">*</span>baud_rate).expect(<span class="string">&quot;Failed to set baud rate&quot;</span>);
             <span class="kw">return </span>ControlFlow::Break(<span class="bool-val">true</span>);
         }
     }
