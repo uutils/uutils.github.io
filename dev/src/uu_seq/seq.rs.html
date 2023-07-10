@@ -356,6 +356,9 @@
 <a href="#356" id="356">356</a>
 <a href="#357" id="357">357</a>
 <a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * For the full copyright and license information, please view the LICENSE
@@ -416,10 +419,13 @@
 </span><span class="kw">pub fn </span>uumain(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;()&gt; {
     <span class="kw">let </span>matches = uu_app().try_get_matches_from(args)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>numbers = matches
-        .get_many::&lt;String&gt;(ARG_NUMBERS)
-        .unwrap()
-        .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+    <span class="kw">let </span>numbers_option = matches.get_many::&lt;String&gt;(ARG_NUMBERS);
+
+    <span class="kw">if </span>numbers_option.is_none() {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(SeqError::NoArguments.into());
+    }
+
+    <span class="kw">let </span>numbers = numbers_option.unwrap().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
     <span class="kw">let </span>options = SeqOptions {
         separator: matches

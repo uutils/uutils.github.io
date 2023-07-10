@@ -350,15 +350,6 @@
 <a href="#350" id="350">350</a>
 <a href="#351" id="351">351</a>
 <a href="#352" id="352">352</a>
-<a href="#353" id="353">353</a>
-<a href="#354" id="354">354</a>
-<a href="#355" id="355">355</a>
-<a href="#356" id="356">356</a>
-<a href="#357" id="357">357</a>
-<a href="#358" id="358">358</a>
-<a href="#359" id="359">359</a>
-<a href="#360" id="360">360</a>
-<a href="#361" id="361">361</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::cmp::Ordering;
 
 <span class="doccomment">/// Compares the non-digit parts of a version.
@@ -467,7 +458,7 @@
     <span class="comment">// 1. Compare leading non-numerical part
     // 2. Compare leading numerical part
     // 3. Repeat
-    </span><span class="kw">loop </span>{
+    </span><span class="kw">while </span>!a.is_empty() || !b.is_empty() {
         <span class="kw">let </span>a_numerical_start = a.find(|c: char| c.is_ascii_digit()).unwrap_or(a.len());
         <span class="kw">let </span>b_numerical_start = b.find(|c: char| c.is_ascii_digit()).unwrap_or(b.len());
 
@@ -500,12 +491,9 @@
 
         a = <span class="kw-2">&amp;</span>a[a_numerical_end..];
         b = <span class="kw-2">&amp;</span>b[b_numerical_end..];
-
-        <span class="kw">if </span>a.is_empty() &amp;&amp; b.is_empty() {
-            <span class="comment">// Default to the lexical comparison.
-            </span><span class="kw">return </span>str_cmp;
-        }
     }
+
+    Ordering::Equal
 }
 
 <span class="attr">#[cfg(test)]
@@ -590,14 +578,14 @@
         <span class="comment">// Leading zeroes
         </span><span class="macro">assert_eq!</span>(
             version_cmp(<span class="string">&quot;012&quot;</span>, <span class="string">&quot;12&quot;</span>),
-            Ordering::Less,
-            <span class="string">&quot;A single leading zero can make a difference&quot;
+            Ordering::Equal,
+            <span class="string">&quot;A single leading zero does not make a difference&quot;
         </span>);
 
         <span class="macro">assert_eq!</span>(
             version_cmp(<span class="string">&quot;000800&quot;</span>, <span class="string">&quot;0000800&quot;</span>),
-            Ordering::Greater,
-            <span class="string">&quot;Leading number of zeroes is used even if both non-zero number of zeros&quot;
+            Ordering::Equal,
+            <span class="string">&quot;Multiple leading zeros do not make a difference&quot;
         </span>);
 
         <span class="comment">// Numbers and other characters combined
@@ -641,14 +629,8 @@
 
         <span class="macro">assert_eq!</span>(
             version_cmp(<span class="string">&quot;aa10aa0022&quot;</span>, <span class="string">&quot;aa010aa022&quot;</span>),
-            Ordering::Greater,
-            <span class="string">&quot;The leading zeroes of the first number has priority.&quot;
-        </span>);
-
-        <span class="macro">assert_eq!</span>(
-            version_cmp(<span class="string">&quot;aa10aa0022&quot;</span>, <span class="string">&quot;aa10aa022&quot;</span>),
-            Ordering::Less,
-            <span class="string">&quot;The leading zeroes of other numbers than the first are used.&quot;
+            Ordering::Equal,
+            <span class="string">&quot;Test multiple numeric values with leading zeros&quot;
         </span>);
 
         <span class="macro">assert_eq!</span>(
@@ -668,7 +650,7 @@
 
         <span class="macro">assert_eq!</span>(
             version_cmp(<span class="string">&quot;aa2000000000000000000000bb&quot;</span>, <span class="string">&quot;aa002000000000000000000000bb&quot;</span>),
-            Ordering::Greater,
+            Ordering::Equal,
             <span class="string">&quot;Leading zeroes for numbers larger than u64::MAX are \
             handled correctly without crashing&quot;
         </span>);
