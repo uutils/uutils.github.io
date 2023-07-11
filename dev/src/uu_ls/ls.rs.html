@@ -3157,6 +3157,8 @@
 <a href="#3157" id="3157">3157</a>
 <a href="#3158" id="3158">3158</a>
 <a href="#3159" id="3159">3159</a>
+<a href="#3160" id="3160">3160</a>
+<a href="#3161" id="3161">3161</a>
 </pre></div><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Jeremiah Peschka &lt;jeremiah.peschka@gmail.com&gt;
@@ -5091,8 +5093,10 @@
         Sort::Size =&gt; entries.sort_by_key(|k| Reverse(k.md(out).map(|md| md.len()).unwrap_or(<span class="number">0</span>))),
         <span class="comment">// The default sort in GNU ls is case insensitive
         </span>Sort::Name =&gt; entries.sort_by(|a, b| a.display_name.cmp(<span class="kw-2">&amp;</span>b.display_name)),
-        Sort::Version =&gt; entries
-            .sort_by(|a, b| version_cmp(<span class="kw-2">&amp;</span>a.p_buf.to_string_lossy(), <span class="kw-2">&amp;</span>b.p_buf.to_string_lossy())),
+        Sort::Version =&gt; entries.sort_by(|a, b| {
+            version_cmp(<span class="kw-2">&amp;</span>a.p_buf.to_string_lossy(), <span class="kw-2">&amp;</span>b.p_buf.to_string_lossy())
+                .then(a.p_buf.to_string_lossy().cmp(<span class="kw-2">&amp;</span>b.p_buf.to_string_lossy()))
+        }),
         Sort::Extension =&gt; entries.sort_by(|a, b| {
             a.p_buf
                 .extension()
