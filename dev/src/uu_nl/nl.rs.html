@@ -405,6 +405,22 @@
 <a href="#405" id="405">405</a>
 <a href="#406" id="406">406</a>
 <a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a>
+<a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
+<a href="#415" id="415">415</a>
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
+<a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Tobias Bohumir Schottdorf &lt;tobias.schottdorf@gmail.com&gt;
@@ -419,11 +435,12 @@
 <span class="kw">use </span>std::iter::repeat;
 <span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>uucore::error::{FromIo, UResult, USimpleError};
-<span class="kw">use </span>uucore::{format_usage, help_about, help_usage};
+<span class="kw">use </span>uucore::{format_usage, help_about, help_section, help_usage};
 
 <span class="kw">mod </span>helper;
 
 <span class="kw">const </span>ABOUT: <span class="kw-2">&amp;</span>str = <span class="macro">help_about!</span>(<span class="string">&quot;nl.md&quot;</span>);
+<span class="kw">const </span>AFTER_HELP: <span class="kw-2">&amp;</span>str = <span class="macro">help_section!</span>(<span class="string">&quot;after help&quot;</span>, <span class="string">&quot;nl.md&quot;</span>);
 <span class="kw">const </span>USAGE: <span class="kw-2">&amp;</span>str = <span class="macro">help_usage!</span>(<span class="string">&quot;nl.md&quot;</span>);
 
 <span class="comment">// Settings store options used by nl to produce its output.
@@ -482,10 +499,23 @@
 <span class="comment">// NumberFormat specifies how line numbers are output within their allocated
 // space. They are justified to the left or right, in the latter case with
 // the option of having all unused space to its left turned into leading zeroes.
+</span><span class="attr">#[derive(Default)]
 </span><span class="kw">enum </span>NumberFormat {
     Left,
-    Right,
+    <span class="attr">#[default]
+    </span>Right,
     RightZero,
+}
+
+<span class="kw">impl</span>&lt;T: AsRef&lt;str&gt;&gt; From&lt;T&gt; <span class="kw">for </span>NumberFormat {
+    <span class="kw">fn </span>from(s: T) -&gt; <span class="self">Self </span>{
+        <span class="kw">match </span>s.as_ref() {
+            <span class="string">&quot;ln&quot; </span>=&gt; <span class="self">Self</span>::Left,
+            <span class="string">&quot;rn&quot; </span>=&gt; <span class="self">Self</span>::Right,
+            <span class="string">&quot;rz&quot; </span>=&gt; <span class="self">Self</span>::RightZero,
+            <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Should have been caught by clap&quot;</span>),
+        }
+    }
 }
 
 <span class="kw">pub mod </span>options {
@@ -553,6 +583,7 @@
         .about(ABOUT)
         .version(<span class="macro">crate_version!</span>())
         .override_usage(format_usage(USAGE))
+        .after_help(AFTER_HELP)
         .infer_long_args(<span class="bool-val">true</span>)
         .disable_help_flag(<span class="bool-val">true</span>)
         .arg(
@@ -614,7 +645,8 @@
                 .short(<span class="string">&#39;n&#39;</span>)
                 .long(options::NUMBER_FORMAT)
                 .help(<span class="string">&quot;insert line numbers according to FORMAT&quot;</span>)
-                .value_name(<span class="string">&quot;FORMAT&quot;</span>),
+                .value_name(<span class="string">&quot;FORMAT&quot;</span>)
+                .value_parser([<span class="string">&quot;ln&quot;</span>, <span class="string">&quot;rn&quot;</span>, <span class="string">&quot;rz&quot;</span>]),
         )
         .arg(
             Arg::new(options::NO_RENUMBER)
