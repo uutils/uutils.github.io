@@ -124,14 +124,6 @@
 <a href="#124" id="124">124</a>
 <a href="#125" id="125">125</a>
 <a href="#126" id="126">126</a>
-<a href="#127" id="127">127</a>
-<a href="#128" id="128">128</a>
-<a href="#129" id="129">129</a>
-<a href="#130" id="130">130</a>
-<a href="#131" id="131">131</a>
-<a href="#132" id="132">132</a>
-<a href="#133" id="133">133</a>
-<a href="#134" id="134">134</a>
 </pre></div><pre class="rust"><code><span class="comment">// spell-checker:ignore (ToDO) conv
 
 </span><span class="kw">use </span><span class="kw">crate</span>::options;
@@ -164,11 +156,8 @@
     <span class="comment">// This vector holds error messages encountered.
     </span><span class="kw">let </span><span class="kw-2">mut </span>errs: Vec&lt;String&gt; = <span class="macro">vec!</span>[];
     settings.renumber = opts.get_flag(options::NO_RENUMBER);
-    <span class="kw">match </span>opts.get_one::&lt;String&gt;(options::NUMBER_SEPARATOR) {
-        <span class="prelude-val">None </span>=&gt; {}
-        <span class="prelude-val">Some</span>(val) =&gt; {
-            settings.number_separator = val.to_owned();
-        }
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(val) = opts.get_one::&lt;String&gt;(options::NUMBER_SEPARATOR) {
+        settings.number_separator = val.to_owned();
     }
     settings.number_format = opts
         .get_one::&lt;String&gt;(options::NUMBER_FORMAT)
@@ -228,17 +217,12 @@
             }
         }
     }
-    <span class="kw">match </span>opts.get_one::&lt;String&gt;(options::NUMBER_WIDTH) {
+    <span class="kw">match </span>opts.get_one::&lt;usize&gt;(options::NUMBER_WIDTH) {
         <span class="prelude-val">None </span>=&gt; {}
-        <span class="prelude-val">Some</span>(val) =&gt; {
-            <span class="kw">let </span>conv: <span class="prelude-ty">Option</span>&lt;usize&gt; = val.parse().ok();
-            <span class="kw">match </span>conv {
-                <span class="prelude-val">None </span>=&gt; {
-                    errs.push(String::from(<span class="string">&quot;Illegal value for -w&quot;</span>));
-                }
-                <span class="prelude-val">Some</span>(num) =&gt; settings.number_width = num,
-            }
-        }
+        <span class="prelude-val">Some</span>(num) <span class="kw">if </span><span class="kw-2">*</span>num &gt; <span class="number">0 </span>=&gt; settings.number_width = <span class="kw-2">*</span>num,
+        <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; errs.push(String::from(
+            <span class="string">&quot;Invalid line number field width: ‘0’: Numerical result out of range&quot;</span>,
+        )),
     }
     <span class="kw">match </span>opts.get_one::&lt;String&gt;(options::STARTING_LINE_NUMBER) {
         <span class="prelude-val">None </span>=&gt; {}
