@@ -422,6 +422,8 @@
 <a href="#422" id="422">422</a>
 <a href="#423" id="423">423</a>
 <a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Tobias Bohumir Schottdorf &lt;tobias.schottdorf@gmail.com&gt;
@@ -453,8 +455,8 @@
     <span class="comment">// The variable corresponding to -d
     </span>section_delimiter: [char; <span class="number">2</span>],
     <span class="comment">// The variables corresponding to the options -v, -i, -l, -w.
-    </span>starting_line_number: u64,
-    line_increment: u64,
+    </span>starting_line_number: i64,
+    line_increment: i64,
     join_blank_lines: u64,
     number_width: usize, <span class="comment">// Used with String::from_char, hence usize.
     // The format of the number and the (default value for)
@@ -632,7 +634,8 @@
                 .short(<span class="string">&#39;i&#39;</span>)
                 .long(options::LINE_INCREMENT)
                 .help(<span class="string">&quot;line number increment at each line&quot;</span>)
-                .value_name(<span class="string">&quot;NUMBER&quot;</span>),
+                .value_name(<span class="string">&quot;NUMBER&quot;</span>)
+                .value_parser(<span class="macro">clap::value_parser!</span>(i64)),
         )
         .arg(
             Arg::new(options::JOIN_BLANK_LINES)
@@ -668,7 +671,8 @@
                 .short(<span class="string">&#39;v&#39;</span>)
                 .long(options::STARTING_LINE_NUMBER)
                 .help(<span class="string">&quot;first line number on each logical page&quot;</span>)
-                .value_name(<span class="string">&quot;NUMBER&quot;</span>),
+                .value_name(<span class="string">&quot;NUMBER&quot;</span>)
+                .value_parser(<span class="macro">clap::value_parser!</span>(i64)),
         )
         .arg(
             Arg::new(options::NUMBER_WIDTH)
@@ -691,7 +695,7 @@
     <span class="kw">let </span>line_no_width_initial = line_no_width;
     <span class="comment">// Stores the smallest integer with one more digit than line_no, so that
     // when line_no &gt;= line_no_threshold, we need to use one more digit.
-    </span><span class="kw">let </span><span class="kw-2">mut </span>line_no_threshold = <span class="number">10u64</span>.pow(line_no_width <span class="kw">as </span>u32);
+    </span><span class="kw">let </span><span class="kw-2">mut </span>line_no_threshold = <span class="number">10i64</span>.pow(line_no_width <span class="kw">as </span>u32);
     <span class="kw">let </span><span class="kw-2">mut </span>empty_line_count: u64 = <span class="number">0</span>;
     <span class="kw">let </span>fill_char = <span class="kw">match </span>settings.number_format {
         NumberFormat::RightZero =&gt; <span class="string">&#39;0&#39;</span>,
@@ -753,7 +757,7 @@
                     </span><span class="kw">if </span>settings.renumber {
                         line_no = settings.starting_line_number;
                         line_no_width = line_no_width_initial;
-                        line_no_threshold = <span class="number">10u64</span>.pow(line_no_width <span class="kw">as </span>u32);
+                        line_no_threshold = <span class="number">10i64</span>.pow(line_no_width <span class="kw">as </span>u32);
                     }
                     <span class="kw-2">&amp;</span>settings.header_numbering
                 }
