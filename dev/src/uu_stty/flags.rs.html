@@ -313,6 +313,48 @@
 <a href="#313" id="313">313</a>
 <a href="#314" id="314">314</a>
 <a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
 </pre></div><pre class="rust"><code><span class="comment">// * This file is part of the uutils coreutils package.
 // *
 // * For the full copyright and license information, please view the LICENSE file
@@ -322,6 +364,8 @@
 // spell-checker:ignore ignbrk brkint ignpar parmrk inpck istrip inlcr igncr icrnl ixoff ixon iuclc ixany imaxbel iutf
 // spell-checker:ignore opost olcuc ocrnl onlcr onocr onlret ofill ofdel nldly crdly tabdly bsdly vtdly ffdly
 // spell-checker:ignore isig icanon iexten echoe crterase echok echonl noflsh xcase tostop echoprt prterase echoctl ctlecho echoke crtkill flusho extproc
+// spell-checker:ignore lnext rprnt susp swtch vdiscard veof veol verase vintr vkill vlnext vquit vreprint vstart vstop vsusp vswtc vwerase werase
+// spell-checker:ignore sigquit sigtstp
 
 </span><span class="kw">use </span><span class="kw">crate</span>::Flag;
 
@@ -334,7 +378,10 @@
     target_os = <span class="string">&quot;openbsd&quot;
 </span>)))]
 </span><span class="kw">use </span>nix::sys::termios::BaudRate;
-<span class="kw">use </span>nix::sys::termios::{ControlFlags <span class="kw">as </span>C, InputFlags <span class="kw">as </span>I, LocalFlags <span class="kw">as </span>L, OutputFlags <span class="kw">as </span>O};
+<span class="kw">use </span>nix::sys::termios::{
+    ControlFlags <span class="kw">as </span>C, InputFlags <span class="kw">as </span>I, LocalFlags <span class="kw">as </span>L, OutputFlags <span class="kw">as </span>O,
+    SpecialCharacterIndices <span class="kw">as </span>S,
+};
 
 <span class="kw">pub const </span>CONTROL_FLAGS: <span class="kw-2">&amp;</span>[Flag&lt;C&gt;] = <span class="kw-2">&amp;</span>[
     Flag::new(<span class="string">&quot;parenb&quot;</span>, C::PARENB),
@@ -627,5 +674,42 @@
         all(target_os = <span class="string">&quot;linux&quot;</span>, not(target_arch = <span class="string">&quot;sparc64&quot;</span>))
     ))]
     </span>(<span class="string">&quot;4000000&quot;</span>, BaudRate::B4000000),
+];
+<span class="doccomment">/// Control characters for the stty command.
+///
+/// This constant provides a mapping between the names of control characters
+/// and their corresponding values in the `S` enum.
+</span><span class="kw">pub const </span>CONTROL_CHARS: <span class="kw-2">&amp;</span>[(<span class="kw-2">&amp;</span>str, S)] = <span class="kw-2">&amp;</span>[
+    <span class="comment">// Sends an interrupt signal (SIGINT).
+    </span>(<span class="string">&quot;intr&quot;</span>, S::VINTR),
+    <span class="comment">// Sends a quit signal (SIGQUIT).
+    </span>(<span class="string">&quot;quit&quot;</span>, S::VQUIT),
+    <span class="comment">// Deletes the last typed character.
+    </span>(<span class="string">&quot;erase&quot;</span>, S::VERASE),
+    <span class="comment">// Deletes the current line.
+    </span>(<span class="string">&quot;kill&quot;</span>, S::VKILL),
+    <span class="comment">// Signals the end of input.
+    </span>(<span class="string">&quot;eof&quot;</span>, S::VEOF),
+    <span class="comment">// Signals the end of line.
+    </span>(<span class="string">&quot;eol&quot;</span>, S::VEOL),
+    <span class="comment">// Alternate end-of-line character.
+    </span>(<span class="string">&quot;eol2&quot;</span>, S::VEOL2),
+    <span class="comment">// Switch character (only on Linux).
+    </span><span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+    </span>(<span class="string">&quot;swtch&quot;</span>, S::VSWTC),
+    <span class="comment">// Starts output after it has been stopped.
+    </span>(<span class="string">&quot;start&quot;</span>, S::VSTART),
+    <span class="comment">// Stops output.
+    </span>(<span class="string">&quot;stop&quot;</span>, S::VSTOP),
+    <span class="comment">// Sends a suspend signal (SIGTSTP).
+    </span>(<span class="string">&quot;susp&quot;</span>, S::VSUSP),
+    <span class="comment">// Reprints the current line.
+    </span>(<span class="string">&quot;rprnt&quot;</span>, S::VREPRINT),
+    <span class="comment">// Deletes the last word typed.
+    </span>(<span class="string">&quot;werase&quot;</span>, S::VWERASE),
+    <span class="comment">// Enters literal mode (next character is taken literally).
+    </span>(<span class="string">&quot;lnext&quot;</span>, S::VLNEXT),
+    <span class="comment">// Discards the current line.
+    </span>(<span class="string">&quot;discard&quot;</span>, S::VDISCARD),
 ];
 </code></pre></div></section></main></body></html>
