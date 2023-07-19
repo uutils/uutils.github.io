@@ -217,6 +217,13 @@
 <a href="#217" id="217">217</a>
 <a href="#218" id="218">218</a>
 <a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
 </pre></div><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Michael Gehring &lt;mg@ebfe.org&gt;
@@ -431,8 +438,15 @@
 
 <span class="kw">fn </span>gen_coreutils_app&lt;T: uucore::Args&gt;(util_map: <span class="kw-2">&amp;</span>UtilityMap&lt;T&gt;) -&gt; Command {
     <span class="kw">let </span><span class="kw-2">mut </span>command = Command::new(<span class="string">&quot;coreutils&quot;</span>);
-    <span class="kw">for </span>(<span class="kw">_</span>, (<span class="kw">_</span>, sub_app)) <span class="kw">in </span>util_map {
-        command = command.subcommand(sub_app());
+    <span class="kw">for </span>(name, (<span class="kw">_</span>, sub_app)) <span class="kw">in </span>util_map {
+        <span class="comment">// Recreate a small subcommand with only the relevant info
+        // (name &amp; short description)
+        </span><span class="kw">let </span>about = sub_app()
+            .get_about()
+            .expect(<span class="string">&quot;Could not get the &#39;about&#39;&quot;</span>)
+            .to_string();
+        <span class="kw">let </span>sub_app = Command::new(name).about(about);
+        command = command.subcommand(sub_app);
     }
     command
 }
