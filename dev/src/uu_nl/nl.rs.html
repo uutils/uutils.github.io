@@ -424,6 +424,32 @@
 <a href="#424" id="424">424</a>
 <a href="#425" id="425">425</a>
 <a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a>
+<a href="#433" id="433">433</a>
+<a href="#434" id="434">434</a>
+<a href="#435" id="435">435</a>
+<a href="#436" id="436">436</a>
+<a href="#437" id="437">437</a>
+<a href="#438" id="438">438</a>
+<a href="#439" id="439">439</a>
+<a href="#440" id="440">440</a>
+<a href="#441" id="441">441</a>
+<a href="#442" id="442">442</a>
+<a href="#443" id="443">443</a>
+<a href="#444" id="444">444</a>
+<a href="#445" id="445">445</a>
+<a href="#446" id="446">446</a>
+<a href="#447" id="447">447</a>
+<a href="#448" id="448">448</a>
+<a href="#449" id="449">449</a>
+<a href="#450" id="450">450</a>
+<a href="#451" id="451">451</a>
+<a href="#452" id="452">452</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Tobias Bohumir Schottdorf &lt;tobias.schottdorf@gmail.com&gt;
@@ -689,13 +715,8 @@
 </span><span class="kw">fn </span>nl&lt;T: Read&gt;(reader: <span class="kw-2">&amp;mut </span>BufReader&lt;T&gt;, settings: <span class="kw-2">&amp;</span>Settings) -&gt; UResult&lt;()&gt; {
     <span class="kw">let </span>regexp: regex::Regex = regex::Regex::new(<span class="string">r&quot;.?&quot;</span>).unwrap();
     <span class="kw">let </span><span class="kw-2">mut </span>line_no = settings.starting_line_number;
-    <span class="comment">// The current line number&#39;s width as a string. Using to_string is inefficient
-    // but since we only do it once, it should not hurt.
-    </span><span class="kw">let </span><span class="kw-2">mut </span>line_no_width = line_no.to_string().len();
+    <span class="kw">let </span><span class="kw-2">mut </span>line_no_width = line_no.len();
     <span class="kw">let </span>line_no_width_initial = line_no_width;
-    <span class="comment">// Stores the smallest integer with one more digit than line_no, so that
-    // when line_no &gt;= line_no_threshold, we need to use one more digit.
-    </span><span class="kw">let </span><span class="kw-2">mut </span>line_no_threshold = <span class="number">10i64</span>.pow(line_no_width <span class="kw">as </span>u32);
     <span class="kw">let </span><span class="kw-2">mut </span>empty_line_count: u64 = <span class="number">0</span>;
     <span class="kw">let </span>fill_char = <span class="kw">match </span>settings.number_format {
         NumberFormat::RightZero =&gt; <span class="string">&#39;0&#39;</span>,
@@ -757,7 +778,6 @@
                     </span><span class="kw">if </span>settings.renumber {
                         line_no = settings.starting_line_number;
                         line_no_width = line_no_width_initial;
-                        line_no_threshold = <span class="number">10i64</span>.pow(line_no_width <span class="kw">as </span>u32);
                     }
                     <span class="kw-2">&amp;</span>settings.header_numbering
                 }
@@ -826,11 +846,7 @@
         <span class="comment">// Now update the variables for the (potential) next
         // line.
         </span>line_no += settings.line_increment;
-        <span class="kw">while </span>line_no &gt;= line_no_threshold {
-            <span class="comment">// The line number just got longer.
-            </span>line_no_threshold <span class="kw-2">*</span>= <span class="number">10</span>;
-            line_no_width += <span class="number">1</span>;
-        }
+        line_no_width = line_no.len();
     }
     <span class="prelude-val">Ok</span>(())
 }
@@ -850,4 +866,40 @@
 <span class="kw">fn </span>pass_all(<span class="kw">_</span>: <span class="kw-2">&amp;</span>str, <span class="kw">_</span>: <span class="kw-2">&amp;</span>regex::Regex) -&gt; bool {
     <span class="bool-val">true
 </span>}
+
+<span class="kw">trait </span>Length {
+    <span class="kw">fn </span>len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize;
+}
+
+<span class="kw">impl </span>Length <span class="kw">for </span>i64 {
+    <span class="comment">// Returns the length in `char`s.
+    </span><span class="kw">fn </span>len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="kw">if </span><span class="kw-2">*</span><span class="self">self </span>== <span class="number">0 </span>{
+            <span class="kw">return </span><span class="number">1</span>;
+        };
+
+        <span class="kw">let </span>sign_len = <span class="kw">if </span><span class="kw-2">*</span><span class="self">self </span>&lt; <span class="number">0 </span>{ <span class="number">1 </span>} <span class="kw">else </span>{ <span class="number">0 </span>};
+        (<span class="number">0</span>..).take_while(|i| <span class="number">10i64</span>.pow(<span class="kw-2">*</span>i) &lt;= <span class="self">self</span>.abs()).count() + sign_len
+    }
+}
+
+<span class="attr">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_len() {
+        <span class="macro">assert_eq!</span>((-<span class="number">1</span>).len(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>((-<span class="number">10</span>).len(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>((-<span class="number">100</span>).len(), <span class="number">4</span>);
+        <span class="macro">assert_eq!</span>((-<span class="number">1000</span>).len(), <span class="number">5</span>);
+
+        <span class="macro">assert_eq!</span>(<span class="number">0</span>.len(), <span class="number">1</span>);
+
+        <span class="macro">assert_eq!</span>(<span class="number">1</span>.len(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(<span class="number">10</span>.len(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="number">100</span>.len(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(<span class="number">1000</span>.len(), <span class="number">4</span>);
+    }
+}
 </code></pre></div></section></main></body></html>
