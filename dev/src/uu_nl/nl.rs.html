@@ -433,23 +433,6 @@
 <a href="#433" id="433">433</a>
 <a href="#434" id="434">434</a>
 <a href="#435" id="435">435</a>
-<a href="#436" id="436">436</a>
-<a href="#437" id="437">437</a>
-<a href="#438" id="438">438</a>
-<a href="#439" id="439">439</a>
-<a href="#440" id="440">440</a>
-<a href="#441" id="441">441</a>
-<a href="#442" id="442">442</a>
-<a href="#443" id="443">443</a>
-<a href="#444" id="444">444</a>
-<a href="#445" id="445">445</a>
-<a href="#446" id="446">446</a>
-<a href="#447" id="447">447</a>
-<a href="#448" id="448">448</a>
-<a href="#449" id="449">449</a>
-<a href="#450" id="450">450</a>
-<a href="#451" id="451">451</a>
-<a href="#452" id="452">452</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Tobias Bohumir Schottdorf &lt;tobias.schottdorf@gmail.com&gt;
@@ -461,7 +444,6 @@
 </span><span class="kw">use </span>clap::{crate_version, Arg, ArgAction, Command};
 <span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::io::{stdin, BufRead, BufReader, Read};
-<span class="kw">use </span>std::iter::repeat;
 <span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>uucore::error::{FromIo, UResult, USimpleError};
 <span class="kw">use </span>uucore::{format_usage, help_about, help_section, help_usage};
@@ -543,6 +525,19 @@
             <span class="string">&quot;rn&quot; </span>=&gt; <span class="self">Self</span>::Right,
             <span class="string">&quot;rz&quot; </span>=&gt; <span class="self">Self</span>::RightZero,
             <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Should have been caught by clap&quot;</span>),
+        }
+    }
+}
+
+<span class="kw">impl </span>NumberFormat {
+    <span class="comment">// Turns a line number into a `String` with at least `min_width` chars,
+    // formatted according to the `NumberFormat`s variant.
+    </span><span class="kw">fn </span>format(<span class="kw-2">&amp;</span><span class="self">self</span>, number: i64, min_width: usize) -&gt; String {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::Left =&gt; <span class="macro">format!</span>(<span class="string">&quot;{number:&lt;min_width$}&quot;</span>),
+            <span class="self">Self</span>::Right =&gt; <span class="macro">format!</span>(<span class="string">&quot;{number:&gt;min_width$}&quot;</span>),
+            <span class="self">Self</span>::RightZero <span class="kw">if </span>number &lt; <span class="number">0 </span>=&gt; <span class="macro">format!</span>(<span class="string">&quot;-{0:0&gt;1$}&quot;</span>, number.abs(), min_width - <span class="number">1</span>),
+            <span class="self">Self</span>::RightZero =&gt; <span class="macro">format!</span>(<span class="string">&quot;{number:0&gt;min_width$}&quot;</span>),
         }
     }
 }
@@ -715,13 +710,7 @@
 </span><span class="kw">fn </span>nl&lt;T: Read&gt;(reader: <span class="kw-2">&amp;mut </span>BufReader&lt;T&gt;, settings: <span class="kw-2">&amp;</span>Settings) -&gt; UResult&lt;()&gt; {
     <span class="kw">let </span>regexp: regex::Regex = regex::Regex::new(<span class="string">r&quot;.?&quot;</span>).unwrap();
     <span class="kw">let </span><span class="kw-2">mut </span>line_no = settings.starting_line_number;
-    <span class="kw">let </span><span class="kw-2">mut </span>line_no_width = line_no.len();
-    <span class="kw">let </span>line_no_width_initial = line_no_width;
     <span class="kw">let </span><span class="kw-2">mut </span>empty_line_count: u64 = <span class="number">0</span>;
-    <span class="kw">let </span>fill_char = <span class="kw">match </span>settings.number_format {
-        NumberFormat::RightZero =&gt; <span class="string">&#39;0&#39;</span>,
-        <span class="kw">_ </span>=&gt; <span class="string">&#39; &#39;</span>,
-    };
     <span class="comment">// Initially, we use the body&#39;s line counting settings
     </span><span class="kw">let </span><span class="kw-2">mut </span>regex_filter = <span class="kw">match </span>settings.body_numbering {
         NumberingStyle::NumberForRegularExpression(<span class="kw-2">ref </span>re) =&gt; re,
@@ -774,10 +763,9 @@
             <span class="kw">match </span><span class="kw-2">*</span><span class="kw">match </span>matched_groups {
                 <span class="number">3 </span>=&gt; {
                     <span class="comment">// This is a header, so we may need to reset the
-                    // line number and the line width
+                    // line number
                     </span><span class="kw">if </span>settings.renumber {
                         line_no = settings.starting_line_number;
-                        line_no_width = line_no_width_initial;
                     }
                     <span class="kw-2">&amp;</span>settings.header_numbering
                 }
@@ -827,26 +815,17 @@
         // way, start counting empties from zero once more.
         </span>empty_line_count = <span class="number">0</span>;
         <span class="comment">// A line number is to be printed.
-        </span><span class="kw">let </span>w = <span class="kw">if </span>settings.number_width &gt; line_no_width {
-            settings.number_width - line_no_width
-        } <span class="kw">else </span>{
-            <span class="number">0
-        </span>};
-        <span class="kw">let </span>fill: String = repeat(fill_char).take(w).collect();
-        <span class="kw">match </span>settings.number_format {
-            NumberFormat::Left =&gt; <span class="macro">println!</span>(
-                <span class="string">&quot;{1}{0}{2}{3}&quot;</span>,
-                fill, line_no, settings.number_separator, line
-            ),
-            <span class="kw">_ </span>=&gt; <span class="macro">println!</span>(
-                <span class="string">&quot;{0}{1}{2}{3}&quot;</span>,
-                fill, line_no, settings.number_separator, line
-            ),
-        }
-        <span class="comment">// Now update the variables for the (potential) next
+        </span><span class="macro">println!</span>(
+            <span class="string">&quot;{}{}{}&quot;</span>,
+            settings
+                .number_format
+                .format(line_no, settings.number_width),
+            settings.number_separator,
+            line
+        );
+        <span class="comment">// Now update the line number for the (potential) next
         // line.
         </span>line_no += settings.line_increment;
-        line_no_width = line_no.len();
     }
     <span class="prelude-val">Ok</span>(())
 }
@@ -867,39 +846,26 @@
     <span class="bool-val">true
 </span>}
 
-<span class="kw">trait </span>Length {
-    <span class="kw">fn </span>len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize;
-}
-
-<span class="kw">impl </span>Length <span class="kw">for </span>i64 {
-    <span class="comment">// Returns the length in `char`s.
-    </span><span class="kw">fn </span>len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
-        <span class="kw">if </span><span class="kw-2">*</span><span class="self">self </span>== <span class="number">0 </span>{
-            <span class="kw">return </span><span class="number">1</span>;
-        };
-
-        <span class="kw">let </span>sign_len = <span class="kw">if </span><span class="kw-2">*</span><span class="self">self </span>&lt; <span class="number">0 </span>{ <span class="number">1 </span>} <span class="kw">else </span>{ <span class="number">0 </span>};
-        (<span class="number">0</span>..).take_while(|i| <span class="number">10i64</span>.pow(<span class="kw-2">*</span>i) &lt;= <span class="self">self</span>.abs()).count() + sign_len
-    }
-}
-
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>test {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
     <span class="attr">#[test]
-    </span><span class="kw">fn </span>test_len() {
-        <span class="macro">assert_eq!</span>((-<span class="number">1</span>).len(), <span class="number">2</span>);
-        <span class="macro">assert_eq!</span>((-<span class="number">10</span>).len(), <span class="number">3</span>);
-        <span class="macro">assert_eq!</span>((-<span class="number">100</span>).len(), <span class="number">4</span>);
-        <span class="macro">assert_eq!</span>((-<span class="number">1000</span>).len(), <span class="number">5</span>);
+    </span><span class="kw">fn </span>test_format() {
+        <span class="macro">assert_eq!</span>(NumberFormat::Left.format(<span class="number">12</span>, <span class="number">1</span>), <span class="string">&quot;12&quot;</span>);
+        <span class="macro">assert_eq!</span>(NumberFormat::Left.format(-<span class="number">12</span>, <span class="number">1</span>), <span class="string">&quot;-12&quot;</span>);
+        <span class="macro">assert_eq!</span>(NumberFormat::Left.format(<span class="number">12</span>, <span class="number">4</span>), <span class="string">&quot;12  &quot;</span>);
+        <span class="macro">assert_eq!</span>(NumberFormat::Left.format(-<span class="number">12</span>, <span class="number">4</span>), <span class="string">&quot;-12 &quot;</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="number">0</span>.len(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(NumberFormat::Right.format(<span class="number">12</span>, <span class="number">1</span>), <span class="string">&quot;12&quot;</span>);
+        <span class="macro">assert_eq!</span>(NumberFormat::Right.format(-<span class="number">12</span>, <span class="number">1</span>), <span class="string">&quot;-12&quot;</span>);
+        <span class="macro">assert_eq!</span>(NumberFormat::Right.format(<span class="number">12</span>, <span class="number">4</span>), <span class="string">&quot;  12&quot;</span>);
+        <span class="macro">assert_eq!</span>(NumberFormat::Right.format(-<span class="number">12</span>, <span class="number">4</span>), <span class="string">&quot; -12&quot;</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="number">1</span>.len(), <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="number">10</span>.len(), <span class="number">2</span>);
-        <span class="macro">assert_eq!</span>(<span class="number">100</span>.len(), <span class="number">3</span>);
-        <span class="macro">assert_eq!</span>(<span class="number">1000</span>.len(), <span class="number">4</span>);
+        <span class="macro">assert_eq!</span>(NumberFormat::RightZero.format(<span class="number">12</span>, <span class="number">1</span>), <span class="string">&quot;12&quot;</span>);
+        <span class="macro">assert_eq!</span>(NumberFormat::RightZero.format(-<span class="number">12</span>, <span class="number">1</span>), <span class="string">&quot;-12&quot;</span>);
+        <span class="macro">assert_eq!</span>(NumberFormat::RightZero.format(<span class="number">12</span>, <span class="number">4</span>), <span class="string">&quot;0012&quot;</span>);
+        <span class="macro">assert_eq!</span>(NumberFormat::RightZero.format(-<span class="number">12</span>, <span class="number">4</span>), <span class="string">&quot;-012&quot;</span>);
     }
 }
 </code></pre></div></section></main></body></html>
