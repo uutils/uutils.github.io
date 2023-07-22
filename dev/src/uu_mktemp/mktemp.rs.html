@@ -569,33 +569,6 @@
 <a href="#569" id="569">569</a>
 <a href="#570" id="570">570</a>
 <a href="#571" id="571">571</a>
-<a href="#572" id="572">572</a>
-<a href="#573" id="573">573</a>
-<a href="#574" id="574">574</a>
-<a href="#575" id="575">575</a>
-<a href="#576" id="576">576</a>
-<a href="#577" id="577">577</a>
-<a href="#578" id="578">578</a>
-<a href="#579" id="579">579</a>
-<a href="#580" id="580">580</a>
-<a href="#581" id="581">581</a>
-<a href="#582" id="582">582</a>
-<a href="#583" id="583">583</a>
-<a href="#584" id="584">584</a>
-<a href="#585" id="585">585</a>
-<a href="#586" id="586">586</a>
-<a href="#587" id="587">587</a>
-<a href="#588" id="588">588</a>
-<a href="#589" id="589">589</a>
-<a href="#590" id="590">590</a>
-<a href="#591" id="591">591</a>
-<a href="#592" id="592">592</a>
-<a href="#593" id="593">593</a>
-<a href="#594" id="594">594</a>
-<a href="#595" id="595">595</a>
-<a href="#596" id="596">596</a>
-<a href="#597" id="597">597</a>
-<a href="#598" id="598">598</a>
 </pre></div><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Sunrin SHIMURA
@@ -606,7 +579,7 @@
 
 // spell-checker:ignore (paths) GPGHome findxs
 
-</span><span class="kw">use </span>clap::{crate_version, Arg, ArgAction, ArgMatches, Command};
+</span><span class="kw">use </span>clap::{builder::ValueParser, crate_version, Arg, ArgAction, ArgMatches, Command};
 <span class="kw">use </span>uucore::display::{println_verbatim, Quotable};
 <span class="kw">use </span>uucore::error::{FromIo, UError, UResult, UUsageError};
 <span class="kw">use </span>uucore::{format_usage, help_about, help_usage};
@@ -636,6 +609,7 @@
 <span class="kw">static </span>OPT_QUIET: <span class="kw-2">&amp;</span>str = <span class="string">&quot;quiet&quot;</span>;
 <span class="kw">static </span>OPT_SUFFIX: <span class="kw-2">&amp;</span>str = <span class="string">&quot;suffix&quot;</span>;
 <span class="kw">static </span>OPT_TMPDIR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;tmpdir&quot;</span>;
+<span class="kw">static </span>OPT_P: <span class="kw-2">&amp;</span>str = <span class="string">&quot;p&quot;</span>;
 <span class="kw">static </span>OPT_T: <span class="kw-2">&amp;</span>str = <span class="string">&quot;t&quot;</span>;
 
 <span class="kw">static </span>ARG_TEMPLATE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;template&quot;</span>;
@@ -728,7 +702,7 @@
     <span class="doccomment">/// The directory in which to create the temporary file.
     ///
     /// If `None`, the file will be created in the current directory.
-    </span>tmpdir: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    </span>tmpdir: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// The suffix to append to the temporary file, if any.
     </span>suffix: <span class="prelude-ty">Option</span>&lt;String&gt;,
@@ -740,72 +714,32 @@
     </span>template: String,
 }
 
-<span class="doccomment">/// Decide whether the argument to `--tmpdir` should actually be the template.
-///
-/// This function is required to work around a limitation of `clap`,
-/// the command-line argument parsing library. In case the command
-/// line is
-///
-/// ```sh
-/// mktemp --tmpdir XXX
-/// ```
-///
-/// the program should behave like
-///
-/// ```sh
-/// mktemp --tmpdir=${TMPDIR:-/tmp} XXX
-/// ```
-///
-/// However, `clap` thinks that `XXX` is the value of the `--tmpdir`
-/// option. This function returns `true` in this case and `false`
-/// in all other cases.
-</span><span class="kw">fn </span>is_tmpdir_argument_actually_the_template(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; bool {
-    <span class="kw">if </span>!matches.contains_id(ARG_TEMPLATE) {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(tmpdir) = matches.get_one::&lt;String&gt;(OPT_TMPDIR) {
-            <span class="kw">if </span>!Path::new(tmpdir).is_dir() &amp;&amp; tmpdir.contains(<span class="string">&quot;XXX&quot;</span>) {
-                <span class="kw">return </span><span class="bool-val">true</span>;
-            }
-        }
-    }
-    <span class="bool-val">false
-</span>}
-
 <span class="kw">impl </span>Options {
     <span class="kw">fn </span>from(matches: <span class="kw-2">&amp;</span>ArgMatches) -&gt; <span class="self">Self </span>{
-        <span class="comment">// Special case to work around a limitation of `clap`; see
-        // `is_tmpdir_argument_actually_the_template()` for more
-        // information.
-        //
-        // Fixed in clap 3
-        // See https://github.com/clap-rs/clap/pull/1587
-        </span><span class="kw">let </span>(tmpdir, template) = <span class="kw">if </span>is_tmpdir_argument_actually_the_template(matches) {
-            <span class="kw">let </span>tmpdir = <span class="prelude-val">Some</span>(env::temp_dir().display().to_string());
-            <span class="kw">let </span>template = matches.get_one::&lt;String&gt;(OPT_TMPDIR).unwrap().to_string();
-            (tmpdir, template)
-        } <span class="kw">else </span>{
+        <span class="kw">let </span>tmpdir = matches
+            .get_one::&lt;PathBuf&gt;(OPT_TMPDIR)
+            .or_else(|| matches.get_one::&lt;PathBuf&gt;(OPT_P))
+            .cloned();
+        <span class="kw">let </span>(tmpdir, template) = <span class="kw">match </span>matches.get_one::&lt;String&gt;(ARG_TEMPLATE) {
             <span class="comment">// If no template argument is given, `--tmpdir` is implied.
-            </span><span class="kw">match </span>matches.get_one::&lt;String&gt;(ARG_TEMPLATE) {
-                <span class="prelude-val">None </span>=&gt; {
-                    <span class="kw">let </span>tmpdir = <span class="kw">match </span>matches.get_one::&lt;String&gt;(OPT_TMPDIR) {
-                        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Some</span>(env::temp_dir().display().to_string()),
-                        <span class="prelude-val">Some</span>(tmpdir) =&gt; <span class="prelude-val">Some</span>(tmpdir.to_string()),
-                    };
-                    <span class="kw">let </span>template = DEFAULT_TEMPLATE;
-                    (tmpdir, template.to_string())
-                }
-                <span class="prelude-val">Some</span>(template) =&gt; {
-                    <span class="kw">let </span>tmpdir = <span class="kw">if </span>env::var(TMPDIR_ENV_VAR).is_ok() &amp;&amp; matches.get_flag(OPT_T) {
-                        env::var(TMPDIR_ENV_VAR).ok()
-                    } <span class="kw">else if </span>matches.contains_id(OPT_TMPDIR) {
-                        matches.get_one::&lt;String&gt;(OPT_TMPDIR).map(String::from)
-                    } <span class="kw">else if </span>matches.get_flag(OPT_T) {
-                        <span class="comment">// mktemp -t foo.xxx should export in TMPDIR
-                        </span><span class="prelude-val">Some</span>(env::temp_dir().display().to_string())
-                    } <span class="kw">else </span>{
-                        matches.get_one::&lt;String&gt;(OPT_TMPDIR).map(String::from)
-                    };
-                    (tmpdir, template.to_string())
-                }
+            </span><span class="prelude-val">None </span>=&gt; {
+                <span class="kw">let </span>tmpdir = <span class="prelude-val">Some</span>(tmpdir.unwrap_or_else(env::temp_dir));
+                <span class="kw">let </span>template = DEFAULT_TEMPLATE;
+                (tmpdir, template.to_string())
+            }
+            <span class="prelude-val">Some</span>(template) =&gt; {
+                <span class="kw">let </span>tmpdir = <span class="kw">if </span>env::var(TMPDIR_ENV_VAR).is_ok() &amp;&amp; matches.get_flag(OPT_T) {
+                    env::var_os(TMPDIR_ENV_VAR).map(|t| t.into())
+                } <span class="kw">else if </span>tmpdir.is_some() {
+                    tmpdir
+                } <span class="kw">else if </span>matches.get_flag(OPT_T) || matches.contains_id(OPT_TMPDIR) {
+                    <span class="comment">// If --tmpdir is given without an argument, or -t is given
+                    // export in TMPDIR
+                    </span><span class="prelude-val">Some</span>(env::temp_dir())
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">None
+                </span>};
+                (tmpdir, template.to_string())
             }
         };
         <span class="self">Self </span>{
@@ -970,7 +904,7 @@
 
     <span class="kw">if </span>env::var(<span class="string">&quot;POSIXLY_CORRECT&quot;</span>).is_ok() {
         <span class="comment">// If POSIXLY_CORRECT was set, template MUST be the last argument.
-        </span><span class="kw">if </span>is_tmpdir_argument_actually_the_template(<span class="kw-2">&amp;</span>matches) || matches.contains_id(ARG_TEMPLATE) {
+        </span><span class="kw">if </span>matches.contains_id(ARG_TEMPLATE) {
             <span class="comment">// Template argument was provided, check if was the last one.
             </span><span class="kw">if </span>args.last().unwrap() != <span class="kw-2">&amp;</span>options.template {
                 <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(MkTempError::TooManyTemplates));
@@ -1042,8 +976,16 @@
                 .value_name(<span class="string">&quot;SUFFIX&quot;</span>),
         )
         .arg(
-            Arg::new(OPT_TMPDIR)
+            Arg::new(OPT_P)
                 .short(<span class="string">&#39;p&#39;</span>)
+                .help(<span class="string">&quot;short form of --tmpdir&quot;</span>)
+                .value_name(<span class="string">&quot;DIR&quot;</span>)
+                .num_args(<span class="number">1</span>)
+                .value_parser(ValueParser::path_buf())
+                .value_hint(clap::ValueHint::DirPath),
+        )
+        .arg(
+            Arg::new(OPT_TMPDIR)
                 .long(OPT_TMPDIR)
                 .help(
                     <span class="string">&quot;interpret TEMPLATE relative to DIR; if DIR is not specified, use \
@@ -1055,6 +997,10 @@
                 <span class="comment">// Allows use of default argument just by setting --tmpdir. Else,
                 // use provided input to generate tmpdir
                 </span>.num_args(<span class="number">0</span>..=<span class="number">1</span>)
+                <span class="comment">// Require an equals to avoid ambiguity if no tmpdir is supplied
+                </span>.require_equals(<span class="bool-val">true</span>)
+                .overrides_with(OPT_P)
+                .value_parser(ValueParser::path_buf())
                 .value_hint(clap::ValueHint::DirPath),
         )
         .arg(
