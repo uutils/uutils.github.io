@@ -478,9 +478,9 @@
 <span class="kw">impl </span>Default <span class="kw">for </span>Settings {
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            header_numbering: NumberingStyle::NumberForNone,
-            body_numbering: NumberingStyle::NumberForAll,
-            footer_numbering: NumberingStyle::NumberForNone,
+            header_numbering: NumberingStyle::None,
+            body_numbering: NumberingStyle::All,
+            footer_numbering: NumberingStyle::None,
             section_delimiter: [<span class="string">&#39;\\&#39;</span>, <span class="string">&#39;:&#39;</span>],
             starting_line_number: <span class="number">1</span>,
             line_increment: <span class="number">1</span>,
@@ -499,12 +499,11 @@
 // 2. Number only nonempty lines
 // 3. Don&#39;t number any lines at all
 // 4. Number all lines that match a basic regular expression.
-</span><span class="attr">#[allow(clippy::enum_variant_names)]
 </span><span class="kw">enum </span>NumberingStyle {
-    NumberForAll,
-    NumberForNonEmpty,
-    NumberForNone,
-    NumberForRegularExpression(Box&lt;regex::Regex&gt;),
+    All,
+    NonEmpty,
+    <span class="prelude-val">None</span>,
+    Regex(Box&lt;regex::Regex&gt;),
 }
 
 <span class="comment">// NumberFormat specifies how line numbers are output within their allocated
@@ -663,7 +662,8 @@
                 .short(<span class="string">&#39;l&#39;</span>)
                 .long(options::JOIN_BLANK_LINES)
                 .help(<span class="string">&quot;group of NUMBER empty lines counted as one&quot;</span>)
-                .value_name(<span class="string">&quot;NUMBER&quot;</span>),
+                .value_name(<span class="string">&quot;NUMBER&quot;</span>)
+                .value_parser(<span class="macro">clap::value_parser!</span>(u64)),
         )
         .arg(
             Arg::new(options::NUMBER_FORMAT)
@@ -713,7 +713,7 @@
     <span class="kw">let </span><span class="kw-2">mut </span>empty_line_count: u64 = <span class="number">0</span>;
     <span class="comment">// Initially, we use the body&#39;s line counting settings
     </span><span class="kw">let </span><span class="kw-2">mut </span>regex_filter = <span class="kw">match </span>settings.body_numbering {
-        NumberingStyle::NumberForRegularExpression(<span class="kw-2">ref </span>re) =&gt; re,
+        NumberingStyle::Regex(<span class="kw-2">ref </span>re) =&gt; re,
         <span class="kw">_ </span>=&gt; <span class="kw-2">&amp;</span>regexp,
     };
     <span class="kw">let </span><span class="kw-2">mut </span>line_filter: <span class="kw">fn</span>(<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>regex::Regex) -&gt; bool = pass_regex;
@@ -774,16 +774,16 @@
                 // a catch-all here.
                 </span><span class="kw">_ </span>=&gt; <span class="kw-2">&amp;</span>settings.body_numbering,
             } {
-                NumberingStyle::NumberForAll =&gt; {
+                NumberingStyle::All =&gt; {
                     line_filter = pass_all;
                 }
-                NumberingStyle::NumberForNonEmpty =&gt; {
+                NumberingStyle::NonEmpty =&gt; {
                     line_filter = pass_nonempty;
                 }
-                NumberingStyle::NumberForNone =&gt; {
+                NumberingStyle::None =&gt; {
                     line_filter = pass_none;
                 }
-                NumberingStyle::NumberForRegularExpression(<span class="kw-2">ref </span>re) =&gt; {
+                NumberingStyle::Regex(<span class="kw-2">ref </span>re) =&gt; {
                     line_filter = pass_regex;
                     regex_filter = re;
                 }
