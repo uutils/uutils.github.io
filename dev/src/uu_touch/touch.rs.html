@@ -527,86 +527,6 @@
 <a href="#527" id="527">527</a>
 <a href="#528" id="528">528</a>
 <a href="#529" id="529">529</a>
-<a href="#530" id="530">530</a>
-<a href="#531" id="531">531</a>
-<a href="#532" id="532">532</a>
-<a href="#533" id="533">533</a>
-<a href="#534" id="534">534</a>
-<a href="#535" id="535">535</a>
-<a href="#536" id="536">536</a>
-<a href="#537" id="537">537</a>
-<a href="#538" id="538">538</a>
-<a href="#539" id="539">539</a>
-<a href="#540" id="540">540</a>
-<a href="#541" id="541">541</a>
-<a href="#542" id="542">542</a>
-<a href="#543" id="543">543</a>
-<a href="#544" id="544">544</a>
-<a href="#545" id="545">545</a>
-<a href="#546" id="546">546</a>
-<a href="#547" id="547">547</a>
-<a href="#548" id="548">548</a>
-<a href="#549" id="549">549</a>
-<a href="#550" id="550">550</a>
-<a href="#551" id="551">551</a>
-<a href="#552" id="552">552</a>
-<a href="#553" id="553">553</a>
-<a href="#554" id="554">554</a>
-<a href="#555" id="555">555</a>
-<a href="#556" id="556">556</a>
-<a href="#557" id="557">557</a>
-<a href="#558" id="558">558</a>
-<a href="#559" id="559">559</a>
-<a href="#560" id="560">560</a>
-<a href="#561" id="561">561</a>
-<a href="#562" id="562">562</a>
-<a href="#563" id="563">563</a>
-<a href="#564" id="564">564</a>
-<a href="#565" id="565">565</a>
-<a href="#566" id="566">566</a>
-<a href="#567" id="567">567</a>
-<a href="#568" id="568">568</a>
-<a href="#569" id="569">569</a>
-<a href="#570" id="570">570</a>
-<a href="#571" id="571">571</a>
-<a href="#572" id="572">572</a>
-<a href="#573" id="573">573</a>
-<a href="#574" id="574">574</a>
-<a href="#575" id="575">575</a>
-<a href="#576" id="576">576</a>
-<a href="#577" id="577">577</a>
-<a href="#578" id="578">578</a>
-<a href="#579" id="579">579</a>
-<a href="#580" id="580">580</a>
-<a href="#581" id="581">581</a>
-<a href="#582" id="582">582</a>
-<a href="#583" id="583">583</a>
-<a href="#584" id="584">584</a>
-<a href="#585" id="585">585</a>
-<a href="#586" id="586">586</a>
-<a href="#587" id="587">587</a>
-<a href="#588" id="588">588</a>
-<a href="#589" id="589">589</a>
-<a href="#590" id="590">590</a>
-<a href="#591" id="591">591</a>
-<a href="#592" id="592">592</a>
-<a href="#593" id="593">593</a>
-<a href="#594" id="594">594</a>
-<a href="#595" id="595">595</a>
-<a href="#596" id="596">596</a>
-<a href="#597" id="597">597</a>
-<a href="#598" id="598">598</a>
-<a href="#599" id="599">599</a>
-<a href="#600" id="600">600</a>
-<a href="#601" id="601">601</a>
-<a href="#602" id="602">602</a>
-<a href="#603" id="603">603</a>
-<a href="#604" id="604">604</a>
-<a href="#605" id="605">605</a>
-<a href="#606" id="606">606</a>
-<a href="#607" id="607">607</a>
-<a href="#608" id="608">608</a>
-<a href="#609" id="609">609</a>
 </pre></div><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Nick Platt &lt;platt.nicholas@gmail.com&gt;
@@ -615,16 +535,16 @@
 // For the full copyright and license information, please view the LICENSE file
 // that was distributed with this source code.
 
-// spell-checker:ignore (ToDO) filetime datetime MMDDhhmm lpszfilepath mktime YYYYMMDDHHMM YYMMDDHHMM DATETIME YYYYMMDDHHMMS subsecond humantime
+// spell-checker:ignore (ToDO) filetime datetime lpszfilepath mktime DATETIME subsecond datelike timelike
+// spell-checker:ignore (FORMATS) MMDDhhmm YYYYMMDDHHMM YYMMDDHHMM YYYYMMDDHHMMS
 
-</span><span class="kw">use </span>clap::builder::ValueParser;
+</span><span class="kw">use </span>chrono::{DateTime, Datelike, Duration, Local, NaiveDate, NaiveTime, TimeZone, Timelike, Utc};
+<span class="kw">use </span>clap::builder::ValueParser;
 <span class="kw">use </span>clap::{crate_version, Arg, ArgAction, ArgGroup, Command};
-<span class="kw">use </span>filetime::{set_symlink_file_times, FileTime};
+<span class="kw">use </span>filetime::{set_file_times, set_symlink_file_times, FileTime};
 <span class="kw">use </span>std::ffi::OsString;
 <span class="kw">use </span>std::fs::{<span class="self">self</span>, File};
 <span class="kw">use </span>std::path::{Path, PathBuf};
-<span class="kw">use </span>time::macros::{format_description, offset, time};
-<span class="kw">use </span>time::Duration;
 <span class="kw">use </span>uucore::display::Quotable;
 <span class="kw">use </span>uucore::error::{FromIo, UError, UResult, USimpleError};
 <span class="kw">use </span>uucore::{format_usage, help_about, help_usage, show};
@@ -650,27 +570,31 @@
 
 <span class="kw">static </span>ARG_FILES: <span class="kw-2">&amp;</span>str = <span class="string">&quot;files&quot;</span>;
 
-<span class="comment">// Convert a date/time to a date with a TZ offset
-</span><span class="kw">fn </span>to_local(tm: time::PrimitiveDateTime) -&gt; time::OffsetDateTime {
-    <span class="kw">let </span>offset = <span class="kw">match </span>time::OffsetDateTime::now_local() {
-        <span class="prelude-val">Ok</span>(lo) =&gt; lo.offset(),
-        <span class="prelude-val">Err</span>(e) =&gt; {
-            <span class="macro">panic!</span>(<span class="string">&quot;error: {e}&quot;</span>);
-        }
-    };
-    tm.assume_offset(offset)
+<span class="kw">mod </span>format {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>POSIX_LOCALE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;%a %b %e %H:%M:%S %Y&quot;</span>;
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>ISO_8601: <span class="kw-2">&amp;</span>str = <span class="string">&quot;%Y-%m-%d&quot;</span>;
+    <span class="comment">// &quot;%Y%m%d%H%M.%S&quot; 15 chars
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>YYYYMMDDHHMM_DOT_SS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;%Y%m%d%H%M.%S&quot;</span>;
+    <span class="comment">// &quot;%Y-%m-%d %H:%M:%S.%SS&quot; 12 chars
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>YYYYMMDDHHMMSS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;%Y-%m-%d %H:%M:%S.%f&quot;</span>;
+    <span class="comment">// &quot;%Y-%m-%d %H:%M:%S&quot; 12 chars
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>YYYYMMDDHHMMS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;%Y-%m-%d %H:%M:%S&quot;</span>;
+    <span class="comment">// &quot;%Y-%m-%d %H:%M&quot; 12 chars
+    // Used for example in tests/touch/no-rights.sh
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>YYYY_MM_DD_HH_MM: <span class="kw-2">&amp;</span>str = <span class="string">&quot;%Y-%m-%d %H:%M&quot;</span>;
+    <span class="comment">// &quot;%Y%m%d%H%M&quot; 12 chars
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>YYYYMMDDHHMM: <span class="kw-2">&amp;</span>str = <span class="string">&quot;%Y%m%d%H%M&quot;</span>;
+    <span class="comment">// &quot;%Y-%m-%d %H:%M +offset&quot;
+    // Used for example in tests/touch/relative.sh
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>YYYYMMDDHHMM_OFFSET: <span class="kw-2">&amp;</span>str = <span class="string">&quot;%Y-%m-%d %H:%M %z&quot;</span>;
 }
 
-<span class="comment">// Convert a date/time with a TZ offset into a FileTime
-</span><span class="kw">fn </span>local_dt_to_filetime(dt: time::OffsetDateTime) -&gt; FileTime {
-    FileTime::from_unix_time(dt.unix_timestamp(), dt.nanosecond())
-}
-
-<span class="comment">// Convert a date/time, considering that the input is in UTC time
-// Used for touch -d 1970-01-01 18:43:33.023456789 for example
-</span><span class="kw">fn </span>dt_to_filename(tm: time::PrimitiveDateTime) -&gt; FileTime {
-    <span class="kw">let </span>dt = tm.assume_offset(<span class="macro">offset!</span>(UTC));
-    local_dt_to_filetime(dt)
+<span class="doccomment">/// Convert a DateTime with a TZ offset into a FileTime
+///
+/// The DateTime is converted into a unix timestamp from which the FileTime is
+/// constructed.
+</span><span class="kw">fn </span>datetime_to_filetime&lt;T: TimeZone&gt;(dt: <span class="kw-2">&amp;</span>DateTime&lt;T&gt;) -&gt; FileTime {
+    FileTime::from_unix_time(dt.timestamp(), dt.timestamp_subsec_nanos())
 }
 
 <span class="attr">#[uucore::main]
@@ -729,7 +653,7 @@
             {
                 parse_timestamp(ts)<span class="question-mark">?
             </span>} <span class="kw">else </span>{
-                local_dt_to_filetime(time::OffsetDateTime::now_local().unwrap())
+                datetime_to_filetime(<span class="kw-2">&amp;</span>Local::now())
             };
             (timestamp, timestamp)
         }
@@ -821,7 +745,7 @@
         } <span class="kw">else if </span>matches.get_flag(options::NO_DEREF) {
             set_symlink_file_times(path, atime, mtime)
         } <span class="kw">else </span>{
-            filetime::set_file_times(path, atime, mtime)
+            set_file_times(path, atime, mtime)
         }
         .map_err_context(|| <span class="macro">format!</span>(<span class="string">&quot;setting times of {}&quot;</span>, path.quote()))<span class="question-mark">?</span>;
     }
@@ -941,64 +865,6 @@
     ))
 }
 
-<span class="kw">const </span>POSIX_LOCALE_FORMAT: <span class="kw-2">&amp;</span>[time::format_description::FormatItem] = <span class="macro">format_description!</span>(
-    <span class="string">&quot;[weekday repr:short] [month repr:short] [day padding:space] \
-    [hour]:[minute]:[second] [year]&quot;
-</span>);
-
-<span class="kw">const </span>ISO_8601_FORMAT: <span class="kw-2">&amp;</span>[time::format_description::FormatItem] =
-    <span class="macro">format_description!</span>(<span class="string">&quot;[year]-[month]-[day]&quot;</span>);
-
-<span class="comment">// &quot;%Y%m%d%H%M.%S&quot; 15 chars
-</span><span class="kw">const </span>YYYYMMDDHHMM_DOT_SS_FORMAT: <span class="kw-2">&amp;</span>[time::format_description::FormatItem] = <span class="macro">format_description!</span>(
-    <span class="string">&quot;[year repr:full][month repr:numerical padding:zero]\
-    [day][hour][minute].[second]&quot;
-</span>);
-
-<span class="comment">// &quot;%Y-%m-%d %H:%M:%S.%SS&quot; 12 chars
-</span><span class="kw">const </span>YYYYMMDDHHMMSS_FORMAT: <span class="kw-2">&amp;</span>[time::format_description::FormatItem] = <span class="macro">format_description!</span>(
-    <span class="string">&quot;[year repr:full]-[month repr:numerical padding:zero]-\
-    [day] [hour]:[minute]:[second].[subsecond]&quot;
-</span>);
-
-<span class="comment">// &quot;%Y-%m-%d %H:%M:%S&quot; 12 chars
-</span><span class="kw">const </span>YYYYMMDDHHMMS_FORMAT: <span class="kw-2">&amp;</span>[time::format_description::FormatItem] = <span class="macro">format_description!</span>(
-    <span class="string">&quot;[year repr:full]-[month repr:numerical padding:zero]-\
-    [day] [hour]:[minute]:[second]&quot;
-</span>);
-
-<span class="comment">// &quot;%Y-%m-%d %H:%M&quot; 12 chars
-// Used for example in tests/touch/no-rights.sh
-</span><span class="kw">const </span>YYYY_MM_DD_HH_MM_FORMAT: <span class="kw-2">&amp;</span>[time::format_description::FormatItem] = <span class="macro">format_description!</span>(
-    <span class="string">&quot;[year repr:full]-[month repr:numerical padding:zero]-\
-    [day] [hour]:[minute]&quot;
-</span>);
-
-<span class="comment">// &quot;%Y%m%d%H%M&quot; 12 chars
-</span><span class="kw">const </span>YYYYMMDDHHMM_FORMAT: <span class="kw-2">&amp;</span>[time::format_description::FormatItem] = <span class="macro">format_description!</span>(
-    <span class="string">&quot;[year repr:full][month repr:numerical padding:zero]\
-    [day][hour][minute]&quot;
-</span>);
-
-<span class="comment">// &quot;%y%m%d%H%M.%S&quot; 13 chars
-</span><span class="kw">const </span>YYMMDDHHMM_DOT_SS_FORMAT: <span class="kw-2">&amp;</span>[time::format_description::FormatItem] = <span class="macro">format_description!</span>(
-    <span class="string">&quot;[year repr:last_two padding:none][month][day]\
-    [hour][minute].[second]&quot;
-</span>);
-
-<span class="comment">// &quot;%y%m%d%H%M&quot; 10 chars
-</span><span class="kw">const </span>YYMMDDHHMM_FORMAT: <span class="kw-2">&amp;</span>[time::format_description::FormatItem] = <span class="macro">format_description!</span>(
-    <span class="string">&quot;[year repr:last_two padding:none][month padding:zero][day padding:zero]\
-    [hour repr:24 padding:zero][minute padding:zero]&quot;
-</span>);
-
-<span class="comment">// &quot;%Y-%m-%d %H:%M +offset&quot;
-// Used for example in tests/touch/relative.sh
-</span><span class="kw">const </span>YYYYMMDDHHMM_OFFSET_FORMAT: <span class="kw-2">&amp;</span>[time::format_description::FormatItem] = <span class="macro">format_description!</span>(
-    <span class="string">&quot;[year]-[month]-[day] [hour repr:24]:[minute] \
-    [offset_hour sign:mandatory][offset_minute]&quot;
-</span>);
-
 <span class="kw">fn </span>parse_date(s: <span class="kw-2">&amp;</span>str) -&gt; UResult&lt;FileTime&gt; {
     <span class="comment">// This isn&#39;t actually compatible with GNU touch, but there doesn&#39;t seem to
     // be any simple specification for what format this parameter allows and I&#39;m
@@ -1014,66 +880,61 @@
     // Tue Dec  3 ...
     // (&quot;%c&quot;, POSIX_LOCALE_FORMAT),
     //
-    </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(parsed) = time::PrimitiveDateTime::parse(s, <span class="kw-2">&amp;</span>POSIX_LOCALE_FORMAT) {
-        <span class="kw">return </span><span class="prelude-val">Ok</span>(local_dt_to_filetime(to_local(parsed)));
+    </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(parsed) = Local.datetime_from_str(s, format::POSIX_LOCALE) {
+        <span class="kw">return </span><span class="prelude-val">Ok</span>(datetime_to_filetime(<span class="kw-2">&amp;</span>parsed));
     }
 
     <span class="comment">// Also support other formats found in the GNU tests like
     // in tests/misc/stat-nanoseconds.sh
     // or tests/touch/no-rights.sh
     </span><span class="kw">for </span>fmt <span class="kw">in </span>[
-        YYYYMMDDHHMMS_FORMAT,
-        YYYYMMDDHHMMSS_FORMAT,
-        YYYY_MM_DD_HH_MM_FORMAT,
-        YYYYMMDDHHMM_OFFSET_FORMAT,
+        format::YYYYMMDDHHMMS,
+        format::YYYYMMDDHHMMSS,
+        format::YYYY_MM_DD_HH_MM,
+        format::YYYYMMDDHHMM_OFFSET,
     ] {
-        <span class="kw">if let </span><span class="prelude-val">Ok</span>(parsed) = time::PrimitiveDateTime::parse(s, <span class="kw-2">&amp;</span>fmt) {
-            <span class="kw">return </span><span class="prelude-val">Ok</span>(dt_to_filename(parsed));
+        <span class="kw">if let </span><span class="prelude-val">Ok</span>(parsed) = Utc.datetime_from_str(s, fmt) {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(datetime_to_filetime(<span class="kw-2">&amp;</span>parsed));
         }
     }
 
     <span class="comment">// &quot;Equivalent to %Y-%m-%d (the ISO 8601 date format). (C99)&quot;
     // (&quot;%F&quot;, ISO_8601_FORMAT),
-    </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(parsed) = time::Date::parse(s, <span class="kw-2">&amp;</span>ISO_8601_FORMAT) {
-        <span class="kw">return </span><span class="prelude-val">Ok</span>(local_dt_to_filetime(to_local(
-            time::PrimitiveDateTime::new(parsed, <span class="macro">time!</span>(<span class="number">00</span>:<span class="number">00</span>)),
-        )));
+    </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(parsed_date) = NaiveDate::parse_from_str(s, format::ISO_8601) {
+        <span class="kw">let </span>parsed = Local
+            .from_local_datetime(<span class="kw-2">&amp;</span>parsed_date.and_time(NaiveTime::MIN))
+            .unwrap();
+        <span class="kw">return </span><span class="prelude-val">Ok</span>(datetime_to_filetime(<span class="kw-2">&amp;</span>parsed));
     }
 
     <span class="comment">// &quot;@%s&quot; is &quot;The number of seconds since the Epoch, 1970-01-01 00:00:00 +0000 (UTC). (TZ) (Calculated from mktime(tm).)&quot;
     </span><span class="kw">if </span>s.bytes().next() == <span class="prelude-val">Some</span>(<span class="string">b&#39;@&#39;</span>) {
         <span class="kw">if let </span><span class="prelude-val">Ok</span>(ts) = <span class="kw-2">&amp;</span>s[<span class="number">1</span>..].parse::&lt;i64&gt;() {
-            <span class="comment">// Don&#39;t convert to local time in this case - seconds since epoch are not time-zone dependent
-            </span><span class="kw">return </span><span class="prelude-val">Ok</span>(local_dt_to_filetime(
-                time::OffsetDateTime::from_unix_timestamp(<span class="kw-2">*</span>ts).unwrap(),
-            ));
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(FileTime::from_unix_time(<span class="kw-2">*</span>ts, <span class="number">0</span>));
         }
     }
 
     <span class="kw">if let </span><span class="prelude-val">Ok</span>(duration) = parse_datetime::from_str(s) {
-        <span class="kw">let </span>now_local = time::OffsetDateTime::now_local().unwrap();
-        <span class="kw">let </span>diff = now_local
-            .checked_add(time::Duration::nanoseconds(
-                duration.num_nanoseconds().unwrap(),
-            ))
-            .unwrap();
-        <span class="kw">return </span><span class="prelude-val">Ok</span>(local_dt_to_filetime(diff));
+        <span class="kw">let </span>dt = Local::now() + duration;
+        <span class="kw">return </span><span class="prelude-val">Ok</span>(datetime_to_filetime(<span class="kw-2">&amp;</span>dt));
     }
 
     <span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;Unable to parse date: {s}&quot;</span>)))
 }
 
 <span class="kw">fn </span>parse_timestamp(s: <span class="kw-2">&amp;</span>str) -&gt; UResult&lt;FileTime&gt; {
-    <span class="comment">// TODO: handle error
-    </span><span class="kw">let </span>now = time::OffsetDateTime::now_utc();
+    <span class="kw">use </span>format::<span class="kw-2">*</span>;
 
-    <span class="kw">let </span>(<span class="kw-2">mut </span>format, <span class="kw-2">mut </span>ts) = <span class="kw">match </span>s.chars().count() {
-        <span class="number">15 </span>=&gt; (YYYYMMDDHHMM_DOT_SS_FORMAT, s.to_owned()),
-        <span class="number">12 </span>=&gt; (YYYYMMDDHHMM_FORMAT, s.to_owned()),
-        <span class="number">13 </span>=&gt; (YYMMDDHHMM_DOT_SS_FORMAT, s.to_owned()),
-        <span class="number">10 </span>=&gt; (YYMMDDHHMM_FORMAT, s.to_owned()),
-        <span class="number">11 </span>=&gt; (YYYYMMDDHHMM_DOT_SS_FORMAT, <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, now.year(), s)),
-        <span class="number">8 </span>=&gt; (YYYYMMDDHHMM_FORMAT, <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, now.year(), s)),
+    <span class="kw">let </span>current_year = || Local::now().year();
+
+    <span class="kw">let </span>(format, ts) = <span class="kw">match </span>s.chars().count() {
+        <span class="number">15 </span>=&gt; (YYYYMMDDHHMM_DOT_SS, s.to_owned()),
+        <span class="number">12 </span>=&gt; (YYYYMMDDHHMM, s.to_owned()),
+        <span class="comment">// If we don&#39;t add &quot;20&quot;, we have insufficient information to parse
+        </span><span class="number">13 </span>=&gt; (YYYYMMDDHHMM_DOT_SS, <span class="macro">format!</span>(<span class="string">&quot;20{}&quot;</span>, s)),
+        <span class="number">10 </span>=&gt; (YYYYMMDDHHMM, <span class="macro">format!</span>(<span class="string">&quot;20{}&quot;</span>, s)),
+        <span class="number">11 </span>=&gt; (YYYYMMDDHHMM_DOT_SS, <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, current_year(), s)),
+        <span class="number">8 </span>=&gt; (YYYYMMDDHHMM, <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, current_year(), s)),
         <span class="kw">_ </span>=&gt; {
             <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
                 <span class="number">1</span>,
@@ -1081,54 +942,33 @@
             ))
         }
     };
-    <span class="comment">// workaround time returning Err(TryFromParsed(InsufficientInformation)) for year w/
-    // repr:last_two
-    // https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=1ccfac7c07c5d1c7887a11decf0e1996
-    </span><span class="kw">if </span>s.chars().count() == <span class="number">10 </span>{
-        format = YYYYMMDDHHMM_FORMAT;
-        ts = <span class="string">&quot;20&quot;</span>.to_owned() + <span class="kw-2">&amp;</span>ts;
-    } <span class="kw">else if </span>s.chars().count() == <span class="number">13 </span>{
-        format = YYYYMMDDHHMM_DOT_SS_FORMAT;
-        ts = <span class="string">&quot;20&quot;</span>.to_owned() + <span class="kw-2">&amp;</span>ts;
-    }
 
-    <span class="kw">let </span>leap_sec = <span class="kw">if </span>(format == YYYYMMDDHHMM_DOT_SS_FORMAT || format == YYMMDDHHMM_DOT_SS_FORMAT)
-        &amp;&amp; ts.ends_with(<span class="string">&quot;.60&quot;</span>)
-    {
-        <span class="comment">// Work around to disable leap seconds
-        // Used in gnu/tests/touch/60-seconds
-        </span>ts = ts.replace(<span class="string">&quot;.60&quot;</span>, <span class="string">&quot;.59&quot;</span>);
-        <span class="bool-val">true
-    </span>} <span class="kw">else </span>{
-        <span class="bool-val">false
-    </span>};
-
-    <span class="kw">let </span>tm = time::PrimitiveDateTime::parse(<span class="kw-2">&amp;</span>ts, <span class="kw-2">&amp;</span>format)
+    <span class="kw">let </span><span class="kw-2">mut </span>local = chrono::Local
+        .datetime_from_str(<span class="kw-2">&amp;</span>ts, format)
         .map_err(|<span class="kw">_</span>| USimpleError::new(<span class="number">1</span>, <span class="macro">format!</span>(<span class="string">&quot;invalid date ts format {}&quot;</span>, ts.quote())))<span class="question-mark">?</span>;
-    <span class="kw">let </span><span class="kw-2">mut </span>local = to_local(tm);
-    <span class="kw">if </span>leap_sec {
-        <span class="comment">// We are dealing with a leap second, add it
-        </span>local = local.saturating_add(Duration::SECOND);
+
+    <span class="comment">// Chrono caps seconds at 59, but 60 is valid. It might be a leap second
+    // or wrap to the next minute. But that doesn&#39;t really matter, because we
+    // only care about the timestamp anyway.
+    // Tested in gnu/tests/touch/60-seconds
+    </span><span class="kw">if </span>local.second() == <span class="number">59 </span>&amp;&amp; ts.ends_with(<span class="string">&quot;.60&quot;</span>) {
+        local += Duration::seconds(<span class="number">1</span>);
     }
-    <span class="kw">let </span>ft = local_dt_to_filetime(local);
 
-    <span class="comment">// // We have to check that ft is valid time. Due to daylight saving
-    // // time switch, local time can jump from 1:59 AM to 3:00 AM,
-    // // in which case any time between 2:00 AM and 2:59 AM is not valid.
-    // // Convert back to local time and see if we got the same value back.
-    // let ts = time::Timespec {
-    //     sec: ft.unix_seconds(),
-    //     nsec: 0,
-    // };
-    // let tm2 = time::at(ts);
-    // if tm.tm_hour != tm2.tm_hour {
-    //     return Err(USimpleError::new(
-    //         1,
-    //         format!(&quot;invalid date format {}&quot;, s.quote()),
-    //     ));
-    // }
+    <span class="comment">// Due to daylight saving time switch, local time can jump from 1:59 AM to
+    // 3:00 AM, in which case any time between 2:00 AM and 2:59 AM is not
+    // valid. If we are within this jump, chrono takes the offset from before
+    // the jump. If we then jump forward an hour, we get the new corrected
+    // offset. Jumping back will then now correctly take the jump into account.
+    </span><span class="kw">let </span>local2 = local + Duration::hours(<span class="number">1</span>) - Duration::hours(<span class="number">1</span>);
+    <span class="kw">if </span>local.hour() != local2.hour() {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(
+            <span class="number">1</span>,
+            <span class="macro">format!</span>(<span class="string">&quot;invalid date format {}&quot;</span>, s.quote()),
+        ));
+    }
 
-    </span><span class="prelude-val">Ok</span>(ft)
+    <span class="prelude-val">Ok</span>(datetime_to_filetime(<span class="kw-2">&amp;</span>local))
 }
 
 <span class="comment">// TODO: this may be a good candidate to put in fsext.rs
