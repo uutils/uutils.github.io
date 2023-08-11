@@ -357,82 +357,6 @@
 <a href="#357" id="357">357</a>
 <a href="#358" id="358">358</a>
 <a href="#359" id="359">359</a>
-<a href="#360" id="360">360</a>
-<a href="#361" id="361">361</a>
-<a href="#362" id="362">362</a>
-<a href="#363" id="363">363</a>
-<a href="#364" id="364">364</a>
-<a href="#365" id="365">365</a>
-<a href="#366" id="366">366</a>
-<a href="#367" id="367">367</a>
-<a href="#368" id="368">368</a>
-<a href="#369" id="369">369</a>
-<a href="#370" id="370">370</a>
-<a href="#371" id="371">371</a>
-<a href="#372" id="372">372</a>
-<a href="#373" id="373">373</a>
-<a href="#374" id="374">374</a>
-<a href="#375" id="375">375</a>
-<a href="#376" id="376">376</a>
-<a href="#377" id="377">377</a>
-<a href="#378" id="378">378</a>
-<a href="#379" id="379">379</a>
-<a href="#380" id="380">380</a>
-<a href="#381" id="381">381</a>
-<a href="#382" id="382">382</a>
-<a href="#383" id="383">383</a>
-<a href="#384" id="384">384</a>
-<a href="#385" id="385">385</a>
-<a href="#386" id="386">386</a>
-<a href="#387" id="387">387</a>
-<a href="#388" id="388">388</a>
-<a href="#389" id="389">389</a>
-<a href="#390" id="390">390</a>
-<a href="#391" id="391">391</a>
-<a href="#392" id="392">392</a>
-<a href="#393" id="393">393</a>
-<a href="#394" id="394">394</a>
-<a href="#395" id="395">395</a>
-<a href="#396" id="396">396</a>
-<a href="#397" id="397">397</a>
-<a href="#398" id="398">398</a>
-<a href="#399" id="399">399</a>
-<a href="#400" id="400">400</a>
-<a href="#401" id="401">401</a>
-<a href="#402" id="402">402</a>
-<a href="#403" id="403">403</a>
-<a href="#404" id="404">404</a>
-<a href="#405" id="405">405</a>
-<a href="#406" id="406">406</a>
-<a href="#407" id="407">407</a>
-<a href="#408" id="408">408</a>
-<a href="#409" id="409">409</a>
-<a href="#410" id="410">410</a>
-<a href="#411" id="411">411</a>
-<a href="#412" id="412">412</a>
-<a href="#413" id="413">413</a>
-<a href="#414" id="414">414</a>
-<a href="#415" id="415">415</a>
-<a href="#416" id="416">416</a>
-<a href="#417" id="417">417</a>
-<a href="#418" id="418">418</a>
-<a href="#419" id="419">419</a>
-<a href="#420" id="420">420</a>
-<a href="#421" id="421">421</a>
-<a href="#422" id="422">422</a>
-<a href="#423" id="423">423</a>
-<a href="#424" id="424">424</a>
-<a href="#425" id="425">425</a>
-<a href="#426" id="426">426</a>
-<a href="#427" id="427">427</a>
-<a href="#428" id="428">428</a>
-<a href="#429" id="429">429</a>
-<a href="#430" id="430">430</a>
-<a href="#431" id="431">431</a>
-<a href="#432" id="432">432</a>
-<a href="#433" id="433">433</a>
-<a href="#434" id="434">434</a>
-<a href="#435" id="435">435</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Tobias Bohumir Schottdorf &lt;tobias.schottdorf@gmail.com&gt;
@@ -479,7 +403,7 @@
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             header_numbering: NumberingStyle::None,
-            body_numbering: NumberingStyle::All,
+            body_numbering: NumberingStyle::NonEmpty,
             footer_numbering: NumberingStyle::None,
             section_delimiter: [<span class="string">&#39;\\&#39;</span>, <span class="string">&#39;:&#39;</span>],
             starting_line_number: <span class="number">1</span>,
@@ -706,145 +630,69 @@
 }
 
 <span class="comment">// nl implements the main functionality for an individual buffer.
-</span><span class="attr">#[allow(clippy::cognitive_complexity)]
 </span><span class="kw">fn </span>nl&lt;T: Read&gt;(reader: <span class="kw-2">&amp;mut </span>BufReader&lt;T&gt;, settings: <span class="kw-2">&amp;</span>Settings) -&gt; UResult&lt;()&gt; {
-    <span class="kw">let </span>regexp: regex::Regex = regex::Regex::new(<span class="string">r&quot;.?&quot;</span>).unwrap();
+    <span class="kw">let </span><span class="kw-2">mut </span>current_numbering_style = <span class="kw-2">&amp;</span>settings.body_numbering;
     <span class="kw">let </span><span class="kw-2">mut </span>line_no = settings.starting_line_number;
-    <span class="kw">let </span><span class="kw-2">mut </span>empty_line_count: u64 = <span class="number">0</span>;
-    <span class="comment">// Initially, we use the body&#39;s line counting settings
-    </span><span class="kw">let </span><span class="kw-2">mut </span>regex_filter = <span class="kw">match </span>settings.body_numbering {
-        NumberingStyle::Regex(<span class="kw-2">ref </span>re) =&gt; re,
-        <span class="kw">_ </span>=&gt; <span class="kw-2">&amp;</span>regexp,
-    };
-    <span class="kw">let </span><span class="kw-2">mut </span>line_filter: <span class="kw">fn</span>(<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>regex::Regex) -&gt; bool = pass_regex;
-    <span class="kw">for </span>l <span class="kw">in </span>reader.lines() {
-        <span class="kw">let </span><span class="kw-2">mut </span>l = l.map_err_context(|| <span class="string">&quot;could not read line&quot;</span>.to_string())<span class="question-mark">?</span>;
-        <span class="comment">// Sanitize the string. We want to print the newline ourselves.
-        </span><span class="kw">if </span>l.ends_with(<span class="string">&#39;\n&#39;</span>) {
-            l.pop();
-        }
-        <span class="comment">// Next we iterate through the individual chars to see if this
-        // is one of the special lines starting a new &quot;section&quot; in the
-        // document.
-        </span><span class="kw">let </span>line = l;
-        <span class="kw">let </span><span class="kw-2">mut </span>odd = <span class="bool-val">false</span>;
-        <span class="comment">// matched_group counts how many copies of section_delimiter
-        // this string consists of (0 if there&#39;s anything else)
-        </span><span class="kw">let </span><span class="kw-2">mut </span>matched_groups = <span class="number">0u8</span>;
-        <span class="kw">for </span>c <span class="kw">in </span>line.chars() {
-            <span class="comment">// If this is a newline character, the loop should end.
-            </span><span class="kw">if </span>c == <span class="string">&#39;\n&#39; </span>{
-                <span class="kw">break</span>;
-            }
-            <span class="comment">// If we have already seen three groups (corresponding to
-            // a header) or the current char does not form part of
-            // a new group, then this line is not a segment indicator.
-            </span><span class="kw">if </span>matched_groups &gt;= <span class="number">3 </span>|| settings.section_delimiter[usize::from(odd)] != c {
-                matched_groups = <span class="number">0</span>;
-                <span class="kw">break</span>;
-            }
-            <span class="kw">if </span>odd {
-                <span class="comment">// We have seen a new group and count it.
-                </span>matched_groups += <span class="number">1</span>;
-            }
-            odd = !odd;
-        }
+    <span class="kw">let </span><span class="kw-2">mut </span>consecutive_empty_lines = <span class="number">0</span>;
 
-        <span class="comment">// See how many groups we matched. That will tell us if this is
-        // a line starting a new segment, and the number of groups
-        // indicates what type of segment.
-        </span><span class="kw">if </span>matched_groups &gt; <span class="number">0 </span>{
-            <span class="comment">// The current line is a section delimiter, so we output
-            // a blank line.
-            </span><span class="macro">println!</span>();
-            <span class="comment">// However the line does not count as a blank line, so we
-            // reset the counter used for --join-blank-lines.
-            </span>empty_line_count = <span class="number">0</span>;
-            <span class="kw">match </span><span class="kw-2">*</span><span class="kw">match </span>matched_groups {
-                <span class="number">3 </span>=&gt; {
-                    <span class="comment">// This is a header, so we may need to reset the
-                    // line number
-                    </span><span class="kw">if </span>settings.renumber {
-                        line_no = settings.starting_line_number;
-                    }
-                    <span class="kw-2">&amp;</span>settings.header_numbering
-                }
-                <span class="number">1 </span>=&gt; <span class="kw-2">&amp;</span>settings.footer_numbering,
-                <span class="comment">// The only option left is 2, but rust wants
-                // a catch-all here.
-                </span><span class="kw">_ </span>=&gt; <span class="kw-2">&amp;</span>settings.body_numbering,
-            } {
-                NumberingStyle::All =&gt; {
-                    line_filter = pass_all;
-                }
-                NumberingStyle::NonEmpty =&gt; {
-                    line_filter = pass_nonempty;
-                }
-                NumberingStyle::None =&gt; {
-                    line_filter = pass_none;
-                }
-                NumberingStyle::Regex(<span class="kw-2">ref </span>re) =&gt; {
-                    line_filter = pass_regex;
-                    regex_filter = re;
-                }
-            }
-            <span class="kw">continue</span>;
-        }
-        <span class="comment">// From this point on we format and print a &quot;regular&quot; line.
-        </span><span class="kw">if </span>line.is_empty() {
-            <span class="comment">// The line is empty, which means that we have to care
-            // about the --join-blank-lines parameter.
-            </span>empty_line_count += <span class="number">1</span>;
+    <span class="kw">for </span>line <span class="kw">in </span>reader.lines() {
+        <span class="kw">let </span>line = line.map_err_context(|| <span class="string">&quot;could not read line&quot;</span>.to_string())<span class="question-mark">?</span>;
+
+        <span class="kw">if </span>line.is_empty() {
+            consecutive_empty_lines += <span class="number">1</span>;
         } <span class="kw">else </span>{
-            <span class="comment">// This saves us from having to check for an empty string
-            // in the next selector.
-            </span>empty_line_count = <span class="number">0</span>;
+            consecutive_empty_lines = <span class="number">0</span>;
+        };
+
+        <span class="comment">// FIXME section delimiters are hardcoded and settings.section_delimiter is ignored
+        // because --section-delimiter is not correctly implemented yet
+        </span><span class="kw">let _ </span>= settings.section_delimiter; <span class="comment">// XXX suppress &quot;field never read&quot; warning
+        </span><span class="kw">let </span>new_numbering_style = <span class="kw">match </span>line.as_str() {
+            <span class="string">&quot;\\:\\:\\:&quot; </span>=&gt; <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>settings.header_numbering),
+            <span class="string">&quot;\\:\\:&quot; </span>=&gt; <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>settings.body_numbering),
+            <span class="string">&quot;\\:&quot; </span>=&gt; <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>settings.footer_numbering),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+        };
+
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(new_style) = new_numbering_style {
+            current_numbering_style = new_style;
+            line_no = settings.starting_line_number;
+            <span class="macro">println!</span>();
+        } <span class="kw">else </span>{
+            <span class="kw">let </span>is_line_numbered = <span class="kw">match </span>current_numbering_style {
+                <span class="comment">// consider $join_blank_lines consecutive empty lines to be one logical line
+                // for numbering, and only number the last one
+                </span>NumberingStyle::All
+                    <span class="kw">if </span>line.is_empty()
+                        &amp;&amp; consecutive_empty_lines % settings.join_blank_lines != <span class="number">0 </span>=&gt;
+                {
+                    <span class="bool-val">false
+                </span>}
+                NumberingStyle::All =&gt; <span class="bool-val">true</span>,
+                NumberingStyle::NonEmpty =&gt; !line.is_empty(),
+                NumberingStyle::None =&gt; <span class="bool-val">false</span>,
+                NumberingStyle::Regex(re) =&gt; re.is_match(<span class="kw-2">&amp;</span>line),
+            };
+
+            <span class="kw">if </span>is_line_numbered {
+                <span class="macro">println!</span>(
+                    <span class="string">&quot;{}{}{}&quot;</span>,
+                    settings
+                        .number_format
+                        .format(line_no, settings.number_width),
+                    settings.number_separator,
+                    line
+                );
+                <span class="comment">// update line number for the potential next line
+                </span>line_no += settings.line_increment;
+            } <span class="kw">else </span>{
+                <span class="kw">let </span>spaces = <span class="string">&quot; &quot;</span>.repeat(settings.number_width + <span class="number">1</span>);
+                <span class="macro">println!</span>(<span class="string">&quot;{spaces}{line}&quot;</span>);
+            }
         }
-        <span class="kw">if </span>!line_filter(<span class="kw-2">&amp;</span>line, regex_filter)
-            || (empty_line_count &gt; <span class="number">0 </span>&amp;&amp; empty_line_count &lt; settings.join_blank_lines)
-        {
-            <span class="comment">// No number is printed for this line. Either we did not
-            // want to print one in the first place, or it is a blank
-            // line but we are still collecting more blank lines via
-            // the option --join-blank-lines.
-            </span><span class="macro">println!</span>(<span class="string">&quot;{line}&quot;</span>);
-            <span class="kw">continue</span>;
-        }
-        <span class="comment">// If we make it here, then either we are printing a non-empty
-        // line or assigning a line number to an empty line. Either
-        // way, start counting empties from zero once more.
-        </span>empty_line_count = <span class="number">0</span>;
-        <span class="comment">// A line number is to be printed.
-        </span><span class="macro">println!</span>(
-            <span class="string">&quot;{}{}{}&quot;</span>,
-            settings
-                .number_format
-                .format(line_no, settings.number_width),
-            settings.number_separator,
-            line
-        );
-        <span class="comment">// Now update the line number for the (potential) next
-        // line.
-        </span>line_no += settings.line_increment;
     }
     <span class="prelude-val">Ok</span>(())
 }
-
-<span class="kw">fn </span>pass_regex(line: <span class="kw-2">&amp;</span>str, re: <span class="kw-2">&amp;</span>regex::Regex) -&gt; bool {
-    re.is_match(line)
-}
-
-<span class="kw">fn </span>pass_nonempty(line: <span class="kw-2">&amp;</span>str, <span class="kw">_</span>: <span class="kw-2">&amp;</span>regex::Regex) -&gt; bool {
-    !line.is_empty()
-}
-
-<span class="kw">fn </span>pass_none(<span class="kw">_</span>: <span class="kw-2">&amp;</span>str, <span class="kw">_</span>: <span class="kw-2">&amp;</span>regex::Regex) -&gt; bool {
-    <span class="bool-val">false
-</span>}
-
-<span class="kw">fn </span>pass_all(<span class="kw">_</span>: <span class="kw-2">&amp;</span>str, <span class="kw">_</span>: <span class="kw-2">&amp;</span>regex::Regex) -&gt; bool {
-    <span class="bool-val">true
-</span>}
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>test {

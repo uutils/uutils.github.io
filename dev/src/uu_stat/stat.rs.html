@@ -1037,6 +1037,9 @@
 <a href="#1037" id="1037">1037</a>
 <a href="#1038" id="1038">1038</a>
 <a href="#1039" id="1039">1039</a>
+<a href="#1040" id="1040">1040</a>
+<a href="#1041" id="1041">1041</a>
+<a href="#1042" id="1042">1042</a>
 </pre></div><pre class="rust"><code><span class="comment">// This file is part of the uutils coreutils package.
 //
 // (c) Jian Zeng &lt;anonymousknight96@gmail.com&gt;
@@ -1653,6 +1656,10 @@
     <span class="kw">fn </span>do_stat(<span class="kw-2">&amp;</span><span class="self">self</span>, file: <span class="kw-2">&amp;</span>OsStr, stdin_is_fifo: bool) -&gt; i32 {
         <span class="kw">let </span>display_name = file.to_string_lossy();
         <span class="kw">let </span>file = <span class="kw">if </span><span class="macro">cfg!</span>(unix) &amp;&amp; display_name == <span class="string">&quot;-&quot; </span>{
+            <span class="kw">if </span><span class="self">self</span>.show_fs {
+                <span class="macro">show_error!</span>(<span class="string">&quot;using &#39;-&#39; to denote standard input does not work in file system mode&quot;</span>);
+                <span class="kw">return </span><span class="number">1</span>;
+            }
             <span class="kw">if let </span><span class="prelude-val">Ok</span>(p) = Path::new(<span class="string">&quot;/dev/stdin&quot;</span>).canonicalize() {
                 p.into_os_string()
             } <span class="kw">else </span>{
@@ -1661,7 +1668,6 @@
         } <span class="kw">else </span>{
             OsString::from(file)
         };
-
         <span class="kw">if </span><span class="self">self</span>.show_fs {
             <span class="attr">#[cfg(unix)]
             </span><span class="kw">let </span>p = file.as_bytes();
