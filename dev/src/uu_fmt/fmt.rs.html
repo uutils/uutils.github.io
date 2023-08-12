@@ -393,6 +393,23 @@
 <a href="#393" id="393">393</a>
 <a href="#394" id="394">394</a>
 <a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of `fmt` from the uutils coreutils package.
 //  *
 //  * (c) kwantam &lt;kwantam@gmail.com&gt;
@@ -455,6 +472,29 @@
     goal: usize,
     tabwidth: usize,
 }
+
+<span class="kw">impl </span>Default <span class="kw">for </span>FmtOptions {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            crown: <span class="bool-val">false</span>,
+            tagged: <span class="bool-val">false</span>,
+            mail: <span class="bool-val">false</span>,
+            uniform: <span class="bool-val">false</span>,
+            quick: <span class="bool-val">false</span>,
+            split_only: <span class="bool-val">false</span>,
+            use_prefix: <span class="bool-val">false</span>,
+            prefix: String::new(),
+            xprefix: <span class="bool-val">false</span>,
+            use_anti_prefix: <span class="bool-val">false</span>,
+            anti_prefix: String::new(),
+            xanti_prefix: <span class="bool-val">false</span>,
+            width: <span class="number">75</span>,
+            goal: <span class="number">70</span>,
+            tabwidth: <span class="number">8</span>,
+        }
+    }
+}
+
 <span class="doccomment">/// Parse the command line arguments and return the list of files and formatting options.
 ///
 /// # Arguments
@@ -465,7 +505,11 @@
 ///
 /// A tuple containing a vector of file names and a `FmtOptions` struct.
 </span><span class="attr">#[allow(clippy::cognitive_complexity)]
+#[allow(clippy::field_reassign_with_default)]
 </span><span class="kw">fn </span>parse_arguments(args: <span class="kw">impl </span>uucore::Args) -&gt; UResult&lt;(Vec&lt;String&gt;, FmtOptions)&gt; {
+    <span class="comment">// by default, goal is 93% of width
+    </span><span class="kw">const </span>DEFAULT_GOAL_TO_WIDTH_RATIO: usize = <span class="number">93</span>;
+
     <span class="kw">let </span>matches = uu_app().try_get_matches_from(args)<span class="question-mark">?</span>;
 
     <span class="kw">let </span><span class="kw-2">mut </span>files: Vec&lt;String&gt; = matches
@@ -473,23 +517,7 @@
         .map(|v| v.map(ToString::to_string).collect())
         .unwrap_or_default();
 
-    <span class="kw">let </span><span class="kw-2">mut </span>fmt_opts = FmtOptions {
-        crown: <span class="bool-val">false</span>,
-        tagged: <span class="bool-val">false</span>,
-        mail: <span class="bool-val">false</span>,
-        uniform: <span class="bool-val">false</span>,
-        quick: <span class="bool-val">false</span>,
-        split_only: <span class="bool-val">false</span>,
-        use_prefix: <span class="bool-val">false</span>,
-        prefix: String::new(),
-        xprefix: <span class="bool-val">false</span>,
-        use_anti_prefix: <span class="bool-val">false</span>,
-        anti_prefix: String::new(),
-        xanti_prefix: <span class="bool-val">false</span>,
-        width: <span class="number">79</span>,
-        goal: <span class="number">74</span>,
-        tabwidth: <span class="number">8</span>,
-    };
+    <span class="kw">let </span><span class="kw-2">mut </span>fmt_opts = FmtOptions::default();
 
     fmt_opts.tagged = matches.get_flag(OPT_TAGGED_PARAGRAPH);
     <span class="kw">if </span>matches.get_flag(OPT_CROWN_MARGIN) {
@@ -536,7 +564,10 @@
                 ),
             ));
         }
-        fmt_opts.goal = cmp::min(fmt_opts.width * <span class="number">94 </span>/ <span class="number">100</span>, fmt_opts.width - <span class="number">3</span>);
+        fmt_opts.goal = cmp::min(
+            fmt_opts.width * DEFAULT_GOAL_TO_WIDTH_RATIO / <span class="number">100</span>,
+            fmt_opts.width - <span class="number">3</span>,
+        );
     };
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(s) = matches.get_one::&lt;String&gt;(OPT_GOAL) {
@@ -550,7 +581,10 @@
             }
         };
         <span class="kw">if </span>!matches.get_flag(OPT_WIDTH) {
-            fmt_opts.width = cmp::max(fmt_opts.goal * <span class="number">100 </span>/ <span class="number">94</span>, fmt_opts.goal + <span class="number">3</span>);
+            fmt_opts.width = cmp::max(
+                fmt_opts.goal * <span class="number">100 </span>/ DEFAULT_GOAL_TO_WIDTH_RATIO,
+                fmt_opts.goal + <span class="number">3</span>,
+            );
         } <span class="kw">else if </span>fmt_opts.goal &gt; fmt_opts.width {
             <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, <span class="string">&quot;GOAL cannot be greater than WIDTH.&quot;</span>));
         }
@@ -751,14 +785,14 @@
             Arg::new(OPT_WIDTH)
                 .short(<span class="string">&#39;w&#39;</span>)
                 .long(<span class="string">&quot;width&quot;</span>)
-                .help(<span class="string">&quot;Fill output lines up to a maximum of WIDTH columns, default 79.&quot;</span>)
+                .help(<span class="string">&quot;Fill output lines up to a maximum of WIDTH columns, default 75.&quot;</span>)
                 .value_name(<span class="string">&quot;WIDTH&quot;</span>),
         )
         .arg(
             Arg::new(OPT_GOAL)
                 .short(<span class="string">&#39;g&#39;</span>)
                 .long(<span class="string">&quot;goal&quot;</span>)
-                .help(<span class="string">&quot;Goal width, default ~0.94*WIDTH. Must be less than WIDTH.&quot;</span>)
+                .help(<span class="string">&quot;Goal width, default of 93% of WIDTH. Must be less than WIDTH.&quot;</span>)
                 .value_name(<span class="string">&quot;GOAL&quot;</span>),
         )
         .arg(

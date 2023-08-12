@@ -578,6 +578,8 @@
 <a href="#578" id="578">578</a>
 <a href="#579" id="579">579</a>
 <a href="#580" id="580">580</a>
+<a href="#581" id="581">581</a>
+<a href="#582" id="582">582</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Alex Lyon &lt;arcterus@mail.com&gt;
@@ -950,7 +952,7 @@
 }
 
 <span class="kw">fn </span>remove_dir(path: <span class="kw-2">&amp;</span>Path, options: <span class="kw-2">&amp;</span>Options) -&gt; bool {
-    <span class="kw">if </span>prompt_file(path, options, <span class="bool-val">true</span>) {
+    <span class="kw">if </span>prompt_dir(path, options) {
         <span class="kw">if let </span><span class="prelude-val">Ok</span>(<span class="kw-2">mut </span>read_dir) = fs::read_dir(path) {
             <span class="kw">if </span>options.dir || options.recursive {
                 <span class="kw">if </span>read_dir.next().is_none() {
@@ -995,7 +997,7 @@
 </span>}
 
 <span class="kw">fn </span>remove_file(path: <span class="kw-2">&amp;</span>Path, options: <span class="kw-2">&amp;</span>Options) -&gt; bool {
-    <span class="kw">if </span>prompt_file(path, options, <span class="bool-val">false</span>) {
+    <span class="kw">if </span>prompt_file(path, options) {
         <span class="kw">match </span>fs::remove_file(path) {
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; {
                 <span class="kw">if </span>options.verbose {
@@ -1017,8 +1019,23 @@
     <span class="bool-val">false
 </span>}
 
+<span class="kw">fn </span>prompt_dir(path: <span class="kw-2">&amp;</span>Path, options: <span class="kw-2">&amp;</span>Options) -&gt; bool {
+    <span class="comment">// If interactive is Never we never want to send prompts
+    </span><span class="kw">if </span>options.interactive == InteractiveMode::Never {
+        <span class="kw">return </span><span class="bool-val">true</span>;
+    }
+
+    <span class="comment">// We can&#39;t use metadata.permissions.readonly for directories because it only works on files
+    // So we have to handle whether a directory is writable manually
+    </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(metadata) = fs::metadata(path) {
+        handle_writable_directory(path, options, <span class="kw-2">&amp;</span>metadata)
+    } <span class="kw">else </span>{
+        <span class="bool-val">true
+    </span>}
+}
+
 <span class="attr">#[allow(clippy::cognitive_complexity)]
-</span><span class="kw">fn </span>prompt_file(path: <span class="kw-2">&amp;</span>Path, options: <span class="kw-2">&amp;</span>Options, is_dir: bool) -&gt; bool {
+</span><span class="kw">fn </span>prompt_file(path: <span class="kw-2">&amp;</span>Path, options: <span class="kw-2">&amp;</span>Options) -&gt; bool {
     <span class="comment">// If interactive is Never we never want to send prompts
     </span><span class="kw">if </span>options.interactive == InteractiveMode::Never {
         <span class="kw">return </span><span class="bool-val">true</span>;
@@ -1031,59 +1048,46 @@
             }
         }
     }
-    <span class="kw">if </span>is_dir {
-        <span class="comment">// We can&#39;t use metadata.permissions.readonly for directories because it only works on files
-        // So we have to handle whether a directory is writable on not manually
-        </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(metadata) = fs::metadata(path) {
-            handle_writable_directory(path, options, <span class="kw-2">&amp;</span>metadata)
-        } <span class="kw">else </span>{
-            <span class="bool-val">true
-        </span>}
-    } <span class="kw">else </span>{
-        <span class="comment">// File::open(path) doesn&#39;t open the file in write mode so we need to use file options to open it in also write mode to check if it can written too
-        </span><span class="kw">match </span>File::options().read(<span class="bool-val">true</span>).write(<span class="bool-val">true</span>).open(path) {
-            <span class="prelude-val">Ok</span>(file) =&gt; {
-                <span class="kw">if let </span><span class="prelude-val">Ok</span>(metadata) = file.metadata() {
-                    <span class="kw">if </span>metadata.permissions().readonly() {
-                        <span class="kw">if </span>metadata.len() == <span class="number">0 </span>{
-                            <span class="macro">prompt_yes!</span>(
-                                <span class="string">&quot;remove write-protected regular empty file {}?&quot;</span>,
-                                path.quote()
-                            )
-                        } <span class="kw">else </span>{
-                            <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove write-protected regular file {}?&quot;</span>, path.quote())
-                        }
-                    } <span class="kw">else if </span>options.interactive == InteractiveMode::Always {
-                        <span class="kw">if </span>metadata.len() == <span class="number">0 </span>{
-                            <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove regular empty file {}?&quot;</span>, path.quote())
-                        } <span class="kw">else </span>{
-                            <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove file {}?&quot;</span>, path.quote())
-                        }
-                    } <span class="kw">else </span>{
-                        <span class="bool-val">true
-                    </span>}
-                } <span class="kw">else </span>{
-                    <span class="bool-val">true
-                </span>}
-            }
-            <span class="prelude-val">Err</span>(err) =&gt; {
-                <span class="kw">if </span>err.kind() == ErrorKind::PermissionDenied {
-                    <span class="kw">if let </span><span class="prelude-val">Ok</span>(metadata) = fs::metadata(path) {
-                        <span class="kw">if </span>metadata.len() == <span class="number">0 </span>{
-                            <span class="macro">prompt_yes!</span>(
-                                <span class="string">&quot;remove write-protected regular empty file {}?&quot;</span>,
-                                path.quote()
-                            )
-                        } <span class="kw">else </span>{
-                            <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove write-protected regular file {}?&quot;</span>, path.quote())
-                        }
+    <span class="comment">// File::open(path) doesn&#39;t open the file in write mode so we need to use file options to open it in also write mode to check if it can written too
+    </span><span class="kw">match </span>File::options().read(<span class="bool-val">true</span>).write(<span class="bool-val">true</span>).open(path) {
+        <span class="prelude-val">Ok</span>(file) =&gt; {
+            <span class="kw">if let </span><span class="prelude-val">Ok</span>(metadata) = file.metadata() {
+                <span class="kw">if </span>metadata.permissions().readonly() {
+                    <span class="kw">if </span>metadata.len() == <span class="number">0 </span>{
+                        <span class="macro">prompt_yes!</span>(
+                            <span class="string">&quot;remove write-protected regular empty file {}?&quot;</span>,
+                            path.quote()
+                        )
                     } <span class="kw">else </span>{
                         <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove write-protected regular file {}?&quot;</span>, path.quote())
+                    }
+                } <span class="kw">else if </span>options.interactive == InteractiveMode::Always {
+                    <span class="kw">if </span>metadata.len() == <span class="number">0 </span>{
+                        <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove regular empty file {}?&quot;</span>, path.quote())
+                    } <span class="kw">else </span>{
+                        <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove file {}?&quot;</span>, path.quote())
                     }
                 } <span class="kw">else </span>{
                     <span class="bool-val">true
                 </span>}
-            }
+            } <span class="kw">else </span>{
+                <span class="bool-val">true
+            </span>}
+        }
+        <span class="prelude-val">Err</span>(err) =&gt; {
+            <span class="kw">if </span>err.kind() == ErrorKind::PermissionDenied {
+                <span class="kw">match </span>fs::metadata(path) {
+                    <span class="prelude-val">Ok</span>(metadata) <span class="kw">if </span>metadata.len() == <span class="number">0 </span>=&gt; {
+                        <span class="macro">prompt_yes!</span>(
+                            <span class="string">&quot;remove write-protected regular empty file {}?&quot;</span>,
+                            path.quote()
+                        )
+                    }
+                    <span class="kw">_ </span>=&gt; <span class="macro">prompt_yes!</span>(<span class="string">&quot;remove write-protected regular file {}?&quot;</span>, path.quote()),
+                }
+            } <span class="kw">else </span>{
+                <span class="bool-val">true
+            </span>}
         }
     }
 }

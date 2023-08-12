@@ -139,7 +139,32 @@
 <a href="#139" id="139">139</a>
 <a href="#140" id="140">140</a>
 <a href="#141" id="141">141</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>clap::{
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+</pre></div><pre class="rust"><code><span class="comment">// spell-checker:ignore abcdefgh
+</span><span class="kw">use </span>clap::{
     builder::{PossibleValue, TypedValueParser},
     error::{ContextKind, ContextValue, ErrorKind},
 };
@@ -155,6 +180,34 @@
 </span><span class="kw">impl </span>ShortcutValueParser {
     <span class="kw">pub fn </span>new(values: <span class="kw">impl </span>Into&lt;<span class="self">Self</span>&gt;) -&gt; <span class="self">Self </span>{
         values.into()
+    }
+
+    <span class="kw">fn </span>generate_clap_error(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        cmd: <span class="kw-2">&amp;</span>clap::Command,
+        arg: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>clap::Arg&gt;,
+        value: <span class="kw-2">&amp;</span>str,
+    ) -&gt; clap::Error {
+        <span class="kw">let </span><span class="kw-2">mut </span>err = clap::Error::new(ErrorKind::InvalidValue).with_cmd(cmd);
+
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(arg) = arg {
+            err.insert(
+                ContextKind::InvalidArg,
+                ContextValue::String(arg.to_string()),
+            );
+        }
+
+        err.insert(
+            ContextKind::InvalidValue,
+            ContextValue::String(value.to_string()),
+        );
+
+        err.insert(
+            ContextKind::ValidValue,
+            ContextValue::Strings(<span class="self">self</span>.<span class="number">0</span>.iter().map(|x| x.get_name().to_string()).collect()),
+        );
+
+        err
     }
 }
 
@@ -177,29 +230,16 @@
             .filter(|x| x.get_name().starts_with(value))
             .collect();
 
-        <span class="kw">if </span>matched_values.len() == <span class="number">1 </span>{
-            <span class="prelude-val">Ok</span>(matched_values[<span class="number">0</span>].get_name().to_string())
-        } <span class="kw">else </span>{
-            <span class="kw">let </span><span class="kw-2">mut </span>err = clap::Error::new(ErrorKind::InvalidValue).with_cmd(cmd);
-
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(arg) = arg {
-                err.insert(
-                    ContextKind::InvalidArg,
-                    ContextValue::String(arg.to_string()),
-                );
+        <span class="kw">match </span>matched_values.len() {
+            <span class="number">0 </span>=&gt; <span class="prelude-val">Err</span>(<span class="self">self</span>.generate_clap_error(cmd, arg, value)),
+            <span class="number">1 </span>=&gt; <span class="prelude-val">Ok</span>(matched_values[<span class="number">0</span>].get_name().to_string()),
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(direct_match) = matched_values.iter().find(|x| x.get_name() == value) {
+                    <span class="prelude-val">Ok</span>(direct_match.get_name().to_string())
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">Err</span>(<span class="self">self</span>.generate_clap_error(cmd, arg, value))
+                }
             }
-
-            err.insert(
-                ContextKind::InvalidValue,
-                ContextValue::String(value.to_string()),
-            );
-
-            err.insert(
-                ContextKind::ValidValue,
-                ContextValue::Strings(<span class="self">self</span>.<span class="number">0</span>.iter().map(|x| x.get_name().to_string()).collect()),
-            );
-
-            <span class="prelude-val">Err</span>(err)
         }
     }
 
@@ -266,6 +306,14 @@
 
         <span class="kw">let </span>result = parser.parse_ref(<span class="kw-2">&amp;</span>cmd, <span class="prelude-val">None</span>, OsStr::new(<span class="string">&quot;abe&quot;</span>));
         <span class="macro">assert_eq!</span>(<span class="string">&quot;abef&quot;</span>, result.unwrap());
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_parse_ref_with_ambiguous_value_that_is_a_possible_value() {
+        <span class="kw">let </span>cmd = Command::new(<span class="string">&quot;cmd&quot;</span>);
+        <span class="kw">let </span>parser = ShortcutValueParser::new([<span class="string">&quot;abcd&quot;</span>, <span class="string">&quot;abcdefgh&quot;</span>]);
+        <span class="kw">let </span>result = parser.parse_ref(<span class="kw-2">&amp;</span>cmd, <span class="prelude-val">None</span>, OsStr::new(<span class="string">&quot;abcd&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;abcd&quot;</span>, result.unwrap());
     }
 
     <span class="attr">#[test]
