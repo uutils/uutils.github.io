@@ -29,45 +29,43 @@ jobs:
         default: true
         profile: minimal
 
-    - name: Install `mdbook` dep
+    - name: Install `libacl`
       run: |
         sudo apt install libacl1-dev
 
-    - name: Install `mdbook`
-      uses: actions-rs/install@v0.1
-      with:
-        crate: mdbook
-        version: latest
-        use-tool-cache: false
-      env:
-        RUSTUP_TOOLCHAIN: stable
-    
     - name: Download tldr archive
       run: |
         curl https://tldr.sh/assets/tldr.zip --output coreutils/docs/tldr.zip
 
-    - name: Install `mdbook-toc`
-      uses: actions-rs/install@v0.1
+    - name: Install necessary tools (oranda, mdbook and mdbook-toc)
+      uses: taiki-e/install-action@v2
       with:
-        crate: mdbook-toc
-        version: latest
-        use-tool-cache: false
-      env:
-        RUSTUP_TOOLCHAIN: stable
+        tool: oranda,mdbook,mdbook-toc
 
-    - name: Build user Documentation
+    - name: Build Coreutils Docs
       run: |
         cd coreutils
         cargo run --bin uudoc --all-features
-        cd docs
-        mdbook build
+        oranda build
 
-    - name: Deploy Docs
+    - name: Deploy Coreutils Docs
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./coreutils/docs/book/
-        destination_dir: user/
+        publish_dir: ./coreutils/public/
+        destination_dir: coreutils/
+
+    - name: Build Findutils Docs
+      run: |
+        cd findutils
+        oranda build
+
+    - name: Deploy Findutils Docs
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./findutils/public/
+        destination_dir: findutils/
 
   docs:
     name: generate the dev doc
@@ -97,7 +95,7 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./coreutils/target/doc
-        destination_dir: dev/
+        destination_dir: coreutils/dev/
 
 
   build-report:
