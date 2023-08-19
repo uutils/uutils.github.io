@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["ClobberMode","CopyMode","Error","OverwriteMode","Preserve","ReflinkMode","SparseMode","TargetType"],"fn":["localize_to_target","uu_app","uumain","verify_target_type"],"struct":["Attributes","Options"],"type":["CopyResult","Source","SourceSlice","Target","TargetSlice"]};
+window.SIDEBAR_ITEMS = {"enum":["ClobberMode","CopyMode","Error","OverwriteMode","Preserve","ReflinkMode","SparseMode","TargetType"],"fn":["copy","localize_to_target","uu_app","uumain","verify_target_type"],"struct":["Attributes","Options"],"type":["CopyResult"]};

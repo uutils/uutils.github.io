@@ -1995,6 +1995,67 @@
 <a href="#1995" id="1995">1995</a>
 <a href="#1996" id="1996">1996</a>
 <a href="#1997" id="1997">1997</a>
+<a href="#1998" id="1998">1998</a>
+<a href="#1999" id="1999">1999</a>
+<a href="#2000" id="2000">2000</a>
+<a href="#2001" id="2001">2001</a>
+<a href="#2002" id="2002">2002</a>
+<a href="#2003" id="2003">2003</a>
+<a href="#2004" id="2004">2004</a>
+<a href="#2005" id="2005">2005</a>
+<a href="#2006" id="2006">2006</a>
+<a href="#2007" id="2007">2007</a>
+<a href="#2008" id="2008">2008</a>
+<a href="#2009" id="2009">2009</a>
+<a href="#2010" id="2010">2010</a>
+<a href="#2011" id="2011">2011</a>
+<a href="#2012" id="2012">2012</a>
+<a href="#2013" id="2013">2013</a>
+<a href="#2014" id="2014">2014</a>
+<a href="#2015" id="2015">2015</a>
+<a href="#2016" id="2016">2016</a>
+<a href="#2017" id="2017">2017</a>
+<a href="#2018" id="2018">2018</a>
+<a href="#2019" id="2019">2019</a>
+<a href="#2020" id="2020">2020</a>
+<a href="#2021" id="2021">2021</a>
+<a href="#2022" id="2022">2022</a>
+<a href="#2023" id="2023">2023</a>
+<a href="#2024" id="2024">2024</a>
+<a href="#2025" id="2025">2025</a>
+<a href="#2026" id="2026">2026</a>
+<a href="#2027" id="2027">2027</a>
+<a href="#2028" id="2028">2028</a>
+<a href="#2029" id="2029">2029</a>
+<a href="#2030" id="2030">2030</a>
+<a href="#2031" id="2031">2031</a>
+<a href="#2032" id="2032">2032</a>
+<a href="#2033" id="2033">2033</a>
+<a href="#2034" id="2034">2034</a>
+<a href="#2035" id="2035">2035</a>
+<a href="#2036" id="2036">2036</a>
+<a href="#2037" id="2037">2037</a>
+<a href="#2038" id="2038">2038</a>
+<a href="#2039" id="2039">2039</a>
+<a href="#2040" id="2040">2040</a>
+<a href="#2041" id="2041">2041</a>
+<a href="#2042" id="2042">2042</a>
+<a href="#2043" id="2043">2043</a>
+<a href="#2044" id="2044">2044</a>
+<a href="#2045" id="2045">2045</a>
+<a href="#2046" id="2046">2046</a>
+<a href="#2047" id="2047">2047</a>
+<a href="#2048" id="2048">2048</a>
+<a href="#2049" id="2049">2049</a>
+<a href="#2050" id="2050">2050</a>
+<a href="#2051" id="2051">2051</a>
+<a href="#2052" id="2052">2052</a>
+<a href="#2053" id="2053">2053</a>
+<a href="#2054" id="2054">2054</a>
+<a href="#2055" id="2055">2055</a>
+<a href="#2056" id="2056">2056</a>
+<a href="#2057" id="2057">2057</a>
+<a href="#2058" id="2058">2058</a>
 </pre></div><pre class="rust"><code><span class="attr">#![allow(clippy::missing_safety_doc)]
 #![allow(clippy::extra_unused_lifetimes)]
 
@@ -2006,10 +2067,11 @@
 // For the full copyright and license information, please view the LICENSE file
 // that was distributed with this source code.
 
-// spell-checker:ignore (ToDO) copydir ficlone fiemap ftruncate linkgs lstat nlink nlinks pathbuf pwrite reflink strs xattrs symlinked deduplicated advcpmv
+// spell-checker:ignore (ToDO) copydir ficlone fiemap ftruncate linkgs lstat nlink nlinks pathbuf pwrite reflink strs xattrs symlinked deduplicated advcpmv nushell
 
 </span><span class="kw">use </span>quick_error::quick_error;
 <span class="kw">use </span>std::borrow::Cow;
+<span class="kw">use </span>std::cmp::Ordering;
 <span class="kw">use </span>std::collections::HashSet;
 <span class="kw">use </span>std::env;
 <span class="attr">#[cfg(not(windows))]
@@ -2048,6 +2110,7 @@
 
 <span class="kw">mod </span>copydir;
 <span class="kw">mod </span>platform;
+
 <span class="macro">quick_error! </span>{
     <span class="attr">#[derive(Debug)]
     </span><span class="kw">pub enum </span>Error {
@@ -2105,12 +2168,8 @@
 }
 
 <span class="kw">pub type </span>CopyResult&lt;T&gt; = <span class="prelude-ty">Result</span>&lt;T, Error&gt;;
-<span class="kw">pub type </span>Source = PathBuf;
-<span class="kw">pub type </span>SourceSlice = Path;
-<span class="kw">pub type </span>Target = PathBuf;
-<span class="kw">pub type </span>TargetSlice = Path;
 
-<span class="doccomment">/// Specifies whether when overwrite files
+<span class="doccomment">/// Specifies how to overwrite files.
 </span><span class="attr">#[derive(Clone, Copy, Eq, PartialEq)]
 </span><span class="kw">pub enum </span>ClobberMode {
     Force,
@@ -2118,7 +2177,7 @@
     Standard,
 }
 
-<span class="doccomment">/// Specifies whether when overwrite files
+<span class="doccomment">/// Specifies whether files should be overwritten.
 </span><span class="attr">#[derive(Clone, Copy, Eq, PartialEq)]
 </span><span class="kw">pub enum </span>OverwriteMode {
     <span class="doccomment">/// [Default] Always overwrite existing files
@@ -2145,13 +2204,14 @@
     Never,
 }
 
-<span class="doccomment">/// Specifies the expected file type of copy target
+<span class="doccomment">/// The expected file type of copy target
 </span><span class="kw">pub enum </span>TargetType {
     Directory,
     File,
 }
 
-<span class="kw">pub enum </span>CopyMode {
+<span class="doccomment">/// Copy action to perform
+</span><span class="kw">pub enum </span>CopyMode {
     Link,
     SymLink,
     Copy,
@@ -2159,77 +2219,128 @@
     AttrOnly,
 }
 
-<span class="attr">#[derive(Debug)]
+<span class="doccomment">/// Preservation settings for various attributes
+///
+/// It should be derived from options as follows:
+///
+///  - if there is a list of attributes to preserve (i.e. `--preserve=ATTR_LIST`) parse that list with [`Attributes::parse_iter`],
+///  - if `-p` or `--preserve` is given without arguments, use [`Attributes::DEFAULT`],
+///  - if `-a`/`--archive` is passed, use [`Attributes::ALL`],
+///  - if `-d` is passed use [`Attributes::LINKS`],
+///  - otherwise, use [`Attributes::NONE`].
+///
+/// For full compatibility with GNU, these options should also combine. We
+/// currently only do a best effort imitation of that behavior, because it is
+/// difficult to achieve in clap, especially with `--no-preserve`.
+</span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>Attributes {
     <span class="attr">#[cfg(unix)]
-    </span>ownership: Preserve,
-    mode: Preserve,
-    timestamps: Preserve,
-    context: Preserve,
-    links: Preserve,
-    xattr: Preserve,
+    </span><span class="kw">pub </span>ownership: Preserve,
+    <span class="kw">pub </span>mode: Preserve,
+    <span class="kw">pub </span>timestamps: Preserve,
+    <span class="kw">pub </span>context: Preserve,
+    <span class="kw">pub </span>links: Preserve,
+    <span class="kw">pub </span>xattr: Preserve,
 }
 
-<span class="kw">impl </span>Attributes {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>max(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
-        <span class="attr">#[cfg(unix)]
-        </span>{
-            <span class="self">self</span>.ownership = <span class="self">self</span>.ownership.max(other.ownership);
-        }
-        <span class="self">self</span>.mode = <span class="self">self</span>.mode.max(other.mode);
-        <span class="self">self</span>.timestamps = <span class="self">self</span>.timestamps.max(other.timestamps);
-        <span class="self">self</span>.context = <span class="self">self</span>.context.max(other.context);
-        <span class="self">self</span>.links = <span class="self">self</span>.links.max(other.links);
-        <span class="self">self</span>.xattr = <span class="self">self</span>.xattr.max(other.xattr);
-    }
-}
-
-<span class="attr">#[derive(Debug, PartialEq, Eq)]
+<span class="attr">#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>Preserve {
     No,
     Yes { required: bool },
 }
 
-<span class="kw">impl </span>Preserve {
-    <span class="doccomment">/// Preservation level should only increase, with no preservation being the lowest option,
-    /// preserve but don&#39;t require - middle, and preserve and require - top.
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>max(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="self">Self</span>) -&gt; <span class="self">Self </span>{
+<span class="kw">impl </span>PartialOrd <span class="kw">for </span>Preserve {
+    <span class="kw">fn </span>partial_cmp(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Ordering&gt; {
+        <span class="prelude-val">Some</span>(<span class="self">self</span>.cmp(other))
+    }
+}
+
+<span class="kw">impl </span>Ord <span class="kw">for </span>Preserve {
+    <span class="kw">fn </span>cmp(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; Ordering {
         <span class="kw">match </span>(<span class="self">self</span>, other) {
-            (<span class="self">Self</span>::Yes { required: <span class="bool-val">true </span>}, <span class="kw">_</span>) | (<span class="kw">_</span>, <span class="self">Self</span>::Yes { required: <span class="bool-val">true </span>}) =&gt; {
-                <span class="self">Self</span>::Yes { required: <span class="bool-val">true </span>}
-            }
-            (<span class="self">Self</span>::Yes { required: <span class="bool-val">false </span>}, <span class="kw">_</span>) | (<span class="kw">_</span>, <span class="self">Self</span>::Yes { required: <span class="bool-val">false </span>}) =&gt; {
-                <span class="self">Self</span>::Yes { required: <span class="bool-val">false </span>}
-            }
-            <span class="kw">_ </span>=&gt; <span class="self">Self</span>::No,
+            (<span class="self">Self</span>::No, <span class="self">Self</span>::No) =&gt; Ordering::Equal,
+            (<span class="self">Self</span>::Yes { .. }, <span class="self">Self</span>::No) =&gt; Ordering::Greater,
+            (<span class="self">Self</span>::No, <span class="self">Self</span>::Yes { .. }) =&gt; Ordering::Less,
+            (
+                <span class="self">Self</span>::Yes { required: req_self },
+                <span class="self">Self</span>::Yes {
+                    required: req_other,
+                },
+            ) =&gt; req_self.cmp(req_other),
         }
     }
 }
 
-<span class="doccomment">/// Re-usable, extensible copy options
+<span class="doccomment">/// Options for the `cp` command
+///
+/// All options are public so that the options can be programmatically
+/// constructed by other crates, such as nushell. That means that this struct
+/// is part of our public API. It should therefore not be changed without good
+/// reason.
+///
+/// The fields are documented with the arguments that determine their value.
 </span><span class="attr">#[allow(dead_code)]
 </span><span class="kw">pub struct </span>Options {
-    attributes_only: bool,
-    backup: BackupMode,
-    copy_contents: bool,
-    cli_dereference: bool,
-    copy_mode: CopyMode,
-    dereference: bool,
-    no_target_dir: bool,
-    one_file_system: bool,
-    overwrite: OverwriteMode,
-    parents: bool,
-    sparse_mode: SparseMode,
-    strip_trailing_slashes: bool,
-    reflink_mode: ReflinkMode,
-    attributes: Attributes,
-    recursive: bool,
-    backup_suffix: String,
-    target_dir: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
-    update: UpdateMode,
-    debug: bool,
-    verbose: bool,
-    progress_bar: bool,
+    <span class="doccomment">/// `--attributes-only`
+    </span><span class="kw">pub </span>attributes_only: bool,
+    <span class="doccomment">/// `--backup[=CONTROL]`, `-b`
+    </span><span class="kw">pub </span>backup: BackupMode,
+    <span class="doccomment">/// `--copy-contents`
+    </span><span class="kw">pub </span>copy_contents: bool,
+    <span class="doccomment">/// `-H`
+    </span><span class="kw">pub </span>cli_dereference: bool,
+    <span class="doccomment">/// Determines the type of copying that should be done
+    ///
+    /// Set by the following arguments:
+    ///  - `-l`, `--link`: [`CopyMode::Link`]
+    ///  - `-s`, `--symbolic-link`: [`CopyMode::SymLink`]
+    ///  - `-u`, `--update[=WHEN]`: [`CopyMode::Update`]
+    ///  - `--attributes-only`: [`CopyMode::AttrOnly`]
+    ///  - otherwise: [`CopyMode::Copy`]
+    </span><span class="kw">pub </span>copy_mode: CopyMode,
+    <span class="doccomment">/// `-L`, `--dereference`
+    </span><span class="kw">pub </span>dereference: bool,
+    <span class="doccomment">/// `-T`, `--no-target-dir`
+    </span><span class="kw">pub </span>no_target_dir: bool,
+    <span class="doccomment">/// `-x`, `--one-file-system`
+    </span><span class="kw">pub </span>one_file_system: bool,
+    <span class="doccomment">/// Specifies what to do with an existing destination
+    ///
+    /// Set by the following arguments:
+    ///  - `-i`, `--interactive`: [`OverwriteMode::Interactive`]
+    ///  - `-n`, `--no-clobber`: [`OverwriteMode::NoClobber`]
+    ///  - otherwise: [`OverwriteMode::Clobber`]
+    ///
+    /// The `Interactive` and `Clobber` variants have a [`ClobberMode`] argument,
+    /// set by the following arguments:
+    ///  - `-f`, `--force`: [`ClobberMode::Force`]
+    ///  - `--remove-destination`: [`ClobberMode::RemoveDestination`]
+    ///  - otherwise: [`ClobberMode::Standard`]
+    </span><span class="kw">pub </span>overwrite: OverwriteMode,
+    <span class="doccomment">/// `--parents`
+    </span><span class="kw">pub </span>parents: bool,
+    <span class="doccomment">/// `--sparse[=WHEN]`
+    </span><span class="kw">pub </span>sparse_mode: SparseMode,
+    <span class="doccomment">/// `--strip-trailing-slashes`
+    </span><span class="kw">pub </span>strip_trailing_slashes: bool,
+    <span class="doccomment">/// `--reflink[=WHEN]`
+    </span><span class="kw">pub </span>reflink_mode: ReflinkMode,
+    <span class="doccomment">/// `--preserve=[=ATTRIBUTE_LIST]` and `--no-preserve=ATTRIBUTE_LIST`
+    </span><span class="kw">pub </span>attributes: Attributes,
+    <span class="doccomment">/// `-R`, `-r`, `--recursive`
+    </span><span class="kw">pub </span>recursive: bool,
+    <span class="doccomment">/// `-S`, `--suffix`
+    </span><span class="kw">pub </span>backup_suffix: String,
+    <span class="doccomment">/// `-t`, `--target-directory`
+    </span><span class="kw">pub </span>target_dir: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
+    <span class="doccomment">/// `--update[=UPDATE]`
+    </span><span class="kw">pub </span>update: UpdateMode,
+    <span class="doccomment">/// `--debug`
+    </span><span class="kw">pub </span>debug: bool,
+    <span class="doccomment">/// `-v`, `--verbose`
+    </span><span class="kw">pub </span>verbose: bool,
+    <span class="doccomment">/// `-g`, `--progress`
+    </span><span class="kw">pub </span>progress_bar: bool,
 }
 
 <span class="doccomment">/// Enum representing various debug states of the offload and reflink actions.
@@ -2738,67 +2849,90 @@
 }
 
 <span class="kw">impl </span>Attributes {
+    <span class="kw">pub const </span>ALL: <span class="self">Self </span>= <span class="self">Self </span>{
+        <span class="attr">#[cfg(unix)]
+        </span>ownership: Preserve::Yes { required: <span class="bool-val">true </span>},
+        mode: Preserve::Yes { required: <span class="bool-val">true </span>},
+        timestamps: Preserve::Yes { required: <span class="bool-val">true </span>},
+        context: {
+            <span class="attr">#[cfg(feature = <span class="string">&quot;feat_selinux&quot;</span>)]
+            </span>{
+                Preserve::Yes { required: <span class="bool-val">false </span>}
+            }
+            <span class="attr">#[cfg(not(feature = <span class="string">&quot;feat_selinux&quot;</span>))]
+            </span>{
+                Preserve::No
+            }
+        },
+        links: Preserve::Yes { required: <span class="bool-val">true </span>},
+        xattr: Preserve::Yes { required: <span class="bool-val">false </span>},
+    };
+
+    <span class="kw">pub const </span>NONE: <span class="self">Self </span>= <span class="self">Self </span>{
+        <span class="attr">#[cfg(unix)]
+        </span>ownership: Preserve::No,
+        mode: Preserve::No,
+        timestamps: Preserve::No,
+        context: Preserve::No,
+        links: Preserve::No,
+        xattr: Preserve::No,
+    };
+
     <span class="comment">// TODO: ownership is required if the user is root, for non-root users it&#39;s not required.
-    // See: https://github.com/coreutils/coreutils/blob/master/src/copy.c#L3181
+    </span><span class="kw">pub const </span>DEFAULT: <span class="self">Self </span>= <span class="self">Self </span>{
+        <span class="attr">#[cfg(unix)]
+        </span>ownership: Preserve::Yes { required: <span class="bool-val">true </span>},
+        mode: Preserve::Yes { required: <span class="bool-val">true </span>},
+        timestamps: Preserve::Yes { required: <span class="bool-val">true </span>},
+        ..<span class="self">Self</span>::NONE
+    };
 
-    </span><span class="kw">fn </span>all() -&gt; <span class="self">Self </span>{
+    <span class="kw">pub const </span>LINKS: <span class="self">Self </span>= <span class="self">Self </span>{
+        links: Preserve::Yes { required: <span class="bool-val">true </span>},
+        ..<span class="self">Self</span>::NONE
+    };
+
+    <span class="kw">pub fn </span>union(<span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             <span class="attr">#[cfg(unix)]
-            </span>ownership: Preserve::Yes { required: <span class="bool-val">true </span>},
-            mode: Preserve::Yes { required: <span class="bool-val">true </span>},
-            timestamps: Preserve::Yes { required: <span class="bool-val">true </span>},
-            context: {
-                <span class="attr">#[cfg(feature = <span class="string">&quot;feat_selinux&quot;</span>)]
-                </span>{
-                    Preserve::Yes { required: <span class="bool-val">false </span>}
-                }
-                <span class="attr">#[cfg(not(feature = <span class="string">&quot;feat_selinux&quot;</span>))]
-                </span>{
-                    Preserve::No
-                }
-            },
-            links: Preserve::Yes { required: <span class="bool-val">true </span>},
-            xattr: Preserve::Yes { required: <span class="bool-val">false </span>},
+            </span>ownership: <span class="self">self</span>.ownership.max(other.ownership),
+            context: <span class="self">self</span>.context.max(other.context),
+            timestamps: <span class="self">self</span>.timestamps.max(other.timestamps),
+            mode: <span class="self">self</span>.mode.max(other.mode),
+            links: <span class="self">self</span>.links.max(other.links),
+            xattr: <span class="self">self</span>.xattr.max(other.xattr),
         }
     }
 
-    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
-            <span class="attr">#[cfg(unix)]
-            </span>ownership: Preserve::Yes { required: <span class="bool-val">true </span>},
-            mode: Preserve::Yes { required: <span class="bool-val">true </span>},
-            timestamps: Preserve::Yes { required: <span class="bool-val">true </span>},
-            context: Preserve::No,
-            links: Preserve::No,
-            xattr: Preserve::No,
+    <span class="kw">pub fn </span>parse_iter&lt;T&gt;(values: <span class="kw">impl </span>Iterator&lt;Item = T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt;
+    <span class="kw">where
+        </span>T: AsRef&lt;str&gt;,
+    {
+        <span class="kw">let </span><span class="kw-2">mut </span>new = <span class="self">Self</span>::NONE;
+        <span class="kw">for </span>value <span class="kw">in </span>values {
+            new = new.union(<span class="kw-2">&amp;</span><span class="self">Self</span>::parse_single_string(value.as_ref())<span class="question-mark">?</span>);
         }
-    }
-
-    <span class="kw">fn </span>none() -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
-            <span class="attr">#[cfg(unix)]
-            </span>ownership: Preserve::No,
-            mode: Preserve::No,
-            timestamps: Preserve::No,
-            context: Preserve::No,
-            links: Preserve::No,
-            xattr: Preserve::No,
-        }
+        <span class="prelude-val">Ok</span>(new)
     }
 
     <span class="doccomment">/// Tries to match string containing a parameter to preserve with the corresponding entry in the
     /// Attributes struct.
-    </span><span class="kw">fn </span>try_set_from_string(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-        <span class="kw">let </span>preserve_yes_required = Preserve::Yes { required: <span class="bool-val">true </span>};
+    </span><span class="kw">fn </span>parse_single_string(value: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
+        <span class="kw">let </span>value = value.to_lowercase();
 
-        <span class="kw">match </span><span class="kw-2">&amp;*</span>value.to_lowercase() {
-            <span class="string">&quot;mode&quot; </span>=&gt; <span class="self">self</span>.mode = preserve_yes_required,
+        <span class="kw">if </span>value == <span class="string">&quot;all&quot; </span>{
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="self">Self</span>::ALL);
+        }
+
+        <span class="kw">let </span><span class="kw-2">mut </span>new = <span class="self">Self</span>::NONE;
+        <span class="kw">let </span>attribute = <span class="kw">match </span>value.as_ref() {
+            <span class="string">&quot;mode&quot; </span>=&gt; <span class="kw-2">&amp;mut </span>new.mode,
             <span class="attr">#[cfg(unix)]
-            </span><span class="string">&quot;ownership&quot; </span>=&gt; <span class="self">self</span>.ownership = preserve_yes_required,
-            <span class="string">&quot;timestamps&quot; </span>=&gt; <span class="self">self</span>.timestamps = preserve_yes_required,
-            <span class="string">&quot;context&quot; </span>=&gt; <span class="self">self</span>.context = preserve_yes_required,
-            <span class="string">&quot;link&quot; </span>| <span class="string">&quot;links&quot; </span>=&gt; <span class="self">self</span>.links = preserve_yes_required,
-            <span class="string">&quot;xattr&quot; </span>=&gt; <span class="self">self</span>.xattr = preserve_yes_required,
+            </span><span class="string">&quot;ownership&quot; </span>=&gt; <span class="kw-2">&amp;mut </span>new.ownership,
+            <span class="string">&quot;timestamps&quot; </span>=&gt; <span class="kw-2">&amp;mut </span>new.timestamps,
+            <span class="string">&quot;context&quot; </span>=&gt; <span class="kw-2">&amp;mut </span>new.context,
+            <span class="string">&quot;link&quot; </span>| <span class="string">&quot;links&quot; </span>=&gt; <span class="kw-2">&amp;mut </span>new.links,
+            <span class="string">&quot;xattr&quot; </span>=&gt; <span class="kw-2">&amp;mut </span>new.xattr,
             <span class="kw">_ </span>=&gt; {
                 <span class="kw">return </span><span class="prelude-val">Err</span>(Error::InvalidArgument(<span class="macro">format!</span>(
                     <span class="string">&quot;invalid attribute {}&quot;</span>,
@@ -2806,7 +2940,10 @@
                 )));
             }
         };
-        <span class="prelude-val">Ok</span>(())
+
+        <span class="kw-2">*</span>attribute = Preserve::Yes { required: <span class="bool-val">true </span>};
+
+        <span class="prelude-val">Ok</span>(new)
     }
 }
 
@@ -2855,39 +2992,22 @@
         };
 
         <span class="comment">// Parse attributes to preserve
-        </span><span class="kw">let </span>attributes: Attributes = <span class="kw">if </span>matches.contains_id(options::PRESERVE) {
-            <span class="kw">match </span>matches.get_many::&lt;String&gt;(options::PRESERVE) {
-                <span class="prelude-val">None </span>=&gt; Attributes::default(),
-                <span class="prelude-val">Some</span>(attribute_strs) =&gt; {
-                    <span class="kw">let </span><span class="kw-2">mut </span>attributes: Attributes = Attributes::none();
-                    <span class="kw">let </span><span class="kw-2">mut </span>attributes_empty = <span class="bool-val">true</span>;
-                    <span class="kw">for </span>attribute_str <span class="kw">in </span>attribute_strs {
-                        attributes_empty = <span class="bool-val">false</span>;
-                        <span class="kw">if </span>attribute_str == <span class="string">&quot;all&quot; </span>{
-                            attributes.max(Attributes::all());
-                        } <span class="kw">else </span>{
-                            attributes.try_set_from_string(attribute_str)<span class="question-mark">?</span>;
-                        }
-                    }
-                    <span class="comment">// `--preserve` case, use the defaults
-                    </span><span class="kw">if </span>attributes_empty {
-                        Attributes::default()
-                    } <span class="kw">else </span>{
-                        attributes
-                    }
-                }
-            }
+        </span><span class="kw">let </span>attributes = <span class="kw">if let </span><span class="prelude-val">Some</span>(attribute_strs) = matches.get_many::&lt;String&gt;(options::PRESERVE)
+        {
+            <span class="kw">if </span>attribute_strs.len() == <span class="number">0 </span>{
+                Attributes::DEFAULT
+            } <span class="kw">else </span>{
+                Attributes::parse_iter(attribute_strs)<span class="question-mark">?
+            </span>}
         } <span class="kw">else if </span>matches.get_flag(options::ARCHIVE) {
             <span class="comment">// --archive is used. Same as --preserve=all
-            </span>Attributes::all()
+            </span>Attributes::ALL
         } <span class="kw">else if </span>matches.get_flag(options::NO_DEREFERENCE_PRESERVE_LINKS) {
-            <span class="kw">let </span><span class="kw-2">mut </span>attributes = Attributes::none();
-            attributes.links = Preserve::Yes { required: <span class="bool-val">true </span>};
-            attributes
+            Attributes::LINKS
         } <span class="kw">else if </span>matches.get_flag(options::PRESERVE_DEFAULT_ATTRIBUTES) {
-            Attributes::default()
+            Attributes::DEFAULT
         } <span class="kw">else </span>{
-            Attributes::none()
+            Attributes::NONE
         };
 
         <span class="attr">#[cfg(not(feature = <span class="string">&quot;feat_selinux&quot;</span>))]
@@ -2997,7 +3117,7 @@
     ///
     /// Treat target as a dir if we have multiple sources or the target
     /// exists and already is a directory
-    </span><span class="kw">fn </span>determine(sources: <span class="kw-2">&amp;</span>[Source], target: <span class="kw-2">&amp;</span>TargetSlice) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">fn </span>determine(sources: <span class="kw-2">&amp;</span>[PathBuf], target: <span class="kw-2">&amp;</span>Path) -&gt; <span class="self">Self </span>{
         <span class="kw">if </span>sources.len() &gt; <span class="number">1 </span>|| target.is_dir() {
             <span class="self">Self</span>::Directory
         } <span class="kw">else </span>{
@@ -3007,7 +3127,10 @@
 }
 
 <span class="doccomment">/// Returns tuple of (Source paths, Target)
-</span><span class="kw">fn </span>parse_path_args(<span class="kw-2">mut </span>paths: Vec&lt;Source&gt;, options: <span class="kw-2">&amp;</span>Options) -&gt; CopyResult&lt;(Vec&lt;Source&gt;, Target)&gt; {
+</span><span class="kw">fn </span>parse_path_args(
+    <span class="kw-2">mut </span>paths: Vec&lt;PathBuf&gt;,
+    options: <span class="kw-2">&amp;</span>Options,
+) -&gt; CopyResult&lt;(Vec&lt;PathBuf&gt;, PathBuf)&gt; {
     <span class="kw">if </span>paths.is_empty() {
         <span class="comment">// No files specified
         </span><span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">&quot;missing file operand&quot;</span>.into());
@@ -3119,14 +3242,13 @@
     }
 }
 
-<span class="doccomment">/// Copy all `sources` to `target`.  Returns an
-/// `Err(Error::NotAllFilesCopied)` if at least one non-fatal error was
-/// encountered.
+<span class="doccomment">/// Copy all `sources` to `target`.
 ///
-/// Behavior depends on path`options`, see [`Options`] for details.
+/// Returns an `Err(Error::NotAllFilesCopied)` if at least one non-fatal error
+/// was encountered.
 ///
-/// [`Options`]: ./struct.Options.html
-</span><span class="kw">fn </span>copy(sources: <span class="kw-2">&amp;</span>[Source], target: <span class="kw-2">&amp;</span>TargetSlice, options: <span class="kw-2">&amp;</span>Options) -&gt; CopyResult&lt;()&gt; {
+/// Behavior is determined by the `options` parameter, see [`Options`] for details.
+</span><span class="kw">pub fn </span>copy(sources: <span class="kw-2">&amp;</span>[PathBuf], target: <span class="kw-2">&amp;</span>Path, options: <span class="kw-2">&amp;</span>Options) -&gt; CopyResult&lt;()&gt; {
     <span class="kw">let </span>target_type = TargetType::determine(sources, target);
     verify_target_type(target, <span class="kw-2">&amp;</span>target_type)<span class="question-mark">?</span>;
 
@@ -3189,7 +3311,7 @@
 
 <span class="kw">fn </span>construct_dest_path(
     source_path: <span class="kw-2">&amp;</span>Path,
-    target: <span class="kw-2">&amp;</span>TargetSlice,
+    target: <span class="kw-2">&amp;</span>Path,
     target_type: <span class="kw-2">&amp;</span>TargetType,
     options: <span class="kw-2">&amp;</span>Options,
 ) -&gt; CopyResult&lt;PathBuf&gt; {
@@ -3220,8 +3342,8 @@
 
 <span class="kw">fn </span>copy_source(
     progress_bar: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;ProgressBar&gt;,
-    source: <span class="kw-2">&amp;</span>SourceSlice,
-    target: <span class="kw-2">&amp;</span>TargetSlice,
+    source: <span class="kw-2">&amp;</span>Path,
+    target: <span class="kw-2">&amp;</span>Path,
     target_type: <span class="kw-2">&amp;</span>TargetType,
     options: <span class="kw-2">&amp;</span>Options,
     symlinked_files: <span class="kw-2">&amp;mut </span>HashSet&lt;FileInformation&gt;,

@@ -359,6 +359,23 @@
 <a href="#359" id="359">359</a>
 <a href="#360" id="360">360</a>
 <a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Tobias Bohumir Schottdorf &lt;tobias.schottdorf@gmail.com&gt;
@@ -430,6 +447,23 @@
     NonEmpty,
     <span class="prelude-val">None</span>,
     Regex(Box&lt;regex::Regex&gt;),
+}
+
+<span class="kw">impl </span>TryFrom&lt;<span class="kw-2">&amp;</span>str&gt; <span class="kw">for </span>NumberingStyle {
+    <span class="kw">type </span>Error = String;
+
+    <span class="kw">fn </span>try_from(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">match </span>s {
+            <span class="string">&quot;a&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::All),
+            <span class="string">&quot;t&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::NonEmpty),
+            <span class="string">&quot;n&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::None),
+            <span class="kw">_ if </span>s.starts_with(<span class="string">&#39;p&#39;</span>) =&gt; <span class="kw">match </span>regex::Regex::new(<span class="kw-2">&amp;</span>s[<span class="number">1</span>..]) {
+                <span class="prelude-val">Ok</span>(re) =&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Regex(Box::new(re))),
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(String::from(<span class="string">&quot;invalid regular expression&quot;</span>)),
+            },
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;invalid numbering style: &#39;{s}&#39;&quot;</span>)),
+        }
+    }
 }
 
 <span class="comment">// NumberFormat specifies how line numbers are output within their allocated

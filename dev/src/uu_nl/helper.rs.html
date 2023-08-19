@@ -65,62 +65,9 @@
 <a href="#65" id="65">65</a>
 <a href="#66" id="66">66</a>
 <a href="#67" id="67">67</a>
-<a href="#68" id="68">68</a>
-<a href="#69" id="69">69</a>
-<a href="#70" id="70">70</a>
-<a href="#71" id="71">71</a>
-<a href="#72" id="72">72</a>
-<a href="#73" id="73">73</a>
-<a href="#74" id="74">74</a>
-<a href="#75" id="75">75</a>
-<a href="#76" id="76">76</a>
-<a href="#77" id="77">77</a>
-<a href="#78" id="78">78</a>
-<a href="#79" id="79">79</a>
-<a href="#80" id="80">80</a>
-<a href="#81" id="81">81</a>
-<a href="#82" id="82">82</a>
-<a href="#83" id="83">83</a>
-<a href="#84" id="84">84</a>
-<a href="#85" id="85">85</a>
-<a href="#86" id="86">86</a>
-<a href="#87" id="87">87</a>
-<a href="#88" id="88">88</a>
-<a href="#89" id="89">89</a>
-<a href="#90" id="90">90</a>
-<a href="#91" id="91">91</a>
-<a href="#92" id="92">92</a>
-<a href="#93" id="93">93</a>
-<a href="#94" id="94">94</a>
-<a href="#95" id="95">95</a>
-<a href="#96" id="96">96</a>
-<a href="#97" id="97">97</a>
-<a href="#98" id="98">98</a>
-<a href="#99" id="99">99</a>
-<a href="#100" id="100">100</a>
-<a href="#101" id="101">101</a>
 </pre></div><pre class="rust"><code><span class="comment">// spell-checker:ignore (ToDO) conv
 
 </span><span class="kw">use </span><span class="kw">crate</span>::options;
-
-<span class="comment">// parse_style parses a style string into a NumberingStyle.
-</span><span class="kw">fn </span>parse_style(chars: <span class="kw-2">&amp;</span>[char]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">crate</span>::NumberingStyle, String&gt; {
-    <span class="kw">if </span>chars.len() == <span class="number">1 </span>&amp;&amp; chars[<span class="number">0</span>] == <span class="string">&#39;a&#39; </span>{
-        <span class="prelude-val">Ok</span>(<span class="kw">crate</span>::NumberingStyle::All)
-    } <span class="kw">else if </span>chars.len() == <span class="number">1 </span>&amp;&amp; chars[<span class="number">0</span>] == <span class="string">&#39;t&#39; </span>{
-        <span class="prelude-val">Ok</span>(<span class="kw">crate</span>::NumberingStyle::NonEmpty)
-    } <span class="kw">else if </span>chars.len() == <span class="number">1 </span>&amp;&amp; chars[<span class="number">0</span>] == <span class="string">&#39;n&#39; </span>{
-        <span class="prelude-val">Ok</span>(<span class="kw">crate</span>::NumberingStyle::None)
-    } <span class="kw">else if </span>chars.len() &gt; <span class="number">1 </span>&amp;&amp; chars[<span class="number">0</span>] == <span class="string">&#39;p&#39; </span>{
-        <span class="kw">let </span>s: String = chars[<span class="number">1</span>..].iter().cloned().collect();
-        <span class="kw">match </span>regex::Regex::new(<span class="kw-2">&amp;</span>s) {
-            <span class="prelude-val">Ok</span>(re) =&gt; <span class="prelude-val">Ok</span>(<span class="kw">crate</span>::NumberingStyle::Regex(Box::new(re))),
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(String::from(<span class="string">&quot;Illegal regular expression&quot;</span>)),
-        }
-    } <span class="kw">else </span>{
-        <span class="prelude-val">Err</span>(String::from(<span class="string">&quot;Illegal style encountered&quot;</span>))
-    }
-}
 
 <span class="comment">// parse_options loads the options into the settings, returning an array of
 // error messages.
@@ -136,47 +83,32 @@
         .get_one::&lt;String&gt;(options::NUMBER_FORMAT)
         .map(Into::into)
         .unwrap_or_default();
-    <span class="kw">match </span>opts.get_one::&lt;String&gt;(options::BODY_NUMBERING) {
+    <span class="kw">match </span>opts
+        .get_one::&lt;String&gt;(options::HEADER_NUMBERING)
+        .map(String::as_str)
+        .map(TryInto::try_into)
+    {
         <span class="prelude-val">None </span>=&gt; {}
-        <span class="prelude-val">Some</span>(val) =&gt; {
-            <span class="kw">let </span>chars: Vec&lt;char&gt; = val.chars().collect();
-            <span class="kw">match </span>parse_style(<span class="kw-2">&amp;</span>chars) {
-                <span class="prelude-val">Ok</span>(s) =&gt; {
-                    settings.body_numbering = s;
-                }
-                <span class="prelude-val">Err</span>(message) =&gt; {
-                    errs.push(message);
-                }
-            }
-        }
+        <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(style)) =&gt; settings.header_numbering = style,
+        <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(message)) =&gt; errs.push(message.to_string()),
     }
-    <span class="kw">match </span>opts.get_one::&lt;String&gt;(options::FOOTER_NUMBERING) {
+    <span class="kw">match </span>opts
+        .get_one::&lt;String&gt;(options::BODY_NUMBERING)
+        .map(String::as_str)
+        .map(TryInto::try_into)
+    {
         <span class="prelude-val">None </span>=&gt; {}
-        <span class="prelude-val">Some</span>(val) =&gt; {
-            <span class="kw">let </span>chars: Vec&lt;char&gt; = val.chars().collect();
-            <span class="kw">match </span>parse_style(<span class="kw-2">&amp;</span>chars) {
-                <span class="prelude-val">Ok</span>(s) =&gt; {
-                    settings.footer_numbering = s;
-                }
-                <span class="prelude-val">Err</span>(message) =&gt; {
-                    errs.push(message);
-                }
-            }
-        }
+        <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(style)) =&gt; settings.body_numbering = style,
+        <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(message)) =&gt; errs.push(message.to_string()),
     }
-    <span class="kw">match </span>opts.get_one::&lt;String&gt;(options::HEADER_NUMBERING) {
+    <span class="kw">match </span>opts
+        .get_one::&lt;String&gt;(options::FOOTER_NUMBERING)
+        .map(String::as_str)
+        .map(TryInto::try_into)
+    {
         <span class="prelude-val">None </span>=&gt; {}
-        <span class="prelude-val">Some</span>(val) =&gt; {
-            <span class="kw">let </span>chars: Vec&lt;char&gt; = val.chars().collect();
-            <span class="kw">match </span>parse_style(<span class="kw-2">&amp;</span>chars) {
-                <span class="prelude-val">Ok</span>(s) =&gt; {
-                    settings.header_numbering = s;
-                }
-                <span class="prelude-val">Err</span>(message) =&gt; {
-                    errs.push(message);
-                }
-            }
-        }
+        <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(style)) =&gt; settings.footer_numbering = style,
+        <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(message)) =&gt; errs.push(message.to_string()),
     }
     <span class="kw">match </span>opts.get_one::&lt;usize&gt;(options::NUMBER_WIDTH) {
         <span class="prelude-val">None </span>=&gt; {}
