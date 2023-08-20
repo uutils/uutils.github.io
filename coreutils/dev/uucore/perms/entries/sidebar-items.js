@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["get_groups","get_groups_gnu","gid2grp","grp2gid","uid2usr","usr2uid"],"struct":["Group","Passwd"],"trait":["Locate"]};
