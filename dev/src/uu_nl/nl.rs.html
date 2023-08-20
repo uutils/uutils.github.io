@@ -376,6 +376,9 @@
 <a href="#376" id="376">376</a>
 <a href="#377" id="377">377</a>
 <a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
 </pre></div><pre class="rust"><code><span class="comment">//  * This file is part of the uutils coreutils package.
 //  *
 //  * (c) Tobias Bohumir Schottdorf &lt;tobias.schottdorf@gmail.com&gt;
@@ -722,7 +725,10 @@
                     line
                 );
                 <span class="comment">// update line number for the potential next line
-                </span>line_no += settings.line_increment;
+                </span><span class="kw">match </span>line_no.checked_add(settings.line_increment) {
+                    <span class="prelude-val">Some</span>(new_line_no) =&gt; line_no = new_line_no,
+                    <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(USimpleError::new(<span class="number">1</span>, <span class="string">&quot;line number overflow&quot;</span>)),
+                }
             } <span class="kw">else </span>{
                 <span class="kw">let </span>spaces = <span class="string">&quot; &quot;</span>.repeat(settings.number_width + <span class="number">1</span>);
                 <span class="macro">println!</span>(<span class="string">&quot;{spaces}{line}&quot;</span>);
