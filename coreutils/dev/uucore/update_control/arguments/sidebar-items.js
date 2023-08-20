@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["update","update_no_args"],"static":["OPT_UPDATE","OPT_UPDATE_NO_ARG"]};

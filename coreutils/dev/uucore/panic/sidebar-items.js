@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["mute_sigpipe_panic"]};

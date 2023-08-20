@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"attr":["main"],"macro":["help_about","help_section","help_usage"]};

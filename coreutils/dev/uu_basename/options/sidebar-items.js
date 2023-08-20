@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"static":["MULTIPLE","NAME","SUFFIX","ZERO"]};

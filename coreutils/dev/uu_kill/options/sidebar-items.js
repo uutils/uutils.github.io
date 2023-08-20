@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"static":["LIST","PIDS_OR_SIGNALS","SIGNAL","TABLE"]};

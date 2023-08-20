@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["parse_about","parse_section","parse_usage"]};

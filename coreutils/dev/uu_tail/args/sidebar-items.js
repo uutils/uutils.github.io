@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["FilterMode","FollowMode","Signum","VerificationResult"],"fn":["parse_args","parse_obsolete","uu_app"],"mod":["options"],"struct":["Settings"]};
