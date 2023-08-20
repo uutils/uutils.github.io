@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"static":["DECODE","FILE","IGNORE_GARBAGE","WRAP"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["getegid","geteuid","getgid","getuid"],"trait":["ChildExt"]};
