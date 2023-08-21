@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["BLOCK_SIZE","BUFFER_SIZE"],"struct":["BytesChunk","BytesChunkBuffer","LinesChunk","LinesChunkBuffer","ReverseChunks"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["VERSION"],"fn":["binary_path","gen_completions","gen_coreutils_app","gen_manpage","main","name","usage","util_map"],"type":["UtilityMap"]};

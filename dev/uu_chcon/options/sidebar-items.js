@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["dereference","preserve_root","sym_links"],"static":["HELP","RANGE","RECURSIVE","REFERENCE","ROLE","TYPE","USER","VERBOSE"]};

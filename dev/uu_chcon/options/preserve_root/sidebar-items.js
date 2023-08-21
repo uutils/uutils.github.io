@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"static":["NO_PRESERVE_ROOT","PRESERVE_ROOT"]};

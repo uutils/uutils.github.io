@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Mode"],"fn":["uu_app","uumain"],"mod":["options"]};
