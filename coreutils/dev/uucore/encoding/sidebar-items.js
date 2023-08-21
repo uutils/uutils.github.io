@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["DecodeError","EncodeError","Format"],"fn":["decode","encode","wrap_print","wrap_write"],"struct":["Data"],"type":["DecodeResult"]};
