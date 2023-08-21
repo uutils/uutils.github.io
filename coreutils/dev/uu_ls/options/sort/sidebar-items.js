@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"static":["EXTENSION","NONE","SIZE","TIME","VERSION"]};

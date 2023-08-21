@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["print_verbatim","println_verbatim"],"struct":["Quoted"],"trait":["Quotable"]};

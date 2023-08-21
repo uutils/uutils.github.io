@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["CHANGES","QUIET","SILENT","VERBOSE"]};

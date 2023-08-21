@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["backup","backup_no_args","suffix"],"static":["OPT_BACKUP","OPT_BACKUP_NO_ARG","OPT_SUFFIX"]};

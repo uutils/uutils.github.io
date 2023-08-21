@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["EXACT","FILE","FORCE","ITERATIONS","REMOVE","SIZE","VERBOSE","ZERO"]};
