@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["get_exit_code","set_exit_code","strip_errno"],"macro":["uio_error"],"struct":["ClapErrorWrapper","ExitCode","UIoError","USimpleError","UUsageError"],"trait":["FromIo","UClapError","UError"],"type":["UResult"]};

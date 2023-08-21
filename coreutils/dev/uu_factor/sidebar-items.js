@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["factor","uu_app","uumain"],"mod":["numeric","table"],"struct":["Factors"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["pipe","splice","splice_exact","vmsplice"],"type":["Error","Result"]};
