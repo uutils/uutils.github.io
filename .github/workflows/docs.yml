@@ -11,10 +11,17 @@ on:
   - cron: "0 2 * * *"
 
 jobs:
-  user-docs:
-    name: generate the user doc
+  build:
+    name: Build website artifacts
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout uutils.github.io Repository
+      uses: actions/checkout@v3
+      with:
+        repository: uutils/uutils.github.io
+        path: './uutils.github.io'
+        fetch-depth: 0
+
     - name: Checkout Coreutils Repository
       uses: actions/checkout@v3
       with:
@@ -55,87 +62,96 @@ jobs:
         cargo run --bin uudoc --all-features
         oranda build
 
-    - name: Deploy Coreutils Docs
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./coreutils/public/
-        destination_dir: coreutils/
-
     - name: Build Findutils Docs
       run: |
         cd findutils
         oranda build
 
-    - name: Deploy Findutils Docs
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./findutils/public/
-        destination_dir: findutils/
-
-    - name: Deploy Homepage
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./homepage
-
-  docs:
-    name: generate the dev doc
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-        repository: uutils/coreutils
-        path: './coreutils'
-        fetch-depth: 0
-
-    - name: Install `rust` toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        default: true
-        profile: minimal
-
-    - name: Build dev documentation
+    - name: Collect results into `public` folder
       run: |
-        cd coreutils
-        cargo doc --no-deps --all-features --workspace
+        mkdir public
+        cp -r coreutils/public public/coreutils
+        cp -r findutils/public public/findutils
+        cp -r uutils.github.io/homepage/* public
 
-    - name: Deploy Docs
-      uses: peaceiris/actions-gh-pages@v3
+    - name: Upload artifact for checking the output
+      uses: actions/upload-artifact@v3
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./coreutils/target/doc
-        destination_dir: coreutils/dev/
+        path: ./public
 
-  build-report:
-    name: generate the build report
+    - name: Upload artifact for pages
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: ./public
+
+  # dev-docs:
+  #   name: generate the dev doc
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v3
+  #     with:
+  #       repository: uutils/coreutils
+  #       path: './coreutils'
+  #       fetch-depth: 0
+
+  #   - name: Install `rust` toolchain
+  #     uses: actions-rs/toolchain@v1
+  #     with:
+  #       toolchain: stable
+  #       default: true
+  #       profile: minimal
+
+  #   - name: Build dev documentation
+  #     run: |
+  #       cd coreutils
+  #       cargo doc --no-deps --all-features --workspace
+
+  #   - name: Deploy Docs
+  #     uses: peaceiris/actions-gh-pages@v3
+  #     with:
+  #       github_token: ${{ secrets.GITHUB_TOKEN }}
+  #       publish_dir: ./coreutils/target/doc
+  #       destination_dir: coreutils/dev/
+
+  # build-report:
+  #   name: generate the build report
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v3
+  #     with:
+  #       repository: uutils/coreutils
+  #       path: './coreutils'
+  #       fetch-depth: 0
+
+  #   - name: Install `rust` toolchain
+  #     uses: actions-rs/toolchain@v1
+  #     with:
+  #       toolchain: nightly
+  #       default: true
+  #       profile: minimal
+
+  #   - name: Build report
+  #     run: |
+  #       cd coreutils
+  #       cargo +nightly build --timings=html  -Zunstable-options
+
+  #   - name: Deploy build report
+  #     uses: peaceiris/actions-gh-pages@v3
+  #     with:
+  #       github_token: ${{ secrets.GITHUB_TOKEN }}
+  #       publish_dir: ./coreutils/target/cargo-timings/
+  #       destination_dir: cargo-timings/
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    needs: build
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-        repository: uutils/coreutils
-        path: './coreutils'
-        fetch-depth: 0
-
-    - name: Install `rust` toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        default: true
-        profile: minimal
-
-    - name: Build report
-      run: |
-        cd coreutils
-        cargo +nightly build --timings=html  -Zunstable-options
-
-    - name: Deploy build report
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./coreutils/target/cargo-timings/
-        destination_dir: cargo-timings/
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
