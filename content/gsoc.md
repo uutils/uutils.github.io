@@ -138,6 +138,41 @@ The aim of this project is to develop Rust-based versions of memory and resource
 - **Size:**:  ~175 hours.
 - **Difficulty:**:  Medium.
 
+## `util-linux`: Reimplementation of essential system utilities in Rust
+
+The objective of this project is to reimplement essential system utilities from the util-linux package in Rust. This initiative will include the development of Rust-based versions of various utilities, such as `dmesg`, `lscpu`, `lsipc`, `lslocks`, `lsmem`, and `lsns`. The primary focus will be on ensuring that these Rust implementations provide full compatibility with existing options and pass GNU tests, delivering reliable and efficient system utilities for Linux users.
+
+- **Description:**: Reimplement essential system utilities, including `dmesg`, `lscpu`, `lsipc`, `lslocks`, `lsmem`, and `lsns`, using Rust while emphasizing compatibility with existing options and GNU test validation.
+- **Expected Outputs:**: Rust-based system utilities that mirror the functionality of their counterparts, ensuring full compatibility and reliability, validated by GNU tests.
+- **Skills Required/Preferred:**: Proficiency in Rust programming, knowledge of system utilities and their functionality, experience with GNU testing methodologies.
+- **Possible Mentors:**: [To be determined]
+- **Size:**: ~175 hours.
+- **Difficulty:**: Medium.
+
+## `util-linux`: Process and Resource Management: Reimplementation in Rust
+
+This project focuses on the reimplementations of crucial Linux utilities related to process and resource management in the Rust programming language. The target utilities include `runuser`, `sulogin`, `chrt`, `ionice`, `kill`, `renice`, `prlimit`, `taskset`, and `uclampset`. The primary goal is to create Rust-based versions of these utilities, ensuring compatibility with their original counterparts, and validating their functionality with GNU tests.
+
+- **Description:**: Reimplement key Linux utilities for process and resource management, such as `runuser`, `sulogin`, `chrt`, `ionice`, `kill`, `renice`, `prlimit`, `taskset`, and `uclampset`, in the Rust programming language. The emphasis is on maintaining compatibility with the original utilities and validating their functionality using GNU tests.
+- **Expected Outputs:**: Rust-based versions of the specified utilities that seamlessly integrate into Linux systems, providing the same functionality and passing GNU tests for reliability.
+- **Skills Required/Preferred:**: Proficiency in Rust programming, understanding of process and resource management on Linux, experience with GNU testing methodologies.
+- **Possible Mentors:**: [To be determined]
+- **Size:**: ~175 hours.
+- **Difficulty:**: Medium.
+
+## `util-linux`: User and Session Management: Reimplementation in Rust
+
+This project focuses on the reimplementations of essential Linux utilities related to user and session management in the Rust programming language. The target utilities include `su`, `agetty`, `ctrlaltdel`, `pivot_root`, `switch_root`, `last`, `lslogins`, `mesg`, `setsid`, and `setterm`. The primary goal is to create Rust-based versions of these utilities, ensuring compatibility with their original counterparts, and validating their functionality with GNU tests.
+
+- **Description:**: Reimplement essential Linux utilities for user and session management, such as `su`, `agetty`, `ctrlaltdel`, `pivot_root`, `switch_root`, `last`, `lslogins`, `mesg`, `setsid`, and `setterm`, in the Rust programming language. The emphasis is on maintaining compatibility with the original utilities and validating their functionality using GNU tests.
+- **Expected Outputs:**: Rust-based versions of the specified utilities that seamlessly integrate into Linux systems, providing the same functionality and passing GNU tests for reliability.
+- **Skills Required/Preferred:**: Proficiency in Rust programming, understanding of user and session management on Linux, experience with GNU testing methodologies.
+- **Possible Mentors:**: [To be determined]
+- **Size:**: ~175 hours.
+- **Difficulty:**: Medium.
+
+This project aims to modernize and enhance critical Linux utilities related to user and session management, ensuring they remain efficient, reliable, and fully compatible with existing systems.
+
 ## Code refactoring for `procps`, `util-linux`, and `bsdutils`
 
 Refactoring the Rust-based versions of procps, util-linux, and bsdutils to reduce code duplication.
