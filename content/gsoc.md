@@ -5,14 +5,14 @@ title = "GSOC"
 # Uutils at GSOC
 
 Google summer of code is:
-    
+
 > Google Summer of Code is a global, online program focused on bringing
 > new contributors into open source software development. GSoC
 > Contributors work with an open source organization on a 12+ week
 > programming project under the guidance of mentors.
 
 If you want to know more about how it works, check out the links below.
-  
+
 **Useful links**:
 * [GSOC Contributor Guide](https://google.github.io/gsocguides/student/)
 * [GSOC FAQ](https://developers.google.com/open-source/gsoc/faq)
@@ -26,7 +26,7 @@ The [uutils project](https://github.com/uutils/) is aiming at rewriting key Linu
 
 Here are some steps to follow if you want to apply for a GSOC project
 with uutils.
-  
+
 1. **Check the requirements.** You have to meet
   [Google's requirements](https://developers.google.com/open-source/gsoc/faq#what_are_the_eligibility_requirements_for_participation) to apply. Specifically for uutils, it's best if you at
   least know some Rust and have some familiarity with using the
@@ -64,7 +64,7 @@ Summarizing that page, each project should include:
 ## Implement `stty`
 The `stty` utility is currently only partially implemented and should be expanded.
 
-See issues: [#3859](https://github.com/uutils/coreutils/issues/3859), [#3860](https://github.com/uutils/coreutils/issues/3860), [#3861](https://github.com/uutils/coreutils/issues/3861), [#3862](https://github.com/uutils/coreutils/issues/3862), [#3863](https://github.com/uutils/coreutils/issues/3863). 
+See issues: [#3859](https://github.com/uutils/coreutils/issues/3859), [#3860](https://github.com/uutils/coreutils/issues/3860), [#3861](https://github.com/uutils/coreutils/issues/3861), [#3862](https://github.com/uutils/coreutils/issues/3862), [#3863](https://github.com/uutils/coreutils/issues/3863).
 
 - Difficulty: Medium
 - Size: 175 or 350 depending on the scope
@@ -168,7 +168,7 @@ and [issue 1456](https://github.com/uutils/coreutils/issues/1456) for more infor
   - Rust
   - Optimization techniques
   - Mathematics
-    
+
 ## Symbolic/Fuzz Testing and Formal Verification of Tool Grammars
 
 See [Using Lightweight Formal Methods to Validate a Key Value Storage Node In Amazon S3](https://www.amazon.science/publications/using-lightweight-formal-methods-to-validate-a-key-value-storage-node-in-amazon-s3).
@@ -191,8 +191,8 @@ Specific to `wc` - formalize the inner loop over a UTF-8 buffer into a finite st
   - Alloy, TLA+, [P](https://github.com/p-org/P)
   - System call tracing with [strace](https://jvns.ca/blog/2014/02/17/spying-on-ssh-with-strace/), [uftrace](https://github.com/namhyung/uftrace) etc.
   - SMT solvers like [Z3](https://www.philipzucker.com/programming-and-interactive-proving-with-z3py/) and CVC5 for superoptimization and proofs of automata equivalence.
-  - [SOUPER](https://github.com/google/souper) and [CompilerExplorer](https://godbolt.org) 
-  - Basic statistics on quantiles (histograms) for outlier detection. The math is simple as generalizing from one to k medians but the formal notation is [complex](https://aakinshin.net/posts/thdqe-hdi/). 
+  - [SOUPER](https://github.com/google/souper) and [CompilerExplorer](https://godbolt.org)
+  - Basic statistics on quantiles (histograms) for outlier detection. The math is simple as generalizing from one to k medians but the formal notation is [complex](https://aakinshin.net/posts/thdqe-hdi/).
   - [MPI-IO](https://wgropp.cs.illinois.edu/courses/cs598-s16/lectures/lecture32.pdf), just enough to read a file into k parts and combine "wc" outputs to understand multicore scaling.
 
 ## Development of advanced terminal session recording and replay tools in Rust
@@ -216,4 +216,3 @@ We want to support the Redox operating system, but are not actively testing agai
 - Mentors: TBD
 - Required skills:
   - Rust
-
