@@ -73,6 +73,25 @@ See issues: [#3859](https://github.com/uutils/coreutils/issues/3859), [#3860](ht
   - Rust
   - Basic knowledge about the terminal
 
+## Improve findutils coverage
+
+[More than half](https://github.com/uutils/findutils-tracking/) of the findutils GNU & BFS are passing. The goal of this project is to improve the compatibility of uutils/findutils with regard to GNU's implementation.
+
+See https://github.com/uutils/findutils
+
+
+To achieve this, we should invest in fuzzing findutils:
+Just like we are [doing with some](https://github.com/uutils/coreutils/tree/main/fuzz/fuzz_targets) [Coreutils programs](https://github.com/uutils/coreutils/blob/main/.github/workflows/fuzzing.yml), we should:
+* fuzz findutils
+* do some differential testing with GNU's implementation (and potentially others)
+
+- Difficulty: Medium
+- Size: 175
+- Mentors: Sylvestre
+- Required skills:
+  - Rust
+  - Basic knowledge about the terminal usage
+
 ## Localization
 Support for localization for formatting, quoting & sorting in various utilities, like `date`, `ls` and `sort`. For this project, we need to figure out how to deal with locale data. The first option is to use the all-Rust `icu4x` library, which has a different format than what distributions usually provide. In this case a solution _could_ be to write a custom `localedef`-like command. The second option is to use a wrapper around the C `icu` library, which comes with the downside of being a C dependency.
 
