@@ -1,33 +1,41 @@
 +++
+title = "Home"
+template = "index.html"
 +++
 
-<header>
-  <img src="logo.svg" alt="uutils" class="logo" />
-  <h1 class="title">uutils</h1>
-</header>
+<div class="hero">
+<img src="logo.svg">
+<div>uutils</div>
+</div>
 
 The uutils project reimplements ubiquitous command line utilities in
 Rust. Our goal is to modernize the utils, while retaining full
 compatibility with the existing utilities.
 
-## Projects
+# Projects
 
 <div class="projects">
   <a class="project" href="/coreutils">
-    <span aria-hidden="true">&gt;</span>
-    coreutils
+    <h2>coreutils</h2>
+    <p>
+      The commands you use everyday: <code>ls</code>, <code>cp</code>, etc.
+    </p>
   </a>
   <a class="project" href="/findutils">
-    <span aria-hidden="true">&gt;</span>
-    findutils
+    <h2>findutils</h2>
+    <p>
+      Finding what you need: <code>find</code>, <code>locate</code>, <code>updatedb</code> &amp; <code>xargs</code>.
+    </p>
   </a>
   <a class="project" href="/diffutils">
-    <span aria-hidden="true">&gt;</span>
-    diffutils
+    <h2>diffutils</h2>
+    <p>
+      Comparing text and files: <code>diff</code>, <code>cmp</code>, <code>diff3</code>, <code>sdiff</code>.
+    </p>
   </a>
 </div>
 
-## Crates
+# Crates
 
 We maintain a variety of public crates to support our projects,
 which are published on [crates.io](https://crates.io/).
@@ -36,7 +44,7 @@ which are published on [crates.io](https://crates.io/).
 - [`parse_datetime`](https://github.com/uutils/parse_datetime)
 - [`uutils-term-grid`](https://github.com/uutils/uutils-term-grid)
 
-## Contributing
+# Contributing
 
 You can help us out by:
 
@@ -48,7 +56,7 @@ You can help us out by:
 
 You can join our [Discord server](https://discord.gg/wQVJbvJ) to discuss or ask anything concerning uutils. We're happy to help you get started with contributing!
 
-## Friends of uutils
+# Friends of uutils
 
 We collaborate with and build upon many other projects in the Rust
 community, either by using or providing crates. We highly recommend
