@@ -1,8 +1,6 @@
 +++
-title = "GSOC"
+title = "Uutils at GSOC"
 +++
-
-# Uutils at GSOC
 
 Google summer of code is:
 
