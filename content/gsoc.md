@@ -75,7 +75,7 @@ See issues: [#3859](https://github.com/uutils/coreutils/issues/3859), [#3860](ht
 
 [More than half](https://github.com/uutils/findutils-tracking/) of the findutils GNU & BFS are passing. The goal of this project is to improve the compatibility of uutils/findutils with regard to GNU's implementation.
 
-See https://github.com/uutils/findutils
+See [https://github.com/uutils/findutils](https://github.com/uutils/findutils)
 
 
 To achieve this, we should invest in fuzzing findutils:
