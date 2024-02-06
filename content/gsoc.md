@@ -59,13 +59,65 @@ Summarizing that page, each project should include:
 - Size (either ~175 or ~350 hours)
 - Difficulty (easy, medium or hard)
 
-## Implement `stty`
+## Complete the `ls` GNU compatiblity
+
+Most of the features in `ls` have been implemented by now.
+However, a bunch of work remains on the color side for a full GNU compat. Other tests are failing.
+We have 12 remaining failing tests.
+
+To get the list of failing tests, run:
+```
+$ ./util/remaining-gnu-error.py |grep "/ls/"
+```
+
+- Difficulty: Medium
+- Size: 175
+- Mentors: Sylvestre
+- Required skills:
+  - Rust
+  - Basic knowledge about the terminal
+
+## Complete the `cp` GNU compatiblity
+
+Most of the features in `cp` have been implemented by now.
+However, some corner cases needs to be implemented. We have 16 remaining failing tests.
+
+To get the list of failing tests, run:
+```
+$ ./util/remaining-gnu-error.py |grep "/cp/"
+```
+
+- Difficulty: Medium
+- Size: 175
+- Mentors: Sylvestre
+- Required skills:
+  - Rust
+  - Basic knowledge about the terminal
+
+## Complete the `mv` GNU compatiblity
+
+Most of the features in `mv` have been implemented by now.
+However, some corner cases needs to be implemented. We have 10 remaining failing tests.
+
+To get the list of failing tests, run:
+```
+$ ./util/remaining-gnu-error.py |grep "/mv/"
+```
+
+- Difficulty: Medium
+- Size: 175
+- Mentors: Sylvestre
+- Required skills:
+  - Rust
+  - Basic knowledge about the terminal
+
+## Improve `stty`
 The `stty` utility is currently only partially implemented and should be expanded.
 
 See issues: [#3859](https://github.com/uutils/coreutils/issues/3859), [#3860](https://github.com/uutils/coreutils/issues/3860), [#3861](https://github.com/uutils/coreutils/issues/3861), [#3862](https://github.com/uutils/coreutils/issues/3862), [#3863](https://github.com/uutils/coreutils/issues/3863).
 
 - Difficulty: Medium
-- Size: 175 or 350 depending on the scope
+- Size: 175
 - Mentors: Terts Diepraam
 - Required skills:
   - Rust
