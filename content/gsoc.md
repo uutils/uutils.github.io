@@ -58,7 +58,7 @@ Summarizing that page, each project should include:
 - Size (either ~175 or ~350 hours)
 - Difficulty (easy, medium or hard)
 
-## Complete the `ls` GNU compatiblity
+## Complete the `ls` GNU compatibility
 
 Most of the features in `ls` have been implemented by now.
 However, a bunch of work remains on the color side for a full GNU compat. Other tests are failing.
@@ -76,7 +76,7 @@ $ ./util/remaining-gnu-error.py |grep "/ls/"
   - Rust
   - Basic knowledge about the terminal
 
-## Complete the `cp` GNU compatiblity
+## Complete the `cp` GNU compatibility
 
 Most of the features in `cp` have been implemented by now.
 However, some corner cases needs to be implemented. We have 16 remaining failing tests.
@@ -93,7 +93,7 @@ $ ./util/remaining-gnu-error.py |grep "/cp/"
   - Rust
   - Basic knowledge about the terminal
 
-## Complete the `mv` GNU compatiblity
+## Complete the `mv` GNU compatibility
 
 Most of the features in `mv` have been implemented by now.
 However, some corner cases needs to be implemented. We have 10 remaining failing tests.
