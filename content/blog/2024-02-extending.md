@@ -20,9 +20,14 @@ For now, we are going to focus on:
 * [diffutils](https://github.com/uutils/diffutils) (transfered by Michael Howell)
 * [acl](https://github.com/uutils/acl)
 
+TODO: maybe add login & hostname to the list
+
 As they are part of the essential packages on Debian & Ubuntu.
 
 Sylvestre Ledru, Terts Diepraam and Daniel Hofstetter
+
+TODO: gsoc
+
 
 
 FAQ
