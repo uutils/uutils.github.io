@@ -10,6 +10,7 @@ Over the last 4 years, we have been working at reimplementing some of the key li
 As we are getting closer to parity with the GNU implementation of the Coreutils, we have been thinking about what is next.
 
 Given the overwhelming positive feedback around this initiative, we are going to extend our efforts to rewrite other part of the modern Linux/Unix/Mac stack in Rust. We also noticed a lot of contributions on these projects coming for a lot of different contributors.
+TODO: add that Rust allows younger generations to join
 
 For the next projects, we are using the same approach: dropped-in replacement of the GNU C implementation. For consistency purposes and not interested by a license debate, we are going to use the MIT license.
 
@@ -21,6 +22,8 @@ For now, we are going to focus on:
 * [acl](https://github.com/uutils/acl)
 
 TODO: maybe add login & hostname to the list
+
+TODO: create and add links to the good first bugs
 
 As they are part of the essential packages on Debian & Ubuntu.
 
