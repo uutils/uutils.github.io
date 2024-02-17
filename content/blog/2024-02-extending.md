@@ -5,7 +5,7 @@ date = 2024-02-17
 authors = ["Sylvestre Ledru", "Terts Diepraam"]
 +++
 
-Over the last 4 years, we have been working at reimplementing some of the key linux tools in Rust. We started with the Coreutils and Findutils.
+Over the last 4 years, we have been working at reimplementing some of the key linux tools in Rust. We started with the [Coreutils](https://github.com/uutils/coreutils) and [Findutils](https://github.com/uutils/findutils).
 
 As we are getting closer to parity with the GNU implementation of the Coreutils, we have been thinking about what is next.
 
@@ -14,14 +14,20 @@ Given the overwhelming positive feedback around this initiative, we are going to
 For the next projects, we are using the same approach: dropped-in replacement of the GNU C implementation. For consistency purposes and not interested by a license debate, we are going to use the MIT license.
 
 For now, we are going to focus on:
-* util-linux
-* bsdutils
-* procps
-* diffutils (transfer by Michael Howell)
-* acl
+* [util-linux](https://github.com/uutils/util-linux)
+* [bsdutils](https://github.com/uutils/bsdutils)
+* [procps](https://github.com/uutils/procps)
+* [diffutils](https://github.com/uutils/diffutils) (transfered by Michael Howell)
+* [acl](https://github.com/uutils/acl)
 
 As they are part of the essential packages on Debian & Ubuntu.
 
-We are also glad to announced that TODO transfered their implementation of the diffutils under uutils.
+Sylvestre Ledru, Terts Diepraam and Daniel Hofstetter
 
-Sylvestre Ledru, Terts and Daniel
+
+FAQ
+###
+
+License
+
+Binary sizes
