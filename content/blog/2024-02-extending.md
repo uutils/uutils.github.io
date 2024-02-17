@@ -28,7 +28,7 @@ Sylvestre Ledru, Terts Diepraam and Daniel Hofstetter
 
 TODO: gsoc
 
-
+TODO; sponsoring
 
 FAQ
 ###
