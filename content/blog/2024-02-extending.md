@@ -13,8 +13,6 @@ Given the overwhelming positive feedback around this initiative, we are going to
 We also noticed a lot of contributions on these projects coming from a lot of different hackers (475 different contributors on Coreutils!).
 With the growing enthusiasm for Rust and the eagerness to learn it, now is the best time to push this project. We think that rewriting in Rust will help with the longer term maintenance of the ecosystem, ensuring it stays robust, safe and welcoming for new generations of contributors.
 
-We are
-
 For the next projects, we are using the same approach: dropped-in replacement of the GNU C implementation.
 For now, we are going to focus on:
 * [diffutils](https://github.com/uutils/diffutils) (transferred by Michael Howell) - [Good first issues](https://github.com/uutils/diffutils/labels/good%20first%20issue)
@@ -40,6 +38,12 @@ Sylvestre Ledru, Terts Diepraam and Daniel Hofstetter
 
 FAQ
 ###
+
+How long is it going to take?
+-----------------------------
+
+Some programs like diff, acl or hostname should be completed quickly.
+Others will take years to be completed.
 
 Do you hate the GNU project?
 ----------------------------
