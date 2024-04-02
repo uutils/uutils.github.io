@@ -47,21 +47,23 @@ jobs:
       run: |
         curl https://tldr.sh/assets/tldr.zip --output coreutils/docs/tldr.zip
 
-    - name: Install necessary tools (oranda, mdbook and mdbook-toc)
+    - name: Install necessary tools (mdbook and mdbook-toc)
       uses: taiki-e/install-action@v2
       with:
-        tool: oranda,mdbook,mdbook-toc
+        tool: mdbook,mdbook-toc
 
     - name: Build Coreutils Docs
       run: |
         cd coreutils
         cargo run --bin uudoc --all-features
-        oranda build
+        cd docs
+        mdbook build
 
     - name: Build Findutils Docs
       run: |
         cd findutils
-        oranda build
+        cd docs
+        mdbook build
     
     - name: Run Zola
       uses: shalzz/zola-deploy-action@v0.18.0
@@ -72,8 +74,8 @@ jobs:
     - name: Collect results into `public` folder
       run: |
         cp -r uutils.github.io/public public
-        cp -r coreutils/public public/coreutils
-        cp -r findutils/public public/findutils
+        cp -r coreutils/docs/book public/coreutils/docs
+        cp -r findutils/docs/book public/findutils/docs
 
     - name: Upload artifact for checking the output
       uses: actions/upload-artifact@v4
