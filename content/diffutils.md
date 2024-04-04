@@ -5,7 +5,7 @@ template = "project.html"
 
 +++
 
-Rust implementation of GNU diffutils: `diff`, `cmp` and `diff`.
+Rust implementation of GNU diffutils: `diff`, `cmp`, `diff3` and `sdiff`.
 
 This project aims to be a drop-in replacement of the original commands.
 
