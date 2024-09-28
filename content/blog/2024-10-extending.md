@@ -15,7 +15,9 @@ We also noticed a lot of contributions on these projects coming from a diverse g
 
 ### Vision for the Future
 
-As we expand the scope of the project, we envision a future where Rust becomes the backbone of essential Linux, Unix, and macOS system tools. Our focus will be on improving security, ensuring long-term maintainability, and optimizing performance for both modern and legacy systems. Through the uutils umbrella, we aim to create a more secure, efficient, and scalable alternative to the traditional GNU tools.
+As we expand the scope of the project, we envision a future where Rust becomes the backbone of essential Linux, Unix, and potentially macOS system tools. Our focus will be on improving security, ensuring long-term maintainability, and optimizing performance for both modern and legacy systems. Through the uutils umbrella, we aim to create a more secure, efficient, and scalable alternative to the traditional tools, replacing software developed in older, less secure programming languages like C.
+
+This project is also an investment for the future. C is becoming less popular with the next generation of developers. Just like how the Linux kernel continues to evolve and includes Rust, it is our responsibility to upgrade the core utilities of the system to a modern, safer programming language. By doing so, we ensure that the essential tools used in Linux/Unix systems remain relevant, maintainable, and accessible to future contributors.
 
 ### Specific Benefits of Rust
 
@@ -23,19 +25,23 @@ Rust offers several advantages over C/C++, particularly in terms of memory safet
 
 ### Challenges and Opportunities
 
-As with any large-scale reimplementation, there are challenges to overcome. Porting complex utilities from C to Rust requires careful consideration of edge cases and platform-specific behaviors. Additionally, ensuring full compatibility across Linux, Unix, and potentially macOS environments presents unique challenges. However, these challenges also offer opportunities for growth and innovation, allowing us to rethink and refine core system utilities for modern needs. Rust's modern design gives us the chance to improve both security and performance while maintaining cross-platform compatibility.
+As with any large-scale reimplementation, there are challenges to overcome. Porting complex utilities from C to Rust requires careful consideration of edge cases and platform-specific behaviors. Additionally, ensuring full compatibility across Linux, Unix, and macOS environments presents unique challenges. However, these challenges also offer opportunities for growth and innovation, allowing us to extend and refine core system utilities for modern needs. Rust's modern design gives us the chance to improve both security and performance while maintaining cross-platform compatibility.
 
 ### Next Steps
 
-For the next phase of the project, we are adopting the same approach: a drop-in replacement of the GNU C implementations. Here's what's coming next:
+For the next phase of the project, we are adopting the same approach: a drop-in replacement of the C implementations. Here's what's coming next:
 
-- **[diffutils](https://github.com/uutils/diffutils)** (transferred by Michael Howell) - Almost ready.
-- **[procps](https://github.com/uutils/procps)** - Five programs started.
-- **[acl](https://github.com/uutils/acl)** - Three programs started.
-- **[util-linux](https://github.com/uutils/util-linux)** - A few programs started.
-- **[bsdutils](https://github.com/uutils/bsdutils)** - One program started.
-- **[login](https://github.com/uutils/login/)** - Skeleton started.
-- **[hostname](https://github.com/uutils/hostname/)** - Almost empty.
+| Name                                               | Description                                        | Status                      |
+|----------------------------------------------------|----------------------------------------------------|-----------------------------|
+| [diffutils](https://github.com/uutils/diffutils)   | File comparison utilities                          | Almost ready                |
+| [procps](https://github.com/uutils/procps)         | Utilities for monitoring and controlling processes |                             |
+| [acl](https://github.com/uutils/acl)               | Access control list utilities                      |                             |
+| [util-linux](https://github.com/uutils/util-linux) | Utilities essential for Linux systems              |                             |
+| [bsdutils](https://github.com/uutils/bsdutils)     | Basic utilities for BSD compatibility              |                             |
+| [login](https://github.com/uutils/login)           | User login management utilities                    |                             |
+| [hostname](https://github.com/uutils/hostname)     | Utility to show or set system hostname             |                             |
+| [coreutils](https://github.com/uutils/coreutils)   | Basic utilities for the system                     | Production level            |
+| [findutils](https://github.com/uutils/findutils)   | utilities for finding files                        | Getting close to completion |
 
 These packages are part of the essential list for Debian and Ubuntu, and we're excited to push their Rust reimplementation further.
 
