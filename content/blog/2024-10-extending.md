@@ -13,6 +13,8 @@ Given the overwhelming positive feedback around this initiative, we are going to
 
 We also noticed a lot of contributions on these projects coming from a diverse group of hackers (503 different contributors on Coreutils alone!). With the growing enthusiasm for Rust and the eagerness to learn it, now is the best time to push this project forward. Rewriting in Rust will help with the long-term maintenance of the ecosystem, ensuring it stays robust, safe, and welcoming for new generations of contributors.
 
+<img /"static/2024-10-blog-post.webp" />
+
 ### Vision for the Future
 
 As we expand the scope of the project, we envision a future where Rust becomes the backbone of essential Linux, Unix, and potentially macOS system tools. Our focus will be on improving security, ensuring long-term maintainability, and optimizing performance for both modern and legacy systems. Through the uutils umbrella, we aim to create a more secure, efficient, and scalable alternative to the traditional tools, replacing software developed in older, less secure programming languages like C.
