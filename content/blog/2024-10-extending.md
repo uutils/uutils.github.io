@@ -1,7 +1,7 @@
 +++
 title = "Extending the Coreutils project - Rewriting base tools in Rust "
 draft = true
-date = 2024-03-26
+date = 2024-10-01
 authors = ["Sylvestre Ledru", "Terts Diepraam"]
 +++
 
