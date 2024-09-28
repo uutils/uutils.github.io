@@ -13,7 +13,7 @@ Given the overwhelming positive feedback around this initiative, we are going to
 
 We also noticed a lot of contributions on these projects coming from a diverse group of hackers (503 different contributors on Coreutils alone!). With the growing enthusiasm for Rust and the eagerness to learn it, now is the best time to push this project forward. Rewriting in Rust will help with the long-term maintenance of the ecosystem, ensuring it stays robust, safe, and welcoming for new generations of contributors.
 
-<img /"static/2024-10-blog-post.webp" />
+<img src="/static/2024-10-blog-post.webp" />
 
 ### Vision for the Future
 
