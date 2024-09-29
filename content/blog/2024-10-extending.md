@@ -47,27 +47,27 @@ For the next phase of the project, we are adopting the same approach: a drop-in 
 
 These packages are part of the essential list for Debian and Ubuntu, and we're excited to push their Rust reimplementation further.
 
-### GSoC 2024 Participation: Proof of Our Commitment
+### GSoC 2024 Participation
 
 This year, as part of our ongoing commitment to enhancing and expanding Rust-based tools, we had the privilege of mentoring three students during Google Summer of Code (GSoC) 2024. Their work exemplifies the project's momentum and showcases the contributions of the next generation of developers:
 
-1. **Sreehari Prasad TM** worked on improving the support of Rust-based coreutils in Debian. His focus was on making uutils compatible with the GNU coreutils test suite. Sreehari resolved most of the failing tests for the `cp`, `mv`, and `ls` utilities and significantly enhanced compatibility with Debian.
+1. **Sreehari Prasad** worked on improving the support of Rust CCoreutils. His focus was on making uutils compatible with the GNU coreutils test suite. Sreehari resolved most of the failing tests for the `cp`, `mv`, and `ls` utilities and significantly enhanced compatibility.
 
-2. **Hanbings** tackled the implementation of key GNU `findutils` utilities like `xargs`, `find`, `locate`, and `updatedb` in Rust. His work focused on improving compatibility with the GNU suite while enhancing performance, resulting in major progress on missing features and test code.
+2. **Hanbings** tackled the implementation of key GNU `findutils` utilities like `xargs` and `find` in Rust. His work focused on improving compatibility with the GNU suite while enhancing performance, resulting in major progress on missing features and test code.
 
-3. **Krysztal Huang** worked on implementing the `procps` suite, which includes utilities like `slabtop`, `top`, `pgrep`, `pidof`, `ps`, `pidwait`, and `snice`. This project involved cross-platform support and optimization of performance, focusing first on Linux implementations with plans to extend to other Unix systems in the future.
-
-These students made significant contributions to the Rust coreutils project, demonstrating our continued dedication to open-source development and our belief in Rust as the foundation for the future of system tools. The GSoC projects are a testament to our vision of building a sustainable, high-performance toolchain for the Linux/Unix world, ensuring its evolution and security for years to come.
+3. **Krysztal Huang** worked on implementing the `procps` suite, which includes utilities like `slabtop`, `top`, `pgrep`, `pidof`, `ps`, `pidwait`, and `snice`. This project involved implementing some of these commands.
 
 ### Call to Action for Contributors
 
-We are always looking for contributors who are passionate about system-level programming and Rust. Whether you're experienced with GNU utilities or just learning Rust, your contributions will be invaluable to this project. You can get involved by picking up good-first issues, reviewing code, or even helping us test new features across various platforms. The [uutils GitHub organization](https://github.com/uutils) has all the information you need to get started. You can also sponsor the project through [GitHub Sponsors](https://github.com/sponsors/uutils).
+Contributors who are passionate about system-level programming and Rust are always welcome. Whether you're experienced with GNU utilities or just learning Rust, your contributions will be invaluable to this
+project. You can get involved by picking up good-first issues, reviewing code, or even helping us test new features across various platforms. The [uutils GitHub organization](https://github.com/uutils) has all the information you need to get started.
+You can also sponsor the project through [GitHub Sponsors](https://github.com/sponsors/uutils).
 
 ### FAQ
 
 **How long is it going to take?**
 
-Some programs, like `diff`, `acl`, or `hostname`, should be completed quickly, while others will take years to finish.
+Some programs, like `diff`, `acl`, or `hostname`, could be completed quickly, while others will take years to finish.
 
 **Do you hate the GNU project?**
 
@@ -83,7 +83,7 @@ Yes, Rust binaries are generally bigger than GNU's, but we don't think it's a bl
 
 **Is it really safer?**
 
-While Rust is better than C/C++ for security, these programs are often already very safe. Security is not the key argument for us in this rewrite.
+While Rust is better than C/C++ for security, these programs are often already very safe. Security is not the key argument for us in this rewrite even if Rust provides some automatic improvements.
 
 **What about performance?**
 
