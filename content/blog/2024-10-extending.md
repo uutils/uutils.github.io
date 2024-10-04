@@ -30,18 +30,17 @@ As with any large-scale reimplementation, there are challenges to overcome. Port
 ### Next Steps
 
 For the next phase of the project, we are adopting the same approach: a drop-in replacement of the C implementations. Here's what's coming next:
-
 | Name                                               | Description                                        | Status                      |
 |----------------------------------------------------|----------------------------------------------------|-----------------------------|
-| [diffutils](https://github.com/uutils/diffutils)   | File comparison utilities                          | Almost ready                |
-| [procps](https://github.com/uutils/procps)         | Utilities for monitoring and controlling processes |                             |
 | [acl](https://github.com/uutils/acl)               | Access control list utilities                      |                             |
-| [util-linux](https://github.com/uutils/util-linux) | Utilities essential for Linux systems              |                             |
 | [bsdutils](https://github.com/uutils/bsdutils)     | Basic utilities for BSD compatibility              |                             |
-| [login](https://github.com/uutils/login)           | User login management utilities                    |                             |
-| [hostname](https://github.com/uutils/hostname)     | Utility to show or set system hostname             |                             |
 | [coreutils](https://github.com/uutils/coreutils)   | Basic utilities for the system                     | Production level            |
+| [diffutils](https://github.com/uutils/diffutils)   | File comparison utilities                          | Almost ready                |
 | [findutils](https://github.com/uutils/findutils)   | utilities for finding files                        | Getting close to completion |
+| [hostname](https://github.com/uutils/hostname)     | Utility to show or set system hostname             |                             |
+| [login](https://github.com/uutils/login)           | User login management utilities                    |                             |
+| [procps](https://github.com/uutils/procps)         | Utilities for monitoring and controlling processes |                             |
+| [util-linux](https://github.com/uutils/util-linux) | Utilities essential for Linux systems              |                             |
 
 These packages are part of the essential list for Debian and Ubuntu, and we're excited to push their Rust reimplementation further.
 
