@@ -9,13 +9,13 @@ Over the last four years, we have been working on reimplementing some of the key
 
 As we approach feature parity with the GNU Coreutils implementation, and as its adoption in production environments continues to expand, we have been thinking about what is next.
 
-Given the overwhelming positive feedback around this initiative, we are going to extend our efforts to rewrite other parts of the modern Linux/Unix/Mac stack in Rust (still with Windows support in mind when relevant). These efforts will be managed under the [uutils umbrella](https://github.com/uutils/), which will allow us to maintain a cohesive and unified approach across various utilities.
+Given the very positive feedback around this initiative, we are going to extend our efforts to rewrite other parts of the modern Linux/Unix/Mac stack in Rust (still with Windows support in mind when relevant). These efforts will be managed under the [uutils umbrella](https://github.com/uutils/), which will allow us to maintain a cohesive and unified approach across various utilities.
 
-We also noticed a lot of contributions on these projects coming from a diverse group of hackers (503 different contributors on Coreutils alone!). With the growing enthusiasm for Rust and the eagerness to learn it, now is the best time to push this project forward. Rewriting in Rust will help with the long-term maintenance of the ecosystem, ensuring it stays robust, safe, and welcoming for new generations of contributors.
+We also noticed a lot of contributions on these projects coming from a diverse group of hackers (530 different contributors on Coreutils alone!). With the growing enthusiasm for Rust and the eagerness to learn it, now is the best time to push this project forward. Rewriting in Rust will help with the long-term maintenance of the ecosystem, ensuring it stays robust, safe, and welcoming for new generations of contributors.
 
 ### Vision for the Future
 
-As we expand the scope of the project, we envision a future where Rust becomes the backbone of essential Linux, Unix, and potentially macOS system tools. Our focus will be on improving security, ensuring long-term maintainability, and optimizing performance for both modern and legacy systems. Through the uutils umbrella, we aim to create a more secure, efficient, and scalable alternative to the traditional tools, replacing software developed in older, less secure programming languages like C.
+As we expand the scope of the project, we are working on a future where Rust becomes the backbone of essential Linux, Unix, and potentially macOS system tools. Our focus will be on improving security, ensuring long-term maintainability, and optimizing performance for both modern and legacy systems. Through the uutils umbrella, we aim to create a more secure, efficient, and scalable alternative to the traditional tools, replacing software developed in older, less secure programming languages like C.
 
 This project is also an investment for the future. C is becoming less popular with the next generation of developers. Just like how the Linux kernel continues to evolve and includes Rust, it is our responsibility to upgrade the core utilities of the system to a modern, safer programming language. By doing so, we ensure that the essential tools used in Linux/Unix systems remain relevant, maintainable, and accessible to future contributors.
 
@@ -36,7 +36,7 @@ For the next phase of the project, we are adopting the same approach: a drop-in 
 | [bsdutils](https://github.com/uutils/bsdutils)     | Basic utilities for BSD compatibility              |                             |
 | [coreutils](https://github.com/uutils/coreutils)   | Basic utilities for the system                     | Production level            |
 | [diffutils](https://github.com/uutils/diffutils)   | File comparison utilities                          | Almost ready                |
-| [findutils](https://github.com/uutils/findutils)   | utilities for finding files                        | Getting close to completion |
+| [findutils](https://github.com/uutils/findutils)   | Utilities for finding files                        | Getting close to completion |
 | [hostname](https://github.com/uutils/hostname)     | Utility to show or set system hostname             |                             |
 | [login](https://github.com/uutils/login)           | User login management utilities                    |                             |
 | [procps](https://github.com/uutils/procps)         | Utilities for monitoring and controlling processes |                             |
@@ -46,7 +46,7 @@ These packages are part of the essential list for Debian and Ubuntu, and we're e
 
 ### GSoC 2024 Participation
 
-This year, as part of our ongoing commitment to enhancing and expanding Rust-based tools, we had the privilege of mentoring three students during Google Summer of Code (GSoC) 2024. Their work exemplifies the project's momentum and showcases the contributions of the next generation of developers:
+In 2024, we had the pleasure of mentoring three students during Google Summer of Code (GSoC). Their work exemplifies the project's momentum and showcases the contributions of the next generation of developers:
 
 1. **Sreehari Prasad** worked on improving the support of Rust CCoreutils. His focus was on making uutils compatible with the GNU coreutils test suite. Sreehari resolved most of the failing tests for the `cp`, `mv`, and `ls` utilities and significantly enhanced compatibility.
 
