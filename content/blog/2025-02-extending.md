@@ -46,7 +46,7 @@ These packages are part of the essential list for Debian and Ubuntu, and we're e
 
 ### GSoC 2024 Participation
 
-In 2024, we had the pleasure of mentoring three students during Google Summer of Code (GSoC). Their work exemplifies the project's momentum and showcases the contributions of the next generation of developers:
+In 2024, we had the pleasure of mentoring three students during Google Summer of Code (GSoC):
 
 1. **Sreehari Prasad** worked on improving the support of Rust CCoreutils. His focus was on making uutils compatible with the GNU coreutils test suite. Sreehari resolved most of the failing tests for the `cp`, `mv`, and `ls` utilities and significantly enhanced compatibility.
 
