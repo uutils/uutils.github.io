@@ -5,7 +5,7 @@ This repository generates the user and dev documentations of https://github.com/
 ## User documentation
 
 It is available on:
-https://uutils.github.io/user/
+https://uutils.github.io/coreutils/docs/
 
 Can be generated with:
 ```
