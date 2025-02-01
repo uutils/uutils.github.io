@@ -1,0 +1,164 @@
+name: Docs
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+  schedule:
+  - cron: "0 2 * * *"
+
+jobs:
+  build:
+    name: Build website artifacts
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout uutils.github.io Repository
+      uses: actions/checkout@v4
+      with:
+        repository: uutils/uutils.github.io
+        path: './uutils.github.io'
+        fetch-depth: 0
+
+    - name: Checkout Coreutils Repository
+      uses: actions/checkout@v4
+      with:
+        repository: uutils/coreutils
+        path: './coreutils'
+        fetch-depth: 0
+
+    - name: Checkout Findutils Repository
+      uses: actions/checkout@v4
+      with:
+        repository: uutils/findutils
+        path: './findutils'
+        fetch-depth: 0
+
+    - name: Install `rust` toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Install `libacl`
+      run: |
+        sudo apt install libacl1-dev
+
+    - name: Download tldr archive
+      run: |
+        curl https://tldr.sh/assets/tldr.zip --output coreutils/docs/tldr.zip
+
+    - name: Install necessary tools (mdbook and mdbook-toc)
+      uses: taiki-e/install-action@v2
+      with:
+        tool: mdbook,mdbook-toc
+
+    - name: Build Coreutils Docs
+      run: |
+        cd coreutils
+        cargo run --bin uudoc --all-features
+        cd docs
+        mdbook build
+
+    - name: Build Findutils Docs
+      run: |
+        cd findutils
+        cd docs
+        mdbook build
+    
+    - name: Run Zola
+      uses: shalzz/zola-deploy-action@v0.18.0
+      env:
+        BUILD_DIR: uutils.github.io
+        BUILD_ONLY: true
+
+    - name: Collect results into `public` folder
+      run: |
+        cp -r uutils.github.io/public public
+        cp -r coreutils/docs/book public/coreutils/docs
+        cp -r findutils/docs/book public/findutils/docs
+
+    - name: Upload artifact for checking the output
+      uses: actions/upload-artifact@v4
+      with:
+        path: ./public
+
+    - name: Upload artifact for pages
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./public
+
+  # dev-docs:
+  #   name: generate the dev doc
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v4
+  #     with:
+  #       repository: uutils/coreutils
+  #       path: './coreutils'
+  #       fetch-depth: 0
+
+  #   - name: Install `rust` toolchain
+  #     uses: actions-rs/toolchain@v1
+  #     with:
+  #       toolchain: stable
+  #       default: true
+  #       profile: minimal
+
+  #   - name: Build dev documentation
+  #     run: |
+  #       cd coreutils
+  #       cargo doc --no-deps --all-features --workspace
+
+  #   - name: Deploy Docs
+  #     uses: peaceiris/actions-gh-pages@v3
+  #     with:
+  #       github_token: ${{ secrets.GITHUB_TOKEN }}
+  #       publish_dir: ./coreutils/target/doc
+  #       destination_dir: coreutils/dev/
+
+  # build-report:
+  #   name: generate the build report
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v4
+  #     with:
+  #       repository: uutils/coreutils
+  #       path: './coreutils'
+  #       fetch-depth: 0
+
+  #   - name: Install `rust` toolchain
+  #     uses: actions-rs/toolchain@v1
+  #     with:
+  #       toolchain: nightly
+  #       default: true
+  #       profile: minimal
+
+  #   - name: Build report
+  #     run: |
+  #       cd coreutils
+  #       cargo +nightly build --timings=html  -Zunstable-options
+
+  #   - name: Deploy build report
+  #     uses: peaceiris/actions-gh-pages@v3
+  #     with:
+  #       github_token: ${{ secrets.GITHUB_TOKEN }}
+  #       publish_dir: ./coreutils/target/cargo-timings/
+  #       destination_dir: cargo-timings/
+
+  # Deployment job
+  deploy:
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
