@@ -18,7 +18,7 @@ compatibility with the existing utilities.
   <a class="project" href="/coreutils">
     <h2>coreutils</h2>
     <p>
-      The commands you use everyday: <code>ls</code>, <code>cp</code>, etc.
+      The commands you use everyday: <code>ls</code>, <code>cp</code>, etc. Production ready!
     </p>
   </a>
   <a class="project" href="/findutils">
