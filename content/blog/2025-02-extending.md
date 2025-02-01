@@ -30,6 +30,7 @@ As with any large-scale reimplementation, there are challenges to overcome. Port
 ### Next Steps
 
 For the next phase of the project, we are adopting the same approach: a drop-in replacement of the C implementations. Here's what's coming next:
+
 | Name                                               | Description                                        | Status                      |
 |----------------------------------------------------|----------------------------------------------------|-----------------------------|
 | [acl](https://github.com/uutils/acl)               | Access control list utilities                      |                             |
