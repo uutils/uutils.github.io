@@ -1,6 +1,7 @@
 +++
 title = "Extending the Coreutils project - Rewriting base tools in Rust"
 date = 2025-02-01
+page_template = "post.html"
 authors = ["Sylvestre Ledru"]
 +++
 
