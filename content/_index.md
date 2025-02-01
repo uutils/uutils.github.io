@@ -12,6 +12,8 @@ The uutils project reimplements ubiquitous command line utilities in
 Rust. Our goal is to modernize the utils, while retaining full
 compatibility with the existing utilities.
 
+We are planning to replace all essential Linux tools.
+
 # Projects
 
 <div class="projects">
