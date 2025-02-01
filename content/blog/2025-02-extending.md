@@ -5,7 +5,9 @@ page_template = "post.html"
 authors = ["Sylvestre Ledru"]
 +++
 
-Over the last four years, we have been working on reimplementing some of the key Linux tools in Rust. We started with the [Coreutils](https://github.com/uutils/coreutils) and [findutils](https://github.com/uutils/findutils).
+As I [just presented at FOSDEM](https://sylvestre.ledru.info/coreutils-fosdem-2025/),  we are moving into the next phase of the uutils project.
+
+Over the last five years, we have been working on reimplementing some of the key Linux tools in Rust. We started with the [Coreutils](https://github.com/uutils/coreutils) and [findutils](https://github.com/uutils/findutils).
 
 As we approach feature parity with the GNU Coreutils implementation, and as its adoption in production environments continues to expand, we have been thinking about what is next.
 
