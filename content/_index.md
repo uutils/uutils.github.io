@@ -4,8 +4,11 @@ template = "index.html"
 +++
 
 <div class="hero">
-<img src="logo.svg">
-<div>uutils</div>
+    <picture>
+        <source srcset="logo-dark.svg" media="(prefers-color-scheme: dark)">
+        <img src="logo.svg">
+    </picture>
+    <div>uutils</div>
 </div>
 
 The uutils project reimplements ubiquitous command line utilities in
