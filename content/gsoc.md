@@ -65,8 +65,8 @@ However, a bunch of work remains on the color side for a full GNU compat. Other 
 We have 12 remaining failing tests.
 
 To get the list of failing tests, run:
-```
-$ ./util/remaining-gnu-error.py |grep "/ls/"
+```bash
+$ ./util/remaining-gnu-error.py | grep "/ls/"
 ```
 
 - Difficulty: Medium
@@ -82,8 +82,8 @@ Most of the features in `cp` have been implemented by now.
 However, some corner cases needs to be implemented. We have 16 remaining failing tests.
 
 To get the list of failing tests, run:
-```
-$ ./util/remaining-gnu-error.py |grep "/cp/"
+```bash
+$ ./util/remaining-gnu-error.py | grep "/cp/"
 ```
 
 - Difficulty: Medium
@@ -99,8 +99,8 @@ Most of the features in `mv` have been implemented by now.
 However, some corner cases needs to be implemented. We have 10 remaining failing tests.
 
 To get the list of failing tests, run:
-```
-$ ./util/remaining-gnu-error.py |grep "/mv/"
+```bash
+$ ./util/remaining-gnu-error.py | grep "/mv/"
 ```
 
 - Difficulty: Medium

@@ -8,7 +8,7 @@ It is available on:
 https://uutils.github.io/coreutils/docs/
 
 Can be generated with:
-```
+```bash
 cargo run --bin uudoc --all-features
 cd docs
 mdbook build
@@ -20,7 +20,7 @@ It is available on:
 https://uutils.github.io/dev/coreutils/
 
 Can be generated with:
-```
+```bash
 cargo doc --no-deps --all-features --workspace
 ```
 
