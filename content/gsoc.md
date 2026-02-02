@@ -58,6 +58,33 @@ Summarizing that page, each project should include:
 - Size (either ~175 or ~350 hours)
 - Difficulty (easy, medium or hard)
 
+## Expand differential fuzzing for coreutils
+
+The [uutils/coreutils](https://github.com/uutils/coreutils) project has [some fuzzing infrastructure](https://github.com/uutils/coreutils/tree/main/fuzz/fuzz_targets) in place, but many utilities still lack comprehensive fuzz testing. This project focuses on expanding differential fuzzing coverage across coreutils to identify edge cases, improve robustness, and ensure compatibility with GNU coreutils.
+
+Differential fuzzing compares the behavior of uutils implementations against GNU coreutils to automatically detect discrepancies and bugs that might be missed by traditional testing.
+
+Key areas of work include:
+* Creating new fuzz targets for utilities that currently lack them
+* Implementing differential fuzzing harnesses that compare uutils vs GNU outputs
+* Expanding existing fuzz targets to cover more code paths and options
+* Setting up structured fuzzing campaigns with AFL++ and libFuzzer
+* Integrating continuous fuzzing into CI/CD workflows
+* Triaging and fixing bugs discovered through fuzzing
+* Creating a corpus of interesting test inputs for regression testing
+* Documenting fuzzing infrastructure and best practices
+* Performance profiling of fuzz targets to maximize coverage
+
+- **Difficulty**: Medium
+- **Size**: ~175 hours
+- **Mentors**: TBD
+- **Required skills**:
+  - Rust
+  - Experience with fuzzing tools (AFL++, libFuzzer, cargo-fuzz)
+  - Understanding of differential testing methodologies
+  - Debugging and bug triage skills
+  - Familiarity with coreutils behavior
+
 ## Complete `findutils` GNU compatibility
 
 The [uutils/findutils](https://github.com/uutils/findutils) project has made significant progress with [more than half](https://github.com/uutils/findutils-tracking/) of the GNU findutils and BFS tests passing. This project focuses on completing the remaining work to achieve full GNU compatibility and production readiness.
