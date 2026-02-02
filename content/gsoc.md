@@ -58,6 +58,35 @@ Summarizing that page, each project should include:
 - Size (either ~175 or ~350 hours)
 - Difficulty (easy, medium or hard)
 
+## Performance optimization for coreutils
+
+While [uutils/coreutils](https://github.com/uutils/coreutils) has achieved strong GNU compatibility, some utilities can still benefit from performance improvements to match or exceed GNU coreutils speed. This project focuses on identifying performance bottlenecks and implementing optimizations across key utilities.
+
+The goal is to systematically profile, benchmark, and optimize coreutils to ensure they are production-ready for performance-critical environments.
+
+Key areas of work include:
+* Profiling utilities to identify performance bottlenecks (using perf, flamegraph, criterion)
+* Creating comprehensive benchmark suite comparing against GNU coreutils
+* Optimizing hot paths in frequently-used utilities (cat, cut, sort, uniq, wc, etc.)
+* Implementing algorithmic improvements and efficient data structures
+* Reducing allocations and improving memory usage patterns
+* Leveraging SIMD instructions where applicable for data processing
+* Optimizing I/O operations with proper buffering strategies
+* Benchmarking across different file sizes and input patterns
+* Setting up continuous performance monitoring in CI
+* Documenting performance characteristics and optimization techniques
+
+- **Difficulty**: Medium
+- **Size**: ~175 hours
+- **Mentors**: TBD
+- **Required skills**:
+  - Rust
+  - Performance profiling and optimization techniques
+  - Understanding of systems programming and I/O optimization
+  - Benchmarking methodologies
+  - Knowledge of SIMD and parallel processing is a plus
+  - Familiarity with coreutils behavior
+
 ## Expand differential fuzzing for coreutils
 
 The [uutils/coreutils](https://github.com/uutils/coreutils) project has [some fuzzing infrastructure](https://github.com/uutils/coreutils/tree/main/fuzz/fuzz_targets) in place, but many utilities still lack comprehensive fuzz testing. This project focuses on expanding differential fuzzing coverage across coreutils to identify edge cases, improve robustness, and ensure compatibility with GNU coreutils.
