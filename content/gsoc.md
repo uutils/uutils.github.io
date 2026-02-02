@@ -77,6 +77,31 @@ Just like we are [doing with some](https://github.com/uutils/coreutils/tree/main
   - Rust
   - Basic knowledge about the terminal usage
 
+## Complete the Rust implementation of `sed`
+
+The `sed` (stream editor) utility is a fundamental Unix tool for parsing and transforming text. A Rust implementation has been started but requires significant work to achieve full compatibility with GNU `sed` and POSIX standards.
+
+This project focuses on completing the existing Rust `sed` implementation to make it production-ready. The work involves implementing missing commands and flags, fixing edge cases, improving regular expression support, and ensuring the implementation passes the GNU test suite.
+
+Key areas of work include:
+* Implementing missing `sed` commands and addressing flags
+* Handling complex regular expressions and backreferences
+* Supporting multi-line pattern space operations
+* Implementing hold space operations correctly
+* Adding support for GNU `sed` extensions
+* Fixing edge cases and improving error handling
+* Running and passing the GNU `sed` test suite
+* Performance optimization and memory safety improvements
+
+- **Difficulty**: Medium
+- **Size**: ~175 hours
+- **Mentors**: TBD
+- **Required skills**:
+  - Rust
+  - Understanding of regular expressions
+  - Familiarity with `sed` usage and scripting
+  - Text processing and parsing concepts
+
 ## Rust implementation of `awk`
 
 The goal of this project is to create a Rust-based implementation of `awk`, one of the most powerful and widely-used text processing utilities in Unix/Linux systems. The `awk` utility provides a complete programming language for pattern scanning and processing, making it essential for data extraction, report generation, and text transformation tasks.
