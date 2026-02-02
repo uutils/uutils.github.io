@@ -191,6 +191,84 @@ Key aspects of the project include:
   - Knowledge of regular expressions
   - Experience with programming language implementation is a plus
 
+## Complete `procps` implementation and GNU compatibility
+
+The [uutils/procps](https://github.com/uutils/procps) project aims to reimplement process and system monitoring utilities in Rust. While initial implementations have been started for various tools, this project focuses on completing the core utilities and achieving production readiness with full GNU compatibility.
+
+This project focuses on completing the most essential procps utilities (`ps`, `top`, `pgrep`, `pkill`, `free`, `uptime`) and ensuring they are ready for real-world usage.
+
+Key areas of work include:
+* Completing core functionality for essential procps utilities
+* Implementing missing command-line options and output formats
+* Fixing edge cases in /proc filesystem parsing across different kernel versions
+* Ensuring accurate process information gathering and display
+* Implementing performance optimizations for tools like `top` and `ps`
+* Setting up and running GNU procps test suite
+* Adding comprehensive error handling and validation
+* Creating fuzzing infrastructure for robust /proc parsing
+* Performance benchmarking against GNU procps
+
+- **Difficulty**: Medium
+- **Size**: ~175 hours
+- **Mentors**: TBD
+- **Required skills**:
+  - Rust
+  - Understanding of Linux /proc filesystem
+  - Familiarity with process management and system monitoring
+  - Knowledge of procps tools usage
+
+## Complete `util-linux` implementation and GNU compatibility
+
+The [uutils/util-linux](https://github.com/uutils/util-linux) project aims to reimplement essential system utilities in Rust. This project focuses on completing the most commonly-used util-linux utilities and achieving production-ready status with full GNU compatibility.
+
+This project prioritizes completing utilities that are frequently used in scripts and system administration (`dmesg`, `lscpu`, `mount`, `umount`, `kill`, `logger`).
+
+Key areas of work include:
+* Completing implementation of high-priority util-linux utilities
+* Implementing missing options and edge case handling
+* Ensuring proper interaction with kernel interfaces and system calls
+* Supporting various Linux distributions and kernel versions
+* Setting up and running GNU util-linux test suite
+* Adding comprehensive error handling for system operations
+* Performance optimization and resource efficiency
+* Creating fuzzing infrastructure for system call interactions
+* Documentation and man page compatibility
+
+- **Difficulty**: Medium
+- **Size**: ~175 hours
+- **Mentors**: TBD
+- **Required skills**:
+  - Rust
+  - Understanding of Linux system calls and kernel interfaces
+  - Familiarity with util-linux utilities
+  - System administration knowledge
+
+## Complete `bsdutils` implementation
+
+The [uutils/bsdutils](https://github.com/uutils/bsdutils) project focuses on reimplementing BSD-origin utilities commonly found on Linux systems. This project aims to complete the core utilities and achieve compatibility with both BSD and GNU/Linux variants.
+
+This project focuses on completing essential bsdutils tools like `logger`, `script`, `column`, `hexdump`, and `look`, ensuring they work correctly across different Unix-like systems.
+
+Key areas of work include:
+* Completing implementation of core bsdutils utilities
+* Ensuring compatibility with both BSD and GNU/Linux behavior
+* Implementing missing command-line options and output formats
+* Handling cross-platform differences and portability
+* Setting up test suites for both BSD and GNU variants
+* Adding comprehensive error handling
+* Performance optimization and memory efficiency
+* Creating fuzzing infrastructure for robust input handling
+* Documentation and compatibility notes
+
+- **Difficulty**: Medium
+- **Size**: ~175 hours
+- **Mentors**: TBD
+- **Required skills**:
+  - Rust
+  - Familiarity with both BSD and Linux environments
+  - Understanding of bsdutils tools
+  - Cross-platform development experience
+
 ## Localization
 Support for localization for formatting, quoting & sorting in various utilities, like `date`, `ls` and `sort`. For this project, we need to figure out how to deal with locale data. The first option is to use the all-Rust `icu4x` library, which has a different format than what distributions usually provide. In this case a solution _could_ be to write a custom `localedef`-like command. The second option is to use a wrapper around the C `icu` library, which comes with the downside of being a C dependency.
 
