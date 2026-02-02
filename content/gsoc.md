@@ -91,7 +91,10 @@ Key areas of work include:
 * Adding support for GNU `sed` extensions
 * Fixing edge cases and improving error handling
 * Running and passing the GNU `sed` test suite
-* Performance optimization and memory safety improvements
+* Performance optimization and benchmarking against GNU `sed`
+* Setting up fuzzing infrastructure for differential testing
+* Implementing fuzz targets similar to the [coreutils fuzzing approach](https://github.com/uutils/coreutils/tree/main/fuzz/fuzz_targets)
+* Conducting differential fuzzing against GNU `sed` to identify edge cases and bugs
 
 - **Difficulty**: Medium
 - **Size**: ~175 hours
@@ -101,6 +104,7 @@ Key areas of work include:
   - Understanding of regular expressions
   - Familiarity with `sed` usage and scripting
   - Text processing and parsing concepts
+  - Experience with fuzzing tools (AFL++, cargo-fuzz) is a plus
 
 ## Rust implementation of `awk`
 
