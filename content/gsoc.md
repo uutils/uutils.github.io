@@ -58,24 +58,55 @@ Summarizing that page, each project should include:
 - Size (either ~175 or ~350 hours)
 - Difficulty (easy, medium or hard)
 
-## Improve findutils coverage
+## Complete `findutils` GNU compatibility
 
-[More than half](https://github.com/uutils/findutils-tracking/) of the findutils GNU & BFS are passing. The goal of this project is to improve the compatibility of uutils/findutils with regard to GNU's implementation.
+The [uutils/findutils](https://github.com/uutils/findutils) project has made significant progress with [more than half](https://github.com/uutils/findutils-tracking/) of the GNU findutils and BFS tests passing. This project focuses on completing the remaining work to achieve full GNU compatibility and production readiness.
 
-See [https://github.com/uutils/findutils](https://github.com/uutils/findutils)
+The goal is to finish implementing missing features, fix failing test cases, and ensure the utilities (`find`, `xargs`, `locate`, etc.) are fully compatible with their GNU counterparts.
 
+Key areas of work include:
+* Implementing missing command-line options and predicates for `find`
+* Fixing edge cases in file system traversal and symlink handling
+* Completing `xargs` implementation with proper argument handling
+* Improving performance and memory efficiency
+* Setting up fuzzing infrastructure for differential testing
+* Implementing fuzz targets similar to the [coreutils fuzzing approach](https://github.com/uutils/coreutils/tree/main/fuzz/fuzz_targets)
+* Running and passing remaining GNU test suite cases
+* Conducting differential fuzzing against GNU findutils and BFS
 
-To achieve this, we should invest in fuzzing findutils:
-Just like we are [doing with some](https://github.com/uutils/coreutils/tree/main/fuzz/fuzz_targets) [Coreutils programs](https://github.com/uutils/coreutils/blob/main/.github/workflows/fuzzing.yml), we should:
-* fuzz findutils
-* do some differential testing with GNU's implementation (and potentially others)
-
-- Difficulty: Medium
-- Size: 175
-- Mentors: Sylvestre
-- Required skills:
+- **Difficulty**: Medium
+- **Size**: ~175 hours
+- **Mentors**: Sylvestre
+- **Required skills**:
   - Rust
-  - Basic knowledge about the terminal usage
+  - Understanding of file system operations
+  - Familiarity with `find` and `xargs` usage
+  - Experience with fuzzing tools is a plus
+
+## Complete `diffutils` GNU compatibility
+
+The [uutils/diffutils](https://github.com/uutils/diffutils) project provides Rust implementations of `diff`, `diff3`, `cmp`, and `sdiff`. Significant progress has been made, but additional work is needed to achieve full GNU compatibility and handle all edge cases.
+
+This project focuses on completing the remaining features, fixing compatibility issues, and ensuring all utilities pass the GNU test suite.
+
+Key areas of work include:
+* Implementing missing options and output formats for `diff`
+* Improving algorithm efficiency for large file comparisons
+* Completing `diff3` three-way merge functionality
+* Fixing edge cases in binary file detection and handling
+* Supporting all unified and context diff formats
+* Running and passing the GNU diffutils test suite
+* Performance benchmarking and optimization
+* Adding fuzzing infrastructure for differential testing against GNU diffutils
+
+- **Difficulty**: Medium
+- **Size**: ~175 hours
+- **Mentors**: TBD
+- **Required skills**:
+  - Rust
+  - Understanding of diff algorithms (Myers, Patience, etc.)
+  - Familiarity with `diff` and patch workflows
+  - Text processing and parsing
 
 ## Complete the Rust implementation of `sed`
 
@@ -105,6 +136,34 @@ Key areas of work include:
   - Familiarity with `sed` usage and scripting
   - Text processing and parsing concepts
   - Experience with fuzzing tools (AFL++, cargo-fuzz) is a plus
+
+## Rust implementation of `grep`
+
+The goal of this project is to create a high-performance, feature-complete Rust implementation of `grep` (GNU grep) as part of the uutils ecosystem. While tools like `ripgrep` exist, this project aims to provide a drop-in replacement for GNU `grep` with full compatibility, including all command-line options, output formats, and edge case behaviors.
+
+The `grep` utility is one of the most widely-used Unix tools for searching text using patterns. A uutils implementation would need to balance GNU compatibility with the performance advantages that Rust can provide.
+
+Key aspects of the project include:
+* Implementing full POSIX and GNU `grep` command-line interface
+* Supporting basic regular expressions (BRE), extended regular expressions (ERE), and Perl-compatible regular expressions (PCRE)
+* Implementing all output modes (normal, inverted match, count, files-with-matches, etc.)
+* Supporting context lines (-A, -B, -C options) and various formatting options
+* Handling binary files, compressed files, and recursive directory search
+* Optimizing performance for common use cases while maintaining correctness
+* Implementing color output and various line-buffering modes
+* Running and passing the GNU `grep` test suite
+* Setting up fuzzing infrastructure and differential testing against GNU `grep`
+* Performance benchmarking against GNU `grep` and other implementations
+
+- **Difficulty**: Hard
+- **Size**: ~350 hours
+- **Mentors**: TBD
+- **Required skills**:
+  - Rust
+  - Deep understanding of regular expression engines
+  - Familiarity with `grep` usage and advanced features
+  - Performance optimization and profiling
+  - Text processing and I/O optimization techniques
 
 ## Rust implementation of `awk`
 
