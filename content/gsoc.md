@@ -77,6 +77,32 @@ Just like we are [doing with some](https://github.com/uutils/coreutils/tree/main
   - Rust
   - Basic knowledge about the terminal usage
 
+## Rust implementation of `awk`
+
+The goal of this project is to create a Rust-based implementation of `awk`, one of the most powerful and widely-used text processing utilities in Unix/Linux systems. The `awk` utility provides a complete programming language for pattern scanning and processing, making it essential for data extraction, report generation, and text transformation tasks.
+
+This implementation would be a standalone project within the uutils ecosystem, similar to how `findutils` and `diffutils` are organized. The primary objectives are to achieve compatibility with POSIX `awk` specification and GNU `awk` (gawk) extensions, while leveraging Rust's performance and safety guarantees.
+
+Key aspects of the project include:
+* Implementing the `awk` lexer and parser for the AWK programming language
+* Building the pattern-action execution engine
+* Supporting built-in variables (`NR`, `NF`, `FS`, `RS`, etc.) and functions
+* Implementing regular expression matching and field splitting
+* Adding support for arrays, user-defined functions, and control flow
+* Ensuring compatibility with the POSIX `awk` standard
+* Gradually implementing GNU `awk` extensions where feasible
+* Setting up GNU test suite execution for validation
+
+- **Difficulty**: Hard
+- **Size**: ~350 hours
+- **Mentors**: TBD
+- **Required skills**:
+  - Rust
+  - Understanding of lexers, parsers, and interpreters
+  - Familiarity with `awk` usage and programming
+  - Knowledge of regular expressions
+  - Experience with programming language implementation is a plus
+
 ## Localization
 Support for localization for formatting, quoting & sorting in various utilities, like `date`, `ls` and `sort`. For this project, we need to figure out how to deal with locale data. The first option is to use the all-Rust `icu4x` library, which has a different format than what distributions usually provide. In this case a solution _could_ be to write a custom `localedef`-like command. The second option is to use a wrapper around the C `icu` library, which comes with the downside of being a C dependency.
 
