@@ -57,7 +57,13 @@ jobs:
 
     - name: Copy l10n locales into coreutils
       run: |
-        cp -r coreutils-l10n/src/uu/* coreutils/src/uu/ 2>/dev/null || true
+        # Only copy locales into utilities that already exist in coreutils
+        for util_dir in coreutils-l10n/src/uu/*/; do
+          util=$(basename "$util_dir")
+          if [ -d "coreutils/src/uu/$util" ]; then
+            cp -r "$util_dir/locales" "coreutils/src/uu/$util/" 2>/dev/null || true
+          fi
+        done
         cp -r coreutils-l10n/src/uucore/* coreutils/src/uucore/ 2>/dev/null || true
 
     - name: Build Coreutils Docs
