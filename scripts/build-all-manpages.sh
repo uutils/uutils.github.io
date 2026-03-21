@@ -1,13 +1,12 @@
 #!/bin/bash
 # Build manpages for all languages
-# Usage: build-all-manpages.sh <coreutils-dir> <coreutils-l10n-dir> <output-dir> <templates-dir>
+# Usage: build-all-manpages.sh <coreutils-dir> <output-dir> <templates-dir>
 
 set -euo pipefail
 
-COREUTILS_DIR="${1:?Usage: $0 <coreutils-dir> <coreutils-l10n-dir> <output-dir> <templates-dir>}"
-L10N_DIR="${2:?}"
-OUTPUT_DIR="${3:?}"
-TEMPLATES_DIR="${4:?}"
+COREUTILS_DIR="${1:?Usage: $0 <coreutils-dir> <output-dir> <templates-dir>}"
+OUTPUT_DIR="${2:?}"
+TEMPLATES_DIR="${3:?}"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -41,22 +40,9 @@ declare -A MANPAGE_TO_TLDR=(
   [zh-Hans]="zh"
 )
 
-# lang code used in output URLs
-declare -A LANG_TO_URL=(
-  [en]="en"
-  [fr_FR]="fr" [de_DE]="de" [es_ES]="es" [it_IT]="it"
-  [pt_PT]="pt" [pt_BR]="pt-BR" [ja_JP]="ja" [ko_KR]="ko"
-  [ru_RU]="ru" [zh_CN]="zh" [uk_UA]="uk" [sv_SE]="sv"
-  [pl_PL]="pl" [tr_TR]="tr" [ar_SA]="ar" [cs_CZ]="cs"
-  [da_DK]="da" [id_ID]="id"
-)
 
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
-
-# Copy l10n locales into coreutils so uudoc picks them up
-cp -r "$L10N_DIR"/src/uu/* "$COREUTILS_DIR"/src/uu/ 2>/dev/null || true
-cp -r "$L10N_DIR"/src/uucore/* "$COREUTILS_DIR"/src/uucore/ 2>/dev/null || true
 
 # Download tldr archives
 echo "Downloading tldr archives..."
@@ -75,6 +61,9 @@ if [ -f "$TMPDIR/tldr-archives/en.zip" ]; then
   unzip -o "$TMPDIR/tldr-archives/en.zip" -d "$TMPDIR/tldr-extract-en" > /dev/null 2>&1 || true
   find "$TMPDIR/tldr-extract-en" -name "*.md" -exec cp {} "$EN_TLDR_DIR/" \; 2>/dev/null || true
 fi
+
+# Build uudoc once (if not already built by the docs step)
+make -C "$COREUTILS_DIR" build-uudoc 2>&1 | tail -1
 
 # Generate and build manpages for each language
 for lang in "${!LANG_MAP[@]}"; do
@@ -97,15 +86,26 @@ for lang in "${!LANG_MAP[@]}"; do
     tldr_dir="$EN_TLDR_DIR"
   fi
 
-  # Generate manpages with the right locale
+  # Generate manpages with the right locale (reuse already-built uudoc)
   manpages_dir="$TMPDIR/manpages-${lang}"
-  LANG="${LANG_MAP[$lang]}" make -C "$COREUTILS_DIR" install-manpages DESTDIR="$manpages_dir" 2>&1 | tail -1
+  cd "$COREUTILS_DIR"
+  if ! LANG="${LANG_MAP[$lang]}" make install-manpages DESTDIR="$manpages_dir" 2>&1; then
+    echo "WARNING: Failed to generate manpages for $lang, skipping"
+    continue
+  fi
+  cd - > /dev/null
 
   # Determine output subdirectory
   if [ "$lang" = "en" ]; then
     out_subdir="$OUTPUT_DIR/en"
   else
     out_subdir="$OUTPUT_DIR/${tldr_lang}"
+  fi
+
+  # Skip if no manpages were generated
+  if ! ls "$manpages_dir"/usr/local/share/man/man*/*.1 > /dev/null 2>&1; then
+    echo "WARNING: No manpages found for $lang, skipping HTML generation"
+    continue
   fi
 
   # Build HTML (pass English tldr as fallback for non-English builds)
