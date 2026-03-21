@@ -41,7 +41,7 @@ jobs:
 
     - name: Install system deps
       run: |
-        sudo apt install libacl1-dev libselinux1-dev
+        sudo apt install libacl1-dev libselinux1-dev libsystemd-dev man2html
 
     - name: Download tldr archive
       run: |
@@ -57,12 +57,57 @@ jobs:
         cd coreutils
         cargo run --bin uudoc --all-features
         cd docs
+        # Remove deprecated 'multilingual' field unsupported by newer mdbook
+        sed -i '/^multilingual/d' book.toml
         mdbook build
+
+    - name: Generate Coreutils Manpages
+      run: |
+        cd coreutils
+        make install-manpages DESTDIR=../manpages
+        
+    - name: Convert Manpages to HTML and Generate Index
+      run: |
+        mkdir -p manpages-html
+
+        # Create JSON list for dynamic loading
+        echo "[" > manpages-html/manpages.json
+        first=true
+
+        # Convert manpages to HTML
+        for man in manpages/usr/local/share/man/man*/*.1; do
+          if [ -f "$man" ]; then
+            name=$(basename "$man" .1)
+            man2html -r "$man" > "manpages-html/${name}.html"
+
+            # Add to JSON list
+            if [ "$first" = true ]; then
+              echo "  \"${name}\"" >> manpages-html/manpages.json
+              first=false
+            else
+              echo "  ,\"${name}\"" >> manpages-html/manpages.json
+            fi
+          fi
+        done
+
+        echo "]" >> manpages-html/manpages.json
+
+        # Create index page for Zola to process (picked up by the "Run Zola" step)
+        cat > uutils.github.io/content/coreutils-manpages.md << 'EOF'
+        +++
+        title = "Manual Pages"
+        template = "manpages.html"
+
+        [extra]
+        project = "coreutils"
+        +++
+        EOF
 
     - name: Build Findutils Docs
       run: |
-        cd findutils
-        cd docs
+        cd findutils/docs
+        # Remove deprecated 'multilingual' field unsupported by newer mdbook
+        sed -i '/^multilingual/d' book.toml
         mdbook build
 
     - name: Run Zola
@@ -76,6 +121,8 @@ jobs:
         cp -r uutils.github.io/public public
         cp -r coreutils/docs/book public/coreutils/docs
         cp -r findutils/docs/book public/findutils/docs
+        mkdir -p public/coreutils/manpages
+        cp -r manpages-html/* public/coreutils/manpages/
 
     - name: Upload artifact for checking the output
       uses: actions/upload-artifact@v4
