@@ -29,6 +29,13 @@ jobs:
         path: './coreutils'
         fetch-depth: 0
 
+    - name: Checkout Coreutils L10n Repository
+      uses: actions/checkout@v5
+      with:
+        repository: uutils/coreutils-l10n
+        path: './coreutils-l10n'
+        fetch-depth: 0
+
     - name: Checkout Findutils Repository
       uses: actions/checkout@v5
       with:
@@ -43,10 +50,6 @@ jobs:
       run: |
         sudo apt install libacl1-dev libselinux1-dev libsystemd-dev man2html
 
-    - name: Download tldr archive
-      run: |
-        curl -sfL https://tldr.sh/assets/tldr.zip --output coreutils/docs/tldr.zip
-
     - name: Install necessary tools (mdbook and mdbook-toc)
       uses: taiki-e/install-action@v2
       with:
@@ -55,27 +58,16 @@ jobs:
     - name: Build Coreutils Docs
       run: |
         cd coreutils
+        curl -sfL https://github.com/tldr-pages/tldr/releases/download/v2.3/tldr-pages.zip -o docs/tldr.zip || true
         cargo run --bin uudoc --all-features
         cd docs
         # Remove deprecated 'multilingual' field unsupported by newer mdbook
         sed -i '/^multilingual/d' book.toml
         mdbook build
 
-    - name: Generate Coreutils Manpages
+    - name: Build Coreutils Manpages (all languages)
       run: |
-        cd coreutils
-        make install-manpages DESTDIR=../manpages
-        
-    - name: Convert Manpages to HTML and Generate Index
-      run: |
-        # Extract tldr pages for examples
-        mkdir -p tldr-pages
-        if [ -f coreutils/docs/tldr.zip ]; then
-          unzip -o coreutils/docs/tldr.zip -d tldr-extract
-          find tldr-extract -name "*.md" -exec cp {} tldr-pages/ \;
-        fi
-
-        uutils.github.io/scripts/build-manpages.sh manpages tldr-pages manpages-html uutils.github.io/templates
+        uutils.github.io/scripts/build-all-manpages.sh coreutils coreutils-l10n manpages-html uutils.github.io/templates
 
     - name: Build Findutils Docs
       run: |
@@ -95,8 +87,16 @@ jobs:
         cp -r uutils.github.io/public public
         cp -r coreutils/docs/book public/coreutils/docs
         cp -r findutils/docs/book public/findutils/docs
+        # Copy English manpages to /coreutils/manpages/
         mkdir -p public/coreutils/manpages
-        cp -r manpages-html/* public/coreutils/manpages/
+        cp -r manpages-html/en/* public/coreutils/manpages/
+        # Copy translated manpages to /coreutils/manpages-{lang}/
+        for lang_dir in manpages-html/*/; do
+          lang=$(basename "$lang_dir")
+          [ "$lang" = "en" ] && continue
+          mkdir -p "public/coreutils/manpages-${lang}"
+          cp -r "${lang_dir}"* "public/coreutils/manpages-${lang}/"
+        done
 
     - name: Upload artifact for checking the output
       uses: actions/upload-artifact@v4
