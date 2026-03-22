@@ -64,6 +64,59 @@ for lang in "${!LANG_MAP[@]}"; do
   fi
 done
 
+# Merge translated FTL with English: translated keys take priority,
+# English keys fill in any gaps (handles empty files, partial translations)
+merge_ftl() {
+  local english="$1"
+  local translated="$2"
+  local output="$3"
+
+  # If translated file is empty or missing, keep English as-is
+  if [ ! -s "$translated" ]; then
+    cp "$english" "$output"
+    return
+  fi
+
+  # Extract top-level message IDs from the translated file
+  # (lines starting with identifier = ...)
+  local translated_keys
+  translated_keys=$(grep -oP '^[a-zA-Z][a-zA-Z0-9_-]*(?=\s*=)' "$translated" || true)
+
+  # Start with the translated content
+  cp "$translated" "$output"
+
+  # Append English entries whose keys are NOT in the translated file
+  local in_entry=false
+  local current_key=""
+  local entry_lines=""
+  while IFS= read -r line || [ -n "$line" ]; do
+    if [[ "$line" =~ ^[a-zA-Z][a-zA-Z0-9_-]*[[:space:]]*= ]]; then
+      # Flush previous entry if it was missing from translation
+      if [ -n "$current_key" ] && ! echo "$translated_keys" | grep -qxF "$current_key"; then
+        printf '%s\n' "$entry_lines" >> "$output"
+      fi
+      current_key="${line%%[[:space:]]*=*}"
+      # Trim: extract just the identifier
+      current_key=$(echo "$line" | grep -oP '^[a-zA-Z][a-zA-Z0-9_-]*')
+      entry_lines="$line"
+    elif [[ "$line" =~ ^[[:space:]] ]] && [ -n "$current_key" ]; then
+      # Continuation line (indented = part of current entry)
+      entry_lines="$entry_lines"$'\n'"$line"
+    else
+      # Blank line or comment — flush previous entry if needed
+      if [ -n "$current_key" ] && ! echo "$translated_keys" | grep -qxF "$current_key"; then
+        printf '%s\n' "$entry_lines" >> "$output"
+      fi
+      current_key=""
+      entry_lines=""
+    fi
+  done < "$english"
+  # Flush last entry
+  if [ -n "$current_key" ] && ! echo "$translated_keys" | grep -qxF "$current_key"; then
+    printf '%s\n' "$entry_lines" >> "$output"
+  fi
+}
+
 restore_en() {
   # Restore all en-US.ftl files from backup
   for util_dir in "$COREUTILS_DIR"/src/uu/*/locales/; do
@@ -88,14 +141,18 @@ for lang in "${!LANG_MAP[@]}"; do
     cp "$TMPDIR/tldr-${lang}.zip" docs/tldr.zip
   fi
 
-  # uudoc hardcodes en-US.ftl — swap in the target locale temporarily
+  # uudoc hardcodes en-US.ftl — merge translated locale into en-US.ftl
+  # so that untranslated keys fall back to English
   for util_dir in src/uu/*/locales/; do
     if [ -f "${util_dir}${ftl_name}.ftl" ]; then
-      cp "${util_dir}${ftl_name}.ftl" "${util_dir}en-US.ftl"
+      util=$(basename "$(dirname "$util_dir")")
+      en_backup="$TMPDIR/src-backup/uu/$util/locales/en-US.ftl"
+      merge_ftl "$en_backup" "${util_dir}${ftl_name}.ftl" "${util_dir}en-US.ftl"
     fi
   done
-  if [ -f "src/uucore/src/lib/mods/locales/${ftl_name}.ftl" ]; then
-    cp "src/uucore/src/lib/mods/locales/${ftl_name}.ftl" "src/uucore/src/lib/mods/locales/en-US.ftl"
+  if [ -f "src/uucore/locales/${ftl_name}.ftl" ]; then
+    uucore_en_backup="$TMPDIR/src-backup/uucore/locales/en-US.ftl"
+    merge_ftl "$uucore_en_backup" "src/uucore/locales/${ftl_name}.ftl" "src/uucore/locales/en-US.ftl"
   fi
 
   # Re-generate markdown with swapped locale
