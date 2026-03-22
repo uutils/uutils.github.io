@@ -14,11 +14,18 @@ set -euo pipefail
 
 COREUTILS_DIR="$(cd "${1:?Usage: $0 <coreutils-dir>}" && pwd)"
 
-# ftl filename -> URL lang code (when they differ)
-declare -A FTL_TO_URL=(
-  [fr-FR]="fr" [es-ES]="es" [zh-Hans]="zh" [zh-Hant]="zh-Hant"
-  [pt-BR]="pt-BR" [nb-NO]="nb-NO"
-)
+# Convert FTL locale code to URL code: strip region when language == region
+# (e.g., fr-FR -> fr, es-ES -> es) but keep distinct ones (zh-Hans, pt-BR, nb-NO)
+ftl_to_url() {
+  local code="$1"
+  local lang="${code%%-*}"
+  local region="${code#*-}"
+  if [ "${region,,}" = "${lang,,}" ]; then
+    echo "$lang"
+  else
+    echo "$code"
+  fi
+}
 
 # Discover available locales from the coreutils source (l10n already copied in)
 # Use ls utility as reference
@@ -27,7 +34,7 @@ for ftl in "$COREUTILS_DIR"/src/uu/ls/locales/*.ftl; do
   [ -f "$ftl" ] || continue
   ftl_name=$(basename "$ftl" .ftl)
   [ "$ftl_name" = "en-US" ] && continue
-  url_code="${FTL_TO_URL[$ftl_name]:-$ftl_name}"
+  url_code=$(ftl_to_url "$ftl_name")
   LANG_MAP[$url_code]="$ftl_name"
 done
 

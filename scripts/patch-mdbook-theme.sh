@@ -9,25 +9,39 @@ L10N_DIR="${2:?Usage: $0 <coreutils-docs-dir> <coreutils-l10n-dir>}"
 
 HEAD_HBS="$DOCS_DIR/theme/head.hbs"
 
-# Language display names (ftl filename -> display name)
-declare -A LANG_NAMES=(
-  [en-US]="English"
-  [ar]="العربية" [ast]="Asturianu" [ca]="Català" [cs]="Čeština"
-  [da]="Dansk" [de]="Deutsch" [eo]="Esperanto" [es-ES]="Español"
-  [fi]="Suomi" [fr-FR]="Français" [he]="עברית" [id]="Bahasa Indonesia"
-  [it]="Italiano" [ja]="日本語" [kab]="Taqbaylit" [ko]="한국어"
-  [nb-NO]="Norsk Bokmål" [ne]="नेपाली" [pl]="Polski" [pt]="Português"
-  [pt-BR]="Português (Brasil)" [ru]="Русский" [sv]="Svenska"
-  [tr]="Türkçe" [uk]="Українська" [vi]="Tiếng Việt"
-  [zh-Hans]="中文 (简体)" [zh-Hant]="中文 (繁體)"
-)
+# Convert FTL locale code to URL code: strip region when language == region
+# (e.g., fr-FR -> fr, es-ES -> es) but keep distinct ones (zh-Hans, pt-BR, nb-NO)
+ftl_to_url() {
+  local code="$1"
+  local lang="${code%%-*}"
+  local region="${code#*-}"
+  # If region is the language uppercased (fr-FR, es-ES, etc.), simplify to just the language
+  if [ "${region,,}" = "${lang,,}" ]; then
+    echo "$lang"
+  else
+    echo "$code"
+  fi
+}
 
-# ftl filename -> URL lang code (used in /coreutils/docs-{code}/)
-declare -A FTL_TO_URL=(
-  [en-US]="en" [fr-FR]="fr" [es-ES]="es" [zh-Hans]="zh" [zh-Hant]="zh-Hant"
-  [pt-BR]="pt-BR" [nb-NO]="nb-NO"
-)
-# For others, the ftl name IS the URL code (ar, de, it, ja, etc.)
+# Generate display name for a locale code
+# Uses python3+babel if available, otherwise falls back to the code itself
+locale_display_name() {
+  local code="$1"
+  if command -v python3 > /dev/null 2>&1; then
+    local name
+    name=$(python3 -c "
+try:
+    from babel import Locale
+    print(Locale.parse('${code}'.replace('-', '_')).get_display_name())
+except Exception:
+    print('${code}')
+" 2>/dev/null)
+    # Capitalize first letter for consistency
+    echo "${name^}"
+  else
+    echo "$code"
+  fi
+}
 
 # Scan l10n repo to find which locales have translations
 # Use a representative utility (ls) to find available locales
@@ -37,8 +51,8 @@ for ftl in "$L10N_DIR"/src/uu/ls/locales/*.ftl; do
   ftl_name=$(basename "$ftl" .ftl)
   [ "$ftl_name" = "en-US" ] && continue
 
-  display="${LANG_NAMES[$ftl_name]:-$ftl_name}"
-  url_code="${FTL_TO_URL[$ftl_name]:-$ftl_name}"
+  url_code=$(ftl_to_url "$ftl_name")
+  display=$(locale_display_name "$ftl_name")
   LANGS_JSON="$LANGS_JSON, ['$url_code', '$display']"
 done
 
