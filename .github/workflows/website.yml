@@ -58,13 +58,25 @@ jobs:
     - name: Copy l10n locales into coreutils
       run: |
         # Only copy locales into utilities that already exist in coreutils
+        # Exclude en-US.ftl to preserve the coreutils English originals
         for util_dir in coreutils-l10n/src/uu/*/; do
           util=$(basename "$util_dir")
-          if [ -d "coreutils/src/uu/$util" ]; then
-            cp -r "$util_dir/locales" "coreutils/src/uu/$util/" 2>/dev/null || true
+          if [ -d "coreutils/src/uu/$util/locales" ]; then
+            for ftl in "$util_dir"/locales/*.ftl; do
+              [ -f "$ftl" ] || continue
+              [ "$(basename "$ftl")" = "en-US.ftl" ] && continue
+              cp "$ftl" "coreutils/src/uu/$util/locales/"
+            done
           fi
         done
-        cp -r coreutils-l10n/src/uucore/* coreutils/src/uucore/ 2>/dev/null || true
+        # Copy uucore l10n files, excluding en-US.ftl
+        if [ -d "coreutils-l10n/src/uucore/locales" ]; then
+          for ftl in coreutils-l10n/src/uucore/locales/*.ftl; do
+            [ -f "$ftl" ] || continue
+            [ "$(basename "$ftl")" = "en-US.ftl" ] && continue
+            cp "$ftl" "coreutils/src/uucore/locales/"
+          done
+        fi
 
     - name: Patch mdbook theme with language selector
       run: |
