@@ -14,12 +14,24 @@ set -euo pipefail
 
 COREUTILS_DIR="${1:?Usage: $0 <coreutils-dir>}"
 
-# Languages to build (besides English which is already built)
-declare -A LANG_MAP=(
-  [fr]="fr-FR" [de]="de" [es]="es-ES" [it]="it" [pt]="pt" [pt-BR]="pt-BR"
-  [ja]="ja" [ko]="ko" [ru]="ru" [zh]="zh-Hans" [uk]="uk" [sv]="sv"
-  [pl]="pl" [tr]="tr" [ar]="ar" [cs]="cs" [da]="da" [id]="id"
+# ftl filename -> URL lang code (when they differ)
+declare -A FTL_TO_URL=(
+  [fr-FR]="fr" [es-ES]="es" [zh-Hans]="zh" [zh-Hant]="zh-Hant"
+  [pt-BR]="pt-BR" [nb-NO]="nb-NO"
 )
+
+# Discover available locales from the coreutils source (l10n already copied in)
+# Use ls utility as reference
+declare -A LANG_MAP=()
+for ftl in "$COREUTILS_DIR"/src/uu/ls/locales/*.ftl; do
+  [ -f "$ftl" ] || continue
+  ftl_name=$(basename "$ftl" .ftl)
+  [ "$ftl_name" = "en-US" ] && continue
+  url_code="${FTL_TO_URL[$ftl_name]:-$ftl_name}"
+  LANG_MAP[$url_code]="$ftl_name"
+done
+
+echo "Found ${#LANG_MAP[@]} locales to build: ${!LANG_MAP[*]}"
 
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
