@@ -12,7 +12,7 @@
 
 set -euo pipefail
 
-COREUTILS_DIR="${1:?Usage: $0 <coreutils-dir>}"
+COREUTILS_DIR="$(cd "${1:?Usage: $0 <coreutils-dir>}" && pwd)"
 
 # ftl filename -> URL lang code (when they differ)
 declare -A FTL_TO_URL=(
