@@ -89,8 +89,8 @@ cat >> "$HEAD_HBS" << 'ENDSCRIPT'
 document.addEventListener('DOMContentLoaded', function() {
     var path = window.location.pathname;
     // Match both deployed (/coreutils/docs[-lang]/utils/X.html) and local (book[-lang]/utils/X.html)
-    var match = path.match(/\/(?:coreutils\/)?docs(?:-([a-z]{2}(?:-[A-Z]{2})?))?\/utils\/(\w+)\.html/)
-             || path.match(/\/book(?:-([a-z]{2}(?:-[A-Z]{2})?))?\/utils\/(\w+)\.html/);
+    var match = path.match(/\/(?:coreutils\/)?docs(?:-([a-zA-Z]{2}(?:-[a-zA-Z]+)?))?\/utils\/(\w+)\.html/)
+             || path.match(/\/book(?:-([a-zA-Z]{2}(?:-[a-zA-Z]+)?))?\/utils\/(\w+)\.html/);
     if (!match) return;
 
     var currentLang = match[1] || 'en';
