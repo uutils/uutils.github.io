@@ -50,7 +50,13 @@ EN_TLDR="$TMPDIR/tldr-en.zip"
 cp "$COREUTILS_DIR/docs/tldr.zip" "$EN_TLDR" 2>/dev/null || true
 
 # Download and repack translated tldr archives (uudoc expects pages/ prefix)
+# Merge with English so missing examples fall back to English
 echo "Downloading translated tldr archives..."
+EN_TLDR_DIR="$TMPDIR/tldr-en-dir"
+if [ -f "$EN_TLDR" ]; then
+  mkdir -p "$EN_TLDR_DIR"
+  (cd "$EN_TLDR_DIR" && unzip -o "$EN_TLDR" > /dev/null 2>&1)
+fi
 for lang in "${!LANG_MAP[@]}"; do
   raw="$TMPDIR/tldr-raw-${lang}.zip"
   curl -sfL "https://github.com/tldr-pages/tldr/releases/download/v2.3/tldr-pages.${lang}.zip" \
@@ -59,7 +65,21 @@ for lang in "${!LANG_MAP[@]}"; do
     repack_dir="$TMPDIR/tldr-repack-${lang}"
     mkdir -p "$repack_dir/pages"
     (cd "$repack_dir" && unzip -o "$raw" -d pages/ > /dev/null 2>&1)
-    (cd "$repack_dir" && zip -r "$TMPDIR/tldr-${lang}.zip" pages/ > /dev/null 2>&1)
+
+    # Record which utilities have translated examples (before merging with English)
+    translated_list="$TMPDIR/tldr-translated-${lang}.list"
+    (cd "$repack_dir" && find pages -name "*.md" -printf '%f\n' | sed 's/\.md$//' | sort -u > "$translated_list")
+
+    # Merge: start with English, overlay translated on top
+    if [ -d "$EN_TLDR_DIR" ]; then
+      merge_dir="$TMPDIR/tldr-merge-${lang}"
+      cp -r "$EN_TLDR_DIR" "$merge_dir"
+      cp -r "$repack_dir/pages"/* "$merge_dir/pages/" 2>/dev/null || true
+      (cd "$merge_dir" && zip -r "$TMPDIR/tldr-${lang}.zip" pages/ > /dev/null 2>&1)
+      rm -rf "$merge_dir"
+    else
+      (cd "$repack_dir" && zip -r "$TMPDIR/tldr-${lang}.zip" pages/ > /dev/null 2>&1)
+    fi
     rm -rf "$repack_dir" "$raw"
   fi
 done
@@ -189,6 +209,26 @@ for lang in "${!LANG_MAP[@]}"; do
   done
   if [ ${#fallback_utils[@]} -gt 0 ]; then
     echo "  Added translation notice to ${#fallback_utils[@]} utilities with untranslated strings"
+  fi
+
+  # Inject notice into Examples section for utilities whose examples fell back to English
+  translated_list="$TMPDIR/tldr-translated-${lang}.list"
+  if [ -f "$translated_list" ]; then
+    examples_fallback=0
+    for md_file in docs/src/utils/*.md; do
+      [ -f "$md_file" ] || continue
+      util=$(basename "$md_file" .md)
+      # Only process files that have an Examples section
+      if grep -q "^## Examples" "$md_file" && ! grep -qxF "$util" "$translated_list"; then
+        # This utility's examples came from English fallback
+        sed -i '/^## Examples$/a\
+<div class="warning">The examples have not been translated yet and are shown in English. You can help by <a href="https://github.com/tldr-pages/tldr">translating them on tldr-pages</a>.</div>' "$md_file"
+        examples_fallback=$((examples_fallback + 1))
+      fi
+    done
+    if [ "$examples_fallback" -gt 0 ]; then
+      echo "  Added example translation notice to $examples_fallback utilities"
+    fi
   fi
 
   # Build mdbook to a language-specific output directory
