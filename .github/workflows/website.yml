@@ -48,7 +48,7 @@ jobs:
 
     - name: Install system deps
       run: |
-        sudo apt install libacl1-dev libselinux1-dev libsystemd-dev man2html
+        sudo apt install libacl1-dev libselinux1-dev libsystemd-dev
 
     - name: Install necessary tools (mdbook and mdbook-toc)
       uses: taiki-e/install-action@v2
@@ -66,19 +66,30 @@ jobs:
         done
         cp -r coreutils-l10n/src/uucore/* coreutils/src/uucore/ 2>/dev/null || true
 
+    - name: Patch mdbook theme with language selector
+      run: |
+        uutils.github.io/scripts/patch-mdbook-theme.sh coreutils/docs
+
     - name: Build Coreutils Docs
       run: |
         cd coreutils
-        curl -sfL https://github.com/tldr-pages/tldr/releases/download/v2.3/tldr-pages.zip -o docs/tldr.zip || true
+        # Download and repack tldr zip: uudoc expects pages/common/ prefix
+        curl -sfL https://github.com/tldr-pages/tldr/releases/download/v2.3/tldr-pages.zip -o /tmp/tldr-raw.zip || true
+        if [ -f /tmp/tldr-raw.zip ]; then
+          mkdir -p /tmp/tldr-repack/pages
+          cd /tmp/tldr-repack && unzip -o /tmp/tldr-raw.zip -d pages/ > /dev/null
+          zip -r "$OLDPWD/docs/tldr.zip" pages/ > /dev/null
+          cd "$OLDPWD"
+        fi
         cargo run --bin uudoc --all-features
         cd docs
         # Remove deprecated 'multilingual' field unsupported by newer mdbook
         sed -i '/^multilingual/d' book.toml
         mdbook build
 
-    - name: Build Coreutils Manpages (all languages)
+    - name: Build Coreutils Docs (translations)
       run: |
-        uutils.github.io/scripts/build-all-manpages.sh coreutils manpages-html uutils.github.io/templates
+        uutils.github.io/scripts/build-docs-l10n.sh coreutils
 
     - name: Build Findutils Docs
       run: |
@@ -98,15 +109,11 @@ jobs:
         cp -r uutils.github.io/public public
         cp -r coreutils/docs/book public/coreutils/docs
         cp -r findutils/docs/book public/findutils/docs
-        # Copy English manpages to /coreutils/manpages/
-        mkdir -p public/coreutils/manpages
-        cp -r manpages-html/en/* public/coreutils/manpages/
-        # Copy translated manpages to /coreutils/manpages-{lang}/
-        for lang_dir in manpages-html/*/; do
-          lang=$(basename "$lang_dir")
-          [ "$lang" = "en" ] && continue
-          mkdir -p "public/coreutils/manpages-${lang}"
-          cp -r "${lang_dir}"* "public/coreutils/manpages-${lang}/"
+        # Copy translated docs to /coreutils/docs-{lang}/
+        for lang_dir in coreutils/docs/book-*/; do
+          [ -d "$lang_dir" ] || continue
+          lang=$(basename "$lang_dir" | sed 's/^book-//')
+          cp -r "$lang_dir" "public/coreutils/docs-${lang}"
         done
 
     - name: Upload artifact for checking the output
