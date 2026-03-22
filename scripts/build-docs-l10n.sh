@@ -66,6 +66,7 @@ done
 
 # Merge translated FTL with English: translated keys take priority,
 # English keys fill in any gaps (handles empty files, partial translations)
+# Returns 0 if fully translated, 1 if English fallback was used
 merge_ftl() {
   local english="$1"
   local translated="$2"
@@ -74,7 +75,7 @@ merge_ftl() {
   # If translated file is empty or missing, keep English as-is
   if [ ! -s "$translated" ]; then
     cp "$english" "$output"
-    return
+    return 1
   fi
 
   # Extract top-level message IDs from the translated file
@@ -86,7 +87,7 @@ merge_ftl() {
   cp "$translated" "$output"
 
   # Append English entries whose keys are NOT in the translated file
-  local in_entry=false
+  local had_fallback=0
   local current_key=""
   local entry_lines=""
   while IFS= read -r line || [ -n "$line" ]; do
@@ -94,6 +95,7 @@ merge_ftl() {
       # Flush previous entry if it was missing from translation
       if [ -n "$current_key" ] && ! echo "$translated_keys" | grep -qxF "$current_key"; then
         printf '%s\n' "$entry_lines" >> "$output"
+        had_fallback=1
       fi
       current_key="${line%%[[:space:]]*=*}"
       # Trim: extract just the identifier
@@ -106,6 +108,7 @@ merge_ftl() {
       # Blank line or comment — flush previous entry if needed
       if [ -n "$current_key" ] && ! echo "$translated_keys" | grep -qxF "$current_key"; then
         printf '%s\n' "$entry_lines" >> "$output"
+        had_fallback=1
       fi
       current_key=""
       entry_lines=""
@@ -114,7 +117,9 @@ merge_ftl() {
   # Flush last entry
   if [ -n "$current_key" ] && ! echo "$translated_keys" | grep -qxF "$current_key"; then
     printf '%s\n' "$entry_lines" >> "$output"
+    had_fallback=1
   fi
+  return $had_fallback
 }
 
 restore_en() {
@@ -143,11 +148,15 @@ for lang in "${!LANG_MAP[@]}"; do
 
   # uudoc hardcodes en-US.ftl — merge translated locale into en-US.ftl
   # so that untranslated keys fall back to English
+  # Track which utilities needed English fallback
+  declare -A fallback_utils=()
   for util_dir in src/uu/*/locales/; do
     if [ -f "${util_dir}${ftl_name}.ftl" ]; then
       util=$(basename "$(dirname "$util_dir")")
       en_backup="$TMPDIR/src-backup/uu/$util/locales/en-US.ftl"
-      merge_ftl "$en_backup" "${util_dir}${ftl_name}.ftl" "${util_dir}en-US.ftl"
+      if ! merge_ftl "$en_backup" "${util_dir}${ftl_name}.ftl" "${util_dir}en-US.ftl"; then
+        fallback_utils[$util]=1
+      fi
     fi
   done
   if [ -f "src/uucore/locales/${ftl_name}.ftl" ]; then
@@ -160,6 +169,20 @@ for lang in "${!LANG_MAP[@]}"; do
     echo "WARNING: uudoc failed for $lang, skipping"
     restore_en
     continue
+  fi
+
+  # Inject translation notice into utility pages that have untranslated strings
+  # Convert ftl_name to Weblate language code (hyphens -> underscores)
+  weblate_lang="${ftl_name//-/_}"
+  for util in "${!fallback_utils[@]}"; do
+    md_file="docs/src/utils/${util}.md"
+    [ -f "$md_file" ] || continue
+    notice="<div class=\"warning\">Some strings on this page have not been translated yet. You can help by <a href=\"https://hosted.weblate.org/projects/rust-coreutils/${util}/${weblate_lang}/\">translating them on Weblate</a>.</div>"
+    # Insert notice after the first line (# utility-name)
+    sed -i "1a\\${notice}" "$md_file"
+  done
+  if [ ${#fallback_utils[@]} -gt 0 ]; then
+    echo "  Added translation notice to ${#fallback_utils[@]} utilities with untranslated strings"
   fi
 
   # Build mdbook to a language-specific output directory
