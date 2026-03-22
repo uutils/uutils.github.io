@@ -71,8 +71,8 @@ restore_en() {
     backup="$TMPDIR/src-backup/uu/$util/locales/en-US.ftl"
     [ -f "$backup" ] && cp "$backup" "${util_dir}en-US.ftl"
   done
-  local uucore_backup="$TMPDIR/src-backup/uucore/src/lib/mods/locales/en-US.ftl"
-  [ -f "$uucore_backup" ] && cp "$uucore_backup" "$COREUTILS_DIR/src/uucore/src/lib/mods/locales/en-US.ftl"
+  local uucore_backup="$TMPDIR/src-backup/uucore/locales/en-US.ftl"
+  [ -f "$uucore_backup" ] && cp "$uucore_backup" "$COREUTILS_DIR/src/uucore/locales/en-US.ftl"
   # Restore English tldr
   [ -f "$EN_TLDR" ] && cp "$EN_TLDR" "$COREUTILS_DIR/docs/tldr.zip"
 }
