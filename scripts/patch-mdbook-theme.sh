@@ -160,11 +160,30 @@ document.addEventListener('DOMContentLoaded', function() {
     links.appendChild(langDiv);
 
     additional.appendChild(links);
+
+    // Generation date (localized) — append at the bottom of <main>
+    var main = document.querySelector('#mdbook-content main');
+    if (main) {
+        var genDate = document.createElement('div');
+        genDate.style.fontSize = '0.75em';
+        genDate.style.color = 'var(--fg)';
+        genDate.style.opacity = '0.6';
+        genDate.style.marginTop = '2em';
+        genDate.style.textAlign = 'right';
+        var locale = currentLang.replace('_', '-');
+        var dateStr = new Date(GENDATE_PLACEHOLDER).toLocaleDateString(locale, {
+            year: 'numeric', month: 'long', day: 'numeric'
+        });
+        genDate.textContent = dateStr;
+        main.appendChild(genDate);
+    }
 });
 </script>
 ENDSCRIPT
 
-# Inject the dynamically-built language list
+# Inject the dynamically-built language list and generation date
+GENDATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 sed -i "s|LANGS_PLACEHOLDER|[${LANGS_JSON}]|" "$HEAD_HBS"
+sed -i "s|GENDATE_PLACEHOLDER|'${GENDATE}'|" "$HEAD_HBS"
 
 echo "Patched $HEAD_HBS with language selector and utility links"
