@@ -17,6 +17,20 @@ compatibility with the existing utilities.
 
 We are planning to replace all essential Linux tools.
 
+# Why?
+
+C has served us well for decades, but it is time to move on. For new generations of developers, Rust is more appealing — and it brings real, substantive benefits:
+
+- **Memory safety** — eliminates entire categories of bugs without sacrificing performance
+- **Cross-platform portability** — the same code runs on Linux, macOS, Windows, Android, FreeBSD, NetBSD, OpenBSD, Solaris, Illumos, Fuchsia, Redox and even WebAssembly
+- **Modern tooling** — Cargo, crates.io and a rich ecosystem mean we don't have to reinvent the wheel
+- **Easy parallelism** — fearless concurrency built into the language
+- **Terrific performance** — on par with or better than C implementations
+
+This is not about fighting the GNU project. It is not primarily about security (GNU coreutils only had 17 CVEs since 2003) or about license debates. It is about **modernizing foundational software** so it can be maintained and improved by the next generation of contributors.
+
+Ubuntu is already [carefully but purposefully adopting](https://ubuntu.com/blog/oxidising-ubuntu) uutils coreutils, and Debian is following the same path.
+
 # Projects
 
 <div class="projects">
