@@ -94,6 +94,7 @@ We maintain a variety of public crates to support our projects,
 which are published on [crates.io](https://crates.io/).
 
 - [`ansi-width`](https://github.com/uutils/ansi-width)
+- [`num-prime`](https://github.com/uutils/num-prime)
 - [`parse_datetime`](https://github.com/uutils/parse_datetime)
 - [`platform-info`](https://github.com/uutils/platform-info)
 - [`uutils-term-grid`](https://github.com/uutils/uutils-term-grid)
