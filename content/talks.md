@@ -44,6 +44,14 @@ Josh interviews Sylvestre Ledru about rewriting GNU coreutils in Rust — modern
 
 - [Listen](https://opensourcesecuritypodcast.libsyn.com/rust-coreutils-with-sylvestre-ledru)
 
+## FLOSS Weekly Episode 792 — Rust Coreutils
+
+*July 17, 2024*
+
+Jonathan Bennett and Jeff Massie interview Sylvestre Ledru about the Rust Coreutils project — why developers are reimplementing classic Unix utilities in Rust, the practical advantages, and the perspective of the original coreutils maintainers.
+
+- [Listen](https://hackaday.com/2024/07/17/floss-weekly-episode-792-rust-coreutils/)
+
 # Videos
 
 ## Rust Nation UK 2024 — Rewriting the GNU Coreutils in Rust
