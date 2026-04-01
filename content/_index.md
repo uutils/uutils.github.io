@@ -6,7 +6,7 @@ template = "index.html"
 <div class="hero">
     <picture>
         <source srcset="logo-dark.svg" media="(prefers-color-scheme: dark)">
-        <img src="logo.svg">
+        <img src="logo.svg" alt="uutils logo">
     </picture>
     <div>uutils</div>
 </div>
