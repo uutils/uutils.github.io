@@ -54,9 +54,9 @@ Jonathan Bennett and Jeff Massie interview Sylvestre Ledru about the Rust Coreut
 
 # Videos
 
-## Rust Nation UK 2024 — Rewriting the GNU Coreutils in Rust
+## Rust at TU Delft — Rewriting the GNU Coreutils in Rust
 
-*Sylvestre Ledru*
+*Terts Diepraam*
 
 An overview of the uutils coreutils project, its goals, challenges, and the path toward replacing GNU coreutils in Linux distributions.
 
