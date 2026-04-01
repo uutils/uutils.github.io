@@ -7,6 +7,8 @@ template = "project.html"
 
 uutils coreutils is a cross-platform reimplementation of the GNU coreutils in Rust. While all programs have been implemented, some options might be missing or different behavior might be experienced.
 
+[![GNU test results](https://raw.githubusercontent.com/uutils/coreutils-tracking/refs/heads/main/gnu-results.svg)](https://github.com/uutils/coreutils-tracking)
+
 # Goals
 
 This project aims to be a drop-in replacement for the GNU utils. Differences with GNU are treated as bugs.
