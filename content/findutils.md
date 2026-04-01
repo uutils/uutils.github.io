@@ -9,6 +9,10 @@ Rust implementation of GNU findutils: `xargs`, `find`, `locate` and `updatedb`.
 
 This project aims to be a drop-in replacement of the original commands.
 
+# Goals
+
+This project aims to be a drop-in replacement for the GNU findutils. Differences with GNU are treated as bugs.
+
 [![BFS test results](https://raw.githubusercontent.com/uutils/findutils-tracking/refs/heads/main/bfs-results.svg)](https://github.com/uutils/findutils-tracking)
 
 # Contributing
