@@ -481,7 +481,7 @@ The work will happen in https://github.com/uutils/bsdutils.
 - **Size:**:  ~175 hours
 - **Difficulty:**:  Medium
 
-## Official Redox support</h2>
+## Official Redox support
 We want to support the Redox operating system, but are not actively testing against it. Since the last round of fixes in [#2550](https://github.com/uutils/coreutils/pull/2550), many changes have probably been introduced that break Redox support. This project would involve setting up Redox in the CI and fixing any issues that arise and porting features over.
 
 - Difficulty: Medium
