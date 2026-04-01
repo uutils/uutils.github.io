@@ -38,6 +38,54 @@ We are planning to replace all essential Linux tools.
       Comparing text and files: <code>diff</code>, <code>cmp</code>, <code>diff3</code>, <code>sdiff</code>.
     </p>
   </a>
+  <a class="project" href="/util-linux">
+    <h2>util-linux</h2>
+    <p>
+      Essential system utilities: <code>mount</code>, <code>fdisk</code>, <code>lsblk</code>, <code>dmesg</code> and more.
+    </p>
+  </a>
+  <a class="project" href="/procps">
+    <h2>procps</h2>
+    <p>
+      Process monitoring utilities: <code>ps</code>, <code>top</code>, <code>free</code>, <code>vmstat</code> and more.
+    </p>
+  </a>
+  <a class="project" href="/sed">
+    <h2>sed</h2>
+    <p>
+      Stream editor for filtering and transforming text.
+    </p>
+  </a>
+  <a class="project" href="/tar">
+    <h2>tar</h2>
+    <p>
+      Archiving utility for creating and extracting tar archives.
+    </p>
+  </a>
+  <a class="project" href="/acl">
+    <h2>acl</h2>
+    <p>
+      Access control list utilities: <code>getfacl</code>, <code>setfacl</code>, <code>chacl</code>.
+    </p>
+  </a>
+  <a class="project" href="/hostname">
+    <h2>hostname</h2>
+    <p>
+      Show or set the system hostname.
+    </p>
+  </a>
+  <a class="project" href="/login">
+    <h2>login</h2>
+    <p>
+      Login and user management utilities: <code>login</code>, <code>su</code>, <code>passwd</code> and more.
+    </p>
+  </a>
+  <a class="project" href="/bsdutils">
+    <h2>bsdutils</h2>
+    <p>
+      BSD utility programs: <code>cal</code>, <code>logger</code>, <code>script</code>, <code>wall</code> and more.
+    </p>
+  </a>
 </div>
 
 # Crates
