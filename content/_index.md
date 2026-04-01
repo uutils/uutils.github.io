@@ -125,6 +125,10 @@ You can help us out by:
 
 You can join our [Discord server](https://discord.gg/wQVJbvJ) to discuss or ask anything concerning uutils. We're happy to help you get started with contributing!
 
+# Talks & Media
+
+We did a few talks about this project, see [our talks & media page](/talks).
+
 # Friends of uutils
 
 We collaborate with and build upon many other projects in the Rust
