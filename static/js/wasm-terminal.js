@@ -20,6 +20,8 @@ const XTERM_JS = "https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.
 const XTERM_JS_INTEGRITY = "sha384-J4qzUjBl1FxyLsl/kQPQIOeINsmp17OHYXDOMpMxlKX53ZfYsL+aWHpgArvOuof9";
 const XTERM_FIT_JS = "https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.11.0/lib/addon-fit.min.js";
 const XTERM_FIT_JS_INTEGRITY = "sha384-UwMkGaBqfOcrTjPjXdAPWrGQkhpxTJ21vKtTwLb6wBpBM8HQXKAiUuwVJfgY0Yw6";
+// NOTE: dynamic import() does not support SRI integrity checks.
+// Pin the exact version to reduce supply-chain risk.
 const WASI_SHIM_URL = "https://cdn.jsdelivr.net/npm/@bjorn3/browser_wasi_shim@0.4.0/+esm";
 
 // Sample files for the virtual filesystem
@@ -107,7 +109,9 @@ async function loadWasm() {
   if (!response.ok) {
     throw new Error(`Failed to fetch WASM binary: ${response.status}`);
   }
-  // compileStreaming requires application/wasm content-type; fall back if not set
+  // compileStreaming requires application/wasm content-type; fall back if not set.
+  // Clone the response so the fallback path can read the body without re-fetching.
+  const cloned = response.clone();
   try {
     if (WebAssembly.compileStreaming) {
       wasmModule = await WebAssembly.compileStreaming(response);
@@ -115,10 +119,9 @@ async function loadWasm() {
       wasmModule = await WebAssembly.compile(await response.arrayBuffer());
     }
   } catch (e) {
-    // Some servers don't set proper MIME type, retry with arrayBuffer
+    // Some servers don't set proper MIME type, compile from the cloned response
     console.warn("WASM compileStreaming failed, falling back to arrayBuffer:", e.message);
-    const buf = await fetch(WASM_URL).then(r => r.arrayBuffer());
-    wasmModule = await WebAssembly.compile(buf);
+    wasmModule = await WebAssembly.compile(await cloned.arrayBuffer());
   }
   return wasmModule;
 }

@@ -4,19 +4,22 @@
  */
 
 (function () {
-  let runtimeLoaded = false;
+  let runtimePromise = null;
 
-  async function ensureRuntime() {
-    if (runtimeLoaded) return;
-    // Load the terminal runtime which provides uutilsExecute
-    const script = document.createElement("script");
-    script.src = "/js/wasm-terminal.js";
-    await new Promise((resolve, reject) => {
+  function ensureRuntime() {
+    if (runtimePromise) return runtimePromise;
+    runtimePromise = new Promise((resolve, reject) => {
+      if (document.querySelector('script[src="/js/wasm-terminal.js"]')) {
+        resolve();
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "/js/wasm-terminal.js";
       script.onload = resolve;
       script.onerror = reject;
       document.head.appendChild(script);
     });
-    runtimeLoaded = true;
+    return runtimePromise;
   }
 
   async function runExample(button) {
@@ -45,6 +48,9 @@
     button.textContent = "Run";
   }
 
-  // Expose globally
-  window.runWasmExample = runExample;
+  // Use event delegation instead of inline onclick for CSP compatibility
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest(".wasm-run-btn");
+    if (btn) runExample(btn);
+  });
 })();

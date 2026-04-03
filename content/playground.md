@@ -43,7 +43,7 @@ Click an example to run it in the terminal:
   <button class="playground-example">seq 100 | shuf -n5 | sort -n</button>
   <button class="playground-example">paste -d: names.txt numbers.txt | head -5</button>
   <button class="playground-example">echo 'مرحبا بالعالم' | wc -c -w</button>
-  <button class="playground-example">seq 1 15 | fmt -w 40</button>
+  <button class="playground-example">printf '🐑\n🐑\n🐑\n🐑\n🐑\n' | nl</button>
   <button class="playground-example">echo '🍎,🍌,🍒,🥝' | cut -d🍌 -f2</button>
   <button class="playground-example">printf '🍒 cherry\n🍎 apple\n🍌 banana\n' | sort -k2</button>
   <button class="playground-example">date</button>
