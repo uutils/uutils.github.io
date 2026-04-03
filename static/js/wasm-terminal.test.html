@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>wasm-terminal unit tests</title>
+  <style>
+    body { font-family: monospace; margin: 2em; background: #1e1e2e; color: #cdd6f4; }
+    .pass { color: #a6e3a1; }
+    .fail { color: #f38ba8; font-weight: bold; }
+    .section { color: #f9e2af; margin-top: 1.5em; font-size: 1.1em; }
+    #summary { margin-top: 2em; font-size: 1.2em; padding: 0.5em; border-top: 1px solid #45475a; }
+  </style>
+</head>
+<body>
+<h1>wasm-terminal unit tests</h1>
+<div id="results"></div>
+<div id="summary"></div>
+
+<script src="wasm-terminal.js"></script>
+<script>
+(async function() {
+const T = window._uutilsTestInternals;
+const { parseCommandLine, jsFallback, executeCommandLine, resolvePath, lookupDir, getPersistentDir, SAMPLE_FILES, AVAILABLE_COMMANDS } = T;
+
+let passed = 0;
+let failed = 0;
+const results = document.getElementById("results");
+
+function section(name) {
+  const el = document.createElement("div");
+  el.className = "section";
+  el.textContent = "--- " + name + " ---";
+  results.appendChild(el);
+}
+
+function assert(name, actual, expected) {
+  const el = document.createElement("div");
+  if (actual === expected) {
+    el.className = "pass";
+    el.textContent = "  PASS: " + name;
+    passed++;
+  } else {
+    el.className = "fail";
+    el.textContent = "  FAIL: " + name + "\n    expected: " + JSON.stringify(expected) + "\n    actual:   " + JSON.stringify(actual);
+    console.log("FAIL: " + name + " | expected: " + JSON.stringify(expected) + " | actual: " + JSON.stringify(actual)); // log for headless runners
+    failed++;
+  }
+  results.appendChild(el);
+}
+
+function assertDeep(name, actual, expected) {
+  const a = JSON.stringify(actual);
+  const e = JSON.stringify(expected);
+  assert(name, a, e);
+}
+
+async function assertAsync(name, promise, expected) {
+  const actual = await promise;
+  assert(name, actual, expected);
+}
+
+async function runTests() {
+
+  // Try to load WASM binary for integration tests
+  try {
+    await T.initWasm();
+  } catch (e) {
+    console.log("WASM load failed (integration tests will be skipped):", e.message);
+  }
+
+  // ===== parseCommandLine =====
+  section("parseCommandLine");
+
+  assertDeep("simple command",
+    parseCommandLine("echo hello"),
+    [["echo", "hello"]]);
+
+  assertDeep("multiple args",
+    parseCommandLine("wc -l fruits.txt"),
+    [["wc", "-l", "fruits.txt"]]);
+
+  assertDeep("pipe",
+    parseCommandLine("echo hello | wc -c"),
+    [["echo", "hello"], ["wc", "-c"]]);
+
+  assertDeep("double pipe",
+    parseCommandLine("cat file | sort | uniq"),
+    [["cat", "file"], ["sort"], ["uniq"]]);
+
+  assertDeep("single quotes",
+    parseCommandLine("echo 'hello world'"),
+    [["echo", "hello world"]]);
+
+  assertDeep("double quotes",
+    parseCommandLine('echo "hello world"'),
+    [["echo", "hello world"]]);
+
+  assertDeep("escaped space",
+    parseCommandLine("echo hello\\ world"),
+    [["echo", "hello world"]]);
+
+  assertDeep("mixed quotes",
+    parseCommandLine("echo 'it\"s' \"a test\""),
+    [["echo", 'it"s', "a test"]]);
+
+  assertDeep("empty input",
+    parseCommandLine(""),
+    [[]]);
+
+  assertDeep("multiple spaces",
+    parseCommandLine("echo   hello    world"),
+    [["echo", "hello", "world"]]);
+
+  assertDeep("pipe inside single quotes is literal",
+    parseCommandLine("echo 'a|b'"),
+    [["echo", "a|b"]]);
+
+  assertDeep("pipe inside double quotes is literal",
+    parseCommandLine('echo "a|b"'),
+    [["echo", "a|b"]]);
+
+  // ===== jsFallback: echo =====
+  section("jsFallback: echo");
+
+  assert("echo simple",
+    jsFallback(["echo", "hello"], ""),
+    "hello\n");
+
+  assert("echo multiple words",
+    jsFallback(["echo", "hello", "world"], ""),
+    "hello world\n");
+
+  assert("echo empty",
+    jsFallback(["echo"], ""),
+    "\n");
+
+  // ===== jsFallback: cat =====
+  section("jsFallback: cat");
+
+  assert("cat existing file",
+    jsFallback(["cat", "names.txt"], ""),
+    SAMPLE_FILES["names.txt"]);
+
+  assert("cat missing file",
+    jsFallback(["cat", "nope.txt"], ""),
+    "cat: nope.txt: No such file or directory\n");
+
+  assert("cat with stdin passthrough",
+    jsFallback(["cat"], "piped input"),
+    "piped input");
+
+  // ===== jsFallback: ls =====
+  section("jsFallback: ls");
+
+  assert("ls in AVAILABLE_COMMANDS (WASM)",
+    AVAILABLE_COMMANDS.includes("ls"), true);
+
+  assert("ls fallback still works",
+    jsFallback(["ls"], ""),
+    Object.keys(SAMPLE_FILES).join("  ") + "\n");
+
+  // ===== jsFallback: seq =====
+  section("jsFallback: seq");
+
+  assert("seq 1 to 5",
+    jsFallback(["seq", "5"], ""),
+    "1\n2\n3\n4\n5\n");
+
+  assert("seq 3 to 6",
+    jsFallback(["seq", "3", "6"], ""),
+    "3\n4\n5\n6\n");
+
+  assert("seq with step",
+    jsFallback(["seq", "1", "2", "7"], ""),
+    "1\n3\n5\n7\n");
+
+  // ===== jsFallback: factor =====
+  section("jsFallback: factor");
+
+  assert("factor 12",
+    jsFallback(["factor"], "12"),
+    "12: 2 2 3\n");
+
+  assert("factor prime",
+    jsFallback(["factor"], "17"),
+    "17: 17\n");
+
+  assert("factor multiple lines",
+    jsFallback(["factor"], "6\n10"),
+    "6: 2 3\n10: 2 5\n");
+
+  // ===== jsFallback: basename =====
+  section("jsFallback: basename");
+
+  assert("basename path",
+    jsFallback(["basename", "/usr/local/bin/rustc"], ""),
+    "rustc\n");
+
+  assert("basename simple",
+    jsFallback(["basename", "file.txt"], ""),
+    "file.txt\n");
+
+  // ===== jsFallback: wc =====
+  section("jsFallback: wc");
+
+  assert("wc -l",
+    jsFallback(["wc", "-l", "names.txt"], ""),
+    "8\n");
+
+  assert("wc -w",
+    jsFallback(["wc", "-w", "names.txt"], ""),
+    "8\n");
+
+  // ===== jsFallback: unknown command =====
+  section("jsFallback: unknown");
+
+  assert("unknown command returns null",
+    jsFallback(["nonexistent"], ""),
+    null);
+
+  assert("WASM command without WASM returns loading message",
+    jsFallback(["date"], "").includes("WASM binary loading"),
+    true);
+
+  // ===== executeCommandLine: builtins =====
+  section("executeCommandLine: builtins");
+
+  await assertAsync("empty line",
+    executeCommandLine(""), "");
+
+  await assertAsync("whitespace only",
+    executeCommandLine("   "), "");
+
+  const helpOutput = await executeCommandLine("help");
+  assert("help contains Available",
+    helpOutput.includes("Available commands"), true);
+  assert("help contains examples",
+    helpOutput.includes("Examples"), true);
+
+  await assertAsync("clear returns empty",
+    executeCommandLine("clear"), "");
+
+  // ls output format depends on whether WASM is loaded (WASM ls uses tabs
+  // and sorts alphabetically; JS fallback joins with double spaces in
+  // insertion order). Just verify all sample files appear.
+  const lsOutput = await executeCommandLine("ls");
+  for (const f of Object.keys(SAMPLE_FILES)) {
+    assert("ls contains " + f, lsOutput.includes(f), true);
+  }
+
+  const lsDotOutput = await executeCommandLine("ls .");
+  for (const f of Object.keys(SAMPLE_FILES)) {
+    assert("ls . contains " + f, lsDotOutput.includes(f), true);
+  }
+
+  // ===== executeCommandLine: JS fallback commands =====
+  section("executeCommandLine: JS fallback commands");
+
+  await assertAsync("echo via execute",
+    executeCommandLine("echo test"),
+    "test\n");
+
+  await assertAsync("seq via execute",
+    executeCommandLine("seq 3"),
+    "1\n2\n3\n");
+
+  await assertAsync("cat via execute",
+    executeCommandLine("cat names.txt"),
+    SAMPLE_FILES["names.txt"]);
+
+  // ===== executeCommandLine: pipes =====
+  section("executeCommandLine: pipes");
+
+  await assertAsync("echo | wc -w",
+    executeCommandLine("echo one two three | wc -w"),
+    "3\n");
+
+  await assertAsync("seq | factor",
+    executeCommandLine("seq 4 | factor"),
+    "1:\n2: 2\n3: 3\n4: 2 2\n");
+
+  // ===== AVAILABLE_COMMANDS: sort =====
+  section("sort availability");
+
+  assert("sort in AVAILABLE_COMMANDS",
+    AVAILABLE_COMMANDS.includes("sort"), true);
+
+  // ===== executeCommandLine: unknown command =====
+  section("executeCommandLine: error handling");
+
+  const notFound = await executeCommandLine("foobar");
+  assert("unknown command error",
+    notFound.includes("command not found"), true);
+
+  // ===== AVAILABLE_COMMANDS sanity =====
+  section("AVAILABLE_COMMANDS");
+
+  assert("echo in AVAILABLE_COMMANDS",
+    AVAILABLE_COMMANDS.includes("echo"), true);
+  assert("wc in AVAILABLE_COMMANDS",
+    AVAILABLE_COMMANDS.includes("wc"), true);
+  assert("seq in AVAILABLE_COMMANDS",
+    AVAILABLE_COMMANDS.includes("seq"), true);
+  assert("ls in AVAILABLE_COMMANDS",
+    AVAILABLE_COMMANDS.includes("ls"), true);
+
+  // ===== SAMPLE_FILES sanity =====
+  section("SAMPLE_FILES");
+
+  assert("names.txt exists",
+    SAMPLE_FILES["names.txt"] !== undefined, true);
+  assert("names.txt has content",
+    SAMPLE_FILES["names.txt"].includes("Alice"), true);
+  assert("numbers.txt has numbers",
+    SAMPLE_FILES["numbers.txt"].includes("42"), true);
+  assert("fruits.txt has fruits",
+    SAMPLE_FILES["fruits.txt"].includes("banana"), true);
+
+  // ===== resolvePath =====
+  section("resolvePath");
+
+  T.cwd = "";
+  assert("resolve simple file at root",
+    resolvePath("foo.txt"), "foo.txt");
+  assert("resolve . at root",
+    resolvePath("."), ".");
+  assert("resolve subdir/file at root",
+    resolvePath("sub/file.txt"), "sub/file.txt");
+  assert("resolve flags unchanged",
+    resolvePath("-n"), "-n");
+  assert("resolve empty unchanged",
+    resolvePath(""), "");
+
+  T.cwd = "mydir";
+  assert("resolve file in cwd",
+    resolvePath("foo.txt"), "mydir/foo.txt");
+  assert("resolve .. from cwd",
+    resolvePath(".."), ".");
+  assert("resolve ../other from cwd",
+    resolvePath("../other"), "other");
+  assert("resolve sub/file from cwd",
+    resolvePath("sub/file"), "mydir/sub/file");
+  assert("resolve . from cwd",
+    resolvePath("."), "mydir");
+
+  T.cwd = "a/b/c";
+  assert("resolve ../../x from deep cwd",
+    resolvePath("../../x"), "a/x");
+  assert("resolve ../../../ from deep cwd",
+    resolvePath("../../.."), ".");
+
+  T.cwd = "";
+
+  // ===== cd builtin =====
+  section("cd builtin");
+
+  T.cwd = "";
+
+  // cd to nonexistent dir uses lookupDir which needs wasiShim.
+  // When WASM isn't loaded, cd falls back to checking the JS SAMPLE_FILES
+  // which don't have directories, so all cd <dir> should fail.
+  const cdResult = await executeCommandLine("cd nonexistent");
+  assert("cd to nonexistent dir",
+    cdResult.includes("No such directory"), true);
+  assert("cwd unchanged after failed cd",
+    T.cwd, "");
+
+  await assertAsync("cd with no args stays at root",
+    executeCommandLine("cd"), "");
+  assert("cwd is root after cd",
+    T.cwd, "");
+
+  await assertAsync("cd / goes to root",
+    executeCommandLine("cd /"), "");
+  assert("cwd is root after cd /",
+    T.cwd, "");
+
+  await assertAsync("cd ~ goes to root",
+    executeCommandLine("cd ~"), "");
+  assert("cwd is root after cd ~",
+    T.cwd, "");
+
+  // ===== pwd builtin =====
+  section("pwd builtin");
+
+  T.cwd = "";
+  await assertAsync("pwd at root",
+    executeCommandLine("pwd"), "/\n");
+
+  T.cwd = "mydir";
+  await assertAsync("pwd in subdir",
+    executeCommandLine("pwd"), "/mydir\n");
+
+  T.cwd = "a/b";
+  await assertAsync("pwd in deep subdir",
+    executeCommandLine("pwd"), "/a/b\n");
+
+  T.cwd = "";
+
+  // ===== locale builtin =====
+  section("locale builtin");
+
+  T.locale = "en-US";
+  await assertAsync("locale shows current",
+    executeCommandLine("locale"), "LANG=en-US.UTF-8\n");
+
+  await assertAsync("locale set full form",
+    executeCommandLine("locale fr-FR"), "Locale set to fr-FR\n");
+  assert("locale changed to fr-FR",
+    T.locale, "fr-FR");
+
+  await assertAsync("locale set shortcut",
+    executeCommandLine("locale de"), "Locale set to de-DE\n");
+  assert("locale changed to de-DE",
+    T.locale, "de-DE");
+
+  await assertAsync("locale set shortcut ja",
+    executeCommandLine("locale ja"), "Locale set to ja-JP\n");
+  assert("locale changed to ja-JP",
+    T.locale, "ja-JP");
+
+  // Unknown shortcut passes through as-is
+  await assertAsync("locale unknown passes through",
+    executeCommandLine("locale xx-YY"), "Locale set to xx-YY\n");
+  assert("locale set to xx-YY",
+    T.locale, "xx-YY");
+
+  T.locale = "en-US";
+
+  // ===== l10n WASM integration (only when WASM binary is loaded) =====
+  if (T.wasmReady) {
+    section("l10n WASM integration");
+
+    T.locale = "fr-FR";
+    const frHelp = await executeCommandLine("arch --help");
+    assert("arch --help in French contains French text",
+      frHelp.includes("Afficher l'architecture"), true);
+
+    T.locale = "en-US";
+    const enHelp = await executeCommandLine("arch --help");
+    assert("arch --help in English contains English text",
+      enHelp.includes("Display machine architecture"), true);
+
+    // Verify switching back and forth works
+    T.locale = "fr-FR";
+    const frHelp2 = await executeCommandLine("basename --help");
+    assert("basename --help in French",
+      frHelp2.includes("Afficher"), true);
+
+    T.locale = "en-US";
+
+    // ===== UTF-8 / multibyte WASM tests =====
+    section("UTF-8 multibyte WASM");
+
+    const echoJp = await executeCommandLine("echo 'こんにちは世界'");
+    assert("echo Japanese text",
+      echoJp.trimEnd(), "こんにちは世界");
+
+    const b64Round = await executeCommandLine("echo 'こんにちは世界' | base64 | base64 -d");
+    assert("base64 round-trip Japanese",
+      b64Round.trimEnd(), "こんにちは世界");
+
+    const echoEmoji = await executeCommandLine("echo '🍎🍌🍒'");
+    assert("echo emoji",
+      echoEmoji.trimEnd(), "🍎🍌🍒");
+
+    const b64Emoji = await executeCommandLine("echo '🍎🍌🍒' | base64 | base64 -d");
+    assert("base64 round-trip emoji",
+      b64Emoji.trimEnd(), "🍎🍌🍒");
+
+    const echoArabic = await executeCommandLine("echo 'مرحبا'");
+    assert("echo Arabic text",
+      echoArabic.trimEnd(), "مرحبا");
+
+    // ===== WASM pipe tests =====
+    section("WASM pipe commands");
+
+    // Test sort reading from stdin
+    await assertAsync("echo | sort",
+      executeCommandLine("echo 'c\nb\na' | sort"),
+      "a\nb\nc\n");
+
+    await assertAsync("echo | sort -r",
+      executeCommandLine("echo 'a\nb\nc' | sort -r"),
+      "c\nb\na\n");
+
+    // Test uniq with piped stdin
+    await assertAsync("echo | uniq",
+      executeCommandLine("echo 'a\na\nb\nb\nc' | uniq"),
+      "a\nb\nc\n");
+
+    // Test tail with piped stdin
+    await assertAsync("seq | tail -2",
+      executeCommandLine("seq 5 | tail -2"),
+      "4\n5\n");
+
+    // Test cut with piped stdin
+    await assertAsync("echo | cut -d: -f1",
+      executeCommandLine("echo 'a:b:c' | cut -d: -f1"),
+      "a\n");
+
+    // Test multi-command pipes
+    await assertAsync("echo | sort | uniq -c",
+      executeCommandLine("echo 'b\na\nb\na\na' | sort | uniq -c"),
+      "      3 a\n      2 b\n");
+
+    await assertAsync("sort | uniq -c | sort -rn",
+      executeCommandLine("echo 'b\na\nb\na\na' | sort | uniq -c | sort -rn"),
+      "      3 a\n      2 b\n");
+
+    await assertAsync("echo csv | cut | tail | sort",
+      executeCommandLine("echo '1,z\n2,y\n3,x\n4,w' | cut -d, -f2 | tail -2 | sort"),
+      "w\nx\n");
+
+  } else {
+    section("l10n WASM integration (SKIPPED - WASM not loaded)");
+  }
+
+  // ===== LOCALE_SHORTCUTS =====
+  section("LOCALE_SHORTCUTS");
+
+  assert("fr shortcut", T.LOCALE_SHORTCUTS["fr"], "fr-FR");
+  assert("en shortcut", T.LOCALE_SHORTCUTS["en"], "en-US");
+  assert("de shortcut", T.LOCALE_SHORTCUTS["de"], "de-DE");
+  assert("ja shortcut", T.LOCALE_SHORTCUTS["ja"], "ja-JP");
+  assert("pt shortcut", T.LOCALE_SHORTCUTS["pt"], "pt-BR");
+
+  // ===== Summary =====
+  const summary = document.getElementById("summary");
+  const total = passed + failed;
+  if (failed === 0) {
+    summary.className = "pass";
+    summary.textContent = `All ${total} tests passed.`;
+  } else {
+    summary.className = "fail";
+    summary.textContent = `${failed} of ${total} tests FAILED.`;
+  }
+
+  // Set exit code for headless runners
+  window.__testsPassed = passed;
+  window.__testsFailed = failed;
+}
+
+await runTests();
+})();
+</script>
+</body>
+</html>

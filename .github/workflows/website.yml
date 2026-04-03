@@ -45,6 +45,8 @@ jobs:
 
     - name: Install `rust` toolchain
       uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: wasm32-wasip1
 
     - name: Install system deps
       run: |
@@ -55,7 +57,7 @@ jobs:
     - name: Install necessary tools (mdbook and mdbook-toc)
       uses: taiki-e/install-action@v2
       with:
-        tool: mdbook,mdbook-toc
+        tool: mdbook@0.5.0,mdbook-toc@0.15.3
 
     - name: Copy l10n locales into coreutils
       run: |
@@ -112,6 +114,22 @@ jobs:
         sed -i '/^multilingual/d' book.toml
         mdbook build
 
+    - name: Build uutils WASM binary
+      run: |
+        cd coreutils
+        # Build the multicall binary for WASI target
+        # Use --no-default-features to avoid platform-specific dependencies
+        cargo build --release --target wasm32-wasip1 -p coreutils --no-default-features --features feat_wasm
+        if [ -f target/wasm32-wasip1/release/coreutils.wasm ]; then
+          mkdir -p ../uutils.github.io/static/wasm
+          cp target/wasm32-wasip1/release/coreutils.wasm ../uutils.github.io/static/wasm/uutils.wasm
+          # Optimize WASM size if wasm-opt is available
+          if command -v wasm-opt &> /dev/null; then
+            wasm-opt -Oz ../uutils.github.io/static/wasm/uutils.wasm -o ../uutils.github.io/static/wasm/uutils.wasm
+          fi
+          echo "WASM binary size: $(du -h ../uutils.github.io/static/wasm/uutils.wasm | cut -f1)"
+        fi
+
     - name: Run Zola
       uses: shalzz/zola-deploy-action@v0.21.0
       env:
@@ -129,6 +147,14 @@ jobs:
           lang=$(basename "$lang_dir" | sed 's/^book-//')
           cp -r "$lang_dir" "public/coreutils/docs-${lang}"
         done
+
+    - name: Run playground JS tests
+      run: |
+        npm install puppeteer@24
+        node uutils.github.io/scripts/run-tests.js --dir public --port 8080
+
+    - name: Remove test files from deploy output
+      run: rm -f public/js/wasm-terminal.test.html
 
     - name: Upload artifact for checking the output
       uses: actions/upload-artifact@v7
