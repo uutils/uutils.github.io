@@ -63,6 +63,7 @@ let cursorPos = 0;
 let history = [];
 let historyIndex = -1;
 let wasmReady = false;
+let wasmSize = 0; // downloaded binary size in bytes
 let persistentDir = null;
 let cwd = ""; // virtual current working directory (relative to preopened root)
 let currentLocale = "en-US"; // current locale for l10n
@@ -109,6 +110,8 @@ async function loadWasm() {
   if (!response.ok) {
     throw new Error(`Failed to fetch WASM binary: ${response.status}`);
   }
+  const contentLength = response.headers.get("content-length");
+  if (contentLength) wasmSize = parseInt(contentLength, 10);
   // compileStreaming requires application/wasm content-type; fall back if not set.
   // Clone the response so the fallback path can read the body without re-fetching.
   const cloned = response.clone();
@@ -733,7 +736,8 @@ async function initPlayground(containerId) {
   // Load WASM in background
   try {
     await initWasm();
-    terminal.writeln(" \x1b[1;32mdone!\x1b[0m");
+    const sizeStr = wasmSize > 0 ? ` (${(wasmSize / 1024 / 1024).toFixed(1)} MB)` : "";
+    terminal.writeln(` \x1b[1;32mdone!\x1b[0m${sizeStr}`);
     terminal.writeln("");
     terminal.writeln("Type \x1b[1;32mhelp\x1b[0m for available commands.");
     terminal.writeln("Sample data files: names.txt, numbers.txt, fruits.txt, csv.txt, words.txt");
