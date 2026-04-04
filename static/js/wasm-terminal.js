@@ -285,6 +285,27 @@ async function runCommand(argv, stdinData = "") {
     return 0;
   };
 
+  // Workaround: browser_wasi_shim Filestat.write_bytes() only writes the
+  // defined fields and skips padding bytes (e.g. bytes 17-23 between the
+  // 1-byte filetype and the 8-byte nlink). Rust allocates the stat buffer
+  // with MaybeUninit (uninitialized stack memory), so those padding bytes
+  // contain garbage that corrupts the struct when Rust reads it back.
+  // Fix: patch write_bytes to zero padding before writing fields.
+  // Monkey-patch write_bytes to also write the padding/nlink fields that
+  // the original skips. The original writes filetype as a single byte at
+  // ptr+16 but leaves bytes 17-23 untouched. On WASM those bytes come from
+  // uninitialized stack memory (MaybeUninit) and corrupt the struct.
+  wasiShim.wasi.Filestat.prototype.write_bytes = function(view, ptr) {
+    view.setBigUint64(ptr, this.dev, true);
+    view.setBigUint64(ptr + 8, this.ino, true);
+    view.setBigUint64(ptr + 16, BigInt(this.filetype), true); // zero-extends, clearing padding
+    view.setBigUint64(ptr + 24, this.nlink, true);
+    view.setBigUint64(ptr + 32, this.size, true);
+    view.setBigUint64(ptr + 40, this.atim, true);
+    view.setBigUint64(ptr + 48, this.mtim, true);
+    view.setBigUint64(ptr + 56, this.ctim, true);
+  };
+
   let exitCode = 0;
   try {
     const result = await WebAssembly.instantiate(wasmModule, {
