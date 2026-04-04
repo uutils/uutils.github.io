@@ -443,6 +443,17 @@ async function runTests() {
 
     T.locale = "en-US";
 
+    // ===== ls fixes =====
+    section("ls WASI fixes");
+
+    const lsAl = await executeCommandLine("ls -al");
+    assert("ls -al does not contain 'Capabilities insufficient'",
+      lsAl.includes("Capabilities insufficient"), false);
+    assert("ls -al shows '..' entry",
+      lsAl.includes(".."), true);
+    assert("ls -al does not show 1970 date",
+      lsAl.includes("1970"), false);
+
     // ===== UTF-8 / multibyte WASM tests =====
     section("UTF-8 multibyte WASM");
 
