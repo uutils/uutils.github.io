@@ -114,3 +114,5 @@ depend on platform-specific syscalls not fully supported by WebAssembly/WASI yet
 We are actively working on adding more commands as we improve WASI compatibility in uutils coreutils.
 
 Curious about how this all works under the hood? Read the [technical deep-dive on the playground architecture](/playground-how-it-works).
+
+The source code for this website (including the playground) is available on [GitHub](https://github.com/uutils/uutils.github.io/).
