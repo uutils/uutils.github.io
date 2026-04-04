@@ -119,7 +119,7 @@ flowchart TB
 </pre>
 
 - The WASM binary is compiled with `WebAssembly.compileStreaming()` for best performance, with a fallback to `arrayBuffer()` if the server doesn't set `application/wasm` content-type.
-- While WASM loads, a JavaScript fallback provides basic implementations of `echo`, `cat`, `seq`, `factor`, `wc`, `ls`, and `basename`.
+- Commands are disabled until the WASM binary finishes loading. The terminal shows a loading message and a prompt appears once it's ready.
 - The `SharedArrayBuffer` polyfill stub prevents `ReferenceError` in browsers without cross-origin isolation headers.
 
 ## Command Parsing & Pipes
