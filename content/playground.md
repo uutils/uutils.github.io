@@ -10,6 +10,7 @@ template = "page.html"
   <select id="locale-select" onchange="setLocale(this.value)">
     <option value="en-US">English (en-US)</option>
   </select>
+  <span class="locale-help">Missing a translation or your language? <a href="https://hosted.weblate.org/projects/rust-coreutils/">Help translate on Weblate</a></span>
 </div>
 
 <div id="wasm-playground"></div>
@@ -110,3 +111,5 @@ Some commands (ex: `chcon`, `runcon`, etc) are not yet available in the WASM bui
 depend on platform-specific syscalls not fully supported by WebAssembly/WASI yet.<br />
 
 We are actively working on adding more commands as we improve WASI compatibility in uutils coreutils.
+
+Curious about how this all works under the hood? Read the [technical deep-dive on the playground architecture](/playground-how-it-works).
