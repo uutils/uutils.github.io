@@ -511,38 +511,35 @@ async function executeCommandLine(line) {
 
     const cmd = args[0];
 
-    // Try WASM execution for commands in the WASM build
-    if (wasmReady && AVAILABLE_COMMANDS.includes(cmd)) {
-      try {
-        // Resolve relative paths using the virtual cwd
-        const resolvedArgs = args.map((arg, i) => {
-          if (i === 0) return arg; // command name
-          if (arg.startsWith("-")) return arg; // flag
-          return resolvePath(arg);
-        });
-        // If the command takes a default path (like ls) and no path args
-        // were given, add the cwd so it lists the right directory
-        const hasPathArg = resolvedArgs.slice(1).some(a => !a.startsWith("-"));
-        if (!hasPathArg && cwd && ["ls", "dir"].includes(cmd)) {
-          resolvedArgs.push(cwd);
-        }
-        const wasmArgs = ["coreutils", ...resolvedArgs];
-        const result = await runCommand(wasmArgs, stdinData);
-        if (result.stderr) {
-          return result.stderr + result.stdout;
-        }
-        stdinData = result.stdout;
-      } catch (e) {
-        return `Error running '${cmd}': ${e.message}\n`;
+    if (!wasmReady) {
+      return "WASM binary is still loading, please wait...\n";
+    }
+
+    if (!AVAILABLE_COMMANDS.includes(cmd)) {
+      return `uutils: command not found: ${cmd}\nType 'help' for available commands.\n`;
+    }
+
+    try {
+      // Resolve relative paths using the virtual cwd
+      const resolvedArgs = args.map((arg, i) => {
+        if (i === 0) return arg; // command name
+        if (arg.startsWith("-")) return arg; // flag
+        return resolvePath(arg);
+      });
+      // If the command takes a default path (like ls) and no path args
+      // were given, add the cwd so it lists the right directory
+      const hasPathArg = resolvedArgs.slice(1).some(a => !a.startsWith("-"));
+      if (!hasPathArg && cwd && ["ls", "dir"].includes(cmd)) {
+        resolvedArgs.push(cwd);
       }
-    } else {
-      // JS fallback for commands not in the WASM build or when WASM isn't ready
-      const result = jsFallback(args, stdinData);
-      if (result !== null) {
-        stdinData = result;
-      } else {
-        return `uutils: command not found: ${cmd}\nType 'help' for available commands.\n`;
+      const wasmArgs = ["coreutils", ...resolvedArgs];
+      const result = await runCommand(wasmArgs, stdinData);
+      if (result.stderr) {
+        return result.stderr + result.stdout;
       }
+      stdinData = result.stdout;
+    } catch (e) {
+      return `Error running '${cmd}': ${e.message}\n`;
     }
 
     // Handle output redirection: > file or >> file
@@ -555,95 +552,6 @@ async function executeCommandLine(line) {
   return stdinData;
 }
 
-/**
- * JS fallback implementations for when WASM is not loaded.
- */
-function jsFallback(args, stdinData) {
-  const cmd = args[0];
-  const fileArgs = args.slice(1).filter((a) => !a.startsWith("-"));
-  const flags = args.slice(1).filter((a) => a.startsWith("-"));
-
-  let input = stdinData;
-  for (const f of fileArgs) {
-    if (SAMPLE_FILES[f]) input += SAMPLE_FILES[f];
-  }
-
-  switch (cmd) {
-    case "ls": {
-      if (flags.includes("--version")) {
-        return "ls: not available in WASM build (requires platform-specific syscalls)\nUse 'ls' to list sample files, or try 'echo --version' to verify WASM is working.\n";
-      }
-      return Object.keys(SAMPLE_FILES).join("  ") + "\n";
-    }
-
-    case "cat": {
-      const files = args.slice(1).filter((a) => !a.startsWith("-"));
-      let out = stdinData;
-      for (const f of files) {
-        if (SAMPLE_FILES[f]) out += SAMPLE_FILES[f];
-        else return `cat: ${f}: No such file or directory\n`;
-      }
-      return out || stdinData;
-    }
-
-    case "echo":
-      return args.slice(1).join(" ") + "\n";
-
-    case "seq": {
-      const nums = fileArgs.map(Number);
-      let start = 1, end = 1, step = 1;
-      if (nums.length === 1) end = nums[0];
-      else if (nums.length === 2) { start = nums[0]; end = nums[1]; }
-      else if (nums.length === 3) { start = nums[0]; step = nums[1]; end = nums[2]; }
-      const result = [];
-      for (let i = start; step > 0 ? i <= end : i >= end; i += step) result.push(String(i));
-      return result.join("\n") + "\n";
-    }
-
-    case "factor": {
-      const lines = input ? input.trimEnd().split("\n") : fileArgs;
-      return lines.map((n) => {
-        n = parseInt(n.toString().trim());
-        if (isNaN(n) || n < 2) return `${n}:`;
-        const factors = [];
-        let x = n;
-        for (let d = 2; d * d <= x; d++) {
-          while (x % d === 0) { factors.push(d); x /= d; }
-        }
-        if (x > 1) factors.push(x);
-        return `${n}: ${factors.join(" ")}`;
-      }).join("\n") + "\n";
-    }
-
-    case "basename": {
-      if (fileArgs.length > 0) {
-        const parts = fileArgs[0].split("/");
-        return parts[parts.length - 1] + "\n";
-      }
-      return "\n";
-    }
-
-    case "wc": {
-      const lines = input.trimEnd().split("\n");
-      const allFlags = flags.join(" ");
-      const showL = allFlags.includes("-l");
-      const showW = allFlags.includes("-w");
-      const showC = allFlags.includes("-c");
-      const showAll = !showL && !showW && !showC;
-      const parts = [];
-      if (showL || showAll) parts.push(lines.length);
-      if (showW || showAll) parts.push(input.trim().split(/\s+/).length);
-      if (showC || showAll) parts.push(new TextEncoder().encode(input).length);
-      return (showAll ? "  " : "") + parts.join(" ") + "\n";
-    }
-
-    default:
-      if (AVAILABLE_COMMANDS.includes(cmd)) {
-        return `(WASM binary loading... JS fallback: '${cmd}' not yet implemented)\n`;
-      }
-      return null;
-  }
-}
 
 function writeToTerminal(text) {
   if (!terminal) return;
@@ -890,9 +798,8 @@ async function initPlayground(containerId) {
     terminal.writeln("Sample data files: names.txt, numbers.txt, fruits.txt, csv.txt, words.txt");
   } catch (e) {
     terminal.writeln(" \x1b[1;31mfailed\x1b[0m");
-    terminal.writeln("Using JS fallback. Some commands may be limited.");
-    terminal.writeln("");
-    terminal.writeln("Type \x1b[1;32mhelp\x1b[0m for available commands.");
+    terminal.writeln("Failed to load WASM binary. Commands are not available.");
+    terminal.writeln("Try reloading the page.");
   }
 
   // Run command(s) from URL ?cmd= parameter if present
@@ -939,7 +846,6 @@ window.setLocale = setLocale;
 // Expose internals for testing
 window._uutilsTestInternals = {
   parseCommandLine,
-  jsFallback,
   executeCommandLine,
   resolvePath,
   lookupDir,

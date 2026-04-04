@@ -20,7 +20,7 @@
 <script>
 (async function() {
 const T = window._uutilsTestInternals;
-const { parseCommandLine, jsFallback, executeCommandLine, resolvePath, lookupDir, getPersistentDir, readVirtualFile, writeVirtualFile, SAMPLE_FILES, AVAILABLE_COMMANDS } = T;
+const { parseCommandLine, executeCommandLine, resolvePath, lookupDir, getPersistentDir, readVirtualFile, writeVirtualFile, SAMPLE_FILES, AVAILABLE_COMMANDS } = T;
 
 let passed = 0;
 let failed = 0;
@@ -141,109 +141,6 @@ async function runTests() {
   assertDeep("pipe + redirect: first args", p[0].args, ["sort"]);
   assert("pipe + redirect: stdout", p[1].stdout, "out.txt");
   assertDeep("pipe + redirect: second args", p[1].args, ["head", "-3"]);
-
-  // ===== jsFallback: echo =====
-  section("jsFallback: echo");
-
-  assert("echo simple",
-    jsFallback(["echo", "hello"], ""),
-    "hello\n");
-
-  assert("echo multiple words",
-    jsFallback(["echo", "hello", "world"], ""),
-    "hello world\n");
-
-  assert("echo empty",
-    jsFallback(["echo"], ""),
-    "\n");
-
-  // ===== jsFallback: cat =====
-  section("jsFallback: cat");
-
-  assert("cat existing file",
-    jsFallback(["cat", "names.txt"], ""),
-    SAMPLE_FILES["names.txt"]);
-
-  assert("cat missing file",
-    jsFallback(["cat", "nope.txt"], ""),
-    "cat: nope.txt: No such file or directory\n");
-
-  assert("cat with stdin passthrough",
-    jsFallback(["cat"], "piped input"),
-    "piped input");
-
-  // ===== jsFallback: ls =====
-  section("jsFallback: ls");
-
-  assert("ls in AVAILABLE_COMMANDS (WASM)",
-    AVAILABLE_COMMANDS.includes("ls"), true);
-
-  assert("ls fallback still works",
-    jsFallback(["ls"], ""),
-    Object.keys(SAMPLE_FILES).join("  ") + "\n");
-
-  // ===== jsFallback: seq =====
-  section("jsFallback: seq");
-
-  assert("seq 1 to 5",
-    jsFallback(["seq", "5"], ""),
-    "1\n2\n3\n4\n5\n");
-
-  assert("seq 3 to 6",
-    jsFallback(["seq", "3", "6"], ""),
-    "3\n4\n5\n6\n");
-
-  assert("seq with step",
-    jsFallback(["seq", "1", "2", "7"], ""),
-    "1\n3\n5\n7\n");
-
-  // ===== jsFallback: factor =====
-  section("jsFallback: factor");
-
-  assert("factor 12",
-    jsFallback(["factor"], "12"),
-    "12: 2 2 3\n");
-
-  assert("factor prime",
-    jsFallback(["factor"], "17"),
-    "17: 17\n");
-
-  assert("factor multiple lines",
-    jsFallback(["factor"], "6\n10"),
-    "6: 2 3\n10: 2 5\n");
-
-  // ===== jsFallback: basename =====
-  section("jsFallback: basename");
-
-  assert("basename path",
-    jsFallback(["basename", "/usr/local/bin/rustc"], ""),
-    "rustc\n");
-
-  assert("basename simple",
-    jsFallback(["basename", "file.txt"], ""),
-    "file.txt\n");
-
-  // ===== jsFallback: wc =====
-  section("jsFallback: wc");
-
-  assert("wc -l",
-    jsFallback(["wc", "-l", "names.txt"], ""),
-    "8\n");
-
-  assert("wc -w",
-    jsFallback(["wc", "-w", "names.txt"], ""),
-    "8\n");
-
-  // ===== jsFallback: unknown command =====
-  section("jsFallback: unknown");
-
-  assert("unknown command returns null",
-    jsFallback(["nonexistent"], ""),
-    null);
-
-  assert("WASM command without WASM returns loading message",
-    jsFallback(["date"], "").includes("WASM binary loading"),
-    true);
 
   // ===== executeCommandLine: builtins =====
   section("executeCommandLine: builtins");
