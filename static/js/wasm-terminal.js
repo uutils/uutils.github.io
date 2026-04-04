@@ -748,7 +748,15 @@ async function initPlayground(containerId) {
     terminal.writeln("Type \x1b[1;32mhelp\x1b[0m for available commands.");
   }
 
-  prompt();
+  // Run command(s) from URL ?cmd= parameter if present
+  const urlCmd = new URLSearchParams(window.location.search).get("cmd");
+  if (urlCmd) {
+    for (const cmd of urlCmd.split("\n")) {
+      if (cmd.trim()) await runInTerminal(cmd.trim());
+    }
+  } else {
+    prompt();
+  }
 }
 
 /**
