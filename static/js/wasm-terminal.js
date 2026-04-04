@@ -809,6 +809,17 @@ async function handleInput(data) {
       continue;
     }
 
+    if (code === 23) { // Ctrl+W — delete previous word
+      const before = inputBuffer.slice(0, cursorPos);
+      const after = inputBuffer.slice(cursorPos);
+      // Skip trailing spaces, then delete back to the previous space
+      const trimmed = before.replace(/\S+\s*$/, "");
+      cursorPos = trimmed.length;
+      inputBuffer = trimmed + after;
+      redrawInput();
+      continue;
+    }
+
     if (code === 21) { // Ctrl+U
       inputBuffer = "";
       cursorPos = 0;
@@ -865,6 +876,14 @@ async function initPlayground(containerId) {
   terminal.loadAddon(fitAddon);
   terminal.open(container);
   fitAddon.fit();
+
+  // Prevent browser from closing the tab on Ctrl+W when the terminal is focused;
+  // xterm.js will receive it as code 23 and we handle it as "delete previous word".
+  container.addEventListener("keydown", (ev) => {
+    if (ev.ctrlKey && ev.key === "w") {
+      ev.preventDefault();
+    }
+  }, true);
 
   window.addEventListener("resize", () => fitAddon.fit());
 
