@@ -56,6 +56,7 @@ Click an example to run it in the terminal:
   <button class="playground-example">echo '🍎,🍌,🍒,🥝' | cut -d🍌 -f2</button>
   <button class="playground-example">printf '🍒 cherry\n🍎 apple\n🍌 banana\n' | sort -k2</button>
   <button class="playground-example">date</button>
+  <button class="playground-example">uname -a</button>
 </div>
 
 <script>
