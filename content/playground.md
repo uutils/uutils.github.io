@@ -71,6 +71,21 @@ document.querySelectorAll('.playground-example').forEach(function(btn) {
 });
 </script>
 
+## Sharing commands via URL
+
+You can pre-fill the terminal with a command using the `?cmd=` URL parameter. The command runs automatically when the page loads — great for sharing examples or linking from documentation.
+
+**Examples:**
+
+- [`?cmd=date`](/playground?cmd=date) — show the current date
+- [`?cmd=seq 1 10 | factor`](/playground?cmd=seq%201%2010%20|%20factor) — factorize numbers 1–10
+- [`?cmd=echo 'Hello, world!' | sha256sum`](/playground?cmd=echo%20%27Hello%2C%20world!%27%20|%20sha256sum) — hash a string
+- [`?cmd=sort fruits.txt | uniq -c | sort -rn`](/playground?cmd=sort%20fruits.txt%20|%20uniq%20-c%20|%20sort%20-rn) — count and rank fruit
+
+Multiple commands can be separated by newlines (`%0A` in the URL):
+
+- [`?cmd=echo hello%0Aecho world`](/playground?cmd=echo%20hello%0Aecho%20world) — run two commands in sequence
+
 ## Available commands
 
 The following commands run as **real Rust coreutils compiled to WebAssembly**:
