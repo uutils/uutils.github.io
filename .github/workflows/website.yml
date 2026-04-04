@@ -128,6 +128,12 @@ jobs:
             wasm-opt -Oz ../uutils.github.io/static/wasm/uutils.wasm -o ../uutils.github.io/static/wasm/uutils.wasm
           fi
           echo "WASM binary size: $(du -h ../uutils.github.io/static/wasm/uutils.wasm | cut -f1)"
+          # Generate the list of available locales from .ftl files
+          locales=$(find src/uu/*/locales src/uucore/locales -name '*.ftl' 2>/dev/null \
+            | sed 's|.*/||; s|\.ftl$||' | sort -u | paste -sd, -)
+          echo "const WASM_LOCALES = [$(echo "$locales" | sed 's/[^,]*/\"&\"/g')];" \
+            > ../uutils.github.io/static/wasm/locales.js
+          echo "Available locales: $locales"
         fi
 
     - name: Run Zola
