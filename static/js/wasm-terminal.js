@@ -148,10 +148,31 @@ async function initWasm() {
 function getPersistentDir() {
   if (persistentDir) return persistentDir;
   const encoder = new TextEncoder();
+  // WASI nanosecond timestamp for "now"
+  const nowNs = BigInt(Date.now()) * 1_000_000n;
   const fileEntries = Object.entries(SAMPLE_FILES).map(
-    ([name, content]) => [name, new wasiShim.File(encoder.encode(content))]
+    ([name, content]) => {
+      const file = new wasiShim.File(encoder.encode(content));
+      // browser_wasi_shim leaves timestamps at 0 (epoch 1970);
+      // patch them so ls shows a realistic date.
+      const origStat = file.stat.bind(file);
+      file.stat = () => { const s = origStat(); s.atim = nowNs; s.mtim = nowNs; s.ctim = nowNs; return s; };
+      return [name, file];
+    }
   );
   persistentDir = new wasiShim.PreopenDirectory(".", fileEntries);
+  // Also patch the root directory stat
+  const origDirStat = persistentDir.dir.stat.bind(persistentDir.dir);
+  persistentDir.dir.stat = () => { const s = origDirStat(); s.atim = nowNs; s.mtim = nowNs; s.ctim = nowNs; return s; };
+  // browser_wasi_shim rejects ".." at the root with ERRNO_NOTCAPABLE;
+  // real filesystems resolve it to the root itself. Patch path_filestat_get
+  // and path_open on the OpenDirectory prototype so ".." at root works.
+  const origPfsg = persistentDir.path_filestat_get.bind(persistentDir);
+  persistentDir.path_filestat_get = (flags, path) =>
+    origPfsg(flags, path === ".." ? "." : path);
+  const origPopen = persistentDir.path_open.bind(persistentDir);
+  persistentDir.path_open = (dirflags, path, oflags, base, inheriting, fdflags) =>
+    origPopen(dirflags, path === ".." ? "." : path, oflags, base, inheriting, fdflags);
   return persistentDir;
 }
 
