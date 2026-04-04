@@ -579,6 +579,40 @@ function redrawInput() {
   if (moveBack > 0) terminal.write(`\x1b[${moveBack}D`);
 }
 
+/**
+ * Compute tab-completion result (pure function, no terminal side-effects).
+ * Returns { buffer, cursor, completed, candidates }.
+ */
+function tabComplete(buffer, cursor) {
+  const before = buffer.slice(0, cursor);
+  const after = buffer.slice(cursor);
+  const parts = before.split(/\s+/);
+  const word = parts[parts.length - 1];
+  const isCommand = parts.length <= 1;
+
+  const builtins = ["help", "clear", "cd", "locale"];
+  const candidates = isCommand
+    ? AVAILABLE_COMMANDS.concat(builtins).filter(c => c.startsWith(word))
+    : Object.keys(SAMPLE_FILES).filter(f => f.startsWith(word));
+
+  if (candidates.length === 1) {
+    const suffix = candidates[0].slice(word.length) + " ";
+    return { buffer: before + suffix + after, cursor: cursor + suffix.length, completed: true, candidates };
+  }
+  if (candidates.length > 1) {
+    let common = candidates[0];
+    for (const c of candidates) {
+      while (!c.startsWith(common)) common = common.slice(0, -1);
+    }
+    if (common.length > word.length) {
+      const suffix = common.slice(word.length);
+      return { buffer: before + suffix + after, cursor: cursor + suffix.length, completed: true, candidates };
+    }
+    return { buffer, cursor, completed: false, candidates };
+  }
+  return { buffer, cursor, completed: false, candidates: [] };
+}
+
 async function handleInput(data) {
   for (let i = 0; i < data.length; i++) {
     const ch = data[i];
@@ -659,6 +693,22 @@ async function handleInput(data) {
       terminal.clear();
       prompt();
       terminal.write(inputBuffer);
+      continue;
+    }
+
+    if (code === 9) { // Tab — completion
+      const result = tabComplete(inputBuffer, cursorPos);
+      if (result.completed) {
+        inputBuffer = result.buffer;
+        cursorPos = result.cursor;
+        redrawInput();
+      } else if (result.candidates.length > 1) {
+        terminal.write("\r\n" + result.candidates.join("  ") + "\r\n");
+        prompt();
+        terminal.write(inputBuffer);
+        const back = inputBuffer.length - cursorPos;
+        if (back > 0) terminal.write(`\x1b[${back}D`);
+      }
       continue;
     }
 
@@ -806,4 +856,5 @@ window._uutilsTestInternals = {
   LOCALE_SHORTCUTS,
   SAMPLE_FILES,
   AVAILABLE_COMMANDS,
+  tabComplete,
 };

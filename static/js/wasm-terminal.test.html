@@ -528,6 +528,41 @@ async function runTests() {
   assert("ja shortcut", T.LOCALE_SHORTCUTS["ja"], "ja-JP");
   assert("pt shortcut", T.LOCALE_SHORTCUTS["pt"], "pt-BR");
 
+  // ===== Tab completion =====
+  section("Tab completion");
+
+  const tc = T.tabComplete;
+
+  // Single command match
+  let r = tc("fac", 3);
+  assert("complete 'fac' -> 'factor '", r.buffer, "factor ");
+  assert("complete 'fac' completed", r.completed, true);
+
+  // Single filename match
+  r = tc("cat na", 6);
+  assert("complete 'cat na' -> 'cat names.txt '", r.buffer, "cat names.txt ");
+  assert("complete filename completed", r.completed, true);
+
+  // Multiple matches with common prefix
+  r = tc("sha2", 4);
+  assert("complete 'sha2' partial -> 'sha2'", r.buffer.startsWith("sha2"), true);
+  assert("complete 'sha2' has candidates", r.candidates.length > 1, true);
+
+  // No match
+  r = tc("zzzzz", 5);
+  assert("complete 'zzzzz' no match", r.candidates.length, 0);
+  assert("complete 'zzzzz' not completed", r.completed, false);
+
+  // Builtin completion
+  r = tc("hel", 3);
+  assert("complete 'hel' -> 'help '", r.buffer, "help ");
+
+  // Multiple command matches shown
+  r = tc("sh", 2);
+  assert("complete 'sh' multiple candidates", r.candidates.length > 1, true);
+  assert("complete 'sh' includes shuf", r.candidates.includes("shuf"), true);
+  assert("complete 'sh' includes shred", r.candidates.includes("shred"), true);
+
   // ===== Summary =====
   const summary = document.getElementById("summary");
   const total = passed + failed;
