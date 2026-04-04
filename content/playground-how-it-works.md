@@ -150,6 +150,12 @@ Supported shell features:
 
 **Not** supported (by design, to keep it simple): variables (`$VAR`), subshells, `&&`/`||`, globbing.
 
+### Shell vs. Coreutils: Who Does What?
+
+It's important to understand that **coreutils only provides individual commands** like `sort`, `cat`, `ls`, etc. Features like `if`/`then`/`else`, `while` loops, `for` loops, variable expansion (`$VAR`), and globbing (`*.txt`) are all **shell features** — they are provided by a shell such as Bash or Zsh, not by coreutils.
+
+Since the playground implements only a minimal shell (pipes, redirections, quoting, and a few builtins), these shell constructs are not available. This isn't a limitation of uutils itself — it's simply because the playground's JavaScript shell is intentionally lightweight and doesn't include a full shell language interpreter.
+
 ## The Rust Side: Building Coreutils for WebAssembly
 
 ### Compilation Target
