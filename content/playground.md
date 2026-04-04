@@ -5,22 +5,31 @@ template = "page.html"
 
 <p>Try <a href="https://github.com/uutils/coreutils">uutils coreutils</a> directly in your browser! This interactive terminal runs Rust coreutils via WebAssembly — no installation needed.</p>
 
-<!-- Language selector hidden until l10n is embedded in the WASM binary
 <div class="playground-toolbar">
   <label for="locale-select">Language:</label>
   <select id="locale-select" onchange="setLocale(this.value)">
-    <option value="en-US">English</option>
-    <option value="fr-FR">French</option>
+    <option value="en-US">English (en-US)</option>
   </select>
 </div>
--->
 
 <div id="wasm-playground"></div>
 
+<script src="/wasm/locales.js" defer></script>
 <script src="/js/wasm-terminal.js" defer></script>
 <script defer>
   document.addEventListener("DOMContentLoaded", function() {
     initPlayground("wasm-playground");
+    // Populate the locale dropdown from the build-generated list
+    if (typeof WASM_LOCALES !== "undefined") {
+      var sel = document.getElementById("locale-select");
+      WASM_LOCALES.forEach(function(loc) {
+        if (loc === "en-US") return; // already the default option
+        var opt = document.createElement("option");
+        opt.value = loc;
+        opt.textContent = loc;
+        sel.appendChild(opt);
+      });
+    }
   });
 </script>
 
