@@ -164,15 +164,6 @@ function getPersistentDir() {
   // Also patch the root directory stat
   const origDirStat = persistentDir.dir.stat.bind(persistentDir.dir);
   persistentDir.dir.stat = () => { const s = origDirStat(); s.atim = nowNs; s.mtim = nowNs; s.ctim = nowNs; return s; };
-  // browser_wasi_shim rejects ".." at the root with ERRNO_NOTCAPABLE;
-  // real filesystems resolve it to the root itself. Patch path_filestat_get
-  // and path_open on the OpenDirectory prototype so ".." at root works.
-  const origPfsg = persistentDir.path_filestat_get.bind(persistentDir);
-  persistentDir.path_filestat_get = (flags, path) =>
-    origPfsg(flags, path === ".." ? "." : path);
-  const origPopen = persistentDir.path_open.bind(persistentDir);
-  persistentDir.path_open = (dirflags, path, oflags, base, inheriting, fdflags) =>
-    origPopen(dirflags, path === ".." ? "." : path, oflags, base, inheriting, fdflags);
   return persistentDir;
 }
 
