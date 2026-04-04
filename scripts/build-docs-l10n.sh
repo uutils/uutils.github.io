@@ -240,6 +240,9 @@ for lang in "${!LANG_MAP[@]}"; do
 
   # Build mdbook to a language-specific output directory
   sed -i '/^multilingual/d' docs/book.toml
+  # Strip legacy FA4 `fa` class so mdbook 0.5's Font Awesome parser picks up
+  # the `fa-brands` family for linux/windows/apple icons (avoids WARN spam).
+  find docs/src/utils -name '*.md' -exec sed -i 's|class="fa fa-brands |class="fa-brands |g' {} +
   (cd docs && mdbook build -d "book-${lang}")
 
   # Restore en-US.ftl files for next iteration

@@ -101,6 +101,10 @@ jobs:
         cd docs
         # Remove deprecated 'multilingual' field unsupported by newer mdbook
         sed -i '/^multilingual/d' book.toml
+        # Strip the legacy FA4 `fa` class from uudoc-generated platform icons
+        # so mdbook 0.5's Font Awesome parser picks up the `fa-brands` family
+        # instead of defaulting to `regular` and warning about linux/windows/apple.
+        find src/utils -name '*.md' -exec sed -i 's|class="fa fa-brands |class="fa-brands |g' {} +
         mdbook build
 
     - name: Build Coreutils Docs (translations)
