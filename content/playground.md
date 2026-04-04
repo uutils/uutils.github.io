@@ -91,10 +91,7 @@ The following are **shell builtins** implemented in JavaScript:
 - `help` — list available commands and examples
 - `clear` — clear the terminal screen
 
-Some commands are not yet available in the WASM build because they
-depend on platform-specific syscalls not fully supported by
-WebAssembly/WASI.<br />
-`chcon` and `runcon` are excluded as they require
-SELinux, which is not relevant in a browser environment.<br />
-We are actively working on adding more commands as we improve WASI
-compatibility in uutils coreutils.
+Some commands (ex: `chcon`, `runcon`, etc) are not yet available in the WASM build because they
+depend on platform-specific syscalls not fully supported by WebAssembly/WASI yet.<br />
+
+We are actively working on adding more commands as we improve WASI compatibility in uutils coreutils.
