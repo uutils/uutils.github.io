@@ -20,7 +20,7 @@
 <script>
 (async function() {
 const T = window._uutilsTestInternals;
-const { parseCommandLine, jsFallback, executeCommandLine, resolvePath, lookupDir, getPersistentDir, SAMPLE_FILES, AVAILABLE_COMMANDS } = T;
+const { parseCommandLine, jsFallback, executeCommandLine, resolvePath, lookupDir, getPersistentDir, readVirtualFile, writeVirtualFile, SAMPLE_FILES, AVAILABLE_COMMANDS } = T;
 
 let passed = 0;
 let failed = 0;
@@ -71,53 +71,76 @@ async function runTests() {
   // ===== parseCommandLine =====
   section("parseCommandLine");
 
+  // Helper: extract just args arrays from parsed pipeline for simpler assertions
+  const argsOf = (p) => p.map(s => s.args);
+
   assertDeep("simple command",
-    parseCommandLine("echo hello"),
+    argsOf(parseCommandLine("echo hello")),
     [["echo", "hello"]]);
 
   assertDeep("multiple args",
-    parseCommandLine("wc -l fruits.txt"),
+    argsOf(parseCommandLine("wc -l fruits.txt")),
     [["wc", "-l", "fruits.txt"]]);
 
   assertDeep("pipe",
-    parseCommandLine("echo hello | wc -c"),
+    argsOf(parseCommandLine("echo hello | wc -c")),
     [["echo", "hello"], ["wc", "-c"]]);
 
   assertDeep("double pipe",
-    parseCommandLine("cat file | sort | uniq"),
+    argsOf(parseCommandLine("cat file | sort | uniq")),
     [["cat", "file"], ["sort"], ["uniq"]]);
 
   assertDeep("single quotes",
-    parseCommandLine("echo 'hello world'"),
+    argsOf(parseCommandLine("echo 'hello world'")),
     [["echo", "hello world"]]);
 
   assertDeep("double quotes",
-    parseCommandLine('echo "hello world"'),
+    argsOf(parseCommandLine('echo "hello world"')),
     [["echo", "hello world"]]);
 
   assertDeep("escaped space",
-    parseCommandLine("echo hello\\ world"),
+    argsOf(parseCommandLine("echo hello\\ world")),
     [["echo", "hello world"]]);
 
   assertDeep("mixed quotes",
-    parseCommandLine("echo 'it\"s' \"a test\""),
+    argsOf(parseCommandLine("echo 'it\"s' \"a test\"")),
     [["echo", 'it"s', "a test"]]);
 
   assertDeep("empty input",
-    parseCommandLine(""),
+    argsOf(parseCommandLine("")),
     [[]]);
 
   assertDeep("multiple spaces",
-    parseCommandLine("echo   hello    world"),
+    argsOf(parseCommandLine("echo   hello    world")),
     [["echo", "hello", "world"]]);
 
   assertDeep("pipe inside single quotes is literal",
-    parseCommandLine("echo 'a|b'"),
+    argsOf(parseCommandLine("echo 'a|b'")),
     [["echo", "a|b"]]);
 
   assertDeep("pipe inside double quotes is literal",
-    parseCommandLine('echo "a|b"'),
+    argsOf(parseCommandLine('echo "a|b"')),
     [["echo", "a|b"]]);
+
+  // Redirection parsing
+  let p = parseCommandLine("sort < input.txt");
+  assertDeep("stdin redirect args", p[0].args, ["sort"]);
+  assert("stdin redirect file", p[0].stdin, "input.txt");
+
+  p = parseCommandLine("echo hello > output.txt");
+  assertDeep("stdout redirect args", p[0].args, ["echo", "hello"]);
+  assert("stdout redirect file", p[0].stdout, "output.txt");
+  assert("stdout redirect not append", p[0].append, false);
+
+  p = parseCommandLine("echo hello >> output.txt");
+  assert("append redirect file", p[0].stdout, "output.txt");
+  assert("append redirect flag", p[0].append, true);
+
+  p = parseCommandLine("sort < in.txt | head -3 > out.txt");
+  assert("pipe + redirect: stdin", p[0].stdin, "in.txt");
+  assertDeep("pipe + redirect: first args", p[0].args, ["sort"]);
+  assert("pipe + redirect: stdout", p[1].stdout, "out.txt");
+  assertDeep("pipe + redirect: second args", p[1].args, ["head", "-3"]);
 
   // ===== jsFallback: echo =====
   section("jsFallback: echo");
@@ -577,6 +600,39 @@ async function runTests() {
   assert("complete 'sh' multiple candidates", r.candidates.length > 1, true);
   assert("complete 'sh' includes shuf", r.candidates.includes("shuf"), true);
   assert("complete 'sh' includes shred", r.candidates.includes("shred"), true);
+
+  // ===== I/O redirection =====
+  section("I/O redirection");
+
+  // > creates a file
+  await executeCommandLine("echo 'hello redirect' > redir_test.txt");
+  assert("> creates file",
+    readVirtualFile("redir_test.txt"), "hello redirect\n");
+
+  // < reads from file
+  await assertAsync("< reads file as stdin",
+    executeCommandLine("wc -c < redir_test.txt"),
+    "15\n");
+
+  // >> appends
+  await executeCommandLine("echo 'line2' >> redir_test.txt");
+  assert(">> appends to file",
+    readVirtualFile("redir_test.txt"), "hello redirect\nline2\n");
+
+  // > overwrites
+  await executeCommandLine("echo 'overwritten' > redir_test.txt");
+  assert("> overwrites file",
+    readVirtualFile("redir_test.txt"), "overwritten\n");
+
+  // pipe + redirect
+  await executeCommandLine("echo '3\n1\n2' | sort > sorted.txt");
+  assert("pipe | sort > file",
+    readVirtualFile("sorted.txt"), "1\n2\n3\n");
+
+  // < with nonexistent file
+  await assertAsync("< nonexistent file",
+    executeCommandLine("sort < no_such_file.txt"),
+    "no_such_file.txt: No such file\n");
 
   // ===== Summary =====
   const summary = document.getElementById("summary");

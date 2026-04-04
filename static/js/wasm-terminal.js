@@ -331,47 +331,99 @@ async function runCommand(argv, stdinData = "") {
 
 /**
  * Parse a command line into a pipeline of commands.
- * Supports simple pipes: cmd1 | cmd2 | cmd3
- * Pipes inside quotes are treated as literal characters.
+ * Supports pipes (|), input redirection (<), and output redirection (>, >>).
+ * Returns an array of stages: { args: string[], stdin: string|null, stdout: string|null, append: boolean }
  */
 function parseCommandLine(line) {
-  const pipeline = [[]];
+  // First, tokenize respecting quotes
+  const tokens = [];
   let current = "";
   let inSingle = false;
   let inDouble = false;
   let escape = false;
 
   for (const ch of line) {
-    if (escape) {
-      current += ch;
-      escape = false;
-      continue;
-    }
-    if (ch === "\\" && !inSingle) {
-      escape = true;
-      continue;
-    }
-    if (ch === "'" && !inDouble) {
-      inSingle = !inSingle;
-      continue;
-    }
-    if (ch === '"' && !inSingle) {
-      inDouble = !inDouble;
-      continue;
-    }
-    if (ch === "|" && !inSingle && !inDouble) {
-      if (current) { pipeline[pipeline.length - 1].push(current); current = ""; }
-      pipeline.push([]);
-      continue;
-    }
-    if (ch === " " && !inSingle && !inDouble) {
-      if (current) { pipeline[pipeline.length - 1].push(current); current = ""; }
+    if (escape) { current += ch; escape = false; continue; }
+    if (ch === "\\" && !inSingle) { escape = true; continue; }
+    if (ch === "'" && !inDouble) { inSingle = !inSingle; continue; }
+    if (ch === '"' && !inSingle) { inDouble = !inDouble; continue; }
+    if (!inSingle && !inDouble && (ch === "|" || ch === "<" || ch === ">" || ch === " ")) {
+      if (current) { tokens.push(current); current = ""; }
+      if (ch !== " ") tokens.push(ch);
       continue;
     }
     current += ch;
   }
-  if (current) pipeline[pipeline.length - 1].push(current);
+  if (current) tokens.push(current);
+
+  // Merge >> into a single token
+  for (let i = 0; i < tokens.length - 1; i++) {
+    if (tokens[i] === ">" && tokens[i + 1] === ">") {
+      tokens.splice(i, 2, ">>");
+    }
+  }
+
+  // Split into pipeline stages and extract redirections
+  const pipeline = [];
+  let stage = { args: [], stdin: null, stdout: null, append: false };
+
+  for (let i = 0; i < tokens.length; i++) {
+    const tok = tokens[i];
+    if (tok === "|") {
+      pipeline.push(stage);
+      stage = { args: [], stdin: null, stdout: null, append: false };
+    } else if (tok === "<" && i + 1 < tokens.length) {
+      stage.stdin = tokens[++i];
+    } else if ((tok === ">" || tok === ">>") && i + 1 < tokens.length) {
+      stage.append = tok === ">>";
+      stage.stdout = tokens[++i];
+    } else {
+      stage.args.push(tok);
+    }
+  }
+  pipeline.push(stage);
   return pipeline;
+}
+
+/**
+ * Read a file from the virtual filesystem. Returns its content as a string,
+ * or null if not found.
+ */
+function readVirtualFile(name) {
+  const dir = getPersistentDir();
+  const resolved = resolvePath(name);
+  const parts = resolved.split("/").filter(Boolean);
+  let current = dir.dir;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const entry = current.contents.get(parts[i]);
+    if (!entry || !entry.contents) return null;
+    current = entry;
+  }
+  const file = current.contents.get(parts[parts.length - 1] || name);
+  if (!file || !file.data) return null;
+  return new TextDecoder().decode(file.data);
+}
+
+/**
+ * Write a file to the virtual filesystem.
+ */
+function writeVirtualFile(name, content, append) {
+  const dir = getPersistentDir();
+  const resolved = resolvePath(name);
+  const encoder = new TextEncoder();
+  const existing = dir.dir.contents.get(resolved);
+  let data;
+  if (append && existing && existing.data) {
+    const prev = existing.data;
+    const added = encoder.encode(content);
+    data = new Uint8Array(prev.length + added.length);
+    data.set(prev);
+    data.set(added, prev.length);
+  } else {
+    data = encoder.encode(content);
+  }
+  const file = new wasiShim.File(data);
+  dir.dir.contents.set(resolved, file);
 }
 
 /**
@@ -446,8 +498,16 @@ async function executeCommandLine(line) {
   const pipeline = parseCommandLine(line);
   let stdinData = "";
 
-  for (const args of pipeline) {
+  for (const stage of pipeline) {
+    const { args, stdin: stdinFile, stdout: stdoutFile, append } = stage;
     if (args.length === 0) continue;
+
+    // Handle input redirection: < file
+    if (stdinFile) {
+      const content = readVirtualFile(stdinFile);
+      if (content === null) return `${stdinFile}: No such file\n`;
+      stdinData = content;
+    }
 
     const cmd = args[0];
 
@@ -472,20 +532,24 @@ async function executeCommandLine(line) {
           return result.stderr + result.stdout;
         }
         stdinData = result.stdout;
-        continue;
       } catch (e) {
         return `Error running '${cmd}': ${e.message}\n`;
       }
+    } else {
+      // JS fallback for commands not in the WASM build or when WASM isn't ready
+      const result = jsFallback(args, stdinData);
+      if (result !== null) {
+        stdinData = result;
+      } else {
+        return `uutils: command not found: ${cmd}\nType 'help' for available commands.\n`;
+      }
     }
 
-    // JS fallback for commands not in the WASM build or when WASM isn't ready
-    const result = jsFallback(args, stdinData);
-    if (result !== null) {
-      stdinData = result;
-      continue;
+    // Handle output redirection: > file or >> file
+    if (stdoutFile) {
+      writeVirtualFile(stdoutFile, stdinData, append);
+      stdinData = "";
     }
-
-    return `uutils: command not found: ${cmd}\nType 'help' for available commands.\n`;
   }
 
   return stdinData;
@@ -880,6 +944,8 @@ window._uutilsTestInternals = {
   resolvePath,
   lookupDir,
   getPersistentDir,
+  readVirtualFile,
+  writeVirtualFile,
   get cwd() { return cwd; },
   set cwd(v) { cwd = v; },
   get locale() { return currentLocale; },
