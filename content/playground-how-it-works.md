@@ -95,7 +95,7 @@ sequenceDiagram
 Key details:
 
 - **Pipeline execution**: each pipe stage is a fresh WASM instantiation. The stdout of one stage becomes the stdin of the next.
-- **Command dispatch**: every command goes through `["coreutils", command, ...args]` — the WASM binary is a multicall binary, similar to BusyBox.
+- **Command dispatch**: every command goes through `["coreutils", command, ...args]` - the WASM binary is a multicall binary, similar to BusyBox.
 - **Path resolution**: relative paths are resolved against a virtual `cwd` maintained by the JS shell.
 
 ## WASM Loading & Initialization
@@ -140,21 +140,21 @@ flowchart LR
 </pre>
 
 Supported shell features:
-- **Pipes** (`|`) — chain commands together
-- **Redirections** (`>`, `>>`, `<`) — write output to files, append, or read input from files
-- **Single quotes** (`'...'`) — literal strings, no escaping
-- **Double quotes** (`"..."`) — literal strings with backslash escaping
-- **Backslash escaping** (`\|`, `\ `) — escape special characters
-- **Tab completion** — commands and filenames
-- **Keyboard shortcuts** — Ctrl+C (cancel), Ctrl+L (clear), Ctrl+U (clear line), arrows (history/cursor)
+- **Pipes** (`|`) - chain commands together
+- **Redirections** (`>`, `>>`, `<`) - write output to files, append, or read input from files
+- **Single quotes** (`'...'`) - literal strings, no escaping
+- **Double quotes** (`"..."`) - literal strings with backslash escaping
+- **Backslash escaping** (`\|`, `\ `) - escape special characters
+- **Tab completion** - commands and filenames
+- **Keyboard shortcuts** - Ctrl+C (cancel), Ctrl+L (clear), Ctrl+U (clear line), arrows (history/cursor)
 
 **Not** supported (by design, to keep it simple): variables (`$VAR`), subshells, `&&`/`||`, globbing.
 
 ### Shell vs. Coreutils: Who Does What?
 
-It's important to understand that **coreutils only provides individual commands** like `sort`, `cat`, `ls`, etc. Features like `if`/`then`/`else`, `while` loops, `for` loops, variable expansion (`$VAR`), and globbing (`*.txt`) are all **shell features** — they are provided by a shell such as Bash or Zsh, not by coreutils.
+It's important to understand that **coreutils only provides individual commands** like `sort`, `cat`, `ls`, etc. Features like `if`/`then`/`else`, `while` loops, `for` loops, variable expansion (`$VAR`), and globbing (`*.txt`) are all **shell features** - they are provided by a shell such as Bash or Zsh, not by coreutils.
 
-Since the playground implements only a minimal shell (pipes, redirections, quoting, and a few builtins), these shell constructs are not available. This isn't a limitation of uutils itself — it's simply because the playground's JavaScript shell is intentionally lightweight and doesn't include a full shell language interpreter.
+Since the playground implements only a minimal shell (pipes, redirections, quoting, and a few builtins), these shell constructs are not available. This isn't a limitation of uutils itself - it's simply because the playground's JavaScript shell is intentionally lightweight and doesn't include a full shell language interpreter.
 
 ## The Rust Side: Building Coreutils for WebAssembly
 
@@ -166,7 +166,7 @@ The uutils coreutils are compiled to **`wasm32-wasip1`** (WebAssembly System Int
 cargo build --target wasm32-wasip1 --features feat_wasm
 ```
 
-This produces a single `uutils.wasm` binary — a **multicall binary** similar to BusyBox, where all 60+ utilities are bundled into one executable.
+This produces a single `uutils.wasm` binary - a **multicall binary** similar to BusyBox, where all 60+ utilities are bundled into one executable.
 
 ### The `feat_wasm` Feature Gate
 
@@ -190,7 +190,7 @@ flowchart LR
     end
 </pre>
 
-Utilities are excluded when they depend on OS-level syscalls not available in WASI — for example, `df` needs filesystem stats, `du` needs directory traversal with metadata, and `chown`/`chcon` need permission and SELinux APIs.
+Utilities are excluded when they depend on OS-level syscalls not available in WASI - for example, `df` needs filesystem stats, `du` needs directory traversal with metadata, and `chown`/`chcon` need permission and SELinux APIs.
 
 ### Multicall Binary: How Command Dispatch Works
 
@@ -215,8 +215,8 @@ type UtilityMap<T> = phf::OrderedMap<
 ```
 
 Each entry maps a utility name (e.g. `"sort"`) to a pair of functions:
-- **`uumain`** — the utility's entry point, taking argument iterators and returning an exit code
-- **`uu_app`** — returns the `clap::Command` definition for argument parsing and help
+- **`uumain`** - the utility's entry point, taking argument iterators and returning an exit code
+- **`uu_app`** - returns the `clap::Command` definition for argument parsing and help
 
 At **runtime**, the multicall binary reads `argv` to determine which utility to invoke. In the browser, the JavaScript shell calls the WASM binary as `["coreutils", "sort", "-rn"]`, so `argv[1]` becomes the dispatch key.
 
@@ -238,7 +238,7 @@ fn follow() { /* no-op stub */ }
 use hostname::get;
 ```
 
-These stubs mean the utilities gracefully degrade rather than crash — `tail -f` simply won't follow, `cp` won't create symlinks, and `ls` won't show hostname information.
+These stubs mean the utilities gracefully degrade rather than crash - `tail -f` simply won't follow, `cp` won't create symlinks, and `ls` won't show hostname information.
 
 ### Localization: Embedding All Translations
 
@@ -258,5 +258,5 @@ flowchart TB
     end
 </pre>
 
-On native platforms, `uucore`'s build script embeds only the [Fluent](https://projectfluent.org/) (`.ftl`) translation files matching the user's `LANG` environment variable, to keep the binary small. For WASI builds, **all locale files are embedded**, because the target locale isn't known at compile time — the playground user can switch languages at runtime via the locale dropdown or the `locale` command.
+On native platforms, `uucore`'s build script embeds only the [Fluent](https://projectfluent.org/) (`.ftl`) translation files matching the user's `LANG` environment variable, to keep the binary small. For WASI builds, **all locale files are embedded**, because the target locale isn't known at compile time - the playground user can switch languages at runtime via the locale dropdown or the `locale` command.
 
