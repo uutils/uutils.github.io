@@ -107,9 +107,11 @@ The following are **shell builtins** implemented in JavaScript:
 
 - `help` - list available commands and examples
 - `clear` - clear the terminal screen
+- `cd` - change the current working directory
+- `locale` - show or change the current locale
 
-Some commands (ex: `chcon`, `runcon`, etc) are not yet available in the WASM build because they
-depend on platform-specific syscalls not fully supported by WebAssembly/WASI yet.<br />
+Some commands (e.g. `chcon`, `runcon`, etc.) are not yet available in the WASM build because they
+depend on platform-specific syscalls not fully supported by WebAssembly/WASI.
 
 We are actively working on adding more commands as we improve WASI compatibility in uutils coreutils.
 
