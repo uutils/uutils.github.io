@@ -29,7 +29,7 @@ C has served us well for decades, but it is time to move on. For new generations
 
 This is not about fighting the GNU project. It is not primarily about security (GNU coreutils only had 17 CVEs since 2003) or about license debates. It is about **modernizing foundational software** so it can be maintained and improved by the next generation of contributors.
 
-Ubuntu is already [carefully but purposefully adopting](https://ubuntu.com/blog/oxidising-ubuntu) uutils coreutils, and Debian is following the same path.
+Ubuntu is already [carefully but purposefully adopting](https://discourse.ubuntu.com/t/carefully-but-purposefully-oxidising-ubuntu/56995) uutils coreutils, and Debian is following the same path.
 
 # Projects
 
