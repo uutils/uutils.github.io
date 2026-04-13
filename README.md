@@ -14,6 +14,13 @@ cd docs
 mdbook build
 ```
 
+## Playground
+
+An in-browser playground runs the uutils coreutils WASM build directly in your browser:
+https://uutils.github.io/playground/
+
+See also how it works: https://uutils.github.io/playground-how-it-works/
+
 ## Developer documentation:
 
 It is available on:
