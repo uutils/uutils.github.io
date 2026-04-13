@@ -15,7 +15,10 @@ template = "page.html"
 
 <div id="wasm-playground"></div>
 
+<p class="playground-version" id="playground-version"></p>
+
 <script src="/wasm/locales.js" defer></script>
+<script src="/wasm/version.js" defer></script>
 <script src="/js/wasm-terminal.js" defer></script>
 <script defer>
   document.addEventListener("DOMContentLoaded", function() {
@@ -30,6 +33,14 @@ template = "page.html"
         opt.textContent = loc;
         sel.appendChild(opt);
       });
+    }
+    // Show the uutils commit that was used to build the WASM binary
+    if (typeof UUTILS_WASM_VERSION !== "undefined") {
+      var el = document.getElementById("playground-version");
+      var date = UUTILS_WASM_VERSION.date.split("T")[0];
+      var url = "https://github.com/uutils/coreutils/commit/" + UUTILS_WASM_VERSION.commit;
+      el.innerHTML = 'Built from uutils/coreutils <a href="' + url + '"><code>' +
+        UUTILS_WASM_VERSION.short + '</code></a> (' + date + ')';
     }
   });
 </script>
