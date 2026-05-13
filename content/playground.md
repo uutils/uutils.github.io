@@ -37,7 +37,7 @@ template = "page.html"
     }
     // Populate the "Available commands" list from the build-generated list
     if (typeof WASM_COMMANDS !== "undefined" && Array.isArray(WASM_COMMANDS)) {
-      var listEl = document.getElementById("available-commands");
+      var listEl = document.getElementById("wasm-commands-list");
       if (listEl) {
         listEl.innerHTML = WASM_COMMANDS.slice().sort().map(function(c) {
           return "<code>" + c + "</code>";
@@ -113,7 +113,7 @@ Multiple commands can be separated by newlines (`%0A` in the URL):
 
 The following commands run as **real Rust coreutils compiled to WebAssembly**:
 
-<p id="available-commands">Loading the list of available commands…</p>
+<p id="wasm-commands-list">Loading the list of available commands…</p>
 
 The following are **shell builtins** implemented in JavaScript:
 
