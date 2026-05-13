@@ -35,6 +35,15 @@ template = "page.html"
         sel.appendChild(opt);
       });
     }
+    // Populate the "Available commands" list from the build-generated list
+    if (typeof WASM_COMMANDS !== "undefined" && Array.isArray(WASM_COMMANDS)) {
+      var listEl = document.getElementById("available-commands");
+      if (listEl) {
+        listEl.innerHTML = WASM_COMMANDS.slice().sort().map(function(c) {
+          return "<code>" + c + "</code>";
+        }).join(" ");
+      }
+    }
     // Show the uutils commit that was used to build the WASM binary
     if (typeof UUTILS_WASM_VERSION !== "undefined") {
       var el = document.getElementById("playground-version");
@@ -104,16 +113,7 @@ Multiple commands can be separated by newlines (`%0A` in the URL):
 
 The following commands run as **real Rust coreutils compiled to WebAssembly**:
 
-`arch` `b2sum` `base32` `base64` `basenc` `basename` `cat` `cksum`
-`comm` `cp` `csplit` `cut` `date` `dd` `dir` `dircolors` `dirname`
-`echo` `expand` `expr` `factor` `false` `fmt` `fold` `head`
-`join` `link` `ln` `ls` `md5sum` `mkdir` `mv` `nl` `nproc` `numfmt`
-`od` `paste` `pathchk` `printenv` `printf` `pr` `ptx` `pwd`
-`readlink` `realpath` `rm` `rmdir`
-`seq` `sort` `split` `tail` `touch` `tr` `tsort`
-`sha1sum` `sha224sum` `sha256sum` `sha384sum` `sha512sum`
-`shred` `shuf` `sleep` `sum` `tee` `true` `truncate`
-`uname` `unexpand` `uniq` `unlink` `vdir` `wc`
+<p id="available-commands">Loading the list of available commands…</p>
 
 The following are **shell builtins** implemented in JavaScript:
 
