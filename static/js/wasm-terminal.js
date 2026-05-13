@@ -33,10 +33,13 @@ const SAMPLE_FILES = {
   "words.txt": "hello world\nfoo bar baz\nthe quick brown fox\njumps over the lazy dog\n",
 };
 
-// Commands available in the feat_wasm build
-const AVAILABLE_COMMANDS = [
+// Commands available in the feat_wasm build.
+// The workflow generates /wasm/commands.js from coreutils' Cargo.toml feat_wasm
+// list and exposes it as `WASM_COMMANDS`. The hardcoded list below is a fallback
+// for local dev or when the generated file isn't available.
+const FALLBACK_COMMANDS = [
   "arch", "b2sum", "base32", "base64", "basenc", "basename", "cat", "cksum",
-  "comm", "cp", "csplit", "cut", "date", "dir", "dircolors", "dirname",
+  "comm", "cp", "csplit", "cut", "date", "dd", "dir", "dircolors", "dirname",
   "echo", "expand", "expr", "factor", "false", "fmt", "fold", "head",
   "join", "link", "ln", "ls", "md5sum", "mkdir", "mv", "nl", "numfmt",
   "nproc", "od", "paste", "pathchk", "printenv", "printf", "pr", "ptx", "pwd",
@@ -46,6 +49,10 @@ const AVAILABLE_COMMANDS = [
   "shred", "shuf", "sleep", "sum", "tee", "true", "truncate",
   "uname", "unexpand", "uniq", "unlink", "vdir", "wc",
 ];
+const AVAILABLE_COMMANDS =
+  (typeof WASM_COMMANDS !== "undefined" && Array.isArray(WASM_COMMANDS) && WASM_COMMANDS.length > 0)
+    ? WASM_COMMANDS
+    : FALLBACK_COMMANDS;
 
 // Shortcut mappings for locale command (e.g. "fr" -> "fr-FR")
 const LOCALE_SHORTCUTS = {

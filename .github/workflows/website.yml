@@ -138,6 +138,14 @@ jobs:
           echo "const WASM_LOCALES = [$(echo "$locales" | sed 's/[^,]*/\"&\"/g')];" \
             > ../uutils.github.io/static/wasm/locales.js
           echo "Available locales: $locales"
+          # Generate the list of available commands from the feat_wasm feature
+          # in Cargo.toml so the playground stays in sync with the WASM build.
+          commands=$(sed -n '/^feat_wasm = \[/,/^\]/p' Cargo.toml \
+            | grep -oE '"[a-zA-Z0-9_]+"' | tr -d '"' \
+            | sort -u | paste -sd, -)
+          echo "const WASM_COMMANDS = [$(echo "$commands" | sed 's/[^,]*/\"&\"/g')];" \
+            > ../uutils.github.io/static/wasm/commands.js
+          echo "Available commands: $commands"
           # Record the coreutils commit used to build the WASM binary
           commit_hash=$(git rev-parse HEAD)
           commit_short=$(git rev-parse --short HEAD)

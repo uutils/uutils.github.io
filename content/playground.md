@@ -19,6 +19,7 @@ template = "page.html"
 
 <script src="/wasm/locales.js" defer></script>
 <script src="/wasm/version.js" defer></script>
+<script src="/wasm/commands.js" defer></script>
 <script src="/js/wasm-terminal.js" defer></script>
 <script defer>
   document.addEventListener("DOMContentLoaded", function() {
@@ -104,7 +105,7 @@ Multiple commands can be separated by newlines (`%0A` in the URL):
 The following commands run as **real Rust coreutils compiled to WebAssembly**:
 
 `arch` `b2sum` `base32` `base64` `basenc` `basename` `cat` `cksum`
-`comm` `cp` `csplit` `cut` `date` `dir` `dircolors` `dirname`
+`comm` `cp` `csplit` `cut` `date` `dd` `dir` `dircolors` `dirname`
 `echo` `expand` `expr` `factor` `false` `fmt` `fold` `head`
 `join` `link` `ln` `ls` `md5sum` `mkdir` `mv` `nl` `nproc` `numfmt`
 `od` `paste` `pathchk` `printenv` `printf` `pr` `ptx` `pwd`
