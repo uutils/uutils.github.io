@@ -140,9 +140,13 @@ jobs:
           echo "Available locales: $locales"
           # Generate the list of available commands from the feat_wasm feature
           # in Cargo.toml so the playground stays in sync with the WASM build.
+          # HIDDEN_CMDS: utilities that ship in the binary but we don't want to
+          # advertise in the playground (e.g. `yes` produces infinite output
+          # that just spams the terminal).
+          HIDDEN_CMDS='^(yes)$'
           commands=$(sed -n '/^feat_wasm = \[/,/^\]/p' Cargo.toml \
             | grep -oE '"[a-zA-Z0-9_]+"' | tr -d '"' \
-            | sort -u | paste -sd, -)
+            | sort -u | grep -vE "$HIDDEN_CMDS" | paste -sd, -)
           echo "const WASM_COMMANDS = [$(echo "$commands" | sed 's/[^,]*/\"&\"/g')];" \
             > ../uutils.github.io/static/wasm/commands.js
           echo "Available commands: $commands"
