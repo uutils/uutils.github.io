@@ -154,14 +154,24 @@ jobs:
           commit_hash=$(git rev-parse HEAD)
           commit_short=$(git rev-parse --short HEAD)
           commit_date=$(git show -s --format=%cI HEAD)
+          # Record the uutils.github.io commit the site was built from
+          site_hash=$(git -C ../uutils.github.io rev-parse HEAD)
+          site_short=$(git -C ../uutils.github.io rev-parse --short HEAD)
+          site_date=$(git -C ../uutils.github.io show -s --format=%cI HEAD)
           {
             echo "const UUTILS_WASM_VERSION = {"
             echo "  commit: \"${commit_hash}\","
             echo "  short: \"${commit_short}\","
             echo "  date: \"${commit_date}\""
             echo "};"
+            echo "const SITE_VERSION = {"
+            echo "  commit: \"${site_hash}\","
+            echo "  short: \"${site_short}\","
+            echo "  date: \"${site_date}\""
+            echo "};"
           } > ../uutils.github.io/static/wasm/version.js
           echo "uutils WASM build: ${commit_short} (${commit_date})"
+          echo "site build: ${site_short} (${site_date})"
         fi
 
     - name: Run Zola

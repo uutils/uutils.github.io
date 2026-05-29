@@ -44,13 +44,24 @@ template = "page.html"
         }).join(" ");
       }
     }
-    // Show the uutils commit that was used to build the WASM binary
-    if (typeof UUTILS_WASM_VERSION !== "undefined") {
-      var el = document.getElementById("playground-version");
-      var date = UUTILS_WASM_VERSION.date.split("T")[0];
-      var url = "https://github.com/uutils/coreutils/commit/" + UUTILS_WASM_VERSION.commit;
-      el.innerHTML = 'Built from uutils/coreutils <a href="' + url + '"><code>' +
-        UUTILS_WASM_VERSION.short + '</code></a> (' + date + ')';
+    // Show the uutils commit that was used to build the WASM binary,
+    // and the uutils.github.io commit the site itself was built from.
+    var el = document.getElementById("playground-version");
+    if (el) {
+      var parts = [];
+      if (typeof UUTILS_WASM_VERSION !== "undefined") {
+        var date = UUTILS_WASM_VERSION.date.split("T")[0];
+        var url = "https://github.com/uutils/coreutils/commit/" + UUTILS_WASM_VERSION.commit;
+        parts.push('Built from uutils/coreutils <a href="' + url + '"><code>' +
+          UUTILS_WASM_VERSION.short + '</code></a> (' + date + ')');
+      }
+      if (typeof SITE_VERSION !== "undefined") {
+        var siteDate = SITE_VERSION.date.split("T")[0];
+        var siteUrl = "https://github.com/uutils/uutils.github.io/commit/" + SITE_VERSION.commit;
+        parts.push('site <a href="' + siteUrl + '"><code>' +
+          SITE_VERSION.short + '</code></a> (' + siteDate + ')');
+      }
+      el.innerHTML = parts.join(' &middot; ');
     }
   });
 </script>
