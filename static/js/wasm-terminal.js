@@ -14,6 +14,9 @@ if (typeof SharedArrayBuffer === "undefined") {
 }
 
 const WASM_URL = "/wasm/uutils.wasm";
+// grep ships as its own standalone WASM module (it is not part of the
+// coreutils multicall binary), loaded lazily alongside it.
+const GREP_WASM_URL = "/wasm/grep.wasm";
 const XTERM_CSS = "https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css";
 const XTERM_CSS_INTEGRITY = "sha384-tStR1zLfWgsiXCF3IgfB3lBa8KmBe/lG287CL9WCeKgQYcp1bjb4/+mwN6oti4Co";
 const XTERM_JS = "https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js";
@@ -48,6 +51,7 @@ const FALLBACK_COMMANDS = [
   "sha1sum", "sha224sum", "sha256sum", "sha384sum", "sha512sum",
   "shred", "shuf", "sleep", "sum", "tee", "true", "truncate",
   "uname", "unexpand", "uniq", "unlink", "vdir", "wc",
+  "grep",
 ];
 const AVAILABLE_COMMANDS =
   (typeof WASM_COMMANDS !== "undefined" && Array.isArray(WASM_COMMANDS) && WASM_COMMANDS.length > 0)
@@ -63,6 +67,7 @@ const LOCALE_SHORTCUTS = {
 };
 
 let wasmModule = null;
+let grepModule = null; // standalone grep WASM module (null if unavailable)
 let wasiShim = null;
 let terminal = null;
 let inputBuffer = "";
@@ -111,35 +116,68 @@ async function loadWasiShim() {
   return wasiShim;
 }
 
-async function loadWasm() {
-  if (wasmModule) return wasmModule;
-  const response = await fetch(WASM_URL);
+/**
+ * Fetch and compile a WASM module from the given URL.
+ * Returns { module, size } where size is the downloaded byte length (0 if the
+ * server didn't send a content-length header).
+ */
+async function compileWasmModule(url) {
+  const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch WASM binary: ${response.status}`);
   }
   const contentLength = response.headers.get("content-length");
-  if (contentLength) wasmSize = parseInt(contentLength, 10);
+  const size = contentLength ? parseInt(contentLength, 10) : 0;
   // compileStreaming requires application/wasm content-type; fall back if not set.
   // Clone the response so the fallback path can read the body without re-fetching.
   const cloned = response.clone();
+  let module;
   try {
     if (WebAssembly.compileStreaming) {
-      wasmModule = await WebAssembly.compileStreaming(response);
+      module = await WebAssembly.compileStreaming(response);
     } else {
-      wasmModule = await WebAssembly.compile(await response.arrayBuffer());
+      module = await WebAssembly.compile(await response.arrayBuffer());
     }
   } catch (e) {
     // Some servers don't set proper MIME type, compile from the cloned response
     console.warn("WASM compileStreaming failed, falling back to arrayBuffer:", e.message);
-    wasmModule = await WebAssembly.compile(await cloned.arrayBuffer());
+    module = await WebAssembly.compile(await cloned.arrayBuffer());
   }
+  return { module, size };
+}
+
+async function loadWasm() {
+  if (wasmModule) return wasmModule;
+  const { module, size } = await compileWasmModule(WASM_URL);
+  wasmModule = module;
+  wasmSize = size;
   return wasmModule;
+}
+
+/**
+ * Load the standalone grep WASM module. grep is optional: if the binary isn't
+ * present (e.g. local dev without a CI build), this resolves to null and grep
+ * commands report that they're unavailable rather than breaking the terminal.
+ */
+async function loadGrepWasm() {
+  if (grepModule) return grepModule;
+  try {
+    const { module, size } = await compileWasmModule(GREP_WASM_URL);
+    grepModule = module;
+    wasmSize += size;
+  } catch (e) {
+    console.warn("grep WASM unavailable:", e.message);
+    grepModule = null;
+  }
+  return grepModule;
 }
 
 async function initWasm() {
   if (wasmReady) return;
   try {
-    await Promise.all([loadWasiShim(), loadWasm()]);
+    // grep is optional and loadGrepWasm swallows its own errors, so it never
+    // blocks the coreutils module from becoming ready.
+    await Promise.all([loadWasiShim(), loadWasm(), loadGrepWasm()]);
     wasmReady = true;
   } catch (e) {
     // Will fall back to JS implementations
@@ -218,8 +256,9 @@ function lookupDir(path) {
  * Run a single uutils command via the WASM module using browser_wasi_shim.
  * Returns { stdout: string, stderr: string, exitCode: number }
  */
-async function runCommand(argv, stdinData = "") {
+async function runCommand(argv, stdinData = "", module = wasmModule) {
   if (!wasmReady) throw new Error("WASM not loaded");
+  if (!module) throw new Error("WASM module not loaded");
 
   const encoder = new TextEncoder();
 
@@ -306,7 +345,7 @@ async function runCommand(argv, stdinData = "") {
 
   let exitCode = 0;
   try {
-    const result = await WebAssembly.instantiate(wasmModule, {
+    const result = await WebAssembly.instantiate(module, {
       wasi_snapshot_preview1: wasi.wasiImport,
     });
     // instantiate(Module) returns Instance; instantiate(Buffer) returns {instance}
@@ -453,6 +492,7 @@ async function executeCommandLine(line) {
       "  echo '5 3 1 4 2' | fmt -w1 | sort -n\n" +
       "  wc -l fruits.txt\n" +
       "  seq 1 10 | factor\n" +
+      "  grep -i alice names.txt\n" +
       "  basename /usr/local/bin/rustc\n" +
       "  date\n" +
       "  uname -a\n"
@@ -526,6 +566,13 @@ async function executeCommandLine(line) {
       return `uutils: command not found: ${cmd}\nType 'help' for available commands.\n`;
     }
 
+    // grep is a separate WASM module rather than part of the coreutils
+    // multicall binary.
+    const isGrep = cmd === "grep";
+    if (isGrep && !grepModule) {
+      return "grep is not available in this build.\n";
+    }
+
     try {
       // Resolve relative paths using the virtual cwd
       const resolvedArgs = args.map((arg, i) => {
@@ -539,8 +586,21 @@ async function executeCommandLine(line) {
       if (!hasPathArg && cwd && ["ls", "dir"].includes(cmd)) {
         resolvedArgs.push(cwd);
       }
-      const wasmArgs = ["coreutils", ...resolvedArgs];
-      const result = await runCommand(wasmArgs, stdinData);
+      // grep is invoked directly (argv[0] = "grep"); coreutils utilities go
+      // through the multicall dispatcher (argv = ["coreutils", <util>, ...]).
+      let dispatchArgs = resolvedArgs;
+      if (isGrep) {
+        // browser_wasi_shim reports stdout as a TTY, so grep would emit GNU
+        // match-highlight escape codes by default. That looks fine in the
+        // terminal but corrupts piped/redirected output (e.g. `grep x | wc`),
+        // so default to no color unless the user asks for it explicitly.
+        const hasColorFlag = resolvedArgs.some(a => a === "--color" || a.startsWith("--color="));
+        dispatchArgs = hasColorFlag
+          ? resolvedArgs
+          : [resolvedArgs[0], "--color=never", ...resolvedArgs.slice(1)];
+      }
+      const wasmArgs = isGrep ? dispatchArgs : ["coreutils", ...resolvedArgs];
+      const result = await runCommand(wasmArgs, stdinData, isGrep ? grepModule : wasmModule);
       if (result.stderr) {
         return result.stderr + result.stdout;
       }
@@ -864,6 +924,7 @@ window._uutilsTestInternals = {
   get locale() { return currentLocale; },
   set locale(v) { currentLocale = v; },
   get wasmReady() { return wasmReady; },
+  get grepReady() { return grepModule !== null; },
   initWasm,
   LOCALE_SHORTCUTS,
   SAMPLE_FILES,

@@ -450,6 +450,28 @@ async function runTests() {
         "w\nx\n");
     }
 
+    // ===== grep (standalone WASM module) =====
+    if (T.grepReady) {
+      section("grep WASM module");
+
+      assert("grep in AVAILABLE_COMMANDS",
+        AVAILABLE_COMMANDS.includes("grep"), true);
+
+      await assertAsync("grep from file",
+        executeCommandLine("grep Alice names.txt"),
+        "Alice\n");
+
+      await assertAsync("grep -i from stdin",
+        executeCommandLine("echo 'APPLE\npear\nApricot' | grep -i ap"),
+        "APPLE\nApricot\n");
+
+      await assertAsync("grep regex via pipe",
+        executeCommandLine("echo 'foo1\nbar\nfoo2' | grep 'foo[0-9]'"),
+        "foo1\nfoo2\n");
+    } else {
+      section("grep WASM module (SKIPPED - grep.wasm not loaded)");
+    }
+
   } else {
     section("l10n WASM integration (SKIPPED - WASM not loaded)");
   }

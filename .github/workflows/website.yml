@@ -43,6 +43,13 @@ jobs:
         path: './findutils'
         fetch-depth: 0
 
+    - name: Checkout Grep Repository
+      uses: actions/checkout@v6
+      with:
+        repository: uutils/grep
+        path: './grep'
+        fetch-depth: 0
+
     - name: Install `rust` toolchain
       uses: dtolnay/rust-toolchain@stable
       with:
@@ -172,6 +179,39 @@ jobs:
           } > ../uutils.github.io/static/wasm/version.js
           echo "uutils WASM build: ${commit_short} (${commit_date})"
           echo "site build: ${site_short} (${site_date})"
+        fi
+
+    - name: Build grep WASM binary
+      run: |
+        # uutils grep is a standalone binary (not part of the coreutils
+        # multicall) and depends on the Oniguruma C library (onig_sys), so the
+        # WASM build needs a WASI sysroot to compile the bundled C sources.
+        WASI_SDK_VERSION=25
+        WASI_SDK_DIR="wasi-sdk-${WASI_SDK_VERSION}.0-x86_64-linux"
+        curl -sL "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_SDK_VERSION}/${WASI_SDK_DIR}.tar.gz" | tar xz
+        export WASI_SDK_PATH="$PWD/${WASI_SDK_DIR}"
+        export CC_wasm32_wasip1="$WASI_SDK_PATH/bin/clang"
+        export CFLAGS_wasm32_wasip1="--sysroot=$WASI_SDK_PATH/share/wasi-sysroot"
+        cd grep
+        cargo build --release --target wasm32-wasip1 --bin grep
+        if [ -f target/wasm32-wasip1/release/grep.wasm ]; then
+          mkdir -p ../uutils.github.io/static/wasm
+          cp target/wasm32-wasip1/release/grep.wasm ../uutils.github.io/static/wasm/grep.wasm
+          # Optimize WASM size if wasm-opt is available
+          if command -v wasm-opt &> /dev/null; then
+            wasm-opt -Oz ../uutils.github.io/static/wasm/grep.wasm -o ../uutils.github.io/static/wasm/grep.wasm
+          fi
+          echo "grep WASM binary size: $(du -h ../uutils.github.io/static/wasm/grep.wasm | cut -f1)"
+          # Advertise grep in the playground's command list. grep ships as its
+          # own WASM module, so it isn't picked up by the coreutils feat_wasm
+          # scan above; append it to the generated list here.
+          commands_js=../uutils.github.io/static/wasm/commands.js
+          if [ -f "$commands_js" ]; then
+            existing=$(sed -n 's/^const WASM_COMMANDS = \[\(.*\)\];$/\1/p' "$commands_js")
+            echo "const WASM_COMMANDS = [${existing}, \"grep\"];" > "$commands_js"
+          else
+            echo 'const WASM_COMMANDS = ["grep"];' > "$commands_js"
+          fi
         fi
 
     - name: Run Zola
