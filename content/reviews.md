@@ -1,0 +1,108 @@
++++
+title = "Review Guidelines"
+template = "page.html"
++++
+
+This page describes what we expect from pull requests across the uutils
+projects ([coreutils](https://github.com/uutils/coreutils),
+[findutils](https://github.com/uutils/findutils) and the others) and how reviews
+are carried out. It is meant for both **contributors** who want to know what a
+reviewer looks for, and **reviewers** who want a shared checklist. Each
+project's `CONTRIBUTING.md` links here; the rules below apply to all of them.
+
+## The one rule that cannot be bent
+
+> uutils is **original** code. We **cannot** accept any change based on the GNU
+> source code, and you **must not even link to** the GNU source in an issue or
+> PR. A reviewer will reject a contribution that appears to be derived from GNU
+> (or any other strongly-licensed implementation such as GPL/LGPL code).
+
+It is fine to look at permissively-licensed implementations
+([Apple's file_cmds](https://github.com/apple-oss-distributions/file_cmds/),
+[OpenBSD](https://github.com/openbsd/src/tree/master/bin)) and to read the GNU
+*manuals* and man pages — just never the GNU *source*.
+
+## What a reviewer expects before merging
+
+A pull request is ready to be merged when it meets all of the following. If you
+check these before requesting a review, your PR will move much faster.
+
+- **It passes CI.** The test suite is green (allowing for intermittently
+  failing tests), `rustfmt` is satisfied, and there are no `clippy` warnings.
+- **It compiles without warnings on every CI platform.** Use `#[cfg(...)]` for
+  platform-specific code rather than breaking other targets.
+- **It is small and self-contained.** A series of small PRs gets merged far
+  faster than one large one. Unrelated changes belong in separate PRs.
+- **It has a descriptive title.** Describe the problem solved, e.g.
+  `ls: fix version sort order`, not `Fix #1234`. Prefix with the utility name
+  when relevant.
+- **New behavior comes with tests.** Our test suite is fast; regressions should
+  be caught by a test. Code coverage should not regress.
+- **If possible, it was discussed first.** For anything non-trivial, open (or comment on) an
+  issue *before* writing the code, so effort isn't wasted on a change we can't
+  merge.
+- **It follows GNU behavior** for options and output, verified against the GNU
+  manual or output — never the GNU source.
+
+### Commit hygiene reviewers care about
+
+- Small, atomic commits with a clean history.
+- Informative messages annotated with the component, e.g.
+  `cp: do not overwrite with -i` or `uucore: add support for FreeBSD`.
+- Don't move code around unnecessarily - it makes diffs hard to review. If a
+  move is needed, do it in its own commit.
+
+### Coding expectations reviewers check against
+
+- **No `panic!`** - avoid `.unwrap()`, `panic!` and stray `println!`. A
+  justified `unreachable!` needs a comment.
+- **No `exit`** - utilities must be embeddable, so avoid `std::process::exit`
+  and friends.
+- **Minimal `unsafe`** - generally only for FFI, always with a `// SAFETY:`
+  comment. Performance is rarely a good enough reason.
+- **`OsStr`/`Path` over `str`/`String`** for paths, since paths may not be valid
+  UTF-8.
+- **Macros sparingly**, and **comments that explain *why***, kept up to date.
+
+## For contributors: getting your PR reviewed
+
+- You don't need to ping a maintainer the moment you open a PR.
+- If you get no response within a few days, it's fine to request a review.
+- If after a week there's still no review, ping the maintainers on
+  [Discord](https://discord.gg/wQVJbvJ) (`#coreutils-chat` for coreutils).
+- You know your code best - please resolve merge conflicts on your branch
+  yourself (`git merge main` or `git rebase main`, your choice). Ask for help if
+  you get stuck.
+- When you address review feedback, fold the fixes into the relevant commits
+  (`git commit --fixup` / `git absorb`) to keep history clean.
+
+## For reviewers: how we review
+
+- **Double-check a human's work.** A reviewer is there to verify a contributor's
+  reasoning, not to launder unreviewed machine output. Expect the author to be
+  able to explain and justify every line.
+- **Watch for GNU/GPL provenance.** Be especially careful with AI-assisted
+  patches: assistants are trained on GPL sources and can reproduce them
+  verbatim, which we cannot accept.
+- **Keep comments short and actionable.** Prefer simple, one-line comments on
+  the specific line, so the author knows exactly what to change.
+- **Push back on** long-winded code, duplication, needless complexity, and
+  changes that arrive without tests.
+- **Confirm the basics** from the checklist above (CI, scope, title, tests,
+  style) rather than re-deriving them each time.
+
+## AI-assisted contributions
+
+AI-assisted contributions are allowed, but the same standards apply as for any
+other patch. If you use an AI tool, **you** are responsible for the result: you
+should understand every line, be able to justify it in review, and make sure the
+output is not derived from GNU or other GPL code. Keep patches small and
+self-review the diff carefully before opening the PR.
+
+## See also
+
+- The full `CONTRIBUTING.md` in each repository
+  ([coreutils](https://github.com/uutils/coreutils/blob/main/CONTRIBUTING.md),
+  [findutils](https://github.com/uutils/findutils/blob/main/CONTRIBUTING.md))
+- `DEVELOPMENT.md` for setting up your environment
+- Our [Code of Conduct](https://github.com/uutils/coreutils/blob/main/CODE_OF_CONDUCT.md)
