@@ -86,6 +86,9 @@ check these before requesting a review, your PR will move much faster.
 - **`OsStr`/`Path` over `str`/`String`** for paths, since paths may not be valid
   UTF-8.
 - **Macros sparingly**, and **comments that explain *why***, kept up to date.
+- **Don't silence clippy with `#[allow(...)]`.** In particular, we don't want to
+  see `#[allow(dead_code)]`; fix the underlying issue (or remove the unused code)
+  instead of suppressing the lint.
 
 ## For contributors: getting your PR reviewed
 
