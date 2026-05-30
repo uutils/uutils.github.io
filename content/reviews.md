@@ -131,6 +131,10 @@ replies to reviewers should be written in **your own words**. The whole point of
 review discussion is to confirm that a human understands the change; generated
 prose defeats that.
 
+This is not about English fluency: if you are not a native speaker, using a tool
+to fix grammar or translate your own words is fine. The point is that the ideas
+and reasoning should be yours, not an AI's.
+
 ## See also
 
 - The full `CONTRIBUTING.md` in each repository
