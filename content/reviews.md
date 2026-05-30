@@ -47,6 +47,9 @@ check these before requesting a review, your PR will move much faster.
   tracked with `remaining-gnu-error.py`) should not go backwards; a
   compatibility fix should ideally add the now-passing test. Error messages and
   exit codes should match GNU, checked with `LANG=C` (except for locale bugs).
+- If the GNU test suite passes but you still found a behavior difference, that is
+  a gap in their coverage: please contribute the missing test upstream to GNU to
+  improve their test suite.
 - **It updates docs, help and translations.** A new option or behavior should
   also update the `--help` text, the documentation, the generated man pages, and
   at least the English `locales/en-US.ftl` strings.
