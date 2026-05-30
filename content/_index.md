@@ -100,6 +100,12 @@ Ubuntu is already [carefully but purposefully adopting](https://discourse.ubuntu
       BSD utility programs: <code>cal</code>, <code>logger</code>, <code>script</code>, <code>wall</code> and more.
     </p>
   </a>
+  <a class="project" href="/shadow-rs">
+    <h2>shadow-rs</h2>
+    <p>
+      User and group management: <code>useradd</code>, <code>passwd</code>, <code>groupadd</code>, <code>usermod</code> and more.
+    </p>
+  </a>
 </div>
 
 # Crates
