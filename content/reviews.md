@@ -123,6 +123,11 @@ output is not derived from GNU or other GPL code. Keep patches small and
 self-review the diff carefully before opening the PR. Commit messages and PR
 descriptions should describe the change, not the tooling used to produce it.
 
+AI is a tool for writing *code*. Issue reports, pull request descriptions, and
+replies to reviewers should be written in **your own words**. The whole point of
+review discussion is to confirm that a human understands the change; generated
+prose defeats that.
+
 ## See also
 
 - The full `CONTRIBUTING.md` in each repository
