@@ -135,6 +135,11 @@ This is not about English fluency: if you are not a native speaker, using a tool
 to fix grammar or translate your own words is fine. The point is that the ideas
 and reasoning should be yours, not an AI's.
 
+This section is inspired by the
+[astral-sh AI policy](https://github.com/astral-sh/.github/blob/main/AI_POLICY.md)
+and Mozilla's
+[AI coding guidance](https://firefox-source-docs.mozilla.org/contributing/ai-coding.html).
+
 ## See also
 
 - The full `CONTRIBUTING.md` in each repository
