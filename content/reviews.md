@@ -43,6 +43,18 @@ check these before requesting a review, your PR will move much faster.
   merge.
 - **It follows GNU behavior** for options and output, verified against the GNU
   manual or output - never the GNU source.
+- **GNU compatibility does not regress.** The GNU test suite (`run-gnu-test.sh`,
+  tracked with `remaining-gnu-error.py`) should not go backwards; a
+  compatibility fix should ideally add the now-passing test. Error messages and
+  exit codes should match GNU, checked with `LANG=C` (except for locale bugs).
+- **It updates docs, help and translations.** A new option or behavior should
+  also update the `--help` text, the documentation, the generated man pages, and
+  at least the English `locales/en-US.ftl` strings.
+- **It stays focused.** Keep formatting-only changes, unrelated refactors, and
+  dependency or lockfile bumps out of a feature or fix PR.
+- **It is safe with untrusted input.** Utilities process arbitrary file contents
+  and arguments, so avoid unbounded allocations, integer overflow, and
+  path-traversal foot-guns.
 - **It does not regress performance.** Runtime should not get more than **3%**
   slower than the current `main`. Increased memory usage is acceptable when it is
   justified (e.g. it buys a meaningful speed-up or is needed for correctness).
@@ -108,7 +120,8 @@ AI-assisted contributions are allowed, but the same standards apply as for any
 other patch. If you use an AI tool, **you** are responsible for the result: you
 should understand every line, be able to justify it in review, and make sure the
 output is not derived from GNU or other GPL code. Keep patches small and
-self-review the diff carefully before opening the PR.
+self-review the diff carefully before opening the PR. Commit messages and PR
+descriptions should describe the change, not the tooling used to produce it.
 
 ## See also
 
