@@ -20,7 +20,7 @@ project's `CONTRIBUTING.md` links here; the rules below apply to all of them.
 It is fine to look at permissively-licensed implementations
 ([Apple's file_cmds](https://github.com/apple-oss-distributions/file_cmds/),
 [OpenBSD](https://github.com/openbsd/src/tree/master/bin)) and to read the GNU
-*manuals* and man pages — just never the GNU *source*.
+*manuals* and man pages - just never the GNU *source*.
 
 ## What a reviewer expects before merging
 
@@ -42,7 +42,18 @@ check these before requesting a review, your PR will move much faster.
   issue *before* writing the code, so effort isn't wasted on a change we can't
   merge.
 - **It follows GNU behavior** for options and output, verified against the GNU
-  manual or output — never the GNU source.
+  manual or output - never the GNU source.
+- **It does not regress performance.** Runtime should not get more than **3%**
+  slower than the current `main`. Increased memory usage is acceptable when it is
+  justified (e.g. it buys a meaningful speed-up or is needed for correctness).
+- **It does not regress binary size.** The compiled binary should not grow more
+  than **3%** compared to the current `main`, unless the increase is justified by
+  the change.
+- **New dependencies must be discussed and justified.** Adding a crate is not
+  free - it affects build time, binary size, the audit surface, and licensing.
+  Raise it first, explain why it's needed and why an existing dependency or a
+  small amount of in-tree code won't do, and make sure its license is compatible
+  (see Licensing in each project's `CONTRIBUTING.md`).
 
 ### Commit hygiene reviewers care about
 
