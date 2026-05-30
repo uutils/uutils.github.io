@@ -113,6 +113,9 @@ check these before requesting a review, your PR will move much faster.
   changes that arrive without tests.
 - **Confirm the basics** from the checklist above (CI, scope, title, tests,
   style) rather than re-deriving them each time.
+- **Disregard machine-generated discussion.** Review comments and replies should
+  come from a person. Maintainers may hide or ignore comments that read as
+  AI-generated.
 
 ## AI-assisted contributions
 
