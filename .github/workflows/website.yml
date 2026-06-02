@@ -212,6 +212,19 @@ jobs:
           else
             echo 'const WASM_COMMANDS = ["grep"];' > "$commands_js"
           fi
+          # Record the grep commit used to build its WASM module so the
+          # playground can show it alongside the coreutils build.
+          grep_hash=$(git rev-parse HEAD)
+          grep_short=$(git rev-parse --short HEAD)
+          grep_date=$(git show -s --format=%cI HEAD)
+          {
+            echo "const UUTILS_GREP_VERSION = {"
+            echo "  commit: \"${grep_hash}\","
+            echo "  short: \"${grep_short}\","
+            echo "  date: \"${grep_date}\""
+            echo "};"
+          } >> ../uutils.github.io/static/wasm/version.js
+          echo "grep WASM build: ${grep_short} (${grep_date})"
         fi
 
     - name: Run Zola

@@ -55,6 +55,12 @@ template = "page.html"
         parts.push('Built from uutils/coreutils <a href="' + url + '"><code>' +
           UUTILS_WASM_VERSION.short + '</code></a> (' + date + ')');
       }
+      if (typeof UUTILS_GREP_VERSION !== "undefined") {
+        var grepDate = UUTILS_GREP_VERSION.date.split("T")[0];
+        var grepUrl = "https://github.com/uutils/grep/commit/" + UUTILS_GREP_VERSION.commit;
+        parts.push('grep <a href="' + grepUrl + '"><code>' +
+          UUTILS_GREP_VERSION.short + '</code></a> (' + grepDate + ')');
+      }
       if (typeof SITE_VERSION !== "undefined") {
         var siteDate = SITE_VERSION.date.split("T")[0];
         var siteUrl = "https://github.com/uutils/uutils.github.io/commit/" + SITE_VERSION.commit;
