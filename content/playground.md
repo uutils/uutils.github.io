@@ -104,6 +104,10 @@ Click an example to run it in the terminal:
 document.querySelectorAll('.playground-example').forEach(function(btn) {
   btn.addEventListener('click', function() {
     var cmd = btn.textContent;
+    // Reflect the clicked example in the URL so it can be shared/bookmarked.
+    var url = new URL(window.location.href);
+    url.searchParams.set('cmd', cmd);
+    history.replaceState(null, '', url);
     document.getElementById('wasm-playground').scrollIntoView({ behavior: 'smooth' });
     if (window.runInTerminal) {
       window.runInTerminal(cmd);
