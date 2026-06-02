@@ -107,7 +107,7 @@ document.querySelectorAll('.playground-example').forEach(function(btn) {
     // Reflect the clicked example in the URL so it can be shared/bookmarked.
     var url = new URL(window.location.href);
     url.searchParams.set('cmd', cmd);
-    history.replaceState(null, '', url);
+    window.history.replaceState(null, '', url);
     document.getElementById('wasm-playground').scrollIntoView({ behavior: 'smooth' });
     if (window.runInTerminal) {
       window.runInTerminal(cmd);
