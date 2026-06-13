@@ -17,7 +17,15 @@ template = "page.html"
   <span class="playground-loaders-label">Extra programs:</span>
 </div>
 
-<div id="wasm-playground"></div>
+<div class="term term-playground">
+  <div class="term-bar">
+    <span class="t">user@uutils: ~</span>
+    <span class="win-btn" title="Minimize"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 11h8"/></svg></span>
+    <span class="win-btn" title="Maximize"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="4.5" y="4.5" width="7" height="7" rx="1"/></svg></span>
+    <span class="win-btn close" title="Close"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7"/></svg></span>
+  </div>
+  <div id="wasm-playground"></div>
+</div>
 
 <p class="playground-version" id="playground-version"></p>
 
