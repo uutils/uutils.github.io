@@ -3,18 +3,25 @@ title = "Home"
 template = "index.html"
 +++
 
-<div class="hero">
-    <picture>
-        <source srcset="logo-dark.svg" media="(prefers-color-scheme: dark)">
-        <img src="logo.svg" alt="uutils logo">
-    </picture>
-    <div class="hero-prompt"><span class="pr">user@machine</span>:~$ uutils --about</div>
-    <div class="hero-title">uutils<span class="hero-cursor">_</span></div>
-    <p class="hero-tagline">Cross-platform Rust reimplementations of the command-line tools you use every day, with full GNU compatibility.</p>
-    <div class="hero-cta">
+<div class="term term-hero">
+  <div class="term-bar">
+    <span class="t">uutils --about</span>
+    <span class="win-btn" title="Minimize"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 11h8"/></svg></span>
+    <span class="win-btn" title="Maximize"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="4.5" y="4.5" width="7" height="7" rx="1"/></svg></span>
+    <span class="win-btn close" title="Close"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7"/></svg></span>
+  </div>
+  <div class="term-body">
+    <div class="hero">
+      <img src="logo-dark.svg" alt="uutils logo">
+      <div class="hero-prompt"><span class="pr">user@machine</span>:~$ uutils --about</div>
+      <div class="hero-title">uutils<span class="hero-cursor">_</span></div>
+      <p class="hero-tagline">Cross-platform Rust reimplementations of the command-line tools you use every day, with full GNU compatibility.</p>
+      <div class="hero-cta">
         <a class="btn btn-primary" href="/playground">Try the playground</a>
         <a class="btn btn-ghost" href="https://github.com/uutils">View on GitHub</a>
+      </div>
     </div>
+  </div>
 </div>
 
 The uutils project reimplements ubiquitous command line utilities in
