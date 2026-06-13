@@ -3,6 +3,9 @@
 title = "findutils"
 template = "project.html"
 
+[extra]
+status = "beta"
+
 +++
 
 Rust implementation of GNU findutils: `xargs`, `find`, `locate` and `updatedb`.

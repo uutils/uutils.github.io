@@ -3,6 +3,9 @@
 title = "diffutils"
 template = "project.html"
 
+[extra]
+status = "beta"
+
 +++
 
 Rust implementation of GNU diffutils: `diff`, `cmp`, `diff3` and `sdiff`.
