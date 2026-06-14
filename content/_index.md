@@ -95,7 +95,7 @@ Everything happens in the open on [GitHub](https://github.com/uutils), and newco
 
 You can help us out by:
 
-- [Tackling a good first issue](https://github.com/uutils/coreutils/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) (the easiest way to get started)
+- [Tackling a good first issue](https://github.com/search?q=org%3Auutils+is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22&type=issues) across any of our projects (the easiest way to get started)
 - Contributing code
 - Contributing documentation
 - Reporting bugs (e.g. incompatibilities with GNU utilities)
