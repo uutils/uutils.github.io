@@ -61,6 +61,12 @@ template = "page.html"
         parts.push('grep <a href="' + grepUrl + '"><code>' +
           UUTILS_GREP_VERSION.short + '</code></a> (' + grepDate + ')');
       }
+      if (typeof UUTILS_FINDUTILS_VERSION !== "undefined") {
+        var findDate = UUTILS_FINDUTILS_VERSION.date.split("T")[0];
+        var findUrl = "https://github.com/uutils/findutils/commit/" + UUTILS_FINDUTILS_VERSION.commit;
+        parts.push('findutils <a href="' + findUrl + '"><code>' +
+          UUTILS_FINDUTILS_VERSION.short + '</code></a> (' + findDate + ')');
+      }
       if (typeof SITE_VERSION !== "undefined") {
         var siteDate = SITE_VERSION.date.split("T")[0];
         var siteUrl = "https://github.com/uutils/uutils.github.io/commit/" + SITE_VERSION.commit;
@@ -95,6 +101,7 @@ Click an example to run it in the terminal:
   <button class="playground-example">echo '🍎,🍌,🍒,🥝' | cut -d🍌 -f2</button>
   <button class="playground-example">printf '🍒 cherry\n🍎 apple\n🍌 banana\n' | sort -k2</button>
   <button class="playground-example">printf '🍎 apple\n🍌 banana\n🍒 cherry\n🥝 kiwi\n' | grep 🍌</button>
+  <button class="playground-example">find . -name '*.md'</button>
   <button class="playground-example">sort -n < numbers.txt | head -3</button>
   <button class="playground-example">date</button>
   <button class="playground-example">uname -a</button>

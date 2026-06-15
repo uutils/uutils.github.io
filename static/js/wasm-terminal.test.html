@@ -472,6 +472,34 @@ async function runTests() {
       section("grep WASM module (SKIPPED - grep.wasm not loaded)");
     }
 
+    // ===== find (standalone WASM module) =====
+    if (T.findReady) {
+      section("find WASM module");
+
+      assert("find in AVAILABLE_COMMANDS",
+        AVAILABLE_COMMANDS.includes("find"), true);
+
+      await assertAsync("find by exact name",
+        executeCommandLine("find . -name names.txt"),
+        "./names.txt\n");
+
+      await assertAsync("find with no matches",
+        executeCommandLine("find . -name '*.csv'"),
+        "");
+
+      // Exercises directory traversal plus a pipe into a coreutils utility.
+      await assertAsync("find piped into sort",
+        executeCommandLine("find . -type f -name '*.txt' | sort"),
+        "./csv.txt\n./fruits.txt\n./names.txt\n./numbers.txt\n./words.txt\n");
+
+      // find matches (and returns) emoji / multibyte filenames.
+      await assertAsync("find emoji-named files",
+        executeCommandLine("find . -name '*.md' | sort"),
+        "./🍌.md\n./🍎.md\n./🍒.md\n./🥝.md\n");
+    } else {
+      section("find WASM module (SKIPPED - find.wasm not loaded)");
+    }
+
   } else {
     section("l10n WASM integration (SKIPPED - WASM not loaded)");
   }
