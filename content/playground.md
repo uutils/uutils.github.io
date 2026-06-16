@@ -13,6 +13,10 @@ template = "page.html"
   <span class="locale-help">Missing a translation or your language? <a href="https://hosted.weblate.org/projects/rust-coreutils/">Help translate on Weblate</a></span>
 </div>
 
+<div class="playground-loaders" id="playground-loaders">
+  <span class="playground-loaders-label">Extra programs:</span>
+</div>
+
 <div id="wasm-playground"></div>
 
 <p class="playground-version" id="playground-version"></p>
@@ -24,6 +28,47 @@ template = "page.html"
 <script defer>
   document.addEventListener("DOMContentLoaded", function() {
     initPlayground("wasm-playground");
+    // Build a "Load" button per optional standalone program (grep, find).
+    // These ship as their own WASM modules and load on demand to keep the
+    // initial page download light; running the command auto-loads it too.
+    var loaderBar = document.getElementById("playground-loaders");
+    if (loaderBar && Array.isArray(window.uutilsPrograms)) {
+      window.uutilsPrograms.forEach(function(cmd) {
+        var btn = document.createElement("button");
+        btn.className = "playground-loader";
+        var markLoaded = function() {
+          btn.disabled = true;
+          btn.classList.add("loaded");
+          btn.textContent = "✓ " + cmd + " loaded";
+        };
+        var setIdleLabel = function(size) {
+          btn.textContent = "Load " + cmd + (size ? " (" + (size / 1024 / 1024).toFixed(1) + " MB)" : "");
+        };
+        setIdleLabel(0);
+        window.programSize(cmd).then(function(size) {
+          if (!btn.classList.contains("loaded") && !btn.disabled) setIdleLabel(size);
+        });
+        btn.addEventListener("click", function() {
+          if (btn.disabled) return;
+          btn.disabled = true;
+          btn.textContent = "Loading " + cmd + "…";
+          window.loadProgram(cmd).then(function(mod) {
+            if (mod) {
+              markLoaded();
+            } else {
+              btn.disabled = false;
+              btn.textContent = cmd + " unavailable";
+            }
+          });
+        });
+        // Keep the button in sync if the program is loaded by running it.
+        document.addEventListener("uutils:program-loaded", function(e) {
+          if (e.detail && e.detail.cmd === cmd) markLoaded();
+        });
+        if (window.isProgramLoaded(cmd)) markLoaded();
+        loaderBar.appendChild(btn);
+      });
+    }
     // Populate the locale dropdown from the build-generated list
     if (typeof WASM_LOCALES !== "undefined") {
       var sel = document.getElementById("locale-select");

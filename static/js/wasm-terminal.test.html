@@ -450,7 +450,10 @@ async function runTests() {
         "w\nx\n");
     }
 
-    // ===== grep (standalone WASM module) =====
+    // ===== grep (standalone WASM module, loaded on demand) =====
+    // grep is no longer eager-loaded; pull it in via the on-demand loader,
+    // which also exercises that path. Skips gracefully if grep.wasm is absent.
+    await T.loadStandalone("grep");
     if (T.grepReady) {
       section("grep WASM module");
 
@@ -472,16 +475,21 @@ async function runTests() {
       section("grep WASM module (SKIPPED - grep.wasm not loaded)");
     }
 
-    // ===== find (standalone WASM module) =====
+    // ===== find (standalone WASM module, auto-loaded on first use) =====
+    // Unlike grep above, exercise the hybrid auto-load path: the first find
+    // command should fetch find.wasm on demand. The probe result doubles as the
+    // "find by exact name" assertion. Skips gracefully if find.wasm is absent.
+    const findProbe = await executeCommandLine("find . -name names.txt");
     if (T.findReady) {
       section("find WASM module");
+
+      assert("find auto-loaded on first use", T.findReady, true);
 
       assert("find in AVAILABLE_COMMANDS",
         AVAILABLE_COMMANDS.includes("find"), true);
 
-      await assertAsync("find by exact name",
-        executeCommandLine("find . -name names.txt"),
-        "./names.txt\n");
+      assert("find by exact name (via auto-load)",
+        findProbe, "./names.txt\n");
 
       await assertAsync("find with no matches",
         executeCommandLine("find . -name '*.csv'"),
