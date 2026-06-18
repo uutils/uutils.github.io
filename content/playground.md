@@ -28,44 +28,45 @@ template = "page.html"
 <script defer>
   document.addEventListener("DOMContentLoaded", function() {
     initPlayground("wasm-playground");
-    // Build a "Load" button per optional standalone program (grep, find).
-    // These ship as their own WASM modules and load on demand to keep the
-    // initial page download light; running the command auto-loads it too.
+    // Build a "Load" button per optional standalone module (grep, find,
+    // diffutils). These ship as their own WASM modules and load on demand to
+    // keep the initial page download light; running a command auto-loads its
+    // module too (e.g. diff/cmp both come from the diffutils module).
     var loaderBar = document.getElementById("playground-loaders");
     if (loaderBar && Array.isArray(window.uutilsPrograms)) {
-      window.uutilsPrograms.forEach(function(cmd) {
+      window.uutilsPrograms.forEach(function(prog) {
         var btn = document.createElement("button");
         btn.className = "playground-loader";
         var markLoaded = function() {
           btn.disabled = true;
           btn.classList.add("loaded");
-          btn.textContent = "✓ " + cmd + " loaded";
+          btn.textContent = "✓ " + prog + " loaded";
         };
         var setIdleLabel = function(size) {
-          btn.textContent = "Load " + cmd + (size ? " (" + (size / 1024 / 1024).toFixed(1) + " MB)" : "");
+          btn.textContent = "Load " + prog + (size ? " (" + (size / 1024 / 1024).toFixed(1) + " MB)" : "");
         };
         setIdleLabel(0);
-        window.programSize(cmd).then(function(size) {
+        window.programSize(prog).then(function(size) {
           if (!btn.classList.contains("loaded") && !btn.disabled) setIdleLabel(size);
         });
         btn.addEventListener("click", function() {
           if (btn.disabled) return;
           btn.disabled = true;
-          btn.textContent = "Loading " + cmd + "…";
-          window.loadProgram(cmd).then(function(mod) {
+          btn.textContent = "Loading " + prog + "…";
+          window.loadProgram(prog).then(function(mod) {
             if (mod) {
               markLoaded();
             } else {
               btn.disabled = false;
-              btn.textContent = cmd + " unavailable";
+              btn.textContent = prog + " unavailable";
             }
           });
         });
-        // Keep the button in sync if the program is loaded by running it.
+        // Keep the button in sync if the module is loaded by running a command.
         document.addEventListener("uutils:program-loaded", function(e) {
-          if (e.detail && e.detail.cmd === cmd) markLoaded();
+          if (e.detail && e.detail.module === prog) markLoaded();
         });
-        if (window.isProgramLoaded(cmd)) markLoaded();
+        if (window.isProgramLoaded(prog)) markLoaded();
         loaderBar.appendChild(btn);
       });
     }
@@ -112,6 +113,12 @@ template = "page.html"
         parts.push('findutils <a href="' + findUrl + '"><code>' +
           UUTILS_FINDUTILS_VERSION.short + '</code></a> (' + findDate + ')');
       }
+      if (typeof UUTILS_DIFFUTILS_VERSION !== "undefined") {
+        var diffDate = UUTILS_DIFFUTILS_VERSION.date.split("T")[0];
+        var diffUrl = "https://github.com/uutils/diffutils/commit/" + UUTILS_DIFFUTILS_VERSION.commit;
+        parts.push('diffutils <a href="' + diffUrl + '"><code>' +
+          UUTILS_DIFFUTILS_VERSION.short + '</code></a> (' + diffDate + ')');
+      }
       if (typeof SITE_VERSION !== "undefined") {
         var siteDate = SITE_VERSION.date.split("T")[0];
         var siteUrl = "https://github.com/uutils/uutils.github.io/commit/" + SITE_VERSION.commit;
@@ -147,6 +154,7 @@ Click an example to run it in the terminal:
   <button class="playground-example">printf '🍒 cherry\n🍎 apple\n🍌 banana\n' | sort -k2</button>
   <button class="playground-example">printf '🍎 apple\n🍌 banana\n🍒 cherry\n🥝 kiwi\n' | grep 🍌</button>
   <button class="playground-example">find . -name '*.md'</button>
+  <button class="playground-example">diff -u shopping-old.txt shopping-new.txt</button>
   <button class="playground-example">sort -n < numbers.txt | head -3</button>
   <button class="playground-example">date</button>
   <button class="playground-example">uname -a</button>

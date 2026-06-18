@@ -498,7 +498,7 @@ async function runTests() {
       // Exercises directory traversal plus a pipe into a coreutils utility.
       await assertAsync("find piped into sort",
         executeCommandLine("find . -type f -name '*.txt' | sort"),
-        "./csv.txt\n./fruits.txt\n./names.txt\n./numbers.txt\n./words.txt\n");
+        "./csv.txt\n./fruits.txt\n./names.txt\n./numbers.txt\n./shopping-new.txt\n./shopping-old.txt\n./words.txt\n");
 
       // find matches (and returns) emoji / multibyte filenames.
       await assertAsync("find emoji-named files",
@@ -506,6 +506,47 @@ async function runTests() {
         "./🍌.md\n./🍎.md\n./🍒.md\n./🥝.md\n");
     } else {
       section("find WASM module (SKIPPED - find.wasm not loaded)");
+    }
+
+    // ===== diff / cmp (diffutils standalone WASM module) =====
+    // diff and cmp share one module (diffutils). Pre-load it via the on-demand
+    // loader (also covers that diff and cmp resolve to the same module). Skips
+    // gracefully if diffutils.wasm is absent.
+    await T.loadStandalone("diffutils");
+    if (T.diffutilsReady) {
+      section("diffutils WASM module (diff, cmp)");
+
+      assert("diff in AVAILABLE_COMMANDS",
+        AVAILABLE_COMMANDS.includes("diff"), true);
+      assert("cmp in AVAILABLE_COMMANDS",
+        AVAILABLE_COMMANDS.includes("cmp"), true);
+
+      // Normal diff of the two near-identical shopping lists. Exact match is
+      // safe here (unlike `diff -u`, whose header carries a file mtime).
+      await assertAsync("diff (normal) shows the changed lines",
+        executeCommandLine("diff shopping-old.txt shopping-new.txt"),
+        "2a3,3\n> yogurt\n4c5\n< butter\n---\n> honey\n");
+
+      // Unified diff: assert on the stable hunk body (its --- / +++ header
+      // lines include a timestamp that varies by environment).
+      const uni = await executeCommandLine("diff -u shopping-old.txt shopping-new.txt");
+      assert("diff -u has the hunk header", uni.includes("@@ -1,5 +1,6 @@"), true);
+      assert("diff -u adds yogurt", uni.includes("\n+yogurt\n"), true);
+      assert("diff -u removes butter", uni.includes("\n-butter\n"), true);
+      assert("diff -u adds honey", uni.includes("\n+honey\n"), true);
+
+      // Identical files: no output, success.
+      await assertAsync("diff of identical files is empty",
+        executeCommandLine("diff names.txt names.txt"),
+        "");
+
+      // cmp reports the first differing byte/line. (browser_wasi_shim runs in
+      // the C locale, so cmp says "byte" rather than "char".)
+      await assertAsync("cmp reports first difference",
+        executeCommandLine("cmp shopping-old.txt shopping-new.txt"),
+        "shopping-old.txt shopping-new.txt differ: byte 11, line 3\n");
+    } else {
+      section("diffutils WASM module (SKIPPED - diffutils.wasm not loaded)");
     }
 
   } else {

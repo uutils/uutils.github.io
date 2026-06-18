@@ -50,6 +50,13 @@ jobs:
         path: './grep'
         fetch-depth: 0
 
+    - name: Checkout Diffutils Repository
+      uses: actions/checkout@v6
+      with:
+        repository: uutils/diffutils
+        path: './diffutils'
+        fetch-depth: 0
+
     - name: Install `rust` toolchain
       uses: dtolnay/rust-toolchain@stable
       with:
@@ -277,6 +284,46 @@ jobs:
             echo "};"
           } >> ../uutils.github.io/static/wasm/version.js
           echo "find WASM build: ${find_short} (${find_date})"
+        fi
+
+    - name: Build diffutils WASM binary
+      run: |
+        # uutils diffutils ships a single multicall binary that provides `diff`
+        # and `cmp` (dispatched on argv[0]). Unlike grep/find it has only
+        # pure-Rust dependencies (regex, not onig), so no WASI SDK is needed.
+        cd diffutils
+        cargo build --release --target wasm32-wasip1 --bin diffutils
+        if [ -f target/wasm32-wasip1/release/diffutils.wasm ]; then
+          mkdir -p ../uutils.github.io/static/wasm
+          cp target/wasm32-wasip1/release/diffutils.wasm ../uutils.github.io/static/wasm/diffutils.wasm
+          # Optimize WASM size if wasm-opt is available
+          if command -v wasm-opt &> /dev/null; then
+            wasm-opt -Oz ../uutils.github.io/static/wasm/diffutils.wasm -o ../uutils.github.io/static/wasm/diffutils.wasm
+          fi
+          echo "diffutils WASM binary size: $(du -h ../uutils.github.io/static/wasm/diffutils.wasm | cut -f1)"
+          # Advertise diff and cmp in the playground's command list. They ship as
+          # their own WASM module, so they aren't picked up by the coreutils
+          # feat_wasm scan above; append them to the generated list here.
+          commands_js=../uutils.github.io/static/wasm/commands.js
+          if [ -f "$commands_js" ]; then
+            existing=$(sed -n 's/^const WASM_COMMANDS = \[\(.*\)\];$/\1/p' "$commands_js")
+            echo "const WASM_COMMANDS = [${existing}, \"diff\", \"cmp\"];" > "$commands_js"
+          else
+            echo 'const WASM_COMMANDS = ["diff", "cmp"];' > "$commands_js"
+          fi
+          # Record the diffutils commit used to build its WASM module so the
+          # playground can show it alongside the coreutils build.
+          diff_hash=$(git rev-parse HEAD)
+          diff_short=$(git rev-parse --short HEAD)
+          diff_date=$(git show -s --format=%cI HEAD)
+          {
+            echo "const UUTILS_DIFFUTILS_VERSION = {"
+            echo "  commit: \"${diff_hash}\","
+            echo "  short: \"${diff_short}\","
+            echo "  date: \"${diff_date}\""
+            echo "};"
+          } >> ../uutils.github.io/static/wasm/version.js
+          echo "diffutils WASM build: ${diff_short} (${diff_date})"
         fi
 
     - name: Run Zola

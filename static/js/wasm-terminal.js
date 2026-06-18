@@ -16,12 +16,21 @@ if (typeof SharedArrayBuffer === "undefined") {
 const WASM_URL = "/wasm/uutils.wasm";
 // Some utilities ship as their own standalone WASM modules rather than as part
 // of the coreutils multicall binary (grep lives in uutils/grep, find in
-// uutils/findutils). They are loaded lazily alongside the multicall module and
-// each is optional — see loadStandaloneWasm.
-const STANDALONE_WASM_URLS = {
-  grep: "/wasm/grep.wasm",
-  find: "/wasm/find.wasm",
+// uutils/findutils, diff and cmp in uutils/diffutils). Each module is loaded on
+// demand and is optional — see loadStandalone. A single module can provide
+// several commands (diffutils → diff, cmp), which the diffutils binary
+// dispatches on argv[0], so each command is invoked directly by its own name.
+const STANDALONE_MODULES = {
+  grep: { url: "/wasm/grep.wasm", commands: ["grep"] },
+  find: { url: "/wasm/find.wasm", commands: ["find"] },
+  diffutils: { url: "/wasm/diffutils.wasm", commands: ["diff", "cmp"] },
 };
+// Map each command to the module that provides it (e.g. diff -> "diffutils").
+const STANDALONE_COMMAND_MODULE = Object.fromEntries(
+  Object.entries(STANDALONE_MODULES).flatMap(
+    ([mod, def]) => def.commands.map(cmd => [cmd, mod])
+  )
+);
 const XTERM_CSS = "https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css";
 const XTERM_CSS_INTEGRITY = "sha384-tStR1zLfWgsiXCF3IgfB3lBa8KmBe/lG287CL9WCeKgQYcp1bjb4/+mwN6oti4Co";
 const XTERM_JS = "https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js";
@@ -44,6 +53,9 @@ const SAMPLE_FILES = {
   "🍌.md": "# Banana\n",
   "🍒.md": "# Cherry\n",
   "🥝.md": "# Kiwi\n",
+  // Two near-identical lists so `diff`/`cmp` have a small, readable change to show.
+  "shopping-old.txt": "milk\neggs\nbread\nbutter\napples\n",
+  "shopping-new.txt": "milk\neggs\nyogurt\nbread\nhoney\napples\n",
 };
 
 // Commands available in the feat_wasm build.
@@ -61,7 +73,7 @@ const FALLBACK_COMMANDS = [
   "sha1sum", "sha224sum", "sha256sum", "sha384sum", "sha512sum",
   "shred", "shuf", "sleep", "sum", "tee", "true", "truncate",
   "uname", "unexpand", "uniq", "unlink", "vdir", "wc",
-  "grep", "find",
+  "grep", "find", "diff", "cmp",
 ];
 const AVAILABLE_COMMANDS =
   (typeof WASM_COMMANDS !== "undefined" && Array.isArray(WASM_COMMANDS) && WASM_COMMANDS.length > 0)
@@ -77,10 +89,10 @@ const LOCALE_SHORTCUTS = {
 };
 
 let wasmModule = null;
-// Compiled standalone modules, keyed by command name (e.g. "grep", "find").
+// Compiled standalone modules, keyed by module name (e.g. "grep", "diffutils").
 // A key is present only once its module has loaded successfully.
 const standaloneModules = {};
-// In-flight loads, keyed by command name, so a button click and a command that
+// In-flight loads, keyed by module name, so a button click and a command that
 // both trigger a load (or two rapid clicks) share one fetch instead of racing.
 const standaloneLoading = {};
 let wasiShim = null;
@@ -180,43 +192,46 @@ async function loadWasm() {
  * without a CI build) — in which case the command reports it's unavailable
  * rather than breaking the terminal.
  *
- * When `announce` is set and a terminal exists, a "loading <cmd>… done" notice
- * is printed live; the button UI instead reacts to the `uutils:program-loaded`
- * event dispatched on success.
+ * When `announce` is set and a terminal exists, a "loading <module>… done"
+ * notice is printed live; the button UI instead reacts to the
+ * `uutils:program-loaded` event dispatched on success.
+ *
+ * Keyed by module name (e.g. "diffutils"), so commands that share a module
+ * (diff, cmp) trigger a single fetch.
  */
-function loadStandalone(cmd, { announce = false } = {}) {
-  if (standaloneModules[cmd]) return Promise.resolve(standaloneModules[cmd]);
-  if (standaloneLoading[cmd]) return standaloneLoading[cmd];
-  const url = STANDALONE_WASM_URLS[cmd];
+function loadStandalone(mod, { announce = false } = {}) {
+  if (standaloneModules[mod]) return Promise.resolve(standaloneModules[mod]);
+  if (standaloneLoading[mod]) return standaloneLoading[mod];
+  const url = STANDALONE_MODULES[mod] && STANDALONE_MODULES[mod].url;
   if (!url) return Promise.resolve(null);
   const notify = announce && terminal;
-  if (notify) terminal.write(`loading ${cmd}… `);
-  standaloneLoading[cmd] = (async () => {
+  if (notify) terminal.write(`loading ${mod}… `);
+  standaloneLoading[mod] = (async () => {
     try {
       const { module, size } = await compileWasmModule(url);
-      standaloneModules[cmd] = module;
+      standaloneModules[mod] = module;
       wasmSize += size;
       if (notify) terminal.write(`done (${(size / 1024 / 1024).toFixed(1)} MB)\r\n`);
       if (typeof document !== "undefined") {
-        document.dispatchEvent(new CustomEvent("uutils:program-loaded", { detail: { cmd, size } }));
+        document.dispatchEvent(new CustomEvent("uutils:program-loaded", { detail: { module: mod, size } }));
       }
       return module;
     } catch (e) {
-      console.warn(`${cmd} WASM unavailable:`, e.message);
+      console.warn(`${mod} WASM unavailable:`, e.message);
       if (notify) terminal.write("unavailable\r\n");
       return null;
     } finally {
-      delete standaloneLoading[cmd];
+      delete standaloneLoading[mod];
     }
   })();
-  return standaloneLoading[cmd];
+  return standaloneLoading[mod];
 }
 
 async function initWasm() {
   if (wasmReady) return;
   try {
     // Only the coreutils multicall binary loads eagerly; the standalone
-    // modules (grep, find) are fetched on demand — see loadStandalone.
+    // modules (grep, find, diffutils) are fetched on demand — see loadStandalone.
     await Promise.all([loadWasiShim(), loadWasm()]);
     wasmReady = true;
   } catch (e) {
@@ -534,6 +549,7 @@ async function executeCommandLine(line) {
       "  seq 1 10 | factor\n" +
       "  grep -i alice names.txt\n" +
       "  find . -name '*.md'\n" +
+      "  diff -u shopping-old.txt shopping-new.txt\n" +
       "  basename /usr/local/bin/rustc\n" +
       "  date\n" +
       "  uname -a\n"
@@ -607,12 +623,14 @@ async function executeCommandLine(line) {
       return `uutils: command not found: ${cmd}\nType 'help' for available commands.\n`;
     }
 
-    // Some utilities (grep, find) are separate WASM modules rather than part
-    // of the coreutils multicall binary, and are loaded on demand. Fetch the
-    // module the first time the command is used (no-op once cached).
-    const isStandalone = cmd in STANDALONE_WASM_URLS;
-    if (isStandalone && !standaloneModules[cmd]) {
-      const mod = await loadStandalone(cmd, { announce: true });
+    // Some utilities (grep, find, diff, cmp) are separate WASM modules rather
+    // than part of the coreutils multicall binary, and are loaded on demand.
+    // Fetch the module the first time one of its commands is used (no-op once
+    // cached; diff and cmp share the single diffutils module).
+    const moduleName = STANDALONE_COMMAND_MODULE[cmd];
+    const isStandalone = !!moduleName;
+    if (isStandalone && !standaloneModules[moduleName]) {
+      const mod = await loadStandalone(moduleName, { announce: true });
       if (!mod) return `${cmd} is not available in this build.\n`;
     }
 
@@ -651,7 +669,7 @@ async function executeCommandLine(line) {
           : [resolvedArgs[0], "--color=never", ...resolvedArgs.slice(1)];
       }
       const wasmArgs = isStandalone ? dispatchArgs : ["coreutils", ...resolvedArgs];
-      const result = await runCommand(wasmArgs, stdinData, isStandalone ? standaloneModules[cmd] : wasmModule);
+      const result = await runCommand(wasmArgs, stdinData, isStandalone ? standaloneModules[moduleName] : wasmModule);
       if (result.stderr) {
         return result.stderr + result.stdout;
       }
@@ -914,7 +932,7 @@ async function initPlayground(containerId) {
     terminal.writeln("");
     terminal.writeln("Type \x1b[1;32mhelp\x1b[0m for available commands.");
     terminal.writeln("Sample data files: names.txt, numbers.txt, fruits.txt, csv.txt, words.txt");
-    terminal.writeln("\x1b[2mgrep and find load on demand — just run them, or use the buttons below.\x1b[0m");
+    terminal.writeln("\x1b[2mgrep, find and diff/cmp load on demand — just run them, or use the buttons below.\x1b[0m");
   } catch (e) {
     terminal.writeln(" \x1b[1;31mfailed\x1b[0m");
     terminal.writeln("Failed to load WASM binary. Commands are not available.");
@@ -962,15 +980,16 @@ window.uutilsExecute = executeCommandLine;
 window.runInTerminal = runInTerminal;
 window.setLocale = setLocale;
 
-// On-demand loading of the optional standalone programs (grep, find), used by
-// the "Load" buttons on the playground page.
-window.uutilsPrograms = Object.keys(STANDALONE_WASM_URLS);
-window.loadProgram = (cmd) => loadStandalone(cmd);
-window.isProgramLoaded = (cmd) => !!standaloneModules[cmd];
-// Best-effort byte size of a program's module, for the button label (0 if the
-// server doesn't report Content-Length or the binary is missing).
-window.programSize = async (cmd) => {
-  const url = STANDALONE_WASM_URLS[cmd];
+// On-demand loading of the optional standalone modules (grep, find, diffutils),
+// used by the "Load" buttons on the playground page. Keyed by module name; one
+// module may back several commands (diffutils → diff, cmp).
+window.uutilsPrograms = Object.keys(STANDALONE_MODULES);
+window.loadProgram = (mod) => loadStandalone(mod);
+window.isProgramLoaded = (mod) => !!standaloneModules[mod];
+// Best-effort byte size of a module, for the button label (0 if the server
+// doesn't report Content-Length or the binary is missing).
+window.programSize = async (mod) => {
+  const url = STANDALONE_MODULES[mod] && STANDALONE_MODULES[mod].url;
   if (!url) return 0;
   try {
     const r = await fetch(url, { method: "HEAD" });
@@ -997,6 +1016,7 @@ window._uutilsTestInternals = {
   get wasmReady() { return wasmReady; },
   get grepReady() { return !!standaloneModules.grep; },
   get findReady() { return !!standaloneModules.find; },
+  get diffutilsReady() { return !!standaloneModules.diffutils; },
   initWasm,
   loadStandalone,
   LOCALE_SHORTCUTS,
