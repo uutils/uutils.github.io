@@ -549,6 +549,34 @@ async function runTests() {
       section("diffutils WASM module (SKIPPED - diffutils.wasm not loaded)");
     }
 
+    // ===== sed (standalone WASM module, loaded on demand) =====
+    // sed ships as its own module (uutils/sed). Pre-load it via the on-demand
+    // loader. Skips gracefully if sed.wasm is absent.
+    await T.loadStandalone("sed");
+    if (T.sedReady) {
+      section("sed WASM module");
+
+      assert("sed in AVAILABLE_COMMANDS",
+        AVAILABLE_COMMANDS.includes("sed"), true);
+
+      // Basic substitution on stdin.
+      await assertAsync("sed substitutes on stdin",
+        executeCommandLine("echo 'hello world' | sed 's/world/there/'"),
+        "hello there\n");
+
+      // Global substitution over a sample file.
+      await assertAsync("sed -e global substitution on a file",
+        executeCommandLine("sed 's/banana/kiwi/g' fruits.txt"),
+        "kiwi\napple\ncherry\ndate\napple\nkiwi\ncherry\napple\n");
+
+      // Line selection with -n / p.
+      await assertAsync("sed -n prints only the selected line",
+        executeCommandLine("sed -n '2p' numbers.txt"),
+        "7\n");
+    } else {
+      section("sed WASM module (SKIPPED - sed.wasm not loaded)");
+    }
+
   } else {
     section("l10n WASM integration (SKIPPED - WASM not loaded)");
   }

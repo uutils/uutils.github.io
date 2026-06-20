@@ -119,6 +119,12 @@ template = "page.html"
         parts.push('diffutils <a href="' + diffUrl + '"><code>' +
           UUTILS_DIFFUTILS_VERSION.short + '</code></a> (' + diffDate + ')');
       }
+      if (typeof UUTILS_SED_VERSION !== "undefined") {
+        var sedDate = UUTILS_SED_VERSION.date.split("T")[0];
+        var sedUrl = "https://github.com/uutils/sed/commit/" + UUTILS_SED_VERSION.commit;
+        parts.push('sed <a href="' + sedUrl + '"><code>' +
+          UUTILS_SED_VERSION.short + '</code></a> (' + sedDate + ')');
+      }
       if (typeof SITE_VERSION !== "undefined") {
         var siteDate = SITE_VERSION.date.split("T")[0];
         var siteUrl = "https://github.com/uutils/uutils.github.io/commit/" + SITE_VERSION.commit;
@@ -155,6 +161,7 @@ Click an example to run it in the terminal:
   <button class="playground-example">printf '🍎 apple\n🍌 banana\n🍒 cherry\n🥝 kiwi\n' | grep 🍌</button>
   <button class="playground-example">find . -name '*.md'</button>
   <button class="playground-example">diff -u shopping-old.txt shopping-new.txt</button>
+  <button class="playground-example">sed -e 's/banana/🍌/g' -e 's/date/🌴/g' fruits.txt</button>
   <button class="playground-example">sort -n < numbers.txt | head -3</button>
   <button class="playground-example">date</button>
   <button class="playground-example">uname -a</button>

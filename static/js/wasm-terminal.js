@@ -16,14 +16,16 @@ if (typeof SharedArrayBuffer === "undefined") {
 const WASM_URL = "/wasm/uutils.wasm";
 // Some utilities ship as their own standalone WASM modules rather than as part
 // of the coreutils multicall binary (grep lives in uutils/grep, find in
-// uutils/findutils, diff and cmp in uutils/diffutils). Each module is loaded on
-// demand and is optional — see loadStandalone. A single module can provide
-// several commands (diffutils → diff, cmp), which the diffutils binary
-// dispatches on argv[0], so each command is invoked directly by its own name.
+// uutils/findutils, diff and cmp in uutils/diffutils, sed in uutils/sed). Each
+// module is loaded on demand and is optional — see loadStandalone. A single
+// module can provide several commands (diffutils → diff, cmp), which the
+// diffutils binary dispatches on argv[0], so each command is invoked directly
+// by its own name.
 const STANDALONE_MODULES = {
   grep: { url: "/wasm/grep.wasm", commands: ["grep"] },
   find: { url: "/wasm/find.wasm", commands: ["find"] },
   diffutils: { url: "/wasm/diffutils.wasm", commands: ["diff", "cmp"] },
+  sed: { url: "/wasm/sed.wasm", commands: ["sed"] },
 };
 // Map each command to the module that provides it (e.g. diff -> "diffutils").
 const STANDALONE_COMMAND_MODULE = Object.fromEntries(
@@ -73,7 +75,7 @@ const FALLBACK_COMMANDS = [
   "sha1sum", "sha224sum", "sha256sum", "sha384sum", "sha512sum",
   "shred", "shuf", "sleep", "sum", "tee", "true", "truncate",
   "uname", "unexpand", "uniq", "unlink", "vdir", "wc",
-  "grep", "find", "diff", "cmp",
+  "grep", "find", "diff", "cmp", "sed",
 ];
 const AVAILABLE_COMMANDS =
   (typeof WASM_COMMANDS !== "undefined" && Array.isArray(WASM_COMMANDS) && WASM_COMMANDS.length > 0)
@@ -550,6 +552,7 @@ async function executeCommandLine(line) {
       "  grep -i alice names.txt\n" +
       "  find . -name '*.md'\n" +
       "  diff -u shopping-old.txt shopping-new.txt\n" +
+      "  echo 'hello world' | sed 's/world/there/'\n" +
       "  basename /usr/local/bin/rustc\n" +
       "  date\n" +
       "  uname -a\n"
@@ -932,7 +935,7 @@ async function initPlayground(containerId) {
     terminal.writeln("");
     terminal.writeln("Type \x1b[1;32mhelp\x1b[0m for available commands.");
     terminal.writeln("Sample data files: names.txt, numbers.txt, fruits.txt, csv.txt, words.txt");
-    terminal.writeln("\x1b[2mgrep, find and diff/cmp load on demand — just run them, or use the buttons below.\x1b[0m");
+    terminal.writeln("\x1b[2mgrep, find, sed and diff/cmp load on demand — just run them, or use the buttons below.\x1b[0m");
   } catch (e) {
     terminal.writeln(" \x1b[1;31mfailed\x1b[0m");
     terminal.writeln("Failed to load WASM binary. Commands are not available.");
@@ -1017,6 +1020,7 @@ window._uutilsTestInternals = {
   get grepReady() { return !!standaloneModules.grep; },
   get findReady() { return !!standaloneModules.find; },
   get diffutilsReady() { return !!standaloneModules.diffutils; },
+  get sedReady() { return !!standaloneModules.sed; },
   initWasm,
   loadStandalone,
   LOCALE_SHORTCUTS,

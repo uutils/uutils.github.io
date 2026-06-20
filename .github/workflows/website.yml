@@ -118,11 +118,11 @@ jobs:
         name: wasm-coreutils
         path: wasm-out
 
-  # grep, find and diffutils each ship a single standalone binary built the
+  # grep, find, diffutils and sed each ship a single standalone binary built the
   # same way, so they share one matrix job. grep/find pull in the Oniguruma C
   # library (onig_sys) and need a WASI sysroot to compile its bundled C sources;
-  # diffutils is pure Rust and sets needs_wasi: false. The `order` field keeps
-  # the merged command/version lists in a stable sequence in the `build` job.
+  # diffutils and sed are pure Rust and set needs_wasi: false. The `order` field
+  # keeps the merged command/version lists in a stable sequence in `build`.
   wasm-standalone:
     name: Build ${{ matrix.name }} WASM
     runs-on: ubuntu-latest
@@ -151,6 +151,13 @@ jobs:
           commands: '"diff","cmp"'
           version_const: UUTILS_DIFFUTILS_VERSION
           order: 30
+        - name: sed
+          repo: uutils/sed
+          bin: sed
+          needs_wasi: false
+          commands: '"sed"'
+          version_const: UUTILS_SED_VERSION
+          order: 40
     steps:
     - name: Checkout ${{ matrix.name }} Repository
       uses: actions/checkout@v7
