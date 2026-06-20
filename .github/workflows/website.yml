@@ -11,9 +11,211 @@ on:
   - cron: "0 2 * * *"
 
 jobs:
+  # The WASM modules compile in parallel: coreutils has its own job (it needs
+  # l10n + feat_wasm parsing), while grep/find/diffutils share the matrix job
+  # below. Each leg uploads its `.wasm` plus small fragments (command names and
+  # a version block) that the `build` job stitches together into the
+  # playground's commands.js / version.js. Fragment files are numbered so the
+  # merge order is deterministic (coreutils base list first, then the rest).
+  wasm-coreutils:
+    name: Build uutils (coreutils) WASM
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Coreutils Repository
+      uses: actions/checkout@v7
+      with:
+        repository: uutils/coreutils
+        path: './coreutils'
+        fetch-depth: 0
+
+    - name: Checkout Coreutils L10n Repository
+      uses: actions/checkout@v7
+      with:
+        repository: uutils/coreutils-l10n
+        path: './coreutils-l10n'
+        fetch-depth: 0
+
+    - name: Install `rust` toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: wasm32-wasip1
+
+    - name: Cache cargo build
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: coreutils
+
+    - name: Copy l10n locales into coreutils
+      run: |
+        # Only copy locales into utilities that already exist in coreutils
+        # Exclude en-US.ftl to preserve the coreutils English originals
+        for util_dir in coreutils-l10n/src/uu/*/; do
+          util=$(basename "$util_dir")
+          if [ -d "coreutils/src/uu/$util/locales" ]; then
+            for ftl in "$util_dir"/locales/*.ftl; do
+              [ -f "$ftl" ] || continue
+              [ "$(basename "$ftl")" = "en-US.ftl" ] && continue
+              cp "$ftl" "coreutils/src/uu/$util/locales/"
+            done
+          fi
+        done
+        # Copy uucore l10n files, excluding en-US.ftl
+        if [ -d "coreutils-l10n/src/uucore/locales" ]; then
+          for ftl in coreutils-l10n/src/uucore/locales/*.ftl; do
+            [ -f "$ftl" ] || continue
+            [ "$(basename "$ftl")" = "en-US.ftl" ] && continue
+            cp "$ftl" "coreutils/src/uucore/locales/"
+          done
+        fi
+
+    - name: Build uutils WASM binary
+      run: |
+        cd coreutils
+        # Build the multicall binary for WASI target
+        # Use --no-default-features to avoid platform-specific dependencies
+        cargo build --release --target wasm32-wasip1 -p coreutils --no-default-features --features feat_wasm
+        test -f target/wasm32-wasip1/release/coreutils.wasm
+        mkdir -p ../wasm-out
+        cp target/wasm32-wasip1/release/coreutils.wasm ../wasm-out/uutils.wasm
+        # Optimize WASM size if wasm-opt is available
+        if command -v wasm-opt &> /dev/null; then
+          wasm-opt -Oz ../wasm-out/uutils.wasm -o ../wasm-out/uutils.wasm
+        fi
+        echo "WASM binary size: $(du -h ../wasm-out/uutils.wasm | cut -f1)"
+        # Generate the list of available locales from .ftl files
+        locales=$(find src/uu/*/locales src/uucore/locales -name '*.ftl' 2>/dev/null \
+          | sed 's|.*/||; s|\.ftl$||' | sort -u | paste -sd, -)
+        echo "const WASM_LOCALES = [$(echo "$locales" | sed 's/[^,]*/\"&\"/g')];" \
+          > ../wasm-out/locales.js
+        echo "Available locales: $locales"
+        # Generate the list of available commands from the feat_wasm feature
+        # in Cargo.toml so the playground stays in sync with the WASM build.
+        # HIDDEN_CMDS: utilities that ship in the binary but we don't want to
+        # advertise in the playground (e.g. `yes` produces infinite output
+        # that just spams the terminal).
+        HIDDEN_CMDS='^(false|true|yes)$'
+        commands=$(sed -n '/^feat_wasm = \[/,/^\]/p' Cargo.toml \
+          | grep -oE '"[a-zA-Z0-9_]+"' | tr -d '"' \
+          | sort -u | grep -vE "$HIDDEN_CMDS" | paste -sd, -)
+        echo "$commands" | sed 's/[^,]*/"&"/g' > ../wasm-out/commands-00-coreutils.txt
+        echo "Available commands: $commands"
+        # Record the coreutils commit used to build the WASM binary
+        commit_hash=$(git rev-parse HEAD)
+        commit_short=$(git rev-parse --short HEAD)
+        commit_date=$(git show -s --format=%cI HEAD)
+        {
+          echo "const UUTILS_WASM_VERSION = {"
+          echo "  commit: \"${commit_hash}\","
+          echo "  short: \"${commit_short}\","
+          echo "  date: \"${commit_date}\""
+          echo "};"
+        } > ../wasm-out/version-00-coreutils.js
+        echo "uutils WASM build: ${commit_short} (${commit_date})"
+
+    - name: Upload uutils WASM artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: wasm-coreutils
+        path: wasm-out
+
+  # grep, find and diffutils each ship a single standalone binary built the
+  # same way, so they share one matrix job. grep/find pull in the Oniguruma C
+  # library (onig_sys) and need a WASI sysroot to compile its bundled C sources;
+  # diffutils is pure Rust and sets needs_wasi: false. The `order` field keeps
+  # the merged command/version lists in a stable sequence in the `build` job.
+  wasm-standalone:
+    name: Build ${{ matrix.name }} WASM
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - name: grep
+          repo: uutils/grep
+          bin: grep
+          needs_wasi: true
+          commands: '"grep"'
+          version_const: UUTILS_GREP_VERSION
+          order: 10
+        - name: find
+          repo: uutils/findutils
+          bin: find
+          needs_wasi: true
+          commands: '"find"'
+          version_const: UUTILS_FINDUTILS_VERSION
+          order: 20
+        - name: diffutils
+          repo: uutils/diffutils
+          bin: diffutils
+          needs_wasi: false
+          commands: '"diff","cmp"'
+          version_const: UUTILS_DIFFUTILS_VERSION
+          order: 30
+    steps:
+    - name: Checkout ${{ matrix.name }} Repository
+      uses: actions/checkout@v7
+      with:
+        repository: ${{ matrix.repo }}
+        path: ${{ matrix.name }}
+        fetch-depth: 0
+
+    - name: Install `rust` toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: wasm32-wasip1
+
+    - name: Cache cargo build
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: ${{ matrix.name }}
+
+    - name: Build ${{ matrix.name }} WASM binary
+      run: |
+        if [ "${{ matrix.needs_wasi }}" = "true" ]; then
+          # Build a WASI sysroot so the onig_sys C sources can be compiled.
+          WASI_SDK_VERSION=25
+          WASI_SDK_DIR="wasi-sdk-${WASI_SDK_VERSION}.0-x86_64-linux"
+          curl -sL "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_SDK_VERSION}/${WASI_SDK_DIR}.tar.gz" | tar xz
+          export WASI_SDK_PATH="$PWD/${WASI_SDK_DIR}"
+          export CC_wasm32_wasip1="$WASI_SDK_PATH/bin/clang"
+          export CFLAGS_wasm32_wasip1="--sysroot=$WASI_SDK_PATH/share/wasi-sysroot"
+        fi
+        wasm="${{ matrix.bin }}.wasm"
+        cd ${{ matrix.name }}
+        cargo build --release --target wasm32-wasip1 --bin ${{ matrix.bin }}
+        test -f "target/wasm32-wasip1/release/${wasm}"
+        mkdir -p ../wasm-out
+        cp "target/wasm32-wasip1/release/${wasm}" "../wasm-out/${wasm}"
+        # Optimize WASM size if wasm-opt is available
+        if command -v wasm-opt &> /dev/null; then
+          wasm-opt -Oz "../wasm-out/${wasm}" -o "../wasm-out/${wasm}"
+        fi
+        echo "${{ matrix.name }} WASM binary size: $(du -h ../wasm-out/${wasm} | cut -f1)"
+        # Advertise this module's commands in the playground's command list.
+        echo '${{ matrix.commands }}' > ../wasm-out/commands-${{ matrix.order }}-${{ matrix.name }}.txt
+        # Record the commit used to build this WASM module.
+        h=$(git rev-parse HEAD)
+        s=$(git rev-parse --short HEAD)
+        d=$(git show -s --format=%cI HEAD)
+        {
+          echo "const ${{ matrix.version_const }} = {"
+          echo "  commit: \"${h}\","
+          echo "  short: \"${s}\","
+          echo "  date: \"${d}\""
+          echo "};"
+        } > ../wasm-out/version-${{ matrix.order }}-${{ matrix.name }}.js
+        echo "${{ matrix.name }} WASM build: ${s} (${d})"
+
+    - name: Upload ${{ matrix.name }} WASM artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: wasm-${{ matrix.name }}
+        path: wasm-out
+
   build:
     name: Build website artifacts
     runs-on: ubuntu-latest
+    needs: [wasm-coreutils, wasm-standalone]
     steps:
     - name: Checkout uutils.github.io Repository
       uses: actions/checkout@v7
@@ -43,24 +245,8 @@ jobs:
         path: './findutils'
         fetch-depth: 0
 
-    - name: Checkout Grep Repository
-      uses: actions/checkout@v7
-      with:
-        repository: uutils/grep
-        path: './grep'
-        fetch-depth: 0
-
-    - name: Checkout Diffutils Repository
-      uses: actions/checkout@v7
-      with:
-        repository: uutils/diffutils
-        path: './diffutils'
-        fetch-depth: 0
-
     - name: Install `rust` toolchain
       uses: dtolnay/rust-toolchain@stable
-      with:
-        targets: wasm32-wasip1
 
     - name: Install system deps
       run: |
@@ -132,199 +318,42 @@ jobs:
         sed -i '/^multilingual/d' book.toml
         mdbook build
 
-    - name: Build uutils WASM binary
-      run: |
-        cd coreutils
-        # Build the multicall binary for WASI target
-        # Use --no-default-features to avoid platform-specific dependencies
-        cargo build --release --target wasm32-wasip1 -p coreutils --no-default-features --features feat_wasm
-        if [ -f target/wasm32-wasip1/release/coreutils.wasm ]; then
-          mkdir -p ../uutils.github.io/static/wasm
-          cp target/wasm32-wasip1/release/coreutils.wasm ../uutils.github.io/static/wasm/uutils.wasm
-          # Optimize WASM size if wasm-opt is available
-          if command -v wasm-opt &> /dev/null; then
-            wasm-opt -Oz ../uutils.github.io/static/wasm/uutils.wasm -o ../uutils.github.io/static/wasm/uutils.wasm
-          fi
-          echo "WASM binary size: $(du -h ../uutils.github.io/static/wasm/uutils.wasm | cut -f1)"
-          # Generate the list of available locales from .ftl files
-          locales=$(find src/uu/*/locales src/uucore/locales -name '*.ftl' 2>/dev/null \
-            | sed 's|.*/||; s|\.ftl$||' | sort -u | paste -sd, -)
-          echo "const WASM_LOCALES = [$(echo "$locales" | sed 's/[^,]*/\"&\"/g')];" \
-            > ../uutils.github.io/static/wasm/locales.js
-          echo "Available locales: $locales"
-          # Generate the list of available commands from the feat_wasm feature
-          # in Cargo.toml so the playground stays in sync with the WASM build.
-          # HIDDEN_CMDS: utilities that ship in the binary but we don't want to
-          # advertise in the playground (e.g. `yes` produces infinite output
-          # that just spams the terminal).
-          HIDDEN_CMDS='^(false|true|yes)$'
-          commands=$(sed -n '/^feat_wasm = \[/,/^\]/p' Cargo.toml \
-            | grep -oE '"[a-zA-Z0-9_]+"' | tr -d '"' \
-            | sort -u | grep -vE "$HIDDEN_CMDS" | paste -sd, -)
-          echo "const WASM_COMMANDS = [$(echo "$commands" | sed 's/[^,]*/\"&\"/g')];" \
-            > ../uutils.github.io/static/wasm/commands.js
-          echo "Available commands: $commands"
-          # Record the coreutils commit used to build the WASM binary
-          commit_hash=$(git rev-parse HEAD)
-          commit_short=$(git rev-parse --short HEAD)
-          commit_date=$(git show -s --format=%cI HEAD)
-          # Record the uutils.github.io commit the site was built from
-          site_hash=$(git -C ../uutils.github.io rev-parse HEAD)
-          site_short=$(git -C ../uutils.github.io rev-parse --short HEAD)
-          site_date=$(git -C ../uutils.github.io show -s --format=%cI HEAD)
-          {
-            echo "const UUTILS_WASM_VERSION = {"
-            echo "  commit: \"${commit_hash}\","
-            echo "  short: \"${commit_short}\","
-            echo "  date: \"${commit_date}\""
-            echo "};"
-            echo "const SITE_VERSION = {"
-            echo "  commit: \"${site_hash}\","
-            echo "  short: \"${site_short}\","
-            echo "  date: \"${site_date}\""
-            echo "};"
-          } > ../uutils.github.io/static/wasm/version.js
-          echo "uutils WASM build: ${commit_short} (${commit_date})"
-          echo "site build: ${site_short} (${site_date})"
-        fi
+    - name: Download WASM artifacts
+      uses: actions/download-artifact@v5
+      with:
+        pattern: wasm-*
+        path: wasm-artifacts
+        merge-multiple: true
 
-    - name: Build grep WASM binary
+    - name: Assemble WASM playground assets
       run: |
-        # uutils grep is a standalone binary (not part of the coreutils
-        # multicall) and depends on the Oniguruma C library (onig_sys), so the
-        # WASM build needs a WASI sysroot to compile the bundled C sources.
-        WASI_SDK_VERSION=25
-        WASI_SDK_DIR="wasi-sdk-${WASI_SDK_VERSION}.0-x86_64-linux"
-        curl -sL "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_SDK_VERSION}/${WASI_SDK_DIR}.tar.gz" | tar xz
-        export WASI_SDK_PATH="$PWD/${WASI_SDK_DIR}"
-        export CC_wasm32_wasip1="$WASI_SDK_PATH/bin/clang"
-        export CFLAGS_wasm32_wasip1="--sysroot=$WASI_SDK_PATH/share/wasi-sysroot"
-        cd grep
-        cargo build --release --target wasm32-wasip1 --bin grep
-        if [ -f target/wasm32-wasip1/release/grep.wasm ]; then
-          mkdir -p ../uutils.github.io/static/wasm
-          cp target/wasm32-wasip1/release/grep.wasm ../uutils.github.io/static/wasm/grep.wasm
-          # Optimize WASM size if wasm-opt is available
-          if command -v wasm-opt &> /dev/null; then
-            wasm-opt -Oz ../uutils.github.io/static/wasm/grep.wasm -o ../uutils.github.io/static/wasm/grep.wasm
-          fi
-          echo "grep WASM binary size: $(du -h ../uutils.github.io/static/wasm/grep.wasm | cut -f1)"
-          # Advertise grep in the playground's command list. grep ships as its
-          # own WASM module, so it isn't picked up by the coreutils feat_wasm
-          # scan above; append it to the generated list here.
-          commands_js=../uutils.github.io/static/wasm/commands.js
-          if [ -f "$commands_js" ]; then
-            existing=$(sed -n 's/^const WASM_COMMANDS = \[\(.*\)\];$/\1/p' "$commands_js")
-            echo "const WASM_COMMANDS = [${existing}, \"grep\"];" > "$commands_js"
-          else
-            echo 'const WASM_COMMANDS = ["grep"];' > "$commands_js"
-          fi
-          # Record the grep commit used to build its WASM module so the
-          # playground can show it alongside the coreutils build.
-          grep_hash=$(git rev-parse HEAD)
-          grep_short=$(git rev-parse --short HEAD)
-          grep_date=$(git show -s --format=%cI HEAD)
-          {
-            echo "const UUTILS_GREP_VERSION = {"
-            echo "  commit: \"${grep_hash}\","
-            echo "  short: \"${grep_short}\","
-            echo "  date: \"${grep_date}\""
-            echo "};"
-          } >> ../uutils.github.io/static/wasm/version.js
-          echo "grep WASM build: ${grep_short} (${grep_date})"
-        fi
+        # The four wasm-* artifacts each carry their .wasm plus numbered
+        # command/version fragments. Stitch them into the single commands.js /
+        # version.js the playground loads. SITE_VERSION is generated here since
+        # it describes the uutils.github.io repo, not any of the tool repos.
+        mkdir -p uutils.github.io/static/wasm
+        cp wasm-artifacts/*.wasm uutils.github.io/static/wasm/
+        cp wasm-artifacts/locales.js uutils.github.io/static/wasm/
 
-    - name: Build find WASM binary
-      run: |
-        # uutils findutils ships `find` as a standalone binary (not part of the
-        # coreutils multicall) and, like grep, depends on the Oniguruma C
-        # library (onig_sys), so the WASM build needs a WASI sysroot to compile
-        # the bundled C sources. Reuse the WASI SDK fetched by the grep step if
-        # it's still around, otherwise download it.
-        WASI_SDK_VERSION=25
-        WASI_SDK_DIR="wasi-sdk-${WASI_SDK_VERSION}.0-x86_64-linux"
-        if [ ! -d "$WASI_SDK_DIR" ]; then
-          curl -sL "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_SDK_VERSION}/${WASI_SDK_DIR}.tar.gz" | tar xz
-        fi
-        export WASI_SDK_PATH="$PWD/${WASI_SDK_DIR}"
-        export CC_wasm32_wasip1="$WASI_SDK_PATH/bin/clang"
-        export CFLAGS_wasm32_wasip1="--sysroot=$WASI_SDK_PATH/share/wasi-sysroot"
-        cd findutils
-        # Only `find` is shipped: xargs/locate/updatedb need process spawning or
-        # an on-disk database, neither of which works in the browser WASI sandbox.
-        cargo build --release --target wasm32-wasip1 --bin find
-        if [ -f target/wasm32-wasip1/release/find.wasm ]; then
-          mkdir -p ../uutils.github.io/static/wasm
-          cp target/wasm32-wasip1/release/find.wasm ../uutils.github.io/static/wasm/find.wasm
-          # Optimize WASM size if wasm-opt is available
-          if command -v wasm-opt &> /dev/null; then
-            wasm-opt -Oz ../uutils.github.io/static/wasm/find.wasm -o ../uutils.github.io/static/wasm/find.wasm
-          fi
-          echo "find WASM binary size: $(du -h ../uutils.github.io/static/wasm/find.wasm | cut -f1)"
-          # Advertise find in the playground's command list. find ships as its
-          # own WASM module, so it isn't picked up by the coreutils feat_wasm
-          # scan above; append it to the generated list here.
-          commands_js=../uutils.github.io/static/wasm/commands.js
-          if [ -f "$commands_js" ]; then
-            existing=$(sed -n 's/^const WASM_COMMANDS = \[\(.*\)\];$/\1/p' "$commands_js")
-            echo "const WASM_COMMANDS = [${existing}, \"find\"];" > "$commands_js"
-          else
-            echo 'const WASM_COMMANDS = ["find"];' > "$commands_js"
-          fi
-          # Record the findutils commit used to build its WASM module so the
-          # playground can show it alongside the coreutils build.
-          find_hash=$(git rev-parse HEAD)
-          find_short=$(git rev-parse --short HEAD)
-          find_date=$(git show -s --format=%cI HEAD)
-          {
-            echo "const UUTILS_FINDUTILS_VERSION = {"
-            echo "  commit: \"${find_hash}\","
-            echo "  short: \"${find_short}\","
-            echo "  date: \"${find_date}\""
-            echo "};"
-          } >> ../uutils.github.io/static/wasm/version.js
-          echo "find WASM build: ${find_short} (${find_date})"
-        fi
+        # Merge the command-name fragments in numeric (filename) order.
+        commands=$(cat $(ls wasm-artifacts/commands-*.txt | sort) | paste -sd, -)
+        echo "const WASM_COMMANDS = [${commands}];" \
+          > uutils.github.io/static/wasm/commands.js
+        echo "Playground commands: ${commands}"
 
-    - name: Build diffutils WASM binary
-      run: |
-        # uutils diffutils ships a single multicall binary that provides `diff`
-        # and `cmp` (dispatched on argv[0]). Unlike grep/find it has only
-        # pure-Rust dependencies (regex, not onig), so no WASI SDK is needed.
-        cd diffutils
-        cargo build --release --target wasm32-wasip1 --bin diffutils
-        if [ -f target/wasm32-wasip1/release/diffutils.wasm ]; then
-          mkdir -p ../uutils.github.io/static/wasm
-          cp target/wasm32-wasip1/release/diffutils.wasm ../uutils.github.io/static/wasm/diffutils.wasm
-          # Optimize WASM size if wasm-opt is available
-          if command -v wasm-opt &> /dev/null; then
-            wasm-opt -Oz ../uutils.github.io/static/wasm/diffutils.wasm -o ../uutils.github.io/static/wasm/diffutils.wasm
-          fi
-          echo "diffutils WASM binary size: $(du -h ../uutils.github.io/static/wasm/diffutils.wasm | cut -f1)"
-          # Advertise diff and cmp in the playground's command list. They ship as
-          # their own WASM module, so they aren't picked up by the coreutils
-          # feat_wasm scan above; append them to the generated list here.
-          commands_js=../uutils.github.io/static/wasm/commands.js
-          if [ -f "$commands_js" ]; then
-            existing=$(sed -n 's/^const WASM_COMMANDS = \[\(.*\)\];$/\1/p' "$commands_js")
-            echo "const WASM_COMMANDS = [${existing}, \"diff\", \"cmp\"];" > "$commands_js"
-          else
-            echo 'const WASM_COMMANDS = ["diff", "cmp"];' > "$commands_js"
-          fi
-          # Record the diffutils commit used to build its WASM module so the
-          # playground can show it alongside the coreutils build.
-          diff_hash=$(git rev-parse HEAD)
-          diff_short=$(git rev-parse --short HEAD)
-          diff_date=$(git show -s --format=%cI HEAD)
-          {
-            echo "const UUTILS_DIFFUTILS_VERSION = {"
-            echo "  commit: \"${diff_hash}\","
-            echo "  short: \"${diff_short}\","
-            echo "  date: \"${diff_date}\""
-            echo "};"
-          } >> ../uutils.github.io/static/wasm/version.js
-          echo "diffutils WASM build: ${diff_short} (${diff_date})"
-        fi
+        # Record the uutils.github.io commit the site was built from.
+        site_hash=$(git -C uutils.github.io rev-parse HEAD)
+        site_short=$(git -C uutils.github.io rev-parse --short HEAD)
+        site_date=$(git -C uutils.github.io show -s --format=%cI HEAD)
+        {
+          cat $(ls wasm-artifacts/version-*.js | sort)
+          echo "const SITE_VERSION = {"
+          echo "  commit: \"${site_hash}\","
+          echo "  short: \"${site_short}\","
+          echo "  date: \"${site_date}\""
+          echo "};"
+        } > uutils.github.io/static/wasm/version.js
+        echo "site build: ${site_short} (${site_date})"
 
     - name: Run Zola
       uses: shalzz/zola-deploy-action@v0.22.1
@@ -361,66 +390,6 @@ jobs:
       uses: actions/upload-pages-artifact@v5
       with:
         path: ./public
-
-  # dev-docs:
-  #   name: generate the dev doc
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - name: Checkout repository
-  #     uses: actions/checkout@v4
-  #     with:
-  #       repository: uutils/coreutils
-  #       path: './coreutils'
-  #       fetch-depth: 0
-
-  #   - name: Install `rust` toolchain
-  #     uses: actions-rs/toolchain@v1
-  #     with:
-  #       toolchain: stable
-  #       default: true
-  #       profile: minimal
-
-  #   - name: Build dev documentation
-  #     run: |
-  #       cd coreutils
-  #       cargo doc --no-deps --all-features --workspace
-
-  #   - name: Deploy Docs
-  #     uses: peaceiris/actions-gh-pages@v3
-  #     with:
-  #       github_token: ${{ secrets.GITHUB_TOKEN }}
-  #       publish_dir: ./coreutils/target/doc
-  #       destination_dir: coreutils/dev/
-
-  # build-report:
-  #   name: generate the build report
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - name: Checkout repository
-  #     uses: actions/checkout@v4
-  #     with:
-  #       repository: uutils/coreutils
-  #       path: './coreutils'
-  #       fetch-depth: 0
-
-  #   - name: Install `rust` toolchain
-  #     uses: actions-rs/toolchain@v1
-  #     with:
-  #       toolchain: nightly
-  #       default: true
-  #       profile: minimal
-
-  #   - name: Build report
-  #     run: |
-  #       cd coreutils
-  #       cargo +nightly build --timings=html  -Zunstable-options
-
-  #   - name: Deploy build report
-  #     uses: peaceiris/actions-gh-pages@v3
-  #     with:
-  #       github_token: ${{ secrets.GITHUB_TOKEN }}
-  #       publish_dir: ./coreutils/target/cargo-timings/
-  #       destination_dir: cargo-timings/
 
   # Deployment job
   deploy:
