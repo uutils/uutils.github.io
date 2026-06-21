@@ -638,10 +638,30 @@ async function executeCommandLine(line) {
     }
 
     try {
+      // sed's script argument is a program, not a path — it must NOT go through
+      // resolvePath, which normalizes path segments and would strip a trailing
+      // delimiter (e.g. `s/world/there/` -> `s/world/there`, breaking the `s`
+      // command). Collect the indices of any sed script arguments to skip.
+      const sedScriptIndices = new Set();
+      if (cmd === "sed") {
+        let scriptFromFlag = false;
+        for (let i = 1; i < args.length; i++) {
+          const a = args[i];
+          if (a === "-e" || a === "-f") { sedScriptIndices.add(i + 1); scriptFromFlag = true; i++; continue; }
+          if (a.startsWith("-e") || a.startsWith("-f")) { scriptFromFlag = true; } // combined form, e.g. -e's/a/b/'
+        }
+        // Without -e/-f, the script is the first non-option argument.
+        if (!scriptFromFlag) {
+          for (let i = 1; i < args.length; i++) {
+            if (!args[i].startsWith("-")) { sedScriptIndices.add(i); break; }
+          }
+        }
+      }
       // Resolve relative paths using the virtual cwd
       const resolvedArgs = args.map((arg, i) => {
         if (i === 0) return arg; // command name
         if (arg.startsWith("-")) return arg; // flag
+        if (sedScriptIndices.has(i)) return arg; // sed script, not a path
         return resolvePath(arg);
       });
       // If the command takes a default path (like ls) and no path args
