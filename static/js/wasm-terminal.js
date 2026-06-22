@@ -31,6 +31,18 @@ const STANDALONE_MODULES = {
   diffutils: { url: "/wasm/diffutils.wasm", commands: ["diff", "cmp"] },
   sed: { url: "/wasm/sed.wasm", commands: ["sed"] },
 };
+// "Load" buttons present standalone modules under one label. findutils ships
+// find, locate and updatedb as separate binaries but loads them together as a
+// single "find" entry, so one click brings up all of findutils.
+const STANDALONE_GROUPS = {
+  grep: ["grep"],
+  find: ["find", "locate", "updatedb"],
+  diffutils: ["diffutils"],
+  sed: ["sed"],
+};
+// Shared locate database path inside the virtual FS (see the updatedb/locate
+// handling in executeCommandLine).
+const LOCATE_DB = "locatedb";
 // Map each command to the module that provides it (e.g. diff -> "diffutils").
 const STANDALONE_COMMAND_MODULE = Object.fromEntries(
   Object.entries(STANDALONE_MODULES).flatMap(
@@ -683,6 +695,22 @@ async function executeCommandLine(line) {
         const hasStartPath = resolvedArgs.length > 1 && !resolvedArgs[1].startsWith("-");
         if (!hasStartPath) resolvedArgs.splice(1, 0, cwd || ".");
       }
+      // updatedb/locate default to /usr/local/var/locatedb and updatedb scans
+      // "/", neither of which exists in the browser's WASI filesystem (only the
+      // virtual cwd "." is preopened). Point both at a writable db file in the
+      // virtual root and have updatedb index the playground's files, so a bare
+      // `updatedb` then `locate <pattern>` works out of the box.
+      if (cmd === "updatedb") {
+        if (!resolvedArgs.some(a => a === "--output" || a.startsWith("--output=")))
+          resolvedArgs.push(`--output=${LOCATE_DB}`);
+        if (!resolvedArgs.some(a => a === "--localpaths" || a.startsWith("--localpaths=")))
+          resolvedArgs.push(`--localpaths=${cwd || "."}`);
+      }
+      if (cmd === "locate") {
+        const hasDb = resolvedArgs.some(a =>
+          a === "--database" || a.startsWith("--database=") || a === "-d" || (a.startsWith("-d") && a.length > 2));
+        if (!hasDb) resolvedArgs.splice(1, 0, `--database=${LOCATE_DB}`);
+      }
       // Standalone utilities are invoked directly (argv[0] = the command name);
       // coreutils utilities go through the multicall dispatcher
       // (argv = ["coreutils", <util>, ...]).
@@ -1009,25 +1037,33 @@ window.uutilsExecute = executeCommandLine;
 window.runInTerminal = runInTerminal;
 window.setLocale = setLocale;
 
-// On-demand loading of the optional standalone modules (grep, find, locate,
-// updatedb, diffutils, sed), used by the "Load" buttons on the
-// playground page. Keyed by module name; one
-// module may back several commands (diffutils → diff, cmp).
-window.uutilsPrograms = Object.keys(STANDALONE_MODULES);
-window.loadProgram = (mod) => loadStandalone(mod);
-window.isProgramLoaded = (mod) => !!standaloneModules[mod];
-// Best-effort byte size of a module, for the button label (0 if the server
-// doesn't report Content-Length or the binary is missing).
-window.programSize = async (mod) => {
-  const url = STANDALONE_MODULES[mod] && STANDALONE_MODULES[mod].url;
-  if (!url) return 0;
-  try {
-    const r = await fetch(url, { method: "HEAD" });
-    const cl = r.ok ? r.headers.get("content-length") : null;
-    return cl ? parseInt(cl, 10) : 0;
-  } catch {
-    return 0;
-  }
+// On-demand loading of the optional standalone modules, used by the "Load"
+// buttons on the playground page. Buttons operate on groups (see
+// STANDALONE_GROUPS): "find" loads find + locate + updatedb together, while the
+// others map one-to-one. A group with an unknown name falls back to a same-named
+// single module.
+const groupModules = (group) => STANDALONE_GROUPS[group] || [group];
+window.uutilsPrograms = Object.keys(STANDALONE_GROUPS);
+window.loadProgram = (group) =>
+  Promise.all(groupModules(group).map(m => loadStandalone(m)))
+    .then(mods => mods.every(Boolean) ? mods : null);
+window.isProgramLoaded = (group) =>
+  groupModules(group).every(m => !!standaloneModules[m]);
+// Best-effort byte size of a group, summed across its modules, for the button
+// label (0 if the server doesn't report Content-Length or a binary is missing).
+window.programSize = async (group) => {
+  const sizes = await Promise.all(groupModules(group).map(async (m) => {
+    const url = STANDALONE_MODULES[m] && STANDALONE_MODULES[m].url;
+    if (!url) return 0;
+    try {
+      const r = await fetch(url, { method: "HEAD" });
+      const cl = r.ok ? r.headers.get("content-length") : null;
+      return cl ? parseInt(cl, 10) : 0;
+    } catch {
+      return 0;
+    }
+  }));
+  return sizes.reduce((a, b) => a + b, 0);
 };
 
 // Expose internals for testing

@@ -28,11 +28,11 @@ template = "page.html"
 <script defer>
   document.addEventListener("DOMContentLoaded", function() {
     initPlayground("wasm-playground");
-    // Build a "Load" button per optional standalone module (grep, find,
-    // locate, updatedb, diffutils, sed). These ship as their own WASM
-    // modules and load on demand to
-    // keep the initial page download light; running a command auto-loads its
-    // module too (e.g. diff/cmp both come from the diffutils module).
+    // Build a "Load" button per optional standalone group (grep, find,
+    // diffutils, sed). These ship as their own WASM modules and load on demand
+    // to keep the initial page download light; running a command auto-loads its
+    // module too (e.g. diff/cmp both come from the diffutils module, and find
+    // loads find/locate/updatedb together).
     var loaderBar = document.getElementById("playground-loaders");
     if (loaderBar && Array.isArray(window.uutilsPrograms)) {
       window.uutilsPrograms.forEach(function(prog) {
@@ -63,9 +63,10 @@ template = "page.html"
             }
           });
         });
-        // Keep the button in sync if the module is loaded by running a command.
+        // Keep the button in sync once every module it covers is loaded by
+        // running a command (a group like "find" backs find/locate/updatedb).
         document.addEventListener("uutils:program-loaded", function(e) {
-          if (e.detail && e.detail.module === prog) markLoaded();
+          if (e.detail && window.isProgramLoaded(prog)) markLoaded();
         });
         if (window.isProgramLoaded(prog)) markLoaded();
         loaderBar.appendChild(btn);
