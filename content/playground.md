@@ -29,7 +29,8 @@ template = "page.html"
   document.addEventListener("DOMContentLoaded", function() {
     initPlayground("wasm-playground");
     // Build a "Load" button per optional standalone module (grep, find,
-    // diffutils). These ship as their own WASM modules and load on demand to
+    // locate, updatedb, diffutils, sed). These ship as their own WASM
+    // modules and load on demand to
     // keep the initial page download light; running a command auto-loads its
     // module too (e.g. diff/cmp both come from the diffutils module).
     var loaderBar = document.getElementById("playground-loaders");

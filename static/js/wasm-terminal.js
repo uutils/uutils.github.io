@@ -15,15 +15,19 @@ if (typeof SharedArrayBuffer === "undefined") {
 
 const WASM_URL = "/wasm/uutils.wasm";
 // Some utilities ship as their own standalone WASM modules rather than as part
-// of the coreutils multicall binary (grep lives in uutils/grep, find in
-// uutils/findutils, diff and cmp in uutils/diffutils, sed in uutils/sed). Each
-// module is loaded on demand and is optional — see loadStandalone. A single
-// module can provide several commands (diffutils → diff, cmp), which the
-// diffutils binary dispatches on argv[0], so each command is invoked directly
-// by its own name.
+// of the coreutils multicall binary (grep lives in uutils/grep, find/locate/
+// updatedb in uutils/findutils, diff and cmp in uutils/diffutils, sed in
+// uutils/sed). Each module is loaded on demand and is optional — see
+// loadStandalone. A single module can provide several commands (diffutils →
+// diff, cmp), which the binary dispatches on argv[0], so each command is invoked
+// directly by its own name. findutils ships separate binaries, so each is its
+// own module. (xargs is intentionally absent: it must spawn child processes,
+// which the browser WASI sandbox can't do.)
 const STANDALONE_MODULES = {
   grep: { url: "/wasm/grep.wasm", commands: ["grep"] },
   find: { url: "/wasm/find.wasm", commands: ["find"] },
+  locate: { url: "/wasm/locate.wasm", commands: ["locate"] },
+  updatedb: { url: "/wasm/updatedb.wasm", commands: ["updatedb"] },
   diffutils: { url: "/wasm/diffutils.wasm", commands: ["diff", "cmp"] },
   sed: { url: "/wasm/sed.wasm", commands: ["sed"] },
 };
@@ -75,7 +79,7 @@ const FALLBACK_COMMANDS = [
   "sha1sum", "sha224sum", "sha256sum", "sha384sum", "sha512sum",
   "shred", "shuf", "sleep", "sum", "tee", "true", "truncate",
   "uname", "unexpand", "uniq", "unlink", "vdir", "wc",
-  "grep", "find", "diff", "cmp", "sed",
+  "grep", "find", "locate", "updatedb", "diff", "cmp", "sed",
 ];
 const AVAILABLE_COMMANDS =
   (typeof WASM_COMMANDS !== "undefined" && Array.isArray(WASM_COMMANDS) && WASM_COMMANDS.length > 0)
@@ -233,7 +237,8 @@ async function initWasm() {
   if (wasmReady) return;
   try {
     // Only the coreutils multicall binary loads eagerly; the standalone
-    // modules (grep, find, diffutils) are fetched on demand — see loadStandalone.
+    // modules (grep, find, locate, updatedb, diffutils, sed) are fetched
+    // on demand — see loadStandalone.
     await Promise.all([loadWasiShim(), loadWasm()]);
     wasmReady = true;
   } catch (e) {
@@ -626,8 +631,9 @@ async function executeCommandLine(line) {
       return `uutils: command not found: ${cmd}\nType 'help' for available commands.\n`;
     }
 
-    // Some utilities (grep, find, diff, cmp) are separate WASM modules rather
-    // than part of the coreutils multicall binary, and are loaded on demand.
+    // Some utilities (grep, find, locate, updatedb, diff, cmp, sed) are
+    // separate WASM modules rather than part of the coreutils multicall binary,
+    // and are loaded on demand.
     // Fetch the module the first time one of its commands is used (no-op once
     // cached; diff and cmp share the single diffutils module).
     const moduleName = STANDALONE_COMMAND_MODULE[cmd];
@@ -955,7 +961,7 @@ async function initPlayground(containerId) {
     terminal.writeln("");
     terminal.writeln("Type \x1b[1;32mhelp\x1b[0m for available commands.");
     terminal.writeln("Sample data files: names.txt, numbers.txt, fruits.txt, csv.txt, words.txt");
-    terminal.writeln("\x1b[2mgrep, find, sed and diff/cmp load on demand — just run them, or use the buttons below.\x1b[0m");
+    terminal.writeln("\x1b[2mgrep, find/locate/updatedb, sed and diff/cmp load on demand — just run them, or use the buttons below.\x1b[0m");
   } catch (e) {
     terminal.writeln(" \x1b[1;31mfailed\x1b[0m");
     terminal.writeln("Failed to load WASM binary. Commands are not available.");
@@ -1003,8 +1009,9 @@ window.uutilsExecute = executeCommandLine;
 window.runInTerminal = runInTerminal;
 window.setLocale = setLocale;
 
-// On-demand loading of the optional standalone modules (grep, find, diffutils),
-// used by the "Load" buttons on the playground page. Keyed by module name; one
+// On-demand loading of the optional standalone modules (grep, find, locate,
+// updatedb, diffutils, sed), used by the "Load" buttons on the
+// playground page. Keyed by module name; one
 // module may back several commands (diffutils → diff, cmp).
 window.uutilsPrograms = Object.keys(STANDALONE_MODULES);
 window.loadProgram = (mod) => loadStandalone(mod);

@@ -118,11 +118,13 @@ jobs:
         name: wasm-coreutils
         path: wasm-out
 
-  # grep, find, diffutils and sed each ship a single standalone binary built the
-  # same way, so they share one matrix job. grep/find pull in the Oniguruma C
-  # library (onig_sys) and need a WASI sysroot to compile its bundled C sources;
-  # diffutils and sed are pure Rust and set needs_wasi: false. The `order` field
-  # keeps the merged command/version lists in a stable sequence in `build`.
+  # grep, findutils, diffutils and sed ship standalone binaries built the same
+  # way, so they share one matrix job. Each entry lists its `bins` (findutils
+  # provides three: find, locate, updatedb); every bin emits its own .wasm.
+  # grep/findutils pull in the Oniguruma C library (onig_sys) and need a WASI
+  # sysroot to compile its bundled C sources; diffutils and sed are pure Rust and
+  # set needs_wasi: false. The `order` field keeps the merged command/version
+  # lists in a stable sequence in `build`.
   wasm-standalone:
     name: Build ${{ matrix.name }} WASM
     runs-on: ubuntu-latest
@@ -132,28 +134,31 @@ jobs:
         include:
         - name: grep
           repo: uutils/grep
-          bin: grep
+          bins: grep
           needs_wasi: true
           commands: '"grep"'
           version_const: UUTILS_GREP_VERSION
           order: 10
+        # findutils ships several standalone binaries; build find, locate and
+        # updatedb so the playground can offer them. (xargs is omitted: it must
+        # spawn child processes, which the browser WASI sandbox can't do.)
         - name: find
           repo: uutils/findutils
-          bin: find
+          bins: find locate updatedb
           needs_wasi: true
-          commands: '"find"'
+          commands: '"find","locate","updatedb"'
           version_const: UUTILS_FINDUTILS_VERSION
           order: 20
         - name: diffutils
           repo: uutils/diffutils
-          bin: diffutils
+          bins: diffutils
           needs_wasi: false
           commands: '"diff","cmp"'
           version_const: UUTILS_DIFFUTILS_VERSION
           order: 30
         - name: sed
           repo: uutils/sed
-          bin: sed
+          bins: sed
           needs_wasi: false
           commands: '"sed"'
           version_const: UUTILS_SED_VERSION
@@ -187,17 +192,21 @@ jobs:
           export CC_wasm32_wasip1="$WASI_SDK_PATH/bin/clang"
           export CFLAGS_wasm32_wasip1="--sysroot=$WASI_SDK_PATH/share/wasi-sysroot"
         fi
-        wasm="${{ matrix.bin }}.wasm"
         cd ${{ matrix.name }}
-        cargo build --release --target wasm32-wasip1 --bin ${{ matrix.bin }}
-        test -f "target/wasm32-wasip1/release/${wasm}"
         mkdir -p ../wasm-out
-        cp "target/wasm32-wasip1/release/${wasm}" "../wasm-out/${wasm}"
-        # Optimize WASM size if wasm-opt is available
-        if command -v wasm-opt &> /dev/null; then
-          wasm-opt -Oz "../wasm-out/${wasm}" -o "../wasm-out/${wasm}"
-        fi
-        echo "${{ matrix.name }} WASM binary size: $(du -h ../wasm-out/${wasm} | cut -f1)"
+        # A module may ship several standalone binaries (findutils → find,
+        # locate, updatedb); build each and emit its own .wasm file.
+        for bin in ${{ matrix.bins }}; do
+          wasm="${bin}.wasm"
+          cargo build --release --target wasm32-wasip1 --bin "${bin}"
+          test -f "target/wasm32-wasip1/release/${wasm}"
+          cp "target/wasm32-wasip1/release/${wasm}" "../wasm-out/${wasm}"
+          # Optimize WASM size if wasm-opt is available
+          if command -v wasm-opt &> /dev/null; then
+            wasm-opt -Oz "../wasm-out/${wasm}" -o "../wasm-out/${wasm}"
+          fi
+          echo "${bin} WASM binary size: $(du -h ../wasm-out/${wasm} | cut -f1)"
+        done
         # Advertise this module's commands in the playground's command list.
         echo '${{ matrix.commands }}' > ../wasm-out/commands-${{ matrix.order }}-${{ matrix.name }}.txt
         # Record the commit used to build this WASM module.
