@@ -525,6 +525,21 @@ function readVirtualFile(name) {
 }
 
 /**
+ * Stamp a virtual file's timestamps with "now". browser_wasi_shim creates
+ * files written by a WASM command (e.g. updatedb's database) with epoch (1970)
+ * timestamps; this patches stat() the same way getPersistentDir does for the
+ * sample files, so age-sensitive readers (locate) don't see a decades-old file.
+ */
+function touchVirtualFileNow(name) {
+  const dir = getPersistentDir();
+  const file = dir.dir.contents.get(resolvePath(name));
+  if (!file || typeof file.stat !== "function") return;
+  const nowNs = BigInt(Date.now()) * 1_000_000n;
+  const orig = file.stat.bind(file);
+  file.stat = () => { const s = orig(); s.atim = nowNs; s.mtim = nowNs; s.ctim = nowNs; return s; };
+}
+
+/**
  * Write a file to the virtual filesystem.
  */
 function writeVirtualFile(name, content, append) {
@@ -727,6 +742,14 @@ async function executeCommandLine(line) {
       }
       const wasmArgs = isStandalone ? dispatchArgs : ["coreutils", ...resolvedArgs];
       const result = await runCommand(wasmArgs, stdinData, isStandalone ? standaloneModules[moduleName] : wasmModule);
+      // updatedb writes its database with epoch (1970) timestamps in the virtual
+      // FS, so a later `locate` would warn the db is decades old (and that stderr
+      // warning would break `locate … | …` pipes). Stamp the freshly-built db
+      // with "now" to keep locate quiet.
+      if (cmd === "updatedb" && result.exitCode === 0) {
+        const outArg = resolvedArgs.find(a => a.startsWith("--output="));
+        touchVirtualFileNow(outArg ? outArg.slice("--output=".length) : LOCATE_DB);
+      }
       if (result.stderr) {
         return result.stderr + result.stdout;
       }
