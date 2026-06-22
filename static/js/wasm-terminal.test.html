@@ -508,6 +508,45 @@ async function runTests() {
       section("find WASM module (SKIPPED - find.wasm not loaded)");
     }
 
+    // ===== updatedb / locate (findutils standalone WASM modules) =====
+    // updatedb and locate ship as separate findutils binaries but work as a
+    // pair: bare `updatedb` then `locate <pattern>` should "just work" in the
+    // browser. Out of the box findutils would write/read /usr/local/var/locatedb
+    // and scan "/", none of which exist in the WASI sandbox, so the playground
+    // injects --output=/--database=<db in the virtual FS> and points updatedb at
+    // the virtual cwd via --localpaths. Exercise that round-trip. Both auto-load
+    // on first use; skips gracefully if the .wasm files are absent.
+    T.cwd = "";
+    await executeCommandLine("updatedb");
+    if (T.updatedbReady) {
+      section("updatedb / locate WASM modules");
+
+      assert("updatedb auto-loaded on first use", T.updatedbReady, true);
+      assert("updatedb in AVAILABLE_COMMANDS",
+        AVAILABLE_COMMANDS.includes("updatedb"), true);
+      // Bare updatedb builds the locate database inside the virtual filesystem
+      // (the injected --output), instead of failing on /usr/local/var/locatedb.
+      assert("updatedb created the locate database",
+        readVirtualFile("locatedb") !== null, true);
+
+      // Bare locate reads that same database (the injected --database) rather
+      // than the missing default path.
+      const locateNames = await executeCommandLine("locate names.txt");
+      assert("locate in AVAILABLE_COMMANDS",
+        AVAILABLE_COMMANDS.includes("locate"), true);
+      assert("locate auto-loaded on first use", T.locateReady, true);
+      assert("locate finds an indexed file by name",
+        locateNames.includes("names.txt"), true);
+
+      // locate matches (and returns) emoji / multibyte filenames, and its
+      // output pipes into coreutils utilities.
+      await assertAsync("locate emoji files piped into sort",
+        executeCommandLine("locate .md | sort"),
+        "./🍌.md\n./🍎.md\n./🍒.md\n./🥝.md\n");
+    } else {
+      section("updatedb / locate WASM modules (SKIPPED - findutils .wasm not loaded)");
+    }
+
     // ===== diff / cmp (diffutils standalone WASM module) =====
     // diff and cmp share one module (diffutils). Pre-load it via the on-demand
     // loader (also covers that diff and cmp resolve to the same module). Skips

@@ -1082,6 +1082,8 @@ window._uutilsTestInternals = {
   get wasmReady() { return wasmReady; },
   get grepReady() { return !!standaloneModules.grep; },
   get findReady() { return !!standaloneModules.find; },
+  get locateReady() { return !!standaloneModules.locate; },
+  get updatedbReady() { return !!standaloneModules.updatedb; },
   get diffutilsReady() { return !!standaloneModules.diffutils; },
   get sedReady() { return !!standaloneModules.sed; },
   initWasm,
