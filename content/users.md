@@ -203,6 +203,78 @@ maintain uutils compatibility in their build system.
 
 ---
 
+## Fedora / RHEL / EPEL
+
+uutils coreutils is packaged in **Fedora** since F39/F40 (as `rust-coreutils`,
+renamed to `uutils-coreutils` in Fedora 42). It is available in Fedora
+42, 43, 44 and Rawhide at version 0.7.0, and in **EPEL 9 and EPEL 10** — making
+it available to Red Hat Enterprise Linux users. Fedora is not planning to make
+it the default in the near term but maintains the package actively.
+
+uutils is also packaged in **OpenMandriva** (all branches) and **Apertis**
+(the Debian-based embedded automotive Linux distro, v2023–v2027).
+
+**Links:**
+- [Fedora package: uutils-coreutils](https://packages.fedoraproject.org/pkgs/uutils-coreutils/)
+- [EPEL package](https://packages.fedoraproject.org/pkgs/uutils-coreutils/)
+
+---
+
+## NixOS
+
+uutils coreutils is available in **nixpkgs** as `uutils-coreutils` and
+`uutils-coreutils-noprefix` (the latter installs commands without the `uu-`
+prefix, as drop-in replacements). Version history:
+
+| NixOS release | uutils version |
+|---|---|
+| 23.11 | 0.0.22 |
+| 24.05 | 0.0.25 |
+| 24.11 | 0.0.27 |
+| 25.05 | 0.2.2 |
+| 25.11 | 0.8.0 |
+| 26.05 / unstable | 0.9.0 |
+
+The NixOS community is actively discussing whether to replace `stdenv`'s GNU
+coreutils with uutils by default (nixpkgs [#440833](https://github.com/NixOS/nixpkgs/issues/440833)).
+
+**Links:**
+- [NixOS Wiki: uutils coreutils](https://wiki.nixos.org/wiki/Uutils_coreutils)
+
+---
+
+## macOS
+
+uutils is available on macOS via two package managers:
+
+- **Homebrew**: `brew install uutils-coreutils`
+- **MacPorts**: `port install coreutils-uutils`
+
+This makes uutils a practical cross-platform development tool: scripts written
+with uutils on Linux run identically on macOS developer machines without
+depending on GNU coreutils via Homebrew.
+
+---
+
+## Windows (community)
+
+Beyond Microsoft's official distribution, uutils is available on Windows via:
+
+- **MSYS2** (all variants): 0.9.0
+- **Scoop**: `scoop install uutils-coreutils`
+- **Chocolatey**: `choco install uutils-coreutils`
+
+---
+
+## Termux (Android) and ChromeOS
+
+- **Termux User Repository (TUR)**: uutils-coreutils 0.9.0 is available for
+  Android terminals via Termux.
+- **Chromebrew**: ChromeOS users can install uutils-coreutils via the
+  Chromebrew package manager.
+
+---
+
 ## Are you using uutils?
 
 If your project or organisation uses uutils tools, we would love to hear from
