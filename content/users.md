@@ -105,6 +105,82 @@ Version coverage across Yocto releases:
 
 ---
 
+## Debian
+
+Debian has packaged uutils coreutils since **Debian 12 (Bookworm)** and is
+actively tracking upstream releases:
+
+| Debian release | uutils version |
+|---|---|
+| 12 Bookworm | 0.0.17 |
+| 13 Trixie | 0.0.30 |
+| 14 Forky / Unstable | 0.9.0 |
+
+Debian is also following Ubuntu's path toward making uutils the default.
+A **Google Summer of Code 2024** project — *"Improve support of the Rust
+coreutils in Debian"* — was mentored by Sylvestre Ledru to accelerate the
+integration. The package is also inherited by downstream Debian-based
+distributions including Raspbian, Kali Linux, Parrot OS, PureOS, and deepin 23.
+
+**Links:**
+- [Debian package tracker: rust-coreutils](https://packages.debian.org/search?keywords=rust-coreutils)
+- [GSoC 2024 project](https://wiki.debian.org/SummerOfCode2024/ApprovedProjects)
+
+---
+
+## Alpine Linux
+
+Alpine Linux packages uutils coreutils in its **community repository** (Alpine
+3.19+, now at 0.9.0 in Alpine Edge / 3.24). What makes Alpine particularly
+notable is the depth of adoption: **29 downstream Alpine packages already
+declare a dependency on uutils-coreutils**, including lvm2, netdata, dracut,
+Pi-hole, and openvas-scanner.
+
+When both `uutils-coreutils` and `coreutils` are installed, Alpine's package
+manager automatically purges the GNU binaries and replaces them with uutils
+symlinks.
+
+**Links:**
+- [Alpine package: uutils-cutils](https://pkgs.alpinelinux.org/package/edge/community/x86_64/uutils-coreutils)
+
+---
+
+## Redox OS
+
+[Redox OS](https://www.redox-os.org/), the microkernel operating system written
+entirely in Rust, uses uutils as its coreutils layer. The project maintains a
+dedicated mirror at
+[gitlab.redox-os.org/redox-os/uutils](https://gitlab.redox-os.org/redox-os/uutils)
+and is listed as an officially supported platform in the uutils codebase.
+
+---
+
+## VS Code for the Web
+
+**Microsoft VS Code for the Web** (vscode.dev) uses uutils coreutils compiled
+to **WebAssembly/WASI** to power the shell commands (`ls`, `cat`, `date`, etc.)
+available in the browser-based terminal. This was documented in the official
+VS Code blog in June 2023 and represents one of the first large-scale
+production deployments of uutils in a WASM context.
+
+**Links:**
+- [VS Code blog: WebAssembly shell](https://code.visualstudio.com/blogs/2023/06/05/vscode-wasm-wasi)
+
+---
+
+## Buildroot
+
+[Buildroot](https://buildroot.org/) — the widely-used embedded Linux build
+system — received a patch adding an official `uutils-coreutils` package in
+April 2025. The package supports **multicall binary mode** (BusyBox-style
+single binary dispatch), is mutually exclusive with GNU coreutils, and handles
+cross-compilation for embedded targets.
+
+This brings uutils into the reach of a vast ecosystem of IoT, industrial, and
+embedded devices built with Buildroot.
+
+---
+
 ## Apertus
 
 [Apertus](https://www.apertus.org/) builds the **AXIOM Beta**, an open-source
