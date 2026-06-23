@@ -91,6 +91,8 @@ uutils is a community-driven, open-source effort maintained by volunteers around
 
 Everything happens in the open on [GitHub](https://github.com/uutils), and newcomers are genuinely welcome. Many of our contributors landed their first-ever open-source patch on a uutils project, and we are happy to help you do the same.
 
+[Meet the team](/team) behind uutils.
+
 # Contributing
 
 You can help us out by:
