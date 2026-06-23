@@ -62,7 +62,7 @@ Ubuntu is already [carefully but purposefully adopting](https://discourse.ubuntu
       <a class="prow" href="/grep"><span class="name">grep</span><span class="desc"><code>grep</code>, <code>egrep</code>, <code>fgrep</code></span><span class="st st-beta">beta</span></a>
       <a class="prow" href="/util-linux"><span class="name">util-linux</span><span class="desc"><code>mount</code>, <code>fdisk</code>, <code>lsblk</code>, <code>dmesg</code></span><span class="st st-wip">in progress</span></a>
       <a class="prow" href="/procps"><span class="name">procps</span><span class="desc"><code>ps</code>, <code>top</code>, <code>free</code>, <code>vmstat</code></span><span class="st st-wip">in progress</span></a>
-      <a class="prow" href="/sed"><span class="name">sed</span><span class="desc">stream editor for filtering and transforming text</span><span class="st st-wip">in progress</span></a>
+      <a class="prow" href="/sed"><span class="name">sed</span><span class="desc">stream editor for filtering and transforming text</span><span class="st st-alpha">alpha</span></a>
       <a class="prow" href="/awk"><span class="name">awk</span><span class="desc">pattern scanning and text-processing language</span><span class="st st-wip">in progress</span></a>
       <a class="prow" href="/tar"><span class="name">tar</span><span class="desc">create and extract tar archives</span><span class="st st-wip">in progress</span></a>
       <a class="prow" href="/acl"><span class="name">acl</span><span class="desc"><code>getfacl</code>, <code>setfacl</code>, <code>chacl</code></span><span class="st st-wip">in progress</span></a>

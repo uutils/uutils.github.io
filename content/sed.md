@@ -5,6 +5,7 @@ template = "project.html"
 
 [extra]
 wip = true
+status = "alpha"
 
 +++
 
