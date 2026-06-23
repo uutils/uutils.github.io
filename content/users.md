@@ -73,16 +73,18 @@ symlinks, reversibly, in one command.
 
 ---
 
-## Yocto Project / OpenEmbedded
+## Snap Inc. (SPECS AR glasses)
 
-The [Yocto Project](https://www.yoctoproject.org/) is the industry-standard
-build system for embedded and IoT Linux distributions. uutils/coreutils has been
-available as an official recipe in the **meta-openembedded** (`meta-oe`) layer
-since Yocto 4.1 (langdale), letting embedded developers replace GNU coreutils
-in their custom Linux images.
+[Snap Inc.](https://snap.com/) ships **Snap OS** - the proprietary Linux-based
+operating system powering the [SPECS augmented reality glasses](https://newsroom.snap.com/introducing-specs-augmented-reality-glasses)
+announced at Augmented World Expo 2026 - built on **Yocto/OpenEmbedded**.
 
-The recipe uses `PROVIDES = "coreutils"` so it acts as a transparent drop-in
-replacement. Version coverage across releases:
+Snap engineer Etienne Cordonnier has been the primary contributor and maintainer
+of the `uutils-coreutils` recipe in the **meta-openembedded** (`meta-oe`) layer
+since Yocto 4.1 (langdale). The recipe uses `PROVIDES = "coreutils"` so uutils
+acts as a transparent drop-in replacement for GNU coreutils in embedded images.
+
+Version coverage across Yocto releases:
 
 | Yocto release | uutils version |
 |---|---|
@@ -97,7 +99,9 @@ replacement. Version coverage across releases:
 | master | 0.9.0 |
 
 **Links:**
+- [SPECS AR glasses announcement](https://newsroom.snap.com/introducing-specs-augmented-reality-glasses)
 - [uutils-coreutils recipe on OpenEmbedded Layer Index](https://layers.openembedded.org/rrs/recipedetail/meta-openembedded/3417/)
+- [Etienne Cordonnier's patches on the Yocto mailing list](https://lists.yoctoproject.org/g/poky/topic/bitbake_recipe_for/92508454)
 
 ---
 
