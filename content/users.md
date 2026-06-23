@@ -148,10 +148,10 @@ symlinks.
 ## Redox OS
 
 [Redox OS](https://www.redox-os.org/), the microkernel operating system written
-entirely in Rust, uses uutils as its coreutils layer. The project maintains a
-dedicated mirror at
-[gitlab.redox-os.org/redox-os/uutils](https://gitlab.redox-os.org/redox-os/uutils)
-and is listed as an officially supported platform in the uutils codebase.
+entirely in Rust, uses uutils as its coreutils layer. The
+[Redox Book](https://doc.redox-os.org/book/system-tools.html) states it plainly:
+"Redox uses the Rust implementation of the GNU Coreutils, uutils." Redox is also
+listed as an officially supported platform in the uutils codebase.
 
 ---
 
