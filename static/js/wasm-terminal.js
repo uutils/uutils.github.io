@@ -292,7 +292,7 @@ function getPersistentDir() {
  */
 function resolvePath(p) {
   if (!p || p.startsWith("-")) return p;
-  // Absolute paths (starting with /) stay as-is — WASI preopened dir is "."
+  // Absolute paths (starting with /) stay as-is - WASI preopened dir is "."
   // so absolute paths won't resolve anyway, but don't mangle them.
   if (p.startsWith("/")) return p;
   const base = cwd ? cwd.split("/") : [];
@@ -617,7 +617,7 @@ async function executeCommandLine(line) {
     return "";
   }
 
-  // Builtin: locale — show or set the current locale
+  // Builtin: locale - show or set the current locale
   if (line === "locale" || line.startsWith("locale ")) {
     const arg = line === "locale" ? "" : line.slice(7).trim();
     if (!arg) {
@@ -917,7 +917,7 @@ async function handleInput(data) {
       continue;
     }
 
-    if (code === 9) { // Tab — completion
+    if (code === 9) { // Tab - completion
       const result = tabComplete(inputBuffer, cursorPos);
       if (result.completed) {
         inputBuffer = result.buffer;
