@@ -56,6 +56,7 @@ The distribution is available today via:
 winget install Microsoft.Coreutils
 ```
 
+
 The stated goal is to make moving between Linux, macOS, WSL, containers, and
 Windows frictionless: the same commands, flags, and pipelines work the same
 way, so existing scripts carry over without translation.
@@ -101,7 +102,7 @@ integration. The package is also inherited by downstream Debian-based
 distributions including Raspbian, Kali Linux, Parrot OS, PureOS, and deepin 23.
 
 **Links:**
-- [Debian package tracker: rust-coreutils](https://packages.debian.org/search?keywords=rust-coreutils)
+- [Debian package tracker: rust-coreutils](https://tracker.debian.org/pkg/rust-coreutils)
 - [GSoC 2024 project](https://wiki.debian.org/SummerOfCode2024/ApprovedProjects)
 
 ---
