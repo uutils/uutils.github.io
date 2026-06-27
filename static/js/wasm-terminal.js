@@ -771,13 +771,19 @@ async function executeCommandLine(line) {
 
 
 /**
- * Remember the most recent command line so the page's "Share" button can build
- * a ?cmd= link to it, and notify any listeners that it changed. Builtins that
- * only affect the local view (clear) aren't worth sharing, so they're skipped.
+ * Record a command line that was run, whether typed at the prompt or triggered
+ * by clicking an example. Adds it to the up-arrow history (skipping consecutive
+ * duplicates), remembers it for the page's "Share" button, and notifies any
+ * listeners. Builtins that only affect the local view (clear) aren't worth
+ * sharing, so they're skipped.
  */
 function recordCommand(line) {
   line = (line || "").trim();
-  if (!line || line === "clear") return;
+  if (!line) return;
+  if (history[history.length - 1] !== line) history.push(line);
+  historyIndex = -1;
+  // clear only wipes the local view, so it isn't worth sharing.
+  if (line === "clear") return;
   lastCommand = line;
   if (typeof document !== "undefined") {
     document.dispatchEvent(new CustomEvent("uutils:command-run", { detail: { command: line } }));
@@ -897,8 +903,6 @@ async function handleInput(data) {
       terminal.write("\r\n");
       const line = inputBuffer.trim();
       if (line) {
-        history.push(line);
-        historyIndex = -1;
         recordCommand(line);
         const output = await executeCommandLine(line);
         if (output) writeToTerminal(output);
@@ -1028,7 +1032,7 @@ async function initPlayground(containerId) {
     terminal.writeln("");
     terminal.writeln("Type \x1b[1;32mhelp\x1b[0m for available commands.");
     terminal.writeln("Sample data files: names.txt, numbers.txt, fruits.txt, csv.txt, words.txt");
-    terminal.writeln("\x1b[2mgrep, find/locate/updatedb, sed and diff/cmp load on demand — just run them, or use the buttons below.\x1b[0m");
+    terminal.writeln("\x1b[2mgrep, find/locate/updatedb, sed and diff/cmp load on demand - just run them, or use the buttons above.\x1b[0m");
   } catch (e) {
     terminal.writeln(" \x1b[1;31mfailed\x1b[0m");
     terminal.writeln("Failed to load WASM binary. Commands are not available.");
