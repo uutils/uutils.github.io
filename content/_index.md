@@ -60,6 +60,7 @@ Ubuntu is already [carefully but purposefully adopting](https://discourse.ubuntu
       <a class="prow" href="/findutils"><span class="name">findutils</span><span class="desc"><code>find</code>, <code>locate</code>, <code>xargs</code></span><span class="st st-beta">beta</span></a>
       <a class="prow" href="/diffutils"><span class="name">diffutils</span><span class="desc"><code>diff</code>, <code>cmp</code>, <code>diff3</code>, <code>sdiff</code></span><span class="st st-beta">beta</span></a>
       <a class="prow" href="/grep"><span class="name">grep</span><span class="desc"><code>grep</code>, <code>egrep</code>, <code>fgrep</code></span><span class="st st-beta">beta</span></a>
+      <a class="prow" href="/shadow"><span class="name">shadow</span><span class="desc"><code>useradd</code>, <code>passwd</code>, <code>groupadd</code></span><span class="st st-beta">beta</span></a>
       <a class="prow" href="/util-linux"><span class="name">util-linux</span><span class="desc"><code>mount</code>, <code>fdisk</code>, <code>lsblk</code>, <code>dmesg</code></span><span class="st st-wip">in progress</span></a>
       <a class="prow" href="/procps"><span class="name">procps</span><span class="desc"><code>ps</code>, <code>top</code>, <code>free</code>, <code>vmstat</code></span><span class="st st-wip">in progress</span></a>
       <a class="prow" href="/sed"><span class="name">sed</span><span class="desc">stream editor for filtering and transforming text</span><span class="st st-alpha">alpha</span></a>
@@ -69,7 +70,6 @@ Ubuntu is already [carefully but purposefully adopting](https://discourse.ubuntu
       <a class="prow" href="/hostname"><span class="name">hostname</span><span class="desc">show or set the system hostname</span><span class="st st-wip">in progress</span></a>
       <a class="prow" href="/login"><span class="name">login</span><span class="desc"><code>login</code>, <code>su</code>, <code>passwd</code></span><span class="st st-wip">in progress</span></a>
       <a class="prow" href="/bsdutils"><span class="name">bsdutils</span><span class="desc"><code>cal</code>, <code>logger</code>, <code>script</code>, <code>wall</code></span><span class="st st-wip">in progress</span></a>
-      <a class="prow" href="/shadow"><span class="name">shadow</span><span class="desc"><code>useradd</code>, <code>passwd</code>, <code>groupadd</code></span><span class="st st-wip">in progress</span></a>
     </div>
   </div>
 </div>
