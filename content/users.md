@@ -9,13 +9,46 @@ known adopters and how they use our tools.
 
 ---
 
+## Canonical / Ubuntu
+
+Canonical is progressively replacing GNU coreutils with uutils across Ubuntu.
+Canonical laid out the roadmap in March 2025 in
+[*Carefully But Purposefully Oxidising Ubuntu*](https://discourse.ubuntu.com/t/carefully-but-purposefully-oxidising-ubuntu/56995).
+
+The rollout:
+
+| Release | Status |
+|---|---|
+| Ubuntu 25.10 | uutils coreutils ships as default - real-world testing before the LTS |
+| Ubuntu 26.04 LTS | rust-coreutils 0.8.0 included; `cp`, `mv`, `rm` remain GNU pending 8 TOCTOU fixes found in audit |
+| Ubuntu 26.10 | Target for 100% rust-coreutils |
+
+To support this transition, Canonical commissioned a two-phase security audit
+with [Zellic](https://zellic.io) (December 2025 – March 2026). The audit found
+and resolved 113 issues in total, all reported back to the uutils upstream.
+The full report is available at
+[github.com/Zellic/publications](https://github.com/Zellic/publications/blob/master/uutils%20coreutils%20-%20Zellic%20Audit%20Report.pdf).
+
+A Canonical engineer also created
+[**oxidizr**](https://github.com/jnsgruk/oxidizr), a tool that lets users
+on Ubuntu 24.04+ switch to uutils today - replacing GNU binaries with uutils
+symlinks, reversibly, in one command.
+
+**Links:**
+- [Discourse: Carefully But Purposefully Oxidising Ubuntu](https://discourse.ubuntu.com/t/carefully-but-purposefully-oxidising-ubuntu/56995)
+- [Discourse: Migration to rust-coreutils in 25.10](https://discourse.ubuntu.com/t/migration-to-rust-coreutils-in-25-10/59708)
+- [Discourse: An update on rust-coreutils (April 2026)](https://discourse.ubuntu.com/t/an-update-on-rust-coreutils/80773)
+- [github.com/jnsgruk/oxidizr](https://github.com/jnsgruk/oxidizr)
+- [LWN.net coverage](https://lwn.net/Articles/1014002/)
+
+---
+
 ## Microsoft
 
 Microsoft ships uutils coreutils as **Coreutils for Windows**, a native
 Windows distribution of uutils/coreutils, uutils/findutils, and a Microsoft
 fork of uutils/grep. It was announced at **Microsoft Build 2026** (June 2, 2026)
-by Pavan Davuluri, EVP Windows &amp; Devices, as part of Windows becoming a
-first-class development platform.
+as part of Windows becoming a first-class development platform.
 
 The distribution is available today via:
 
@@ -39,86 +72,32 @@ directly and does not rewrite the tools.
 
 ---
 
-## Canonical / Ubuntu
-
-Canonical is progressively replacing GNU coreutils with uutils across Ubuntu.
-Jon Seager (VP of Engineering) laid out the roadmap in March 2025 in
-[*Carefully But Purposefully Oxidising Ubuntu*](https://discourse.ubuntu.com/t/carefully-but-purposefully-oxidising-ubuntu/56995).
-
-The rollout:
-
-| Release | Status |
-|---|---|
-| Ubuntu 25.10 | uutils coreutils ships as default - real-world testing before the LTS |
-| Ubuntu 26.04 LTS | rust-coreutils 0.8.0 included; `cp`, `mv`, `rm` remain GNU pending 8 TOCTOU fixes found in audit |
-| Ubuntu 26.10 | Target for 100% rust-coreutils |
-
-To support this transition, Canonical commissioned a two-phase security audit
-with [Zellic](https://zellic.io) (December 2025 – March 2026). The audit found
-and resolved 113 issues in total, all reported back to the uutils upstream.
-The full report is available at
-[github.com/Zellic/publications](https://github.com/Zellic/publications/blob/master/uutils%20coreutils%20-%20Zellic%20Audit%20Report.pdf).
-
-Canonical engineer [jnsgruk](https://github.com/jnsgruk) also created
-[**oxidizr**](https://github.com/jnsgruk/oxidizr), a tool that lets users
-on Ubuntu 24.04+ switch to uutils today - replacing GNU binaries with uutils
-symlinks, reversibly, in one command.
-
-**Links:**
-- [Discourse: Carefully But Purposefully Oxidising Ubuntu](https://discourse.ubuntu.com/t/carefully-but-purposefully-oxidising-ubuntu/56995)
-- [Discourse: Migration to rust-coreutils in 25.10](https://discourse.ubuntu.com/t/migration-to-rust-coreutils-in-25-10/59708)
-- [Discourse: An update on rust-coreutils (April 2026)](https://discourse.ubuntu.com/t/an-update-on-rust-coreutils/80773)
-- [github.com/jnsgruk/oxidizr](https://github.com/jnsgruk/oxidizr)
-- [LWN.net coverage](https://lwn.net/Articles/1014002/)
-
----
-
 ## Snap Inc. (SPECS AR glasses)
 
 [Snap Inc.](https://snap.com/) ships **Snap OS** - the proprietary Linux-based
 operating system powering the [SPECS augmented reality glasses](https://newsroom.snap.com/introducing-specs-augmented-reality-glasses)
 announced at Augmented World Expo 2026 - built on **Yocto/OpenEmbedded**.
 
-Snap engineer Etienne Cordonnier has been the primary contributor and maintainer
+A Snap engineer has been the primary contributor and maintainer
 of the `uutils-coreutils` recipe in the **meta-openembedded** (`meta-oe`) layer
 since Yocto 4.1 (langdale). The recipe uses `PROVIDES = "coreutils"` so uutils
 acts as a transparent drop-in replacement for GNU coreutils in embedded images.
 
-Version coverage across Yocto releases:
-
-| Yocto release | uutils version |
-|---|---|
-| 4.1 langdale | 0.0.16 |
-| 4.2 mickledore | 0.0.18 |
-| 4.3 nanbield | 0.0.22 |
-| 5.0 scarthgap | 0.0.28 |
-| 5.1 styhead | 0.0.27 |
-| 5.2 walnascar | 0.0.30 |
-| 5.3 whinlatter | 0.4.0 |
-| 6.0 wrynose | 0.8.0 |
-| master | 0.9.0 |
-
 **Links:**
 - [SPECS AR glasses announcement](https://newsroom.snap.com/introducing-specs-augmented-reality-glasses)
 - [uutils-coreutils recipe on OpenEmbedded Layer Index](https://layers.openembedded.org/rrs/recipedetail/meta-openembedded/3417/)
-- [Etienne Cordonnier's patches on the Yocto mailing list](https://lists.yoctoproject.org/g/poky/topic/bitbake_recipe_for/92508454)
+- [Patches on the Yocto mailing list](https://lists.yoctoproject.org/g/poky/topic/bitbake_recipe_for/92508454)
 
 ---
 
 ## Debian
 
 Debian has packaged uutils coreutils since **Debian 12 (Bookworm)** and is
-actively tracking upstream releases:
-
-| Debian release | uutils version |
-|---|---|
-| 12 Bookworm | 0.0.17 |
-| 13 Trixie | 0.0.30 |
-| 14 Forky / Unstable | 0.9.0 |
+actively tracking upstream releases.
 
 Debian is also following Ubuntu's path toward making uutils the default.
 A **Google Summer of Code 2024** project - *"Improve support of the Rust
-coreutils in Debian"* - was mentored by Sylvestre Ledru to accelerate the
+coreutils in Debian"* - was mentored to accelerate the
 integration. The package is also inherited by downstream Debian-based
 distributions including Raspbian, Kali Linux, Parrot OS, PureOS, and deepin 23.
 
@@ -170,11 +149,8 @@ production deployments of uutils in a WASM context.
 
 ## Buildroot
 
-[Buildroot](https://buildroot.org/) - the widely-used embedded Linux build
-system - received a patch adding an official `uutils-coreutils` package in
-April 2025. The package supports **multicall binary mode** (BusyBox-style
-single binary dispatch), is mutually exclusive with GNU coreutils, and handles
-cross-compilation for embedded targets.
+[Buildroot](https://buildroot.org/), the widely-used embedded Linux build
+system, ships an official `uutils-coreutils` package since April 2025.
 
 This brings uutils into the reach of a vast ecosystem of IoT, industrial, and
 embedded devices built with Buildroot.
@@ -187,12 +163,6 @@ embedded devices built with Buildroot.
 professional cinema camera. Their firmware build system runs on Ubuntu hosts
 and was updated in December 2025 to support uutils coreutils as the host
 toolchain.
-
-Specifically, the u-boot build scripts were patched to make the `dd` invocation
-compatible with uutils semantics (explicit `cbs=` parameter required when
-`conv=block,sync` is used). This patch is included in the
-[axiom-firmware](https://github.com/apertus-open-source-cinema/axiom-firmware)
-repository as `patches/u-boot/03_uutils_support.patch`.
 
 This makes Apertus one of the first hardware projects to explicitly track and
 maintain uutils compatibility in their build system.
@@ -224,19 +194,7 @@ uutils is also packaged in **OpenMandriva** (all branches) and **Apertis**
 
 uutils coreutils is available in **nixpkgs** as `uutils-coreutils` and
 `uutils-coreutils-noprefix` (the latter installs commands without the `uu-`
-prefix, as drop-in replacements). Version history:
-
-| NixOS release | uutils version |
-|---|---|
-| 23.11 | 0.0.22 |
-| 24.05 | 0.0.25 |
-| 24.11 | 0.0.27 |
-| 25.05 | 0.2.2 |
-| 25.11 | 0.8.0 |
-| 26.05 / unstable | 0.9.0 |
-
-The NixOS community is actively discussing whether to replace `stdenv`'s GNU
-coreutils with uutils by default (nixpkgs [#440833](https://github.com/NixOS/nixpkgs/issues/440833)).
+prefix, as drop-in replacements).
 
 **Links:**
 - [NixOS Wiki: uutils coreutils](https://wiki.nixos.org/wiki/Uutils_coreutils)
@@ -268,10 +226,10 @@ Beyond Microsoft's official distribution, uutils is available on Windows via:
 
 ## Termux (Android) and ChromeOS
 
-- **Termux User Repository (TUR)**: uutils-coreutils 0.9.0 is available for
-  Android terminals via Termux.
-- **Chromebrew**: ChromeOS users can install uutils-coreutils via the
-  Chromebrew package manager.
+- **[Termux User Repository (TUR)](https://github.com/termux-user-repository/tur/blob/master/tur/uutils-coreutils/build.sh#L2)**:
+  uutils-coreutils 0.9.0 is available for Android terminals via Termux.
+- **[Chromebrew](https://github.com/chromebrew/chromebrew/blob/master/packages/uutils_coreutils.rb#L6)**: ChromeOS users can
+  install uutils-coreutils via the Chromebrew package manager.
 
 ---
 
