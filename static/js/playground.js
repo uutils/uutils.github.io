@@ -159,14 +159,13 @@ document.addEventListener("DOMContentLoaded", function() {
     el.innerHTML = parts.join(' &middot; ');
   }
 
-  // Clickable examples: run the command and reflect it in the URL so it can
-  // be shared/bookmarked.
+  // Clickable examples: just run the command in the terminal. We deliberately
+  // leave the address bar alone — running an example shouldn't rewrite ?cmd=
+  // out from under the user. The "Copy share link" button is the way to turn
+  // the last command into a shareable ?cmd= URL.
   document.querySelectorAll('.playground-example').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var cmd = btn.textContent;
-      var url = new URL(window.location.href);
-      url.searchParams.set('cmd', cmd);
-      window.history.replaceState(null, '', url);
       document.getElementById('wasm-playground').scrollIntoView({ behavior: 'smooth' });
       if (window.runInTerminal) {
         window.runInTerminal(cmd);
