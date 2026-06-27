@@ -1,4 +1,4 @@
-+++
+I+++
 title = "Who uses uutils"
 template = "page.html"
 +++
@@ -95,9 +95,8 @@ acts as a transparent drop-in replacement for GNU coreutils in embedded images.
 Debian has packaged uutils coreutils since **Debian 12 (Bookworm)** and is
 actively tracking upstream releases.
 
-Debian is also following Ubuntu's path toward making uutils the default.
 A **Google Summer of Code 2024** project - *"Improve support of the Rust
-coreutils in Debian"* - was mentored to accelerate the
+coreutils in Debian"* - was mentored to accelerate the potential 
 integration. The package is also inherited by downstream Debian-based
 distributions including Raspbian, Kali Linux, Parrot OS, PureOS, and deepin 23.
 
