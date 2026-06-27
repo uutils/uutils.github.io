@@ -506,6 +506,29 @@ function parseCommandLine(line) {
   return pipeline;
 }
 
+// Upper bound on the length of a command supplied via the ?cmd= URL parameter.
+// Long enough for any real example, short enough that a pathological value
+// can't be handed to the WASM runtime wholesale (issue #53).
+const MAX_URL_COMMAND_LENGTH = 2048;
+
+/**
+ * Sanitize a command coming from the ?cmd= URL parameter before it is executed.
+ *
+ * Strips control / unprintable characters that cannot be typed at the prompt -
+ * keeping only newline (used to separate multiple commands) and tab - so that
+ * an invisible byte like NUL (%00) no longer reaches the parser and produces a
+ * baffling "command not found:" with nothing after it (issue #52). Also caps
+ * the length so an oversized value degrades gracefully (issue #53).
+ */
+function sanitizeUrlCommand(raw) {
+  if (!raw) return "";
+  // Remove C0 controls (0x00-0x1F) except tab (0x09) and newline (0x0A), plus DEL (0x7F).
+  // eslint-disable-next-line no-control-regex -- stripping control chars is the whole point
+  let cmd = raw.replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, "");
+  if (cmd.length > MAX_URL_COMMAND_LENGTH) cmd = cmd.slice(0, MAX_URL_COMMAND_LENGTH);
+  return cmd;
+}
+
 /**
  * Read a file from the virtual filesystem. Returns its content as a string,
  * or null if not found.
@@ -804,12 +827,6 @@ function promptStr() {
   return `\x1b[1;38;5;166muutils\x1b[0m ${dir}\x1b[1;38;5;166m$\x1b[0m `;
 }
 
-function promptLen() {
-  // Visible character count (without ANSI escapes) for cursor positioning
-  const dir = cwd ? `${cwd} ` : "";
-  return `uutils ${dir}$ `.length;
-}
-
 function prompt() {
   if (!terminal) return;
   terminal.write("\r\n" + promptStr());
@@ -1033,14 +1050,14 @@ async function initPlayground(containerId) {
     terminal.writeln("Type \x1b[1;32mhelp\x1b[0m for available commands.");
     terminal.writeln("Sample data files: names.txt, numbers.txt, fruits.txt, csv.txt, words.txt");
     terminal.writeln("\x1b[2mgrep, find/locate/updatedb, sed and diff/cmp load on demand - just run them, or use the buttons above.\x1b[0m");
-  } catch (e) {
+  } catch {
     terminal.writeln(" \x1b[1;31mfailed\x1b[0m");
     terminal.writeln("Failed to load WASM binary. Commands are not available.");
     terminal.writeln("Try reloading the page.");
   }
 
   // Run command(s) from URL ?cmd= parameter if present
-  const urlCmd = new URLSearchParams(window.location.search).get("cmd");
+  const urlCmd = sanitizeUrlCommand(new URLSearchParams(window.location.search).get("cmd"));
   if (urlCmd) {
     for (const cmd of urlCmd.split("\n")) {
       if (cmd.trim()) await runInTerminal(cmd.trim());
@@ -1114,6 +1131,7 @@ window.programSize = async (group) => {
 // Expose internals for testing
 window._uutilsTestInternals = {
   parseCommandLine,
+  sanitizeUrlCommand,
   executeCommandLine,
   resolvePath,
   lookupDir,

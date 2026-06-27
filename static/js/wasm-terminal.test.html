@@ -20,7 +20,7 @@
 <script>
 (async function() {
 const T = window._uutilsTestInternals;
-const { parseCommandLine, executeCommandLine, resolvePath, lookupDir, getPersistentDir, readVirtualFile, writeVirtualFile, SAMPLE_FILES, AVAILABLE_COMMANDS } = T;
+const { parseCommandLine, sanitizeUrlCommand, executeCommandLine, resolvePath, lookupDir, getPersistentDir, readVirtualFile, writeVirtualFile, SAMPLE_FILES, AVAILABLE_COMMANDS } = T;
 
 let passed = 0;
 let failed = 0;
@@ -141,6 +141,39 @@ async function runTests() {
   assertDeep("pipe + redirect: first args", p[0].args, ["sort"]);
   assert("pipe + redirect: stdout", p[1].stdout, "out.txt");
   assertDeep("pipe + redirect: second args", p[1].args, ["head", "-3"]);
+
+  // ===== sanitizeUrlCommand =====
+  section("sanitizeUrlCommand");
+
+  const NUL = String.fromCharCode(0);
+  const VT = String.fromCharCode(11); // vertical tab (%0B)
+
+  assert("null/empty input -> empty",
+    sanitizeUrlCommand("") + sanitizeUrlCommand(null), "");
+
+  // issue #52: a bare NUL must not reach the parser as a command
+  assert("lone NUL is stripped to empty",
+    sanitizeUrlCommand(NUL), "");
+
+  assert("NUL embedded in command is removed",
+    sanitizeUrlCommand("ec" + NUL + "ho hi"), "echo hi");
+
+  assert("vertical tabs are stripped",
+    sanitizeUrlCommand(VT + VT + "ls" + VT), "ls");
+
+  assert("newline is preserved (multi-command separator)",
+    sanitizeUrlCommand("echo a\necho b"), "echo a\necho b");
+
+  assert("tab is preserved",
+    sanitizeUrlCommand("echo\ta"), "echo\ta");
+
+  assert("printable command is unchanged",
+    sanitizeUrlCommand("seq 1 10 | factor"), "seq 1 10 | factor");
+
+  // issue #53: an oversized value is capped instead of handed off wholesale
+  const huge = sanitizeUrlCommand((VT + "ls").repeat(9999));
+  assert("oversized command is length-capped",
+    huge.length <= 2048, true);
 
   // ===== executeCommandLine: builtins =====
   section("executeCommandLine: builtins");
