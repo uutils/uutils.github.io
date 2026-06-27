@@ -27,6 +27,11 @@ template = "page.html"
   <div id="wasm-playground"></div>
 </div>
 
+<div class="playground-share">
+  <button type="button" id="playground-share-btn" disabled>🔗 Copy share link</button>
+  <span class="playground-share-hint" id="playground-share-hint">Run a command, then copy a link that reruns it for anyone you share it with.</span>
+</div>
+
 <p class="playground-version" id="playground-version"></p>
 
 <script src="/wasm/locales.js" defer></script>
@@ -78,6 +83,43 @@ template = "page.html"
         });
         if (window.isProgramLoaded(prog)) markLoaded();
         loaderBar.appendChild(btn);
+      });
+    }
+    // "Copy share link" button: builds a ?cmd= URL to the most recent command
+    // so it can be shared - the link reruns that command on page load.
+    var shareBtn = document.getElementById("playground-share-btn");
+    var shareHint = document.getElementById("playground-share-hint");
+    if (shareBtn) {
+      var shareResetTimer = null;
+      var buildShareUrl = function(cmd) {
+        var url = new URL(window.location.href);
+        url.search = "";
+        url.hash = "";
+        url.searchParams.set("cmd", cmd);
+        return url.toString();
+      };
+      // Enable the button as soon as a command has been run.
+      document.addEventListener("uutils:command-run", function(e) {
+        shareBtn.disabled = false;
+        if (shareHint && !shareBtn.classList.contains("copied")) {
+          shareHint.textContent = "Shares: " + e.detail.command;
+        }
+      });
+      shareBtn.addEventListener("click", function() {
+        var cmd = window.getLastCommand ? window.getLastCommand() : "";
+        if (!cmd) return;
+        var link = buildShareUrl(cmd);
+        navigator.clipboard.writeText(link).then(function() {
+          shareBtn.classList.add("copied");
+          shareBtn.textContent = "✓ Link copied!";
+          if (shareHint) shareHint.textContent = link;
+          if (shareResetTimer) clearTimeout(shareResetTimer);
+          shareResetTimer = setTimeout(function() {
+            shareBtn.classList.remove("copied");
+            shareBtn.textContent = "🔗 Copy share link";
+            if (shareHint) shareHint.textContent = "Shares: " + cmd;
+          }, 2000);
+        });
       });
     }
     // Populate the locale dropdown from the build-generated list
@@ -195,7 +237,7 @@ document.querySelectorAll('.playground-example').forEach(function(btn) {
 
 ## Sharing commands via URL
 
-You can pre-fill the terminal with a command using the `?cmd=` URL parameter. The command runs automatically when the page loads - great for sharing examples or linking from documentation.
+After running a command, click **🔗 Copy share link** below the terminal to copy a link that reruns it. You can also build one by hand with the `?cmd=` URL parameter. The command runs automatically when the page loads - great for sharing examples or linking from documentation.
 
 **Examples:**
 

@@ -124,6 +124,7 @@ let wasmSize = 0; // downloaded binary size in bytes
 let persistentDir = null;
 let cwd = ""; // virtual current working directory (relative to preopened root)
 let currentLocale = "en-US"; // current locale for l10n
+let lastCommand = ""; // most recent command line run, for the "Share" button
 
 function loadScript(src, integrity) {
   return new Promise((resolve, reject) => {
@@ -769,6 +770,20 @@ async function executeCommandLine(line) {
 }
 
 
+/**
+ * Remember the most recent command line so the page's "Share" button can build
+ * a ?cmd= link to it, and notify any listeners that it changed. Builtins that
+ * only affect the local view (clear) aren't worth sharing, so they're skipped.
+ */
+function recordCommand(line) {
+  line = (line || "").trim();
+  if (!line || line === "clear") return;
+  lastCommand = line;
+  if (typeof document !== "undefined") {
+    document.dispatchEvent(new CustomEvent("uutils:command-run", { detail: { command: line } }));
+  }
+}
+
 function writeToTerminal(text) {
   if (!terminal) return;
   const lines = text.split("\n");
@@ -884,6 +899,7 @@ async function handleInput(data) {
       if (line) {
         history.push(line);
         historyIndex = -1;
+        recordCommand(line);
         const output = await executeCommandLine(line);
         if (output) writeToTerminal(output);
       }
@@ -1038,6 +1054,7 @@ async function runInTerminal(cmd) {
   // Show the command on the prompt line
   terminal.write(cmd);
   terminal.write("\r\n");
+  recordCommand(cmd);
   const output = await executeCommandLine(cmd);
   if (output) writeToTerminal(output);
   prompt();
@@ -1059,6 +1076,7 @@ window.initPlayground = initPlayground;
 window.uutilsExecute = executeCommandLine;
 window.runInTerminal = runInTerminal;
 window.setLocale = setLocale;
+window.getLastCommand = () => lastCommand;
 
 // On-demand loading of the optional standalone modules, used by the "Load"
 // buttons on the playground page. Buttons operate on groups (see
