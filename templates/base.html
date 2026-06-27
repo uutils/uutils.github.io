@@ -9,6 +9,8 @@
   </title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preload" href="/fonts/JetBrainsMono-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/JetBrainsMono-400.woff2" as="font" type="font/woff2" crossorigin>
   <link href="/style.css" rel="stylesheet">
   <meta name="description" content="{{ config.description }}">
   <link rel="alternate" type="application/atom+xml" title="uutils blog" href="/atom.xml">
@@ -18,9 +20,9 @@
 
 <body>
   <header>
-    <a href="/" class="home">{% include "logo.html" %}</a>
+    <a href="/" class="home">{% include "logo.html" %}<span class="brand-name">uutils<span class="brand-cursor">_</span></span></a>
     <div id="mobile-open-navigation">
-      <button id="open-header-button">
+      <button id="open-header-button" aria-label="Open menu">
         <div></div>
         <div></div>
         <div></div>
@@ -28,7 +30,7 @@
     </div>
     <div class="navigation-block">
       <div class="dropdown">
-        <span class="dropdown-toggle">Projects</span>
+        <button type="button" class="dropdown-toggle" aria-expanded="false" aria-haspopup="true">Projects</button>
         <div class="dropdown-menu">
           <a href="/coreutils">Coreutils</a>
           <a href="/findutils">Findutils</a>
@@ -38,10 +40,22 @@
           <a href="/acl">Acl</a>
           <a href="/tar">Tar</a>
           <a href="/sed">Sed</a>
+          <a href="/grep">Grep</a>
+          <a href="/awk">Awk</a>
           <a href="/login">Login</a>
           <a href="/hostname">Hostname</a>
           <a href="/bsdutils">Bsdutils</a>
-          <a href="/shadow-rs">Shadow-rs</a>
+          <a href="/shadow">Shadow</a>
+        </div>
+      </div>
+      <div class="dropdown">
+        <button type="button" class="dropdown-toggle" aria-expanded="false" aria-haspopup="true">Contributing</button>
+        <div class="dropdown-menu">
+          <a href="https://github.com/uutils/coreutils/blob/main/CONTRIBUTING.md">Contributing guide</a>
+          <a href="https://github.com/uutils/coreutils/blob/main/DEVELOPMENT.md">Development guide</a>
+          <a href="https://github.com/search?q=org%3Auutils+is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22&amp;type=issues&amp;s=created&amp;o=desc">Good first issues</a>
+          <a href="/reviews">Reviews</a>
+          <a href="/gsoc">GSOC</a>
         </div>
       </div>
     </div>
@@ -49,10 +63,15 @@
     <div class="navigation-block">
       <a href="/blog">Blog</a>
       <a href="/playground">Playground</a>
-      <a href="/reviews">Reviews</a>
-      <a href="https://twitter.com/uutils_/">Twitter</a>
-      <a href="https://mastodon.social/@uutils" rel="me">Mastodon</a>
-      <a href="/gsoc">GSOC</a>
+      <a href="/users">Who uses uutils</a>
+      <a href="/team">Team</a>
+      <div class="dropdown">
+        <button type="button" class="dropdown-toggle" aria-expanded="false" aria-haspopup="true">Social</button>
+        <div class="dropdown-menu">
+          <a href="https://twitter.com/uutils_/">Twitter</a>
+          <a href="https://mastodon.social/@uutils" rel="me">Mastodon</a>
+        </div>
+      </div>
       <a href="https://github.com/uutils" class="icon">
         <div class="github-icon-black" aria-hidden="true"></div>
       </a>
@@ -63,14 +82,83 @@
     {%- endblock main -%}
   </main>
   <footer>
-    <a href="https://github.com/uutils">
-      <div class="github-icon" aria-hidden="true"></div>
-    </a>
-    <span>uutils, MIT</span>
+    <div class="footer-brand">
+      <a href="https://github.com/uutils" aria-label="uutils on GitHub">
+        <div class="github-icon-black" aria-hidden="true"></div>
+      </a>
+      <span>uutils, MIT</span>
+    </div>
+    <nav class="footer-links">
+      <a href="https://github.com/uutils">GitHub</a>
+      <a href="https://discord.gg/wQVJbvJ">Discord</a>
+      <a href="/blog">Blog</a>
+      <a href="/playground">Playground</a>
+    </nav>
   </footer>
   <script defer>
     document.getElementById("open-header-button").addEventListener("click", () => {
       document.getElementsByTagName("header")[0].classList.toggle("open");
+    });
+
+    // Keyboard-accessible nav dropdowns: the menus also open on hover (CSS),
+    // but click/Enter/Space toggle them for keyboard and touch users.
+    const dropdowns = document.querySelectorAll(".dropdown");
+    const closeDropdowns = (except) => {
+      dropdowns.forEach((d) => {
+        if (d === except) return;
+        d.classList.remove("open");
+        d.querySelector(".dropdown-toggle").setAttribute("aria-expanded", "false");
+      });
+    };
+    dropdowns.forEach((dropdown) => {
+      const toggle = dropdown.querySelector(".dropdown-toggle");
+      toggle.addEventListener("click", () => {
+        const open = dropdown.classList.toggle("open");
+        toggle.setAttribute("aria-expanded", open ? "true" : "false");
+        closeDropdowns(dropdown);
+      });
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        const open = document.querySelector(".dropdown.open");
+        if (open) {
+          closeDropdowns();
+          open.querySelector(".dropdown-toggle").focus();
+        }
+      }
+    });
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".dropdown")) closeDropdowns();
+    });
+
+    // Add a copy-to-clipboard button to highlighted code blocks (skip the
+    // interactive WASM playground examples, which already have Run buttons).
+    document.querySelectorAll("main pre").forEach((pre) => {
+      if (pre.closest(".wasm-example") || pre.closest(".wasm-example-output")) {
+        return;
+      }
+      const wrapper = document.createElement("div");
+      wrapper.className = "code-block-wrapper";
+      pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.appendChild(pre);
+
+      const btn = document.createElement("button");
+      btn.className = "copy-btn";
+      btn.type = "button";
+      btn.textContent = "Copy";
+      btn.setAttribute("aria-label", "Copy code to clipboard");
+      wrapper.appendChild(btn);
+
+      btn.addEventListener("click", () => {
+        navigator.clipboard.writeText(pre.innerText).then(() => {
+          btn.textContent = "Copied!";
+          btn.classList.add("copied");
+          setTimeout(() => {
+            btn.textContent = "Copy";
+            btn.classList.remove("copied");
+          }, 1500);
+        });
+      });
     });
   </script>
 </body>

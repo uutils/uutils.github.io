@@ -124,6 +124,7 @@ let wasmSize = 0; // downloaded binary size in bytes
 let persistentDir = null;
 let cwd = ""; // virtual current working directory (relative to preopened root)
 let currentLocale = "en-US"; // current locale for l10n
+let lastCommand = ""; // most recent command line run, for the "Share" button
 
 function loadScript(src, integrity) {
   return new Promise((resolve, reject) => {
@@ -292,7 +293,7 @@ function getPersistentDir() {
  */
 function resolvePath(p) {
   if (!p || p.startsWith("-")) return p;
-  // Absolute paths (starting with /) stay as-is — WASI preopened dir is "."
+  // Absolute paths (starting with /) stay as-is - WASI preopened dir is "."
   // so absolute paths won't resolve anyway, but don't mangle them.
   if (p.startsWith("/")) return p;
   const base = cwd ? cwd.split("/") : [];
@@ -617,7 +618,7 @@ async function executeCommandLine(line) {
     return "";
   }
 
-  // Builtin: locale — show or set the current locale
+  // Builtin: locale - show or set the current locale
   if (line === "locale" || line.startsWith("locale ")) {
     const arg = line === "locale" ? "" : line.slice(7).trim();
     if (!arg) {
@@ -769,6 +770,26 @@ async function executeCommandLine(line) {
 }
 
 
+/**
+ * Record a command line that was run, whether typed at the prompt or triggered
+ * by clicking an example. Adds it to the up-arrow history (skipping consecutive
+ * duplicates), remembers it for the page's "Share" button, and notifies any
+ * listeners. Builtins that only affect the local view (clear) aren't worth
+ * sharing, so they're skipped.
+ */
+function recordCommand(line) {
+  line = (line || "").trim();
+  if (!line) return;
+  if (history[history.length - 1] !== line) history.push(line);
+  historyIndex = -1;
+  // clear only wipes the local view, so it isn't worth sharing.
+  if (line === "clear") return;
+  lastCommand = line;
+  if (typeof document !== "undefined") {
+    document.dispatchEvent(new CustomEvent("uutils:command-run", { detail: { command: line } }));
+  }
+}
+
 function writeToTerminal(text) {
   if (!terminal) return;
   const lines = text.split("\n");
@@ -882,8 +903,7 @@ async function handleInput(data) {
       terminal.write("\r\n");
       const line = inputBuffer.trim();
       if (line) {
-        history.push(line);
-        historyIndex = -1;
+        recordCommand(line);
         const output = await executeCommandLine(line);
         if (output) writeToTerminal(output);
       }
@@ -917,7 +937,7 @@ async function handleInput(data) {
       continue;
     }
 
-    if (code === 9) { // Tab — completion
+    if (code === 9) { // Tab - completion
       const result = tabComplete(inputBuffer, cursorPos);
       if (result.completed) {
         inputBuffer = result.buffer;
@@ -1012,7 +1032,7 @@ async function initPlayground(containerId) {
     terminal.writeln("");
     terminal.writeln("Type \x1b[1;32mhelp\x1b[0m for available commands.");
     terminal.writeln("Sample data files: names.txt, numbers.txt, fruits.txt, csv.txt, words.txt");
-    terminal.writeln("\x1b[2mgrep, find/locate/updatedb, sed and diff/cmp load on demand — just run them, or use the buttons below.\x1b[0m");
+    terminal.writeln("\x1b[2mgrep, find/locate/updatedb, sed and diff/cmp load on demand - just run them, or use the buttons above.\x1b[0m");
   } catch (e) {
     terminal.writeln(" \x1b[1;31mfailed\x1b[0m");
     terminal.writeln("Failed to load WASM binary. Commands are not available.");
@@ -1038,6 +1058,7 @@ async function runInTerminal(cmd) {
   // Show the command on the prompt line
   terminal.write(cmd);
   terminal.write("\r\n");
+  recordCommand(cmd);
   const output = await executeCommandLine(cmd);
   if (output) writeToTerminal(output);
   prompt();
@@ -1059,6 +1080,7 @@ window.initPlayground = initPlayground;
 window.uutilsExecute = executeCommandLine;
 window.runInTerminal = runInTerminal;
 window.setLocale = setLocale;
+window.getLastCommand = () => lastCommand;
 
 // On-demand loading of the optional standalone modules, used by the "Load"
 // buttons on the playground page. Buttons operate on groups (see
