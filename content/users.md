@@ -101,8 +101,16 @@ coreutils in Debian"* - was mentored to accelerate the potential
 integration. The package is also inherited by downstream Debian-based
 distributions including Raspbian, Kali Linux, Parrot OS, PureOS, and deepin 23.
 
+There has been further progress in **Debian experimental**: a virtual
+`coreutils` package now dispatches between providers (GNU, uutils, busybox,
+toybox), and installing `coreutils` there pulls in
+[`coreutils-from-uutils`](https://tracker.debian.org/pkg/coreutils-from-uutils)
+and [`rust-coreutils`](https://tracker.debian.org/pkg/rust-coreutils), making
+uutils the default in experimental.
+
 **Links:**
 - [Debian package tracker: rust-coreutils](https://tracker.debian.org/pkg/rust-coreutils)
+- [Debian package tracker: coreutils-from-uutils](https://tracker.debian.org/pkg/coreutils-from-uutils)
 - [GSoC 2024 project](https://wiki.debian.org/SummerOfCode2024/ApprovedProjects)
 
 ---
