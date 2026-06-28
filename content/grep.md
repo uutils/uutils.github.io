@@ -12,6 +12,8 @@ Rust implementation of GNU grep: `grep`, `egrep` and `fgrep`.
 
 This project aims to be a drop-in replacement of the original commands.
 
+[![GNU test results](https://raw.githubusercontent.com/uutils/grep-tracking/refs/heads/main/gnu-results.svg)](https://github.com/uutils/grep-tracking)
+
 # Goals
 
 This project aims to be a drop-in replacement for GNU grep. Differences with GNU are treated as bugs.
