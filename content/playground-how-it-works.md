@@ -6,20 +6,22 @@ template = "page.html"
 <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 <script>mermaid.initialize({ startOnLoad: true, theme: 'dark' });</script>
 
-The [uutils playground](/playground) lets you run real Rust coreutils directly in your browser, with no server, no installation, and no network round-trips after the initial page load. This page explains the architecture behind it.
+The [uutils playground](/playground) lets you run real Rust coreutils directly in your browser, with no server and no installation. This page explains the architecture behind it.
 
 ## High-Level Overview
 
 <pre class="mermaid">
 flowchart LR
     A["Browser"] -->|"1. Load page"| B["Zola static site"]
-    B -->|"2. Fetch WASM binary"| C["uutils.wasm<br/>(~10 MB)"]
+    B -->|"2. Fetch core binary"| C["uutils.wasm<br/>(coreutils multicall)"]
     A -->|"3. User types command"| D["JavaScript shell"]
-    D -->|"4. Execute via WASI"| E["WebAssembly runtime"]
+    D -->|"4a. On-demand fetch<br/>(grep, find, diff, sed…)"| F["Standalone<br/>WASM modules"]
+    D -->|"4b. Execute via WASI"| E["WebAssembly runtime"]
+    F --> E
     E -->|"5. Output"| A
 </pre>
 
-Everything runs **client-side**. Once the WASM binary is downloaded, the playground works entirely offline.
+Everything runs **client-side**. The page loads only the **coreutils multicall binary** up front; the optional standalone modules (`grep`, `find`/`locate`/`updatedb`, `diff`/`cmp`, `sed`) are fetched **on demand** the first time you use them — either by clicking their "Load" button or simply by running the command. Once a module is downloaded, it works entirely offline.
 
 ## Architecture
 
@@ -50,7 +52,8 @@ flowchart TB
 | **[xterm.js](https://xtermjs.org/)** | Terminal emulator rendered in the browser. Handles cursor, colors, input, scrollback. |
 | **JavaScript shell** | Parses command lines, manages pipes, handles builtins (`help`, `clear`, `cd`, `locale`), and dispatches to WASM. |
 | **[browser_wasi_shim](https://github.com/bjorn3/browser_wasi_shim)** | Implements the WASI (WebAssembly System Interface) in JavaScript so that uutils can perform I/O operations. |
-| **uutils.wasm** | The actual Rust coreutils, compiled with the `feat_wasm` feature to a single WASM binary containing 60+ commands. |
+| **uutils.wasm** | The Rust coreutils, compiled with the `feat_wasm` feature to a single multicall WASM binary containing 60+ commands. This is the only binary loaded eagerly at page load. |
+| **Standalone modules** | Separate uutils projects shipped as their own WASM binaries, **loaded on demand**: `grep.wasm` ([uutils/grep](https://github.com/uutils/grep)), `find.wasm`/`locate.wasm`/`updatedb.wasm` ([uutils/findutils](https://github.com/uutils/findutils)), `diffutils.wasm` providing `diff`/`cmp` ([uutils/diffutils](https://github.com/uutils/diffutils)), and `sed.wasm` ([uutils/sed](https://github.com/uutils/sed)). |
 | **Virtual filesystem** | An in-memory filesystem backed by WASI shim `PreopenDirectory`, pre-populated with sample files. Persists across commands within a session. |
 
 ## Lifecycle of a Command
@@ -95,10 +98,13 @@ sequenceDiagram
 Key details:
 
 - **Pipeline execution**: each pipe stage is a fresh WASM instantiation. The stdout of one stage becomes the stdin of the next.
-- **Command dispatch**: every command goes through `["coreutils", command, ...args]` - the WASM binary is a multicall binary, similar to BusyBox.
+- **Command dispatch**: coreutils commands go through `["coreutils", command, ...args]` - the core WASM binary is a multicall binary, similar to BusyBox. Standalone modules (`grep`, `find`, `diff`, `sed`…) are invoked **directly by their own name** as `argv[0]`, since each is its own binary rather than a multicall entry.
+- **On-demand loading**: if a command lives in a standalone module that hasn't been fetched yet, the shell loads that module first (printing a `loading <module>… done` notice), then runs the command.
 - **Path resolution**: relative paths are resolved against a virtual `cwd` maintained by the JS shell.
 
 ## WASM Loading & Initialization
+
+The playground splits its WASM into one eagerly-loaded core binary and several optional modules fetched lazily, keeping the initial page download small.
 
 <pre class="mermaid">
 flowchart TB
@@ -118,9 +124,29 @@ flowchart TB
     K -->|No| M["Show prompt"]
 </pre>
 
-- The WASM binary is compiled with `WebAssembly.compileStreaming()` for best performance, with a fallback to `arrayBuffer()` if the server doesn't set `application/wasm` content-type.
-- Commands are disabled until the WASM binary finishes loading. The terminal shows a loading message and a prompt appears once it's ready.
+- Only the **coreutils multicall binary** loads eagerly. The standalone modules (`grep`, `find`/`locate`/`updatedb`, `diffutils`, `sed`) are **not** part of this startup fetch.
+- WASM binaries are compiled with `WebAssembly.compileStreaming()` for best performance, with a fallback to `arrayBuffer()` if the server doesn't set the `application/wasm` content-type.
+- Commands are disabled until the core binary finishes loading. The terminal shows a loading message and a prompt appears once it's ready.
 - The `SharedArrayBuffer` polyfill stub prevents `ReferenceError` in browsers without cross-origin isolation headers.
+
+### On-Demand Loading of Standalone Modules
+
+<pre class="mermaid">
+flowchart TB
+    A["User runs grep/find/diff/sed<br/>(or clicks its Load button)"] --> B{"Module already<br/>compiled?"}
+    B -->|Yes| F["Run command"]
+    B -->|No| C{"Fetch in flight?"}
+    C -->|Yes| D["Share the existing<br/>in-flight fetch"]
+    C -->|No| E["fetch + compileStreaming<br/>/wasm/&lt;module&gt;.wasm"]
+    D --> G["Dispatch<br/>uutils:program-loaded"]
+    E --> G
+    G --> F
+</pre>
+
+- Each module is fetched **once**, the first time it's needed. Concurrent callers share a single in-flight fetch, and the compiled module is cached for the rest of the session.
+- A single module can back several commands: `diffutils.wasm` provides both `diff` and `cmp`, and the **"Load" button for `find`** brings in `find`, `locate` and `updatedb` together.
+- On success the page dispatches a `uutils:program-loaded` event, which the "Load" buttons listen for so their label flips to `✓ <name> loaded` — whether the module was loaded by the button or by running the command.
+- If a module's binary isn't present (e.g. local dev without a CI build), the command reports that it's unavailable instead of breaking the terminal.
 
 ## Command Parsing & Pipes
 
@@ -191,6 +217,8 @@ flowchart LR
 </pre>
 
 Utilities are excluded when they depend on OS-level syscalls not available in WASI - for example, `df` needs filesystem stats, `du` needs directory traversal with metadata, and `chown`/`chcon` need permission and SELinux APIs.
+
+> **Note:** `grep`, `find`/`locate`/`updatedb`, `diff`/`cmp` and `sed` are **not** part of the coreutils `feat_wasm` set — they live in separate uutils projects ([grep](https://github.com/uutils/grep), [findutils](https://github.com/uutils/findutils), [diffutils](https://github.com/uutils/diffutils), [sed](https://github.com/uutils/sed)) and are compiled to their own WASM modules, loaded on demand as described above. (`xargs` is intentionally absent: it must spawn child processes, which the browser WASI sandbox can't do.)
 
 ### Multicall Binary: How Command Dispatch Works
 
