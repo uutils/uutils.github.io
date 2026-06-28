@@ -79,9 +79,9 @@ directly and does not rewrite the tools.
 operating system powering the [SPECS augmented reality glasses](https://newsroom.snap.com/introducing-specs-augmented-reality-glasses)
 announced at Augmented World Expo 2026 - built on **Yocto/OpenEmbedded**.
 
-A Snap engineer has been the primary contributor and maintainer
-of the `uutils-coreutils` recipe in the **meta-openembedded** (`meta-oe`) layer
-since Yocto 4.1 (langdale). The recipe uses `PROVIDES = "coreutils"` so uutils
+A Snap engineer, Etienne Cordonnier, has been the primary contributor and
+maintainer of the `uutils-coreutils` recipe in the **meta-openembedded**
+(`meta-oe`) layer since Yocto 4.1 (langdale). The recipe uses `PROVIDES = "coreutils"` so uutils
 acts as a transparent drop-in replacement for GNU coreutils in embedded images.
 
 **Links:**
