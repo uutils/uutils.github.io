@@ -23,7 +23,7 @@ Everything happens in the open on [GitHub](https://github.com/uutils), and newco
       <a class="prow" href="https://github.com/cakebaker"><span class="name">Daniel Hofstetter</span><span class="desc">maintainer across the uutils projects</span><span class="st st-beta">maintainer</span></a>
       <a class="prow" href="https://github.com/dspinellis"><span class="name">Diomidis Spinellis</span><span class="desc">created uutils <code>sed</code></span><span class="st st-alpha">sed</span></a>
       <a class="prow" href="https://github.com/pierre-warnier"><span class="name">Pierre Warnier</span><span class="desc">created uutils <code>shadow</code></span><span class="st st-alpha">shadow</span></a>
-      <a class="prow" href="https://github.com/kaladron"><span class="name">Jeff Bailey</span><span class="desc">uutils <code>tar</code>< maintainer/span><span class="st st-alpha">tar</span></a>
+      <a class="prow" href="https://github.com/kaladron"><span class="name">Jeff Bailey</span><span class="desc">uutils <code>tar</code> maintainer</span><span class="st st-alpha">tar</span></a>
       <a class="prow" href="https://github.com/lhecker"><span class="name">Leonard Hecker</span><span class="desc">created uutils <code>grep</code></span><span class="st st-alpha">grep</span></a>
       <a class="prow" href="https://github.com/tertsdiepraam"><span class="name">Terts Diepraam</span><span class="desc">former maintainer, led uutils <code>coreutils</code></span><span class="st st-wip">alumni</span></a>
       <a class="prow" href="https://github.com/rivy"><span class="name">Roy Ivy III</span><span class="desc">former uutils <code>coreutils</code> maintainer</span><span class="st st-wip">alumni</span></a>
