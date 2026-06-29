@@ -142,6 +142,39 @@ async function runTests() {
   assert("pipe + redirect: stdout", p[1].stdout, "out.txt");
   assertDeep("pipe + redirect: second args", p[1].args, ["head", "-3"]);
 
+  // ===== splitCommands =====
+  section("splitCommands");
+
+  const { splitCommands } = T;
+
+  assertDeep("single command",
+    splitCommands("echo hi"), ["echo hi"]);
+
+  assertDeep("two commands on ;",
+    splitCommands("updatedb; locate names"), ["updatedb", "locate names"]);
+
+  assertDeep("trims segments",
+    splitCommands("  echo a ;  echo b  "), ["echo a", "echo b"]);
+
+  assertDeep("drops empty segments",
+    splitCommands("echo a;;echo b;"), ["echo a", "echo b"]);
+
+  assertDeep("ignores ; inside single quotes",
+    splitCommands("echo 'a;b'"), ["echo 'a;b'"]);
+
+  assertDeep("ignores ; inside double quotes",
+    splitCommands('echo "a;b"; echo c'), ['echo "a;b"', "echo c"]);
+
+  assertDeep("ignores escaped ;",
+    splitCommands("echo a\\;b"), ["echo a\\;b"]);
+
+  assertDeep("preserves pipes within a segment",
+    splitCommands("seq 3 | factor; echo done"), ["seq 3 | factor", "echo done"]);
+
+  // sequential execution: outputs concatenate, state carries across
+  await assertAsync("; runs commands in sequence",
+    executeCommandLine("echo a; echo b"), "a\nb\n");
+
   // ===== sanitizeUrlCommand =====
   section("sanitizeUrlCommand");
 

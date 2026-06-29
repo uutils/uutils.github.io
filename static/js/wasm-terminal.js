@@ -451,6 +451,35 @@ async function runCommand(argv, stdinData = "", module = wasmModule) {
 }
 
 /**
+ * Split a command line into sequentially-run commands on top-level ";".
+ * Semicolons inside single/double quotes or escaped are left untouched, so
+ * `echo 'a;b'` stays one command. Empty segments (e.g. a trailing ";") are
+ * dropped. Returns an array of command strings, each run in turn like a shell.
+ */
+function splitCommands(line) {
+  const commands = [];
+  let current = "";
+  let inSingle = false;
+  let inDouble = false;
+  let escape = false;
+
+  for (const ch of line) {
+    if (escape) { current += ch; escape = false; continue; }
+    if (ch === "\\" && !inSingle) { current += ch; escape = true; continue; }
+    if (ch === "'" && !inDouble) { inSingle = !inSingle; current += ch; continue; }
+    if (ch === '"' && !inSingle) { inDouble = !inDouble; current += ch; continue; }
+    if (ch === ";" && !inSingle && !inDouble) {
+      if (current.trim()) commands.push(current.trim());
+      current = "";
+      continue;
+    }
+    current += ch;
+  }
+  if (current.trim()) commands.push(current.trim());
+  return commands;
+}
+
+/**
  * Parse a command line into a pipeline of commands.
  * Supports pipes (|), input redirection (<), and output redirection (>, >>).
  * Returns an array of stages: { args: string[], stdin: string|null, stdout: string|null, append: boolean }
@@ -586,9 +615,26 @@ function writeVirtualFile(name, content, append) {
 }
 
 /**
- * Execute a full command line, handling pipes and builtins.
+ * Execute a command line, splitting on top-level ";" so several commands run
+ * in sequence (like a shell), e.g. `updatedb; locate names`. Each segment is
+ * executed in turn and their outputs are concatenated. State changes from one
+ * segment (cwd via cd, the locate db built by updatedb, files written via >)
+ * carry into the next, since they share the module-global virtual FS and cwd.
  */
 async function executeCommandLine(line) {
+  const commands = splitCommands(line);
+  if (commands.length <= 1) return executeSingleCommandLine(line);
+  let output = "";
+  for (const cmd of commands) {
+    output += await executeSingleCommandLine(cmd);
+  }
+  return output;
+}
+
+/**
+ * Execute a single command line, handling pipes and builtins.
+ */
+async function executeSingleCommandLine(line) {
   line = line.trim();
   if (!line) return "";
 
@@ -1131,6 +1177,7 @@ window.programSize = async (group) => {
 // Expose internals for testing
 window._uutilsTestInternals = {
   parseCommandLine,
+  splitCommands,
   sanitizeUrlCommand,
   executeCommandLine,
   resolvePath,

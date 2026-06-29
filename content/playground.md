@@ -64,6 +64,7 @@ Click an example to run it in the terminal:
   <button class="playground-example">printf '🍒 cherry\n🍎 apple\n🍌 banana\n' | sort -k2</button>
   <button class="playground-example">printf '🍎 apple\n🍌 banana\n🍒 cherry\n🥝 kiwi\n' | grep 🍌</button>
   <button class="playground-example">find . -name '*.md'</button>
+  <button class="playground-example">updatedb; locate names</button>
   <button class="playground-example">diff -u shopping-old.txt shopping-new.txt</button>
   <button class="playground-example">sed -e 's/banana/🍌/g' -e 's/date/🌴/g' fruits.txt</button>
   <button class="playground-example">sort -n < numbers.txt | head -3</button>
@@ -82,9 +83,10 @@ After running a command, click **🔗 Copy share link** below the terminal to co
 - [`?cmd=echo 'Hello, world!' | sha256sum`](/playground?cmd=echo%20%27Hello%2C%20world!%27%20|%20sha256sum) - hash a string
 - [`?cmd=sort fruits.txt | uniq -c | sort -rn`](/playground?cmd=sort%20fruits.txt%20|%20uniq%20-c%20|%20sort%20-rn) - count and rank fruit
 
-Multiple commands can be separated by newlines (`%0A` in the URL):
+Multiple commands can be run in sequence, separated either by `;` on one line or by newlines (`%0A` in the URL):
 
 - [`?cmd=echo hello%0Aecho world`](/playground?cmd=echo%20hello%0Aecho%20world) - run two commands in sequence
+- [`?cmd=updatedb; locate names`](/playground?cmd=updatedb%3B%20locate%20names) - build the locate database, then search it
 
 ## Available commands
 
