@@ -111,7 +111,7 @@ uutils the default in experimental.
 **Links:**
 - [Debian package tracker: rust-coreutils](https://tracker.debian.org/pkg/rust-coreutils)
 - [Debian package tracker: coreutils-from-uutils](https://tracker.debian.org/pkg/coreutils-from-uutils)
-- [GSoC 2024 project](https://wiki.debian.org/SummerOfCode2024/ApprovedProjects)
+- [GSoC 2024 project](https://wiki.debian.org/SummerOfCode2024/Projects)
 
 ---
 
