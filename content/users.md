@@ -140,6 +140,13 @@ entirely in Rust, uses uutils as its coreutils layer. The
 "Redox uses the Rust implementation of the GNU Coreutils, uutils." Redox is also
 listed as an officially supported platform in the uutils codebase.
 
+In July 2026, Redox went further and replaced GNU grep and sed with the uutils
+implementations in its os-test test suite.
+
+**Links:**
+- [Redox Book: System Tools](https://doc.redox-os.org/book/system-tools.html)
+- [This Month in Redox — July 2026](https://www.redox-os.org/news/this-month-260731/)
+
 ---
 
 ## VS Code for the Web
