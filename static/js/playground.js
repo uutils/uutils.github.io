@@ -11,22 +11,31 @@ document.addEventListener("DOMContentLoaded", function() {
   initPlayground("wasm-playground");
 
   // Build a "Load" button per optional standalone group (grep, find,
-  // diffutils, sed). These ship as their own WASM modules and load on demand
-  // to keep the initial page download light; running a command auto-loads its
-  // module too (e.g. diff/cmp both come from the diffutils module, and find
-  // loads find/locate/updatedb together).
+  // diffutils, sed, awk). These ship as their own WASM modules and load on
+  // demand to keep the initial page download light; running a command
+  // auto-loads its module too (e.g. diff/cmp both come from the diffutils
+  // module, and find loads find/locate/updatedb together). Groups that are
+  // still early work in progress (awk) get a "WIP" marker and a tooltip
+  // explaining what does not work yet.
   var loaderBar = document.getElementById("playground-loaders");
   if (loaderBar && Array.isArray(window.uutilsPrograms)) {
     window.uutilsPrograms.forEach(function(prog) {
       var btn = document.createElement("button");
       btn.className = "playground-loader";
+      var wipNote = window.programWipNote ? window.programWipNote(prog) : "";
+      var wipSuffix = wipNote ? " ⚠ WIP" : "";
+      if (wipNote) {
+        btn.classList.add("wip");
+        btn.title = wipNote;
+      }
       var markLoaded = function() {
         btn.disabled = true;
         btn.classList.add("loaded");
-        btn.textContent = "✓ " + prog + " loaded";
+        btn.textContent = "✓ " + prog + " loaded" + wipSuffix;
       };
       var setIdleLabel = function(size) {
-        btn.textContent = "Load " + prog + (size ? " (" + (size / 1024 / 1024).toFixed(1) + " MB)" : "");
+        btn.textContent = "Load " + prog +
+          (size ? " (" + (size / 1024 / 1024).toFixed(1) + " MB)" : "") + wipSuffix;
       };
       setIdleLabel(0);
       window.programSize(prog).then(function(size) {
@@ -149,6 +158,12 @@ document.addEventListener("DOMContentLoaded", function() {
       var sedUrl = "https://github.com/uutils/sed/commit/" + UUTILS_SED_VERSION.commit;
       parts.push('sed <a href="' + sedUrl + '"><code>' +
         UUTILS_SED_VERSION.short + '</code></a> (' + sedDate + ')');
+    }
+    if (typeof UUTILS_AWK_VERSION !== "undefined") {
+      var awkDate = UUTILS_AWK_VERSION.date.split("T")[0];
+      var awkUrl = "https://github.com/uutils/awk/commit/" + UUTILS_AWK_VERSION.commit;
+      parts.push('awk (WIP) <a href="' + awkUrl + '"><code>' +
+        UUTILS_AWK_VERSION.short + '</code></a> (' + awkDate + ')');
     }
     if (typeof SITE_VERSION !== "undefined") {
       var siteDate = SITE_VERSION.date.split("T")[0];

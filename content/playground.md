@@ -17,6 +17,8 @@ template = "page.html"
   <span class="playground-loaders-label">Extra programs:</span>
 </div>
 
+<p class="playground-note"><strong>⚠ <code>awk</code> is a work in progress.</strong> <a href="https://github.com/uutils/awk">uutils awk</a> is at a very early stage: only <code>BEGIN</code> blocks are executed for now — reading records from files or standard input is not implemented yet, so most real awk programs will print nothing or fail. It is here so you can follow along as it grows.</p>
+
 <div class="term term-playground">
   <div class="term-bar">
     <span class="t">user@uutils: ~</span>
@@ -67,6 +69,9 @@ Click an example to run it in the terminal:
   <button class="playground-example">updatedb; locate names</button>
   <button class="playground-example">diff -u shopping-old.txt shopping-new.txt</button>
   <button class="playground-example">sed -e 's/banana/🍌/g' -e 's/date/🌴/g' fruits.txt</button>
+  <button class="playground-example">awk 'BEGIN { print "hello from uutils awk", 2 * 21 }'</button>
+  <button class="playground-example">awk 'BEGIN { for (i = 1; i &lt;= 5; i++) print i, i * i }'</button>
+  <button class="playground-example">awk 'BEGIN { print substr("coreutils", 1, 4), toupper("awk") }'</button>
   <button class="playground-example">sort -n < numbers.txt | head -3</button>
   <button class="playground-example">date</button>
   <button class="playground-example">uname -a</button>
@@ -100,6 +105,11 @@ The following are **shell builtins** implemented in JavaScript:
 - `clear` - clear the terminal screen
 - `cd` - change the current working directory
 - `locale` - show or change the current locale
+
+`grep`, `find`/`locate`/`updatedb`, `diff`/`cmp`, `sed` and `awk` come from their own uutils projects and
+are downloaded on demand the first time you use them. Among these, **`awk` is an early work in progress**:
+only `BEGIN` blocks are executed today, so anything reading records from a file or standard input will
+produce no output.
 
 Some commands (e.g. `chcon`, `runcon`, etc.) are not yet available in the WASM build because they
 depend on platform-specific syscalls not fully supported by WebAssembly/WASI.

@@ -15,13 +15,13 @@ flowchart LR
     A["Browser"] -->|"1. Load page"| B["Zola static site"]
     B -->|"2. Fetch core binary"| C["uutils.wasm<br/>(coreutils multicall)"]
     A -->|"3. User types command"| D["JavaScript shell"]
-    D -->|"4a. On-demand fetch<br/>(grep, find, diff, sed…)"| F["Standalone<br/>WASM modules"]
+    D -->|"4a. On-demand fetch<br/>(grep, find, diff, sed, awk…)"| F["Standalone<br/>WASM modules"]
     D -->|"4b. Execute via WASI"| E["WebAssembly runtime"]
     F --> E
     E -->|"5. Output"| A
 </pre>
 
-Everything runs **client-side**. The page loads only the **coreutils multicall binary** up front; the optional standalone modules (`grep`, `find`/`locate`/`updatedb`, `diff`/`cmp`, `sed`) are fetched **on demand** the first time you use them — either by clicking their "Load" button or simply by running the command. Once a module is downloaded, it works entirely offline.
+Everything runs **client-side**. The page loads only the **coreutils multicall binary** up front; the optional standalone modules (`grep`, `find`/`locate`/`updatedb`, `diff`/`cmp`, `sed`, `awk`) are fetched **on demand** the first time you use them — either by clicking their "Load" button or simply by running the command. Once a module is downloaded, it works entirely offline.
 
 ## Architecture
 
@@ -53,7 +53,7 @@ flowchart TB
 | **JavaScript shell** | Parses command lines, manages pipes, handles builtins (`help`, `clear`, `cd`, `locale`), and dispatches to WASM. |
 | **[browser_wasi_shim](https://github.com/bjorn3/browser_wasi_shim)** | Implements the WASI (WebAssembly System Interface) in JavaScript so that uutils can perform I/O operations. |
 | **uutils.wasm** | The Rust coreutils, compiled with the `feat_wasm` feature to a single multicall WASM binary containing 60+ commands. This is the only binary loaded eagerly at page load. |
-| **Standalone modules** | Separate uutils projects shipped as their own WASM binaries, **loaded on demand**: `grep.wasm` ([uutils/grep](https://github.com/uutils/grep)), `find.wasm`/`locate.wasm`/`updatedb.wasm` ([uutils/findutils](https://github.com/uutils/findutils)), `diffutils.wasm` providing `diff`/`cmp` ([uutils/diffutils](https://github.com/uutils/diffutils)), and `sed.wasm` ([uutils/sed](https://github.com/uutils/sed)). |
+| **Standalone modules** | Separate uutils projects shipped as their own WASM binaries, **loaded on demand**: `grep.wasm` ([uutils/grep](https://github.com/uutils/grep)), `find.wasm`/`locate.wasm`/`updatedb.wasm` ([uutils/findutils](https://github.com/uutils/findutils)), `diffutils.wasm` providing `diff`/`cmp` ([uutils/diffutils](https://github.com/uutils/diffutils)), `sed.wasm` ([uutils/sed](https://github.com/uutils/sed)), and `awk.wasm` ([uutils/awk](https://github.com/uutils/awk), an early work in progress: `BEGIN` blocks only). |
 | **Virtual filesystem** | An in-memory filesystem backed by WASI shim `PreopenDirectory`, pre-populated with sample files. Persists across commands within a session. |
 
 ## Lifecycle of a Command
@@ -98,7 +98,7 @@ sequenceDiagram
 Key details:
 
 - **Pipeline execution**: each pipe stage is a fresh WASM instantiation. The stdout of one stage becomes the stdin of the next.
-- **Command dispatch**: coreutils commands go through `["coreutils", command, ...args]` - the core WASM binary is a multicall binary, similar to BusyBox. Standalone modules (`grep`, `find`, `diff`, `sed`…) are invoked **directly by their own name** as `argv[0]`, since each is its own binary rather than a multicall entry.
+- **Command dispatch**: coreutils commands go through `["coreutils", command, ...args]` - the core WASM binary is a multicall binary, similar to BusyBox. Standalone modules (`grep`, `find`, `diff`, `sed`, `awk`…) are invoked **directly by their own name** as `argv[0]`, since each is its own binary rather than a multicall entry.
 - **On-demand loading**: if a command lives in a standalone module that hasn't been fetched yet, the shell loads that module first (printing a `loading <module>… done` notice), then runs the command.
 - **Path resolution**: relative paths are resolved against a virtual `cwd` maintained by the JS shell.
 
@@ -124,7 +124,7 @@ flowchart TB
     K -->|No| M["Show prompt"]
 </pre>
 
-- Only the **coreutils multicall binary** loads eagerly. The standalone modules (`grep`, `find`/`locate`/`updatedb`, `diffutils`, `sed`) are **not** part of this startup fetch.
+- Only the **coreutils multicall binary** loads eagerly. The standalone modules (`grep`, `find`/`locate`/`updatedb`, `diffutils`, `sed`, `awk`) are **not** part of this startup fetch.
 - WASM binaries are compiled with `WebAssembly.compileStreaming()` for best performance, with a fallback to `arrayBuffer()` if the server doesn't set the `application/wasm` content-type.
 - Commands are disabled until the core binary finishes loading. The terminal shows a loading message and a prompt appears once it's ready.
 - The `SharedArrayBuffer` polyfill stub prevents `ReferenceError` in browsers without cross-origin isolation headers.
@@ -133,7 +133,7 @@ flowchart TB
 
 <pre class="mermaid">
 flowchart TB
-    A["User runs grep/find/diff/sed<br/>(or clicks its Load button)"] --> B{"Module already<br/>compiled?"}
+    A["User runs grep/find/diff/sed/awk<br/>(or clicks its Load button)"] --> B{"Module already<br/>compiled?"}
     B -->|Yes| F["Run command"]
     B -->|No| C{"Fetch in flight?"}
     C -->|Yes| D["Share the existing<br/>in-flight fetch"]
@@ -218,7 +218,7 @@ flowchart LR
 
 Utilities are excluded when they depend on OS-level syscalls not available in WASI - for example, `df` needs filesystem stats, `du` needs directory traversal with metadata, and `chown`/`chcon` need permission and SELinux APIs.
 
-> **Note:** `grep`, `find`/`locate`/`updatedb`, `diff`/`cmp` and `sed` are **not** part of the coreutils `feat_wasm` set — they live in separate uutils projects ([grep](https://github.com/uutils/grep), [findutils](https://github.com/uutils/findutils), [diffutils](https://github.com/uutils/diffutils), [sed](https://github.com/uutils/sed)) and are compiled to their own WASM modules, loaded on demand as described above. (`xargs` is intentionally absent: it must spawn child processes, which the browser WASI sandbox can't do.)
+> **Note:** `grep`, `find`/`locate`/`updatedb`, `diff`/`cmp`, `sed` and `awk` are **not** part of the coreutils `feat_wasm` set — they live in separate uutils projects ([grep](https://github.com/uutils/grep), [findutils](https://github.com/uutils/findutils), [diffutils](https://github.com/uutils/diffutils), [sed](https://github.com/uutils/sed), [awk](https://github.com/uutils/awk)) and are compiled to their own WASM modules, loaded on demand as described above. (`xargs` is intentionally absent: it must spawn child processes, which the browser WASI sandbox can't do.)
 
 ### Multicall Binary: How Command Dispatch Works
 

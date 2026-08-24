@@ -17,7 +17,7 @@ const WASM_URL = "/wasm/uutils.wasm";
 // Some utilities ship as their own standalone WASM modules rather than as part
 // of the coreutils multicall binary (grep lives in uutils/grep, find/locate/
 // updatedb in uutils/findutils, diff and cmp in uutils/diffutils, sed in
-// uutils/sed). Each module is loaded on demand and is optional — see
+// uutils/sed, awk in uutils/awk). Each module is loaded on demand and is optional — see
 // loadStandalone. A single module can provide several commands (diffutils →
 // diff, cmp), which the binary dispatches on argv[0], so each command is invoked
 // directly by its own name. findutils ships separate binaries, so each is its
@@ -30,6 +30,15 @@ const STANDALONE_MODULES = {
   updatedb: { url: "/wasm/updatedb.wasm", commands: ["updatedb"] },
   diffutils: { url: "/wasm/diffutils.wasm", commands: ["diff", "cmp"] },
   sed: { url: "/wasm/sed.wasm", commands: ["sed"] },
+  awk: { url: "/wasm/awk.wasm", commands: ["awk"] },
+};
+// Modules that are early work in progress: they are offered, but the UI labels
+// them as such and the terminal prints a warning the first time one is used.
+// uutils/awk currently runs BEGIN blocks only — reading records from files or
+// stdin is not implemented yet — so most real awk programs won't work.
+const STANDALONE_WIP = {
+  awk: "uutils awk is an early work in progress: only BEGIN blocks run for now, " +
+       "reading records from files or stdin is not implemented yet.",
 };
 // "Load" buttons present standalone modules under one label. findutils ships
 // find, locate and updatedb as separate binaries but loads them together as a
@@ -39,6 +48,7 @@ const STANDALONE_GROUPS = {
   find: ["find", "locate", "updatedb"],
   diffutils: ["diffutils"],
   sed: ["sed"],
+  awk: ["awk"],
 };
 // Shared locate database path inside the virtual FS (see the updatedb/locate
 // handling in executeCommandLine).
@@ -91,7 +101,7 @@ const FALLBACK_COMMANDS = [
   "sha1sum", "sha224sum", "sha256sum", "sha384sum", "sha512sum",
   "shred", "shuf", "sleep", "sum", "tee", "true", "truncate",
   "uname", "unexpand", "uniq", "unlink", "vdir", "wc",
-  "grep", "find", "locate", "updatedb", "diff", "cmp", "sed",
+  "grep", "find", "locate", "updatedb", "diff", "cmp", "sed", "awk",
 ];
 const AVAILABLE_COMMANDS =
   (typeof WASM_COMMANDS !== "undefined" && Array.isArray(WASM_COMMANDS) && WASM_COMMANDS.length > 0)
@@ -250,7 +260,7 @@ async function initWasm() {
   if (wasmReady) return;
   try {
     // Only the coreutils multicall binary loads eagerly; the standalone
-    // modules (grep, find, locate, updatedb, diffutils, sed) are fetched
+    // modules (grep, find, locate, updatedb, diffutils, sed, awk) are fetched
     // on demand — see loadStandalone.
     await Promise.all([loadWasiShim(), loadWasm()]);
     wasmReady = true;
@@ -655,6 +665,7 @@ async function executeSingleCommandLine(line) {
       "  find . -name '*.md'\n" +
       "  diff -u shopping-old.txt shopping-new.txt\n" +
       "  echo 'hello world' | sed 's/world/there/'\n" +
+      "  awk 'BEGIN { print \"hello\", 2 * 21 }'   (awk is WIP: BEGIN blocks only)\n" +
       "  basename /usr/local/bin/rustc\n" +
       "  date\n" +
       "  uname -a\n"
@@ -728,7 +739,7 @@ async function executeSingleCommandLine(line) {
       return `uutils: command not found: ${cmd}\nType 'help' for available commands.\n`;
     }
 
-    // Some utilities (grep, find, locate, updatedb, diff, cmp, sed) are
+    // Some utilities (grep, find, locate, updatedb, diff, cmp, sed, awk) are
     // separate WASM modules rather than part of the coreutils multicall binary,
     // and are loaded on demand.
     // Fetch the module the first time one of its commands is used (no-op once
@@ -738,25 +749,57 @@ async function executeSingleCommandLine(line) {
     if (isStandalone && !standaloneModules[moduleName]) {
       const mod = await loadStandalone(moduleName, { announce: true });
       if (!mod) return `${cmd} is not available in this build.\n`;
+      // Warn once per module, right after it loads, that it's work in progress.
+      if (STANDALONE_WIP[moduleName] && terminal) {
+        terminal.writeln(`\x1b[33mwarning: ${STANDALONE_WIP[moduleName]}\x1b[0m`);
+      }
     }
 
     try {
-      // sed's script argument is a program, not a path — it must NOT go through
-      // resolvePath, which normalizes path segments and would strip a trailing
-      // delimiter (e.g. `s/world/there/` -> `s/world/there`, breaking the `s`
-      // command). Collect the indices of any sed script arguments to skip.
-      const sedScriptIndices = new Set();
+      // Some arguments are programs or option values, not paths — they must NOT
+      // go through resolvePath, which normalizes path segments and would strip a
+      // trailing delimiter (e.g. sed's `s/world/there/` -> `s/world/there`,
+      // breaking the `s` command) or mangle an awk program. Collect their
+      // indices so they're passed through untouched.
+      const nonPathIndices = new Set();
       if (cmd === "sed") {
         let scriptFromFlag = false;
         for (let i = 1; i < args.length; i++) {
           const a = args[i];
-          if (a === "-e" || a === "-f") { sedScriptIndices.add(i + 1); scriptFromFlag = true; i++; continue; }
+          if (a === "-e" || a === "-f") { nonPathIndices.add(i + 1); scriptFromFlag = true; i++; continue; }
           if (a.startsWith("-e") || a.startsWith("-f")) { scriptFromFlag = true; } // combined form, e.g. -e's/a/b/'
         }
         // Without -e/-f, the script is the first non-option argument.
         if (!scriptFromFlag) {
           for (let i = 1; i < args.length; i++) {
-            if (!args[i].startsWith("-")) { sedScriptIndices.add(i); break; }
+            if (!args[i].startsWith("-")) { nonPathIndices.add(i); break; }
+          }
+        }
+      }
+      if (cmd === "awk") {
+        // Option values that are a program, a field separator or a variable
+        // assignment rather than a path. Options that really do take a path
+        // (-f/--file, -i/--include, …) are left alone, so the virtual cwd
+        // applies to them as usual.
+        const AWK_VALUE_OPTS = new Set([
+          "-F", "--field-separator", "-v", "--assign", "-e", "--source", "-l", "--load",
+        ]);
+        const isProgramFlag = a => /^(-f|--file|-e|--source)(=|$)/.test(a);
+        let programFromFlag = false;
+        for (let i = 1; i < args.length; i++) {
+          const a = args[i];
+          if (!a.startsWith("-") || a === "-") continue;
+          if (isProgramFlag(a)) programFromFlag = true;
+          if (AWK_VALUE_OPTS.has(a)) { nonPathIndices.add(i + 1); i++; }
+        }
+        // Without -f/-e, the program text is the first non-option argument.
+        if (!programFromFlag) {
+          for (let i = 1; i < args.length; i++) {
+            const a = args[i];
+            if (AWK_VALUE_OPTS.has(a)) { i++; continue; } // skip the option's value
+            if (a.startsWith("-") && a !== "-") continue;
+            nonPathIndices.add(i);
+            break;
           }
         }
       }
@@ -764,7 +807,7 @@ async function executeSingleCommandLine(line) {
       const resolvedArgs = args.map((arg, i) => {
         if (i === 0) return arg; // command name
         if (arg.startsWith("-")) return arg; // flag
-        if (sedScriptIndices.has(i)) return arg; // sed script, not a path
+        if (nonPathIndices.has(i)) return arg; // program text or option value, not a path
         return resolvePath(arg);
       });
       // If the command takes a default path (like ls) and no path args
@@ -1095,7 +1138,8 @@ async function initPlayground(containerId) {
     terminal.writeln("");
     terminal.writeln("Type \x1b[1;32mhelp\x1b[0m for available commands.");
     terminal.writeln("Sample data files: names.txt, numbers.txt, fruits.txt, csv.txt, words.txt");
-    terminal.writeln("\x1b[2mgrep, find/locate/updatedb, sed and diff/cmp load on demand - just run them, or use the buttons above.\x1b[0m");
+    terminal.writeln("\x1b[2mgrep, find/locate/updatedb, sed, diff/cmp and awk load on demand - just run them, or use the buttons above.\x1b[0m");
+    terminal.writeln("\x1b[2mawk is an early work in progress: BEGIN blocks only, no record processing yet.\x1b[0m");
   } catch {
     terminal.writeln(" \x1b[1;31mfailed\x1b[0m");
     terminal.writeln("Failed to load WASM binary. Commands are not available.");
@@ -1157,6 +1201,10 @@ window.loadProgram = (group) =>
     .then(mods => mods.every(Boolean) ? mods : null);
 window.isProgramLoaded = (group) =>
   groupModules(group).every(m => !!standaloneModules[m]);
+// Work-in-progress note for a group, or "" if the group is considered ready.
+// The playground page uses it to flag the button (see STANDALONE_WIP).
+window.programWipNote = (group) =>
+  groupModules(group).map(m => STANDALONE_WIP[m]).find(Boolean) || "";
 // Best-effort byte size of a group, summed across its modules, for the button
 // label (0 if the server doesn't report Content-Length or a binary is missing).
 window.programSize = async (group) => {
@@ -1196,6 +1244,7 @@ window._uutilsTestInternals = {
   get updatedbReady() { return !!standaloneModules.updatedb; },
   get diffutilsReady() { return !!standaloneModules.diffutils; },
   get sedReady() { return !!standaloneModules.sed; },
+  get awkReady() { return !!standaloneModules.awk; },
   initWasm,
   loadStandalone,
   LOCALE_SHORTCUTS,
