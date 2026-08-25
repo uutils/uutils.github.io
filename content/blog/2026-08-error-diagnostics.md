@@ -1,6 +1,6 @@
 +++
 title = "Pointing at the error: compiler-style diagnostics in uutils coreutils"
-date = 2026-08-23
+date = 2026-08-25
 page_template = "post.html"
 authors = ["Sylvestre Ledru"]
 
@@ -10,7 +10,7 @@ diag_replay = true
 
 For fifty years, most of Unix tools have reported errors the same way: a single line on stderr. That line tells you *what* went wrong, but not *where*. It rarely matters for a simple command but some utilities take arguments that are really small languages of their own: a `test` expression, a `chmod` mode, a `sort` key, a `tr` set. When one of those fails to parse, the interesting question is which argument, or which single character, is at fault.
 
-Rust developers are used to a much better answer to that question, because `rustc` shows the offending source line and points at it. uutils coreutils now does the same for its command line. When stderr is a terminal, parse errors are rendered as a report: the arguments are echoed back as a source line, and a caret points at the culprit with a line of advice when we can offer one.
+Rust developers are used to a much better answer to that question, because `rustc` shows the offending source line and points at it. uutils coreutils now does the same for its command line, starting with the 0.11.0 release. When stderr is a terminal, parse errors are rendered as a report: the arguments are echoed back as a source line, and a caret points at the culprit with a line of advice when we can offer one.
 
 Here is what that looks like, starting with `tr`, whose GNU message is famously opaque.
 
@@ -331,7 +331,7 @@ After:
 
 [Try it in the playground](https://uutils.org/playground/?cmd=numfmt+--format%3D%25q+1000).
 
-So far, 24 utilities have adopted it - every one of them can be tried in the playground:
+In 0.11.0, 24 utilities have adopted it - every one of them can be tried in the playground:
 
 | Utility  | What the caret points at | Try it |
 | -------- | ------------------------ | ------ |
@@ -372,19 +372,15 @@ Our main goal remains being a drop-in replacement for GNU coreutils, so this is 
 
 ### Turning it on and off
 
-There is no flag and no environment variable for this: the rendering keys off stderr being a terminal, and nothing else. Which is usually what you want - but not always, so both directions are one command away.
+By default the rendering keys off stderr being a terminal, and nothing else. Which is usually what you want - but not always, so `UUTILS_DIAG` overrides it: `always` draws the report even into a file or a pipe, `never` keeps the plain line even at a terminal, and `auto` - or an unset variable, or a value nobody meant - decides from stderr as before. An unrecognized value is deliberately not an error: this is the kind of variable that gets exported from a shell profile once and forgotten, and no spelling of it should be able to make a utility fail.
 
-To get the plain line while sitting at a terminal, send stderr somewhere that is not one:
+There is no flag to go with it, because the utilities that most need one cannot have it: `test`, `printf` and `expr` have argument grammars where a new option is either illegal or ambiguous with the operands themselves.
 
-```
-$ sort -k2.3x notes.txt 2>&1 | cat
-sort: stray character in field spec: invalid field specification '2.3x'
-```
-
-To get a report out of a script or a CI log - to paste into a bug report, say - give the command a pty:
+So, to get a report out of a script or a CI log - to paste into a bug report, say:
 
 ```
-$ script -qec "sort -k2.3x notes.txt" /dev/null
+$ UUTILS_DIAG=always sort -k2.3x notes.txt 2> parse.log
+$ cat parse.log
 sort: stray character in field spec: invalid field specification '2.3x'
    ╭─[ sort:1:11 ]
    │
@@ -395,6 +391,15 @@ sort: stray character in field spec: invalid field specification '2.3x'
 ───╯
 ```
 
-`unbuffer`, from expect, does the same thing. And [`NO_COLOR`](https://no-color.org/) is the middle setting: the report is still drawn, just without colors.
+Colors are a separate question, and one the terminal still answers: a report forced into a file is written without them, so nothing has to strip escape sequences back out. [`NO_COLOR`](https://no-color.org/) is the middle setting at a terminal - the report is still drawn, just in plain text.
+
+Both directions also predate the variable and still work. Sending stderr somewhere that is not a terminal gets the plain line:
+
+```
+$ sort -k2.3x notes.txt 2>&1 | cat
+sort: stray character in field spec: invalid field specification '2.3x'
+```
+
+And giving a command a pty - `script -qec "sort -k2.3x notes.txt" /dev/null`, or `unbuffer` from expect - gets the report, which is handy when the command has to run under a terminal for other reasons.
 
 If there is a utility whose errors you would like to see get the same treatment, [contributions are welcome](https://github.com/uutils/coreutils/blob/main/CONTRIBUTING.md)!
