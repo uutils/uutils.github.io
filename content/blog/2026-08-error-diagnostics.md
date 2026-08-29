@@ -291,6 +291,8 @@ After:
 
 [Try it in the playground](https://uutils.org/playground/?cmd=head+-c+1fb+fruits.txt).
 
+The same size parser sits behind every SIZE in the suite, so the caret lands in the same place for `tail -c`, `truncate -s`, `split -b`, `shred -s`, `od -N`, `sort -S`, the block sizes of `du -B`, `df -B` and `ls --block-size`, and the threshold of `du -t`.
+
 `numfmt --format` is a printf-style format with exactly one conversion allowed, and that is the kind of rule an error message usually just restates. Here the annotation says which conversion was rejected instead.
 
 Before:
@@ -331,7 +333,45 @@ After:
 
 [Try it in the playground](https://uutils.org/playground/?cmd=numfmt+--format%3D%25q+1000).
 
-In 0.11.0, 24 utilities have adopted it - every one of them can be tried in the playground:
+A `csplit` pattern is a small language of its own too, and the regex engine already knows which character of it it choked on - so the caret can say so as well.
+
+Before:
+
+<div class="term term-diag">
+  <div class="term-bar">
+    <span class="t">csplit</span>
+  </div>
+  <div class="term-body">
+    <div class="term-prompt"><span class="pr">$</span> csplit notes.txt &#x27;/a{2,1}/&#x27;</div>
+<pre class="diag">csplit: &#x27;/a{2,1}/&#x27;: invalid pattern</pre>
+  </div>
+</div>
+
+After:
+
+<div class="term term-diag">
+  <div class="term-bar">
+    <span class="t">csplit</span>
+  </div>
+  <div class="term-body">
+    <div class="term-prompt"><span class="pr">$</span> csplit notes.txt &#x27;/a{2,1}/&#x27;</div>
+<pre class="diag">csplit: &#x27;/a{2,1}/&#x27;: invalid pattern
+   <span class="a-d">╭─[</span> csplit:1:20 <span class="a-d">]</span>
+   <span class="a-d">│</span>
+ <span class="a-d">1 │</span> <span class="a-s">csplit notes.txt /a</span><span class="a-e">{2,1}</span><span class="a-s">/</span>
+ <span class="a-f">  │</span>                    <span class="a-e">──┬──</span>
+ <span class="a-f">  │</span>                      <span class="a-e">╰──── </span>invalid repetition count range, the start must be &lt;= the end
+ <span class="a-f">  │</span>
+ <span class="a-f">  │</span> <span class="a-h">Help</span>: a pattern is a line number N, /REGEXP/[OFFSET] or %REGEXP%[OFFSET], each optionally followed by {N} or {*}
+<span class="a-d">───╯</span></pre>
+  </div>
+</div>
+
+[Try it in the playground](https://uutils.org/playground/?cmd=csplit+fruits.txt+%27%2Fa%28b%2F%27).
+
+The label there is quoted from the regex engine rather than translated: that is the only place the wording exists.
+
+In 0.11.0, 28 utilities have adopted it - every one of them can be tried in the playground:
 
 | Utility  | What the caret points at | Try it |
 | -------- | ------------------------ | ------ |
@@ -352,12 +392,16 @@ In 0.11.0, 24 utilities have adopted it - every one of them can be tried in the 
 | `dd`     | the failing key, value or flag of a `KEY=VALUE` operand | [`dd conv=ucase,zap`](https://uutils.org/playground/?cmd=dd+conv%3Ducase%2Czap) |
 | `join`   | the failing field of the output format given to `-o` | [`join -o 1.2,2.x fruits.txt fruits.txt`](https://uutils.org/playground/?cmd=join+-o+1.2%2C2.x+fruits.txt+fruits.txt) |
 | `cut`    | the failing range in the list given to `-b`, `-c`, `-f` or `-F` | [`cut -f 1,4-2 fruits.txt`](https://uutils.org/playground/?cmd=cut+-f+1%2C4-2+fruits.txt) |
+| `csplit` | the failing pattern operand, the character of its regex that broke, or the format given to `-b`/`-n` | [`csplit fruits.txt '/a(b/'`](https://uutils.org/playground/?cmd=csplit+fruits.txt+%27%2Fa%28b%2F%27) |
 | `split`  | the failing part of the SIZE given to `-b`, `-C` or `-l` | [`split -b 7zq fruits.txt`](https://uutils.org/playground/?cmd=split+-b+7zq+fruits.txt) |
 | `shred`  | the failing part of the SIZE given to `-s`/`--size` | [`shred -s 4vv fruits.txt`](https://uutils.org/playground/?cmd=shred+-s+4vv+fruits.txt) |
 | `head`   | the failing part of the SIZE given to `-c` or `-n` | [`head -c 1fb fruits.txt`](https://uutils.org/playground/?cmd=head+-c+1fb+fruits.txt) |
 | `tail`   | the failing part of the SIZE given to `-c` or `-n` | [`tail -c 1fb fruits.txt`](https://uutils.org/playground/?cmd=tail+-c+1fb+fruits.txt) |
 | `truncate` | the failing part of the SIZE given to `-s`/`--size` | [`truncate -s 10fb fruits.txt`](https://uutils.org/playground/?cmd=truncate+-s+10fb+fruits.txt) |
 | `od`     | the failing part of the SIZE given to `-j`, `-N`, `-S` or `-w` | [`od -N 3zz fruits.txt`](https://uutils.org/playground/?cmd=od+-N+3zz+fruits.txt) |
+| `du`     | the failing part of the SIZE given to `-B`/`--block-size` or `-t`/`--threshold` | [`du -B 1fb`](https://uutils.org/playground/?cmd=du+-B+1fb) |
+| `df`     | the failing part of the SIZE given to `-B`/`--block-size` | [`df -B 1fb`](https://uutils.org/playground/?cmd=df+-B+1fb) |
+| `ls`     | the failing part of the SIZE given to `--block-size` (also `dir` and `vdir`) | [`ls --block-size=1fb`](https://uutils.org/playground/?cmd=ls+--block-size%3D1fb) |
 | `stdbuf` | the failing part of the buffering mode given to `-i`, `-o` or `-e` | [`stdbuf -o 6pq head`](https://uutils.org/playground/?cmd=stdbuf+-o+6pq+head) |
 
 ### Compatibility first
