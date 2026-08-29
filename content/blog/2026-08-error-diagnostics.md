@@ -10,9 +10,9 @@ diag_replay = true
 
 For fifty years, most of Unix tools have reported errors the same way: a single line on stderr. That line tells you *what* went wrong, but not *where*. It rarely matters for a simple command but some utilities take arguments that are really small languages of their own: a `test` expression, a `chmod` mode, a `sort` key, a `tr` set. When one of those fails to parse, the interesting question is which argument, or which single character, is at fault.
 
-Rust developers are used to a much better answer to that question, because `rustc` shows the offending source line and points at it. uutils coreutils now does the same for its command line, starting with the 0.11.0 release. When stderr is a terminal, parse errors are rendered as a report: the arguments are echoed back as a source line, and a caret points at the culprit with a line of advice when we can offer one.
+Now that Uutils Coreutils is close to full GNU compatibility with excellent performances, we want to go further and take advantage of what the Rust ecosystem offers - starting with its ecosystem, where the crates for a much better answer to that question are only a dependency away. Leveraging [ariadne](https://codeberg.org/zesterer/ariadne), Coreutils now shows the offending source line and points at it, starting with the 0.11.0 release. When stderr is a terminal, parse errors are rendered as a report: the arguments are echoed back as a source line, and a caret points at the culprit with a line of advice when we can offer one.
 
-Here is what that looks like, starting with `tr`, whose GNU message is famously opaque.
+Here is what that looks like, starting with `tr`, whose GNU message can be opaque.
 
 Before:
 
