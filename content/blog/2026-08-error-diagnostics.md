@@ -133,8 +133,6 @@ After:
   </div>
 </div>
 
-[Try it in the playground](https://uutils.org/playground/?cmd=chmod+%27g%2Brw%3Fx%27+fruits.txt).
-
 `sort` keys are short enough that a stray character is easy to miss.
 
 Before:
@@ -211,8 +209,6 @@ After:
     </div>
   </div>
 </div>
-
-[Try it in the playground](https://uutils.org/playground/?cmd=env+-S+%27echo+%24%7B1FOO%7D%27).
 
 `test` builds its expression out of separate arguments. The report echoes the expression on its own, without the `test` in front, and marks the argument that broke it.
 
@@ -376,24 +372,24 @@ That label comes straight from the regex engine and is not translated, since it 
 
 ### Where it applies
 
-28 utilities use it in 0.11.0. Every example below runs in the playground:
+28 utilities use it in 0.11.0. The linked examples run in the playground; the others are for utilities the WebAssembly build does not ship, so try those locally:
 
 | Utility  | What the caret points at | Try it |
 | -------- | ------------------------ | ------ |
 | `test`   | the argument that made the expression fail | [`test 7 -eq zap`](https://uutils.org/playground/?cmd=test+7+-eq+zap) |
 | `expr`   | the argument that made the expression fail | [`expr 9 + foo`](https://uutils.org/playground/?cmd=expr+9+%2B+foo) |
-| `chmod`  | the failing clause (or character) of an invalid symbolic or octal mode | [`chmod 'g+rw?x' fruits.txt`](https://uutils.org/playground/?cmd=chmod+%27g%2Brw%3Fx%27+fruits.txt) |
+| `chmod`  | the failing clause (or character) of an invalid symbolic or octal mode | `chmod 'g+rw?x' fruits.txt` |
 | `mkdir`  | the failing part of the mode given to `-m`/`--mode` | [`mkdir -m u+q mydir`](https://uutils.org/playground/?cmd=mkdir+-m+u%2Bq+mydir) |
-| `mkfifo` | the failing part of the mode given to `-m`/`--mode` | [`mkfifo -m u+q mypipe`](https://uutils.org/playground/?cmd=mkfifo+-m+u%2Bq+mypipe) |
-| `mknod`  | the failing part of the mode given to `-m`/`--mode` | [`mknod -m u+q mydev c 1 3`](https://uutils.org/playground/?cmd=mknod+-m+u%2Bq+mydev+c+1+3) |
-| `install`| the failing part of the mode given to `-m`/`--mode` | [`install -m u+q fruits.txt dest`](https://uutils.org/playground/?cmd=install+-m+u%2Bq+fruits.txt+dest) |
+| `mkfifo` | the failing part of the mode given to `-m`/`--mode` | `mkfifo -m u+q mypipe` |
+| `mknod`  | the failing part of the mode given to `-m`/`--mode` | `mknod -m u+q mydev c 1 3` |
+| `install`| the failing part of the mode given to `-m`/`--mode` | `install -m u+q fruits.txt dest` |
 | `tr`     | the part of a set that is at fault (bad class, backwards range, bad repeat count, …) | [`tr 'qw[y-b]' x`](https://uutils.org/playground/?cmd=tr+%27qw%5By-b%5D%27+x) |
 | `sort`   | the failing part of a `-k`/`--key` or field specification, or of the SIZE given to `-S` | [`sort -k2.3x fruits.txt`](https://uutils.org/playground/?cmd=sort+-k2.3x+fruits.txt) |
 | `numfmt` | the failing part of a `--format` or `--field` specification, the value given to `--from`, `--to`, `--from-unit`, `--to-unit`, `--padding` or `--header`, or the input number itself | [`numfmt --format=%q 1000`](https://uutils.org/playground/?cmd=numfmt+--format%3D%25q+1000) |
 | `printf` | the failing conversion or escape in the format string | [`printf %5.2c q`](https://uutils.org/playground/?cmd=printf+%255.2c+q) |
 | `seq`    | the failing conversion in the format given to `-f`/`--format` | [`seq -f %5.2c 1 3`](https://uutils.org/playground/?cmd=seq+-f+%255.2c+1+3) |
-| `stat`   | the failing directive of a `-c`/`--format` or `--printf` format | [`stat -c %d%.3 fruits.txt`](https://uutils.org/playground/?cmd=stat+-c+%25d%25.3+fruits.txt) |
-| `env`    | the failing part of a `-S`/`--split-string` string | [`env -S 'echo ${1FOO}'`](https://uutils.org/playground/?cmd=env+-S+%27echo+%24%7B1FOO%7D%27) |
+| `stat`   | the failing directive of a `-c`/`--format` or `--printf` format | `stat -c %d%.3 fruits.txt` |
+| `env`    | the failing part of a `-S`/`--split-string` string | `env -S 'echo ${1FOO}'` |
 | `dd`     | the failing key, value or flag of a `KEY=VALUE` operand | [`dd conv=ucase,zap`](https://uutils.org/playground/?cmd=dd+conv%3Ducase%2Czap) |
 | `join`   | the failing field of the output format given to `-o` | [`join -o 1.2,2.x fruits.txt fruits.txt`](https://uutils.org/playground/?cmd=join+-o+1.2%2C2.x+fruits.txt+fruits.txt) |
 | `cut`    | the failing range in the list given to `-b`, `-c`, `-f` or `-F` | [`cut -f 1,4-2 fruits.txt`](https://uutils.org/playground/?cmd=cut+-f+1%2C4-2+fruits.txt) |
@@ -404,10 +400,10 @@ That label comes straight from the regex engine and is not translated, since it 
 | `tail`   | the failing part of the SIZE given to `-c` or `-n` | [`tail -c 1fb fruits.txt`](https://uutils.org/playground/?cmd=tail+-c+1fb+fruits.txt) |
 | `truncate` | the failing part of the SIZE given to `-s`/`--size` | [`truncate -s 10fb fruits.txt`](https://uutils.org/playground/?cmd=truncate+-s+10fb+fruits.txt) |
 | `od`     | the failing part of the SIZE given to `-j`, `-N`, `-S` or `-w` | [`od -N 3zz fruits.txt`](https://uutils.org/playground/?cmd=od+-N+3zz+fruits.txt) |
-| `du`     | the failing part of the SIZE given to `-B`/`--block-size` or `-t`/`--threshold` | [`du -B 1fb`](https://uutils.org/playground/?cmd=du+-B+1fb) |
-| `df`     | the failing part of the SIZE given to `-B`/`--block-size` | [`df -B 1fb`](https://uutils.org/playground/?cmd=df+-B+1fb) |
+| `du`     | the failing part of the SIZE given to `-B`/`--block-size` or `-t`/`--threshold` | `du -B 1fb` |
+| `df`     | the failing part of the SIZE given to `-B`/`--block-size` | `df -B 1fb` |
 | `ls`     | the failing part of the SIZE given to `--block-size` (also `dir` and `vdir`) | [`ls --block-size=1fb`](https://uutils.org/playground/?cmd=ls+--block-size%3D1fb) |
-| `stdbuf` | the failing part of the buffering mode given to `-i`, `-o` or `-e` | [`stdbuf -o 6pq head`](https://uutils.org/playground/?cmd=stdbuf+-o+6pq+head) |
+| `stdbuf` | the failing part of the buffering mode given to `-i`, `-o` or `-e` | `stdbuf -o 6pq head` |
 
 ### Compatibility first
 
