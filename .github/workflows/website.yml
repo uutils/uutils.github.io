@@ -81,8 +81,13 @@ jobs:
         export CFLAGS_wasm32_wasip1="--sysroot=$WASI_SDK_PATH/share/wasi-sysroot"
         cd coreutils
         # Build the multicall binary for WASI target
-        # Use --no-default-features to avoid platform-specific dependencies
-        cargo build --release --target wasm32-wasip1 -p coreutils --no-default-features --features feat_wasm
+        # Use --no-default-features to avoid platform-specific dependencies.
+        # feat_diagnostics is part of the default feature set, so it has to be
+        # asked for explicitly here; without it uucore::diagnostics is the stub
+        # and the playground would print the plain one-line errors instead of
+        # the caret reports (browser_wasi_shim reports stderr as a TTY, which is
+        # what the diagnostics gate on).
+        cargo build --release --target wasm32-wasip1 -p coreutils --no-default-features --features feat_wasm,feat_diagnostics
         test -f target/wasm32-wasip1/release/coreutils.wasm
         mkdir -p ../wasm-out
         cp target/wasm32-wasip1/release/coreutils.wasm ../wasm-out/uutils.wasm
