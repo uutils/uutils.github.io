@@ -27,6 +27,7 @@ export default [
         fetch: "readonly",
         setTimeout: "readonly",
         clearTimeout: "readonly",
+        IntersectionObserver: "readonly",
         URL: "readonly",
         URLSearchParams: "readonly",
         CustomEvent: "readonly",
