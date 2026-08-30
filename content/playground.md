@@ -73,6 +73,29 @@ Click an example to run it in the terminal:
   <button class="playground-example">uname -a</button>
 </div>
 
+## Errors that point at the problem 💥
+
+Give a utility an argument it cannot parse and it does more than say so: it
+echoes the argument back and puts a caret under the character that broke.
+Click one and watch where it points 👇
+
+<div class="playground-examples">
+  <button class="playground-example">tr 'qw[y-b]' x</button>
+  <button class="playground-example">cut -f 1,4-2,9-12 fruits.txt</button>
+  <button class="playground-example">sort -k2.3x fruits.txt</button>
+  <button class="playground-example">expr 9 + foo</button>
+  <button class="playground-example">test 7 -eq zap</button>
+  <button class="playground-example">numfmt --format=%q 1000</button>
+  <button class="playground-example">printf %5.2c q</button>
+  <button class="playground-example">head -c 1fb fruits.txt</button>
+  <button class="playground-example">csplit fruits.txt '/a(b/'</button>
+</div>
+
+28 utilities do this in 0.11.0 🎯 - the [blog post](/blog/2026-08-error-diagnostics/)
+walks through how it works and what each one points at. Scripts and pipes are
+unaffected: the caret is only drawn when a person is watching, so anything
+reading stderr still gets the same single line it always did.
+
 ## Sharing commands via URL
 
 After running a command, click **🔗 Copy share link** below the terminal to copy a link that reruns it. You can also build one by hand with the `?cmd=` URL parameter. The command runs automatically when the page loads - great for sharing examples or linking from documentation.
