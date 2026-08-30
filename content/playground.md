@@ -73,11 +73,11 @@ Click an example to run it in the terminal:
   <button class="playground-example">uname -a</button>
 </div>
 
-## Errors that point at the problem 💥
+## Errors that point at the problem
 
 Give a utility an argument it cannot parse and it does more than say so: it
 echoes the argument back and puts a caret under the character that broke.
-Click one and watch where it points 👇
+Click one and watch where it points
 
 <div class="playground-examples">
   <button class="playground-example">tr 'qw[y-b]' x</button>
