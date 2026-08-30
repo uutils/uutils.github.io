@@ -1,6 +1,6 @@
 +++
 title = "Pointing at the error: compiler-style diagnostics in uutils coreutils"
-date = 2026-08-25
+date = 2026-08-30
 page_template = "post.html"
 authors = ["Sylvestre Ledru"]
 
