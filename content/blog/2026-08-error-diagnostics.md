@@ -8,11 +8,13 @@ authors = ["Sylvestre Ledru"]
 diag_replay = true
 +++
 
-For fifty years, most of Unix tools have reported errors the same way: a single line on stderr. That line tells you *what* went wrong, but not *where*. It rarely matters for a simple command but some utilities take arguments that are really small languages of their own: a `test` expression, a `chmod` mode, a `sort` key, a `tr` set. When one of those fails to parse, the interesting question is which argument, or which single character, is at fault.
+Unix tools report errors as a single line on stderr. That line says what went wrong, not where. For most commands there is nowhere else to point anyway, but a few take arguments that are small languages: a `test` expression, a `chmod` mode, a `sort` key, a `tr` set. When one of those fails to parse, what you actually want to know is which argument, or which character of it, the parser tripped over.
 
-Now that Uutils Coreutils is close to full GNU compatibility with excellent performances, we want to go further and take advantage of what the Rust ecosystem offers - starting with its ecosystem, where the crates for a much better answer to that question are only a dependency away. Leveraging [ariadne](https://codeberg.org/zesterer/ariadne), Coreutils now shows the offending source line and points at it, starting with the 0.11.0 release. When stderr is a terminal, parse errors are rendered as a report: the arguments are echoed back as a source line, and a caret points at the culprit with a line of advice when we can offer one.
+rustc has been answering that question with a caret for years, and [ariadne](https://codeberg.org/zesterer/ariadne) puts the same rendering one dependency away. Starting with 0.11.0, coreutils uses it. When stderr is a terminal, a parse error is printed as a report: the arguments are echoed back as a source line, a caret marks the culprit, and a help line explains the syntax when we have something useful to say about it.
 
-Here is what that looks like, starting with `tr`, whose GNU message can be opaque.
+### What it looks like
+
+Start with `tr`, whose GNU message assumes you already know what a collating sequence is.
 
 Before:
 
@@ -52,7 +54,7 @@ After:
 
 [Try it in the playground](https://uutils.org/playground/?cmd=tr+%27qw%5By-b%5D%27+x).
 
-A `cut` list of ranges is often long, with only one item in it wrong.
+A `cut` list can be long, with a single bad item in it.
 
 Before:
 
@@ -62,7 +64,8 @@ Before:
   </div>
   <div class="term-body">
     <div class="term-prompt"><span class="pr">$</span> cut -f 1,4-2,9-12 notes.txt</div>
-<pre class="diag">cut: invalid decreasing range</pre>
+<pre class="diag">cut: invalid decreasing range
+Try &#x27;cut --help&#x27; for more information.</pre>
   </div>
 </div>
 
@@ -93,7 +96,7 @@ Try &#x27;cut --help&#x27; for more information.</pre>
 
 [Try it in the playground](https://uutils.org/playground/?cmd=cut+-f+1%2C4-2+fruits.txt).
 
-The caret can point *inside* an argument, at the exact character that broke the parse.
+The caret does not have to cover a whole argument. It can land on one character.
 
 Before:
 
@@ -102,7 +105,7 @@ Before:
     <span class="t">chmod</span>
   </div>
   <div class="term-body">
-    <div class="term-prompt"><span class="pr">$</span> chmod g+rw?x notes.txt</div>
+    <div class="term-prompt"><span class="pr">$</span> chmod &#x27;g+rw?x&#x27; notes.txt</div>
 <pre class="diag">chmod: invalid operator (expected +, -, or =, but found ?)</pre>
   </div>
 </div>
@@ -132,7 +135,7 @@ After:
 
 [Try it in the playground](https://uutils.org/playground/?cmd=chmod+%27g%2Brw%3Fx%27+fruits.txt).
 
-The `sort` key syntax is compact enough that a stray character is easy to miss.
+`sort` keys are short enough that a stray character is easy to miss.
 
 Before:
 
@@ -171,7 +174,7 @@ After:
 
 [Try it in the playground](https://uutils.org/playground/?cmd=sort+-k2.3x+fruits.txt).
 
-`env -S` takes a whole command line and splits it as a shell would, and its message names an offset - precisely the thing a caret can show instead. Because the string holds spaces it is echoed back quoted, and the caret still points inside it.
+`env -S` takes a whole command line and splits it the way a shell would. The old message could only quote the offending fragment back at you. Note that the string contains spaces, so it is echoed back quoted, and the caret still lands inside the quotes.
 
 Before:
 
@@ -211,7 +214,7 @@ After:
 
 [Try it in the playground](https://uutils.org/playground/?cmd=env+-S+%27echo+%24%7B1FOO%7D%27).
 
-`test` builds a whole expression out of separate arguments, so the report echoes the expression alone and points at the argument that broke it.
+`test` builds its expression out of separate arguments. The report echoes the expression on its own, without the `test` in front, and marks the argument that broke it.
 
 Before:
 
@@ -251,7 +254,7 @@ After:
 
 [Try it in the playground](https://uutils.org/playground/?cmd=test+7+-eq+zap).
 
-And a SIZE is a number plus a unit, so the caret says which of the two was rejected.
+A SIZE is a number followed by a unit. The report says which half was rejected.
 
 Before:
 
@@ -291,9 +294,9 @@ After:
 
 [Try it in the playground](https://uutils.org/playground/?cmd=head+-c+1fb+fruits.txt).
 
-The same size parser sits behind every SIZE in the suite, so the caret lands in the same place for `tail -c`, `truncate -s`, `split -b`, `shred -s`, `od -N`, `sort -S`, the block sizes of `du -B`, `df -B` and `ls --block-size`, and the threshold of `du -t`.
+One parser handles every SIZE in the suite, so the same report shows up for `tail -c`, `truncate -s`, `split -b`, `shred -s`, `od -N`, `sort -S`, the block sizes of `du -B`, `df -B` and `ls --block-size`, and the threshold of `du -t`.
 
-`numfmt --format` is a printf-style format with exactly one conversion allowed, and that is the kind of rule an error message usually just restates. Here the annotation says which conversion was rejected instead.
+`numfmt --format` is a printf-style format that allows exactly one conversion. The old message just restated the rule. The annotation names the conversion you actually wrote.
 
 Before:
 
@@ -333,7 +336,7 @@ After:
 
 [Try it in the playground](https://uutils.org/playground/?cmd=numfmt+--format%3D%25q+1000).
 
-A `csplit` pattern is a small language of its own too, and the regex engine already knows which character of it it choked on - so the caret can say so as well.
+`csplit` patterns contain regexes, and the regex engine already knows which character it choked on. We were simply throwing that position away.
 
 Before:
 
@@ -360,18 +363,20 @@ After:
    <span class="a-d">│</span>
  <span class="a-d">1 │</span> <span class="a-s">csplit notes.txt /a</span><span class="a-e">{2,1}</span><span class="a-s">/</span>
  <span class="a-f">  │</span>                    <span class="a-e">──┬──</span>
- <span class="a-f">  │</span>                      <span class="a-e">╰──── </span>invalid repetition count range, the start must be &lt;= the end
+ <span class="a-f">  │</span>                      <span class="a-e">╰────</span> invalid repetition count range, the start must be &lt;= the end
  <span class="a-f">  │</span>
  <span class="a-f">  │</span> <span class="a-h">Help</span>: a pattern is a line number N, /REGEXP/[OFFSET] or %REGEXP%[OFFSET], each optionally followed by {N} or {*}
 <span class="a-d">───╯</span></pre>
   </div>
 </div>
 
-[Try it in the playground](https://uutils.org/playground/?cmd=csplit+fruits.txt+%27%2Fa%28b%2F%27).
+[Try it in the playground](https://uutils.org/playground/?cmd=csplit+fruits.txt+%27%2Fa%7B2%2C1%7D%2F%27).
 
-The label there is quoted from the regex engine rather than translated: that is the only place the wording exists.
+That label comes straight from the regex engine and is not translated, since it is the only place the wording exists.
 
-In 0.11.0, 28 utilities have adopted it - every one of them can be tried in the playground:
+### Where it applies
+
+28 utilities use it in 0.11.0. Every example below runs in the playground:
 
 | Utility  | What the caret points at | Try it |
 | -------- | ------------------------ | ------ |
@@ -384,7 +389,7 @@ In 0.11.0, 28 utilities have adopted it - every one of them can be tried in the 
 | `install`| the failing part of the mode given to `-m`/`--mode` | [`install -m u+q fruits.txt dest`](https://uutils.org/playground/?cmd=install+-m+u%2Bq+fruits.txt+dest) |
 | `tr`     | the part of a set that is at fault (bad class, backwards range, bad repeat count, …) | [`tr 'qw[y-b]' x`](https://uutils.org/playground/?cmd=tr+%27qw%5By-b%5D%27+x) |
 | `sort`   | the failing part of a `-k`/`--key` or field specification, or of the SIZE given to `-S` | [`sort -k2.3x fruits.txt`](https://uutils.org/playground/?cmd=sort+-k2.3x+fruits.txt) |
-| `numfmt` | the failing part of a `--field` or `--format` specification | [`numfmt --format=%q 1000`](https://uutils.org/playground/?cmd=numfmt+--format%3D%25q+1000) |
+| `numfmt` | the failing part of a `--format` or `--field` specification, the value given to `--from`, `--to`, `--from-unit`, `--to-unit`, `--padding` or `--header`, or the input number itself | [`numfmt --format=%q 1000`](https://uutils.org/playground/?cmd=numfmt+--format%3D%25q+1000) |
 | `printf` | the failing conversion or escape in the format string | [`printf %5.2c q`](https://uutils.org/playground/?cmd=printf+%255.2c+q) |
 | `seq`    | the failing conversion in the format given to `-f`/`--format` | [`seq -f %5.2c 1 3`](https://uutils.org/playground/?cmd=seq+-f+%255.2c+1+3) |
 | `stat`   | the failing directive of a `-c`/`--format` or `--printf` format | [`stat -c %d%.3 fruits.txt`](https://uutils.org/playground/?cmd=stat+-c+%25d%25.3+fruits.txt) |
@@ -406,7 +411,7 @@ In 0.11.0, 28 utilities have adopted it - every one of them can be tried in the 
 
 ### Compatibility first
 
-Our main goal remains being a drop-in replacement for GNU coreutils, so this is strictly an interactive nicety:
+Being a drop-in replacement for GNU coreutils comes first, so this is strictly an interactive nicety:
 
 - Reports are only rendered when **stderr is a terminal**. In a script, a pipe or a test suite, each utility keeps printing exactly the plain one-line message shown as "Before" in the examples above, so anything that greps stderr keeps working.
 - Exit codes are unchanged.
@@ -416,11 +421,11 @@ Our main goal remains being a drop-in replacement for GNU coreutils, so this is 
 
 ### Turning it on and off
 
-By default the rendering keys off stderr being a terminal, and nothing else. Which is usually what you want - but not always, so `UUTILS_DIAG` overrides it: `always` draws the report even into a file or a pipe, `never` keeps the plain line even at a terminal, and `auto` - or an unset variable, or a value nobody meant - decides from stderr as before. An unrecognized value is deliberately not an error: this is the kind of variable that gets exported from a shell profile once and forgotten, and no spelling of it should be able to make a utility fail.
+By default the rendering keys off stderr being a terminal and nothing else, which is usually but not always what you want. `UUTILS_DIAG` overrides it: `always` draws the report even into a file or a pipe, `never` keeps the plain line even at a terminal, and `auto`, or an unset variable, decides from stderr as before. An unrecognized value is deliberately not an error. This is the kind of variable people export from a shell profile once and forget about, and a typo in it should not be able to make a utility fail.
 
-There is no flag to go with it, because the utilities that most need one cannot have it: `test`, `printf` and `expr` have argument grammars where a new option is either illegal or ambiguous with the operands themselves.
+There is no command-line flag to go with it. The utilities that would need one most cannot have it: in `test`, `printf` and `expr`, a new option would be either illegal or ambiguous with the operands themselves.
 
-So, to get a report out of a script or a CI log - to paste into a bug report, say:
+To get a report out of a script or a CI log, to paste into a bug report for instance:
 
 ```
 $ UUTILS_DIAG=always sort -k2.3x notes.txt 2> parse.log
@@ -435,15 +440,19 @@ sort: stray character in field spec: invalid field specification '2.3x'
 ───╯
 ```
 
-Colors are a separate question, and one the terminal still answers: a report forced into a file is written without them, so nothing has to strip escape sequences back out. [`NO_COLOR`](https://no-color.org/) is the middle setting at a terminal - the report is still drawn, just in plain text.
+Colors are decided separately, and still by the terminal: a report forced into a file is written without them, so there are no escape sequences to strip back out. [`NO_COLOR`](https://no-color.org/) sits in between at a terminal, where the report is still drawn, just in plain text.
 
-Both directions also predate the variable and still work. Sending stderr somewhere that is not a terminal gets the plain line:
+The two tricks people used before the variable existed still work. Sending stderr somewhere that is not a terminal gets the plain line:
 
 ```
 $ sort -k2.3x notes.txt 2>&1 | cat
 sort: stray character in field spec: invalid field specification '2.3x'
 ```
 
-And giving a command a pty - `script -qec "sort -k2.3x notes.txt" /dev/null`, or `unbuffer` from expect - gets the report, which is handy when the command has to run under a terminal for other reasons.
+And giving a command a pty (`script -qec "sort -k2.3x notes.txt" /dev/null`, or `unbuffer` from expect) gets the report back, which is handy when the command has to run under a terminal for other reasons.
 
-If there is a utility whose errors you would like to see get the same treatment, [contributions are welcome](https://github.com/uutils/coreutils/blob/main/CONTRIBUTING.md)!
+### What comes next
+
+coreutils is where this starts, not where it stops. The rendering lives in `uucore::diagnostics`, which the other uutils projects already depend on, so picking it up is mostly a matter of handing the parser's error a span. [findutils](/findutils) and [sed](/sed) are being wired up now; a `find` expression and a `sed` script are exactly the kind of small languages a caret helps with, and [grep](/grep), [awk](/awk) and the rest have the same regexes and format strings to point at.
+
+If a utility you use still prints an unhelpful one-liner, [patches are welcome](https://github.com/uutils/coreutils/blob/main/CONTRIBUTING.md)!
