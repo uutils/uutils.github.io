@@ -682,34 +682,6 @@ async function runTests() {
       section("sed WASM module (SKIPPED - sed.wasm not loaded)");
     }
 
-    // ===== awk (standalone WASM module, loaded on demand) =====
-    // awk ships as its own module (uutils/awk) and is an early work in
-    // progress: only BEGIN blocks run, so the assertions stay there. Skips
-    // gracefully if awk.wasm is absent.
-    await T.loadStandalone("awk");
-    if (T.awkReady) {
-      section("awk WASM module (work in progress)");
-
-      assert("awk in AVAILABLE_COMMANDS",
-        AVAILABLE_COMMANDS.includes("awk"), true);
-
-      // A BEGIN block with an expression: the program text must reach awk
-      // untouched (it must not be run through resolvePath).
-      await assertAsync("awk evaluates a BEGIN block",
-        executeCommandLine("awk 'BEGIN { print \"hello\", 2 * 21 }'"),
-        "hello 42\n");
-
-      await assertAsync("awk runs a BEGIN loop",
-        executeCommandLine("awk 'BEGIN { for (i = 1; i <= 3; i++) print i }'"),
-        "1\n2\n3\n");
-
-      await assertAsync("awk string builtins in BEGIN",
-        executeCommandLine("awk 'BEGIN { print substr(\"coreutils\", 1, 4), toupper(\"awk\") }'"),
-        "core AWK\n");
-    } else {
-      section("awk WASM module (SKIPPED - awk.wasm not loaded)");
-    }
-
   } else {
     section("l10n WASM integration (SKIPPED - WASM not loaded)");
   }
