@@ -11,11 +11,11 @@ document.addEventListener("DOMContentLoaded", function() {
   initPlayground("wasm-playground");
 
   // Build a "Load" button per optional standalone group (grep, find,
-  // diffutils, sed, awk). These ship as their own WASM modules and load on
+  // diffutils, sed). These ship as their own WASM modules and load on
   // demand to keep the initial page download light; running a command
   // auto-loads its module too (e.g. diff/cmp both come from the diffutils
-  // module, and find loads find/locate/updatedb together). Groups that are
-  // still early work in progress (awk) get a "WIP" marker and a tooltip
+  // module, and find loads find/locate/updatedb together). A group that is
+  // still early work in progress gets a "WIP" marker and a tooltip
   // explaining what does not work yet.
   var loaderBar = document.getElementById("playground-loaders");
   if (loaderBar && Array.isArray(window.uutilsPrograms)) {
@@ -158,12 +158,6 @@ document.addEventListener("DOMContentLoaded", function() {
       var sedUrl = "https://github.com/uutils/sed/commit/" + UUTILS_SED_VERSION.commit;
       parts.push('sed <a href="' + sedUrl + '"><code>' +
         UUTILS_SED_VERSION.short + '</code></a> (' + sedDate + ')');
-    }
-    if (typeof UUTILS_AWK_VERSION !== "undefined") {
-      var awkDate = UUTILS_AWK_VERSION.date.split("T")[0];
-      var awkUrl = "https://github.com/uutils/awk/commit/" + UUTILS_AWK_VERSION.commit;
-      parts.push('awk (WIP) <a href="' + awkUrl + '"><code>' +
-        UUTILS_AWK_VERSION.short + '</code></a> (' + awkDate + ')');
     }
     if (typeof SITE_VERSION !== "undefined") {
       var siteDate = SITE_VERSION.date.split("T")[0];
