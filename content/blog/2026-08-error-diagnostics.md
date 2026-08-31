@@ -11,7 +11,7 @@ diag_replay = true
 
 Unix tools report errors as a single line on stderr. That line says what went wrong, not where. For most commands there is nowhere else to point anyway, but a few take arguments that are small languages: a `test` expression, a `chmod` mode, a `sort` key, a `tr` set. When one of those fails to parse, what you actually want to know is which argument, or which character of it, the parser tripped over.
 
-rustc has been answering that question with a caret for years, and [ariadne](https://codeberg.org/zesterer/ariadne) puts the same rendering one dependency away. Starting with 0.11.0, coreutils uses it. When stderr is a terminal, a parse error is printed as a report: the arguments are echoed back as a source line, a caret marks the culprit, and a help line explains the syntax when we have something useful to say about it.
+rustc has been answering that question with a caret for years, and [ariadne](https://codeberg.org/zesterer/ariadne) puts the same rendering one dependency away. The idea of bringing it to a command-line tool comes from [uutils awk](/awk), which already reports errors in an awk program that way; coreutils arguments are smaller languages, but they parse just the same. Starting with 0.11.0, coreutils uses it. When stderr is a terminal, a parse error is printed as a report: the arguments are echoed back as a source line, a caret marks the culprit, and a help line explains the syntax when we have something useful to say about it.
 
 ### What it looks like
 
