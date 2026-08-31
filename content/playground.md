@@ -3,7 +3,7 @@ title = "Playground"
 template = "page.html"
 +++
 
-<p>Try <a href="https://github.com/uutils/coreutils">uutils coreutils</a> directly in your browser! This interactive terminal runs Rust coreutils via WebAssembly - no installation needed.</p>
+<p>Try <a href="https://github.com/uutils/coreutils">uutils coreutils</a> directly in your browser! This interactive terminal runs Rust uutils via WebAssembly - no installation needed.</p>
 
 <div class="playground-toolbar">
   <label for="locale-select">Language:</label>
