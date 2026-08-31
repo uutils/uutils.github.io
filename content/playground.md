@@ -112,6 +112,15 @@ Multiple commands can be run in sequence, separated either by `;` on one line or
 - [`?cmd=echo hello%0Aecho world`](/playground?cmd=echo%20hello%0Aecho%20world) - run two commands in sequence
 - [`?cmd=updatedb; locate names`](/playground?cmd=updatedb%3B%20locate%20names) - build the locate database, then search it
 
+Add `?lang=` to run the command in another language - it sets the locale the
+same way the **Language** dropdown does, before the command runs. Both the full
+form (`fr-FR`) and the short form (`fr`) work, and an unknown language is
+ignored. The share-link button includes it automatically when the locale isn't
+the default:
+
+- [`?lang=fr-FR&cmd=cut -f 1,4-2,9-12 fruits.txt`](/playground?lang=fr-FR&cmd=cut%20-f%201%2C4-2%2C9-12%20fruits.txt) - a French error message
+- [`?lang=de&cmd=ls /nope`](/playground?lang=de&cmd=ls%20%2Fnope) - a German error message
+
 ## Available commands
 
 The following commands run as **real Rust coreutils compiled to WebAssembly**:

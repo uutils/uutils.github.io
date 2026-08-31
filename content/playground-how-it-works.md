@@ -119,7 +119,10 @@ flowchart TB
     G --> I["uutils.wasm<br/>(compileStreaming)"]
     H --> J["Ready"]
     I --> J
-    J --> K{"?cmd= parameter?"}
+    J --> K0{"?lang= parameter?"}
+    K0 -->|Yes| K1["Set locale (LANG=…)"]
+    K1 --> K{"?cmd= parameter?"}
+    K0 -->|No| K
     K -->|Yes| L["Auto-run commands"]
     K -->|No| M["Show prompt"]
 </pre>
