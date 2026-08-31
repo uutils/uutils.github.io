@@ -564,6 +564,37 @@ function sanitizeUrlCommand(raw) {
 }
 
 /**
+ * Normalize a locale name: "fr" -> "fr-FR", "en" -> "en-US", full forms as-is.
+ */
+function normalizeLocale(raw) {
+  const arg = (raw || "").trim();
+  if (!arg) return "";
+  return arg.includes("-") ? arg : LOCALE_SHORTCUTS[arg.toLowerCase()] || arg;
+}
+
+/**
+ * Sanitize a locale coming from the ?lang= URL parameter.
+ *
+ * Accepts either a shortcut ("fr") or a full locale ("fr-FR"), and only
+ * returns a value the build actually ships (WASM_LOCALES, when available) so
+ * a bogus ?lang= cannot push an arbitrary string into the LANG environment
+ * variable handed to the WASM runtime. Returns "" when unusable.
+ */
+function sanitizeUrlLocale(raw) {
+  const locale = normalizeLocale(raw);
+  if (!locale || !/^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})?$/.test(locale)) return "";
+  const available =
+    (typeof WASM_LOCALES !== "undefined" && Array.isArray(WASM_LOCALES) && WASM_LOCALES.length > 0)
+      ? WASM_LOCALES
+      : null;
+  if (available) {
+    const match = available.find(l => l.toLowerCase() === locale.toLowerCase());
+    return match || "";
+  }
+  return locale;
+}
+
+/**
  * Read a file from the virtual filesystem. Returns its content as a string,
  * or null if not found.
  */
@@ -698,9 +729,8 @@ async function executeSingleCommandLine(line) {
     if (!arg) {
       return `LANG=${currentLocale}.UTF-8\n`;
     }
-    // Normalize: "fr" -> "fr-FR", "en" -> "en-US", or accept full form
-    const normalized = arg.includes("-") ? arg : LOCALE_SHORTCUTS[arg.toLowerCase()] || arg;
-    currentLocale = normalized;
+    currentLocale = normalizeLocale(arg);
+    notifyLocaleChanged();
     return `Locale set to ${currentLocale}\n`;
   }
 
@@ -1112,8 +1142,18 @@ async function initPlayground(containerId) {
     terminal.writeln("Try reloading the page.");
   }
 
+  // Apply the locale from the URL ?lang= parameter before running ?cmd=, so a
+  // shared link like ?lang=fr-FR&cmd=... shows the localized output.
+  const params = new URLSearchParams(window.location.search);
+  const urlLocale = sanitizeUrlLocale(params.get("lang"));
+  if (urlLocale) {
+    currentLocale = urlLocale;
+    notifyLocaleChanged();
+    terminal.writeln(`Locale set to ${currentLocale}`);
+  }
+
   // Run command(s) from URL ?cmd= parameter if present
-  const urlCmd = sanitizeUrlCommand(new URLSearchParams(window.location.search).get("cmd"));
+  const urlCmd = sanitizeUrlCommand(params.get("cmd"));
   if (urlCmd) {
     for (const cmd of urlCmd.split("\n")) {
       if (cmd.trim()) await runInTerminal(cmd.trim());
@@ -1138,10 +1178,21 @@ async function runInTerminal(cmd) {
 }
 
 /**
+ * Let the page chrome (locale dropdown, share link) know the locale changed,
+ * whichever way it was set: dropdown, `locale` builtin or ?lang= URL param.
+ */
+function notifyLocaleChanged() {
+  document.dispatchEvent(new CustomEvent("uutils:locale-changed", {
+    detail: { locale: currentLocale },
+  }));
+}
+
+/**
  * Set the locale and optionally update the terminal.
  */
 function setLocale(locale) {
   currentLocale = locale;
+  notifyLocaleChanged();
   if (terminal) {
     terminal.writeln(`\r\nLocale set to ${currentLocale}`);
     prompt();
@@ -1154,6 +1205,7 @@ window.uutilsExecute = executeCommandLine;
 window.runInTerminal = runInTerminal;
 window.setLocale = setLocale;
 window.getLastCommand = () => lastCommand;
+window.getLocale = () => currentLocale;
 
 // On-demand loading of the optional standalone modules, used by the "Load"
 // buttons on the playground page. Buttons operate on groups (see

@@ -74,6 +74,9 @@ document.addEventListener("DOMContentLoaded", function() {
       var url = new URL(window.location.href);
       url.search = "";
       url.hash = "";
+      // Only carry the locale when it isn't the default, to keep links short.
+      var locale = window.getLocale ? window.getLocale() : "";
+      if (locale && locale !== "en-US") url.searchParams.set("lang", locale);
       url.searchParams.set("cmd", cmd);
       return url.toString();
     };
@@ -103,16 +106,33 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   // Populate the locale dropdown from the build-generated list
-  if (typeof WASM_LOCALES !== "undefined") {
-    var sel = document.getElementById("locale-select");
+  var localeSelect = document.getElementById("locale-select");
+  if (typeof WASM_LOCALES !== "undefined" && localeSelect) {
     WASM_LOCALES.forEach(function(loc) {
       if (loc === "en-US") return; // already the default option
       var opt = document.createElement("option");
       opt.value = loc;
       opt.textContent = loc;
-      sel.appendChild(opt);
+      localeSelect.appendChild(opt);
     });
   }
+
+  // Keep the dropdown in sync when the locale is set elsewhere: the `locale`
+  // builtin, or the ?lang= URL parameter on load.
+  document.addEventListener("uutils:locale-changed", function(e) {
+    if (!localeSelect || !e.detail) return;
+    var loc = e.detail.locale;
+    var known = Array.prototype.some.call(localeSelect.options, function(o) {
+      return o.value === loc;
+    });
+    if (!known) {
+      var opt = document.createElement("option");
+      opt.value = loc;
+      opt.textContent = loc;
+      localeSelect.appendChild(opt);
+    }
+    localeSelect.value = loc;
+  });
 
   // Populate the "Available commands" list from the build-generated list
   if (typeof WASM_COMMANDS !== "undefined" && Array.isArray(WASM_COMMANDS)) {
