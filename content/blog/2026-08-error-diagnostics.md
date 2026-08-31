@@ -8,7 +8,7 @@ authors = ["Sylvestre Ledru"]
 diag_replay = true
 +++
 
-Even after 50 years, the coreutils can still be improved. This time, we are taking on their error reporting.
+For 50 years, Coreutils have never stopped evolving. Now, we're pushing that innovation further by rethinking how they report errors.
 
 Unix tools report errors as a single line on stderr. That line says what went wrong, not where. For most commands there is nowhere else to point anyway, but a few take arguments that are small languages: a `test` expression, a `chmod` mode, a `sort` key, a `tr` set. When one of those fails to parse, what you actually want to know is which argument, or which character of it, the parser tripped over.
 
