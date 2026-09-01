@@ -76,6 +76,19 @@ const SAMPLE_FILES = {
   "🍌.md": "# Banana\n",
   "🍒.md": "# Cherry\n",
   "🥝.md": "# Kiwi\n",
+  // A French cheese board: name, region, milk, % fat. Enough columns for
+  // `cut`/`sort`/`uniq` pipelines, and plenty of accents for the Unicode paths.
+  "fromages.txt":
+    "Camembert,Normandie,vache,45\n" +
+    "Roquefort,Occitanie,brebis,52\n" +
+    "Comté,Bourgogne-Franche-Comté,vache,45\n" +
+    "Crottin de Chavignol,Centre-Val de Loire,chèvre,45\n" +
+    "Reblochon,Auvergne-Rhône-Alpes,vache,50\n" +
+    "Munster,Grand Est,vache,50\n" +
+    "Ossau-Iraty,Nouvelle-Aquitaine,brebis,50\n" +
+    "Brie de Meaux,Île-de-France,vache,45\n" +
+    "Picodon,Auvergne-Rhône-Alpes,chèvre,45\n" +
+    "Bleu d'Auvergne,Auvergne-Rhône-Alpes,vache,50\n",
   // Two near-identical lists so `diff`/`cmp` have a small, readable change to show.
   "shopping-old.txt": "milk\neggs\nbread\nbutter\napples\n",
   "shopping-new.txt": "milk\neggs\nyogurt\nbread\nhoney\napples\n",
@@ -680,7 +693,7 @@ async function executeSingleCommandLine(line) {
       "Available commands:\n" +
       AVAILABLE_COMMANDS.join(", ") +
       "\n\nBuiltins: help, clear, cd, locale\n" +
-      "Sample files: names.txt, numbers.txt, fruits.txt, csv.txt, words.txt\n" +
+      "Sample files: names.txt, numbers.txt, fruits.txt, csv.txt, words.txt, fromages.txt\n" +
       "\nExamples:\n" +
       "  echo 'hello world'\n" +
       "  cat numbers.txt\n" +
@@ -1134,7 +1147,7 @@ async function initPlayground(containerId) {
     terminal.writeln(` \x1b[1;32mdone!\x1b[0m${sizeStr}`);
     terminal.writeln("");
     terminal.writeln("Type \x1b[1;32mhelp\x1b[0m for available commands.");
-    terminal.writeln("Sample data files: names.txt, numbers.txt, fruits.txt, csv.txt, words.txt");
+    terminal.writeln("Sample data files: names.txt, numbers.txt, fruits.txt, csv.txt, words.txt, fromages.txt");
     terminal.writeln("\x1b[2mgrep, find/locate/updatedb, sed and diff/cmp load on demand - just run them, or use the buttons above.\x1b[0m");
   } catch {
     terminal.writeln(" \x1b[1;31mfailed\x1b[0m");
