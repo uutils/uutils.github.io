@@ -36,6 +36,14 @@ How a community spawned to reimplement the coreutils in Rust, enabling achieveme
 
 # Podcasts
 
+## Tech Over Tea #340 — The Future Of Linux Core Utils Is Rust
+
+*August 28, 2026*
+
+Brodie Robertson interviews Sylvestre Ledru about the state of the uutils coreutils project - how it got to where it is today and where it is heading in the future.
+
+- [Watch on YouTube](https://www.youtube.com/watch?v=J6xa6AlqtnQ)
+
 ## Open Source Security Podcast — Rust coreutils with Sylvestre Ledru
 
 *March 2, 2026*
