@@ -149,6 +149,20 @@ implementations in its os-test test suite.
 
 ---
 
+## AerynOS
+
+[AerynOS](https://aerynos.com/) (formerly Serpent OS), an independent
+performance-oriented distribution built around the Rust-written **moss**
+package manager, ships uutils coreutils in its base system - it is the
+coreutils implementation you get on a default install.
+
+**Links:**
+- [aerynos.com](https://aerynos.com/)
+- [uutils-coreutils recipe](https://github.com/AerynOS/recipes/blob/main/u/uutils-coreutils/stone.yaml)
+- [@AerynOS@hachyderm.io](https://hachyderm.io/@AerynOS)
+
+---
+
 ## VS Code for the Web
 
 **Microsoft VS Code for the Web** (vscode.dev) uses uutils coreutils compiled
