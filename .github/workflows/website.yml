@@ -35,6 +35,14 @@ jobs:
         path: './coreutils-l10n'
         fetch-depth: 0
 
+    # Needed for scripts/wasm-command-list.py, which resolves feat_wasm into
+    # the list of utilities the playground advertises.
+    - name: Checkout uutils.github.io Repository
+      uses: actions/checkout@v7
+      with:
+        repository: uutils/uutils.github.io
+        path: './uutils.github.io'
+
     - name: Install `rust` toolchain
       uses: dtolnay/rust-toolchain@stable
       with:
@@ -104,13 +112,15 @@ jobs:
         echo "Available locales: $locales"
         # Generate the list of available commands from the feat_wasm feature
         # in Cargo.toml so the playground stays in sync with the WASM build.
+        # feat_wasm mostly pulls in other feature groups (feat_common_core,
+        # ...), so the helper resolves those recursively down to the utility
+        # names instead of scraping the literal feature list.
         # HIDDEN_CMDS: utilities that ship in the binary but we don't want to
         # advertise in the playground (e.g. `yes` produces infinite output
         # that just spams the terminal).
         HIDDEN_CMDS='^(false|true|yes)$'
-        commands=$(sed -n '/^feat_wasm = \[/,/^\]/p' Cargo.toml \
-          | grep -oE '"[a-zA-Z0-9_]+"' | tr -d '"' \
-          | sort -u | grep -vE "$HIDDEN_CMDS" | paste -sd, -)
+        commands=$(../uutils.github.io/scripts/wasm-command-list.py Cargo.toml feat_wasm \
+          | grep -vE "$HIDDEN_CMDS" | paste -sd, -)
         echo "$commands" | sed 's/[^,]*/"&"/g' > ../wasm-out/commands-00-coreutils.txt
         echo "Available commands: $commands"
         # Record the coreutils commit used to build the WASM binary
