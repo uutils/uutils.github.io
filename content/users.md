@@ -176,6 +176,28 @@ production deployments of uutils in a WASM context.
 
 ---
 
+## Nushell
+
+[Nushell](https://www.nushell.sh/), the structured-data shell written in Rust,
+does not just call uutils binaries - it depends on the uutils crates directly
+as **libraries**. A number of Nu's file and system commands are implemented on
+top of `uu_*` crates from uutils/coreutils, currently `cp`, `mv`, `mkdir`,
+`mktemp`, `touch`, `whoami`, etc.
+
+The motivation is cross-platform consistency: rather than writing and
+maintaining separate platform-specific logic for Windows, macOS and Linux,
+Nushell reuses uutils' implementations so these commands behave the same way
+everywhere.
+
+This is a notable adoption model for uutils - the project is consumed as a set
+of reusable Rust crates, not only as a drop-in coreutils replacement.
+
+**Links:**
+- [nushell.sh](https://www.nushell.sh/)
+- [Nushell developer FAQ: why uutils?](https://github.com/nushell/nushell/blob/main/devdocs/FAQ.md#which-upstream-projects-power-some-of-nus-built-in-commands)
+
+---
+
 ## Buildroot
 
 [Buildroot](https://buildroot.org/), the widely-used embedded Linux build
