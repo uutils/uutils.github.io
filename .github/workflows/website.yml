@@ -274,6 +274,11 @@ jobs:
     name: Build website artifacts
     runs-on: ubuntu-latest
     needs: [wasm-coreutils, wasm-standalone]
+    # Still build when a WASM leg failed: scripts/playground-fallback.py then
+    # reuses the deployed build of that tool instead of blocking the deploy.
+    if: ${{ !cancelled() }}
+    outputs:
+      fallback: ${{ steps.fallback.outputs.modules }}
     steps:
     - name: Checkout uutils.github.io Repository
       uses: actions/checkout@v7
@@ -378,10 +383,18 @@ jobs:
 
     - name: Download WASM artifacts
       uses: actions/download-artifact@v8
+      # Missing artifacts are restored from the live site in the next step.
+      continue-on-error: true
       with:
         pattern: wasm-*
         path: wasm-artifacts
         merge-multiple: true
+
+    - name: Restore the deployed build of tools that failed to build
+      run: |
+        mkdir -p wasm-artifacts
+        python3 uutils.github.io/scripts/playground-fallback.py \
+          --report fallback.txt fill-missing wasm-artifacts
 
     - name: Assemble WASM playground assets
       run: |
@@ -431,10 +444,20 @@ jobs:
           cp -r "$lang_dir" "public/coreutils/docs-${lang}"
         done
 
+    # On failure, retry with the deployed build of each tool in turn, so one
+    # broken tool does not freeze the whole site (see the notify job).
     - name: Run playground JS tests
       run: |
         npm install puppeteer@24
-        node uutils.github.io/scripts/run-tests.js --dir public --port 8080
+        python3 uutils.github.io/scripts/playground-fallback.py \
+          --report fallback.txt test public --port 8080
+
+    - name: Record tools using their deployed build
+      id: fallback
+      if: always()
+      run: |
+        modules=$(sort -u fallback.txt 2>/dev/null | paste -sd, -)
+        echo "modules=${modules}" >> "$GITHUB_OUTPUT"
 
     - name: Remove test files from deploy output
       run: rm -f public/js/wasm-terminal.test.html
@@ -460,8 +483,46 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'schedule'
+    # Spell out the build result: the implicit success() would also skip the
+    # deploy when a WASM leg failed and the build fell back to the live tool.
+    if: ${{ !cancelled() && needs.build.result == 'success' && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'schedule') }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+  # Keep one open issue while the main/nightly build is failing or serving a
+  # stale tool, and close it once a run is fully green again.
+  notify:
+    runs-on: ubuntu-latest
+    needs: [build, deploy]
+    if: ${{ !cancelled() && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'schedule') }}
+    permissions:
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TITLE: Website build is failing
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      FALLBACK: ${{ needs.build.outputs.fallback }}
+      # A failed WASM leg alone is not fatal: build falls back and lists it.
+      FAILED: ${{ needs.build.result != 'success' || needs.deploy.result != 'success' }}
+    steps:
+      - name: Open, update or close the tracking issue
+        run: |
+          issue=$(gh issue list --state open --search "in:title \"$TITLE\"" \
+            --json number,title --jq ".[] | select(.title == \"$TITLE\") | .number" | head -1)
+          if [ "$FAILED" = "true" ] || [ -n "$FALLBACK" ]; then
+            if [ "$FAILED" = "true" ]; then
+              body="The website build or deploy failed, so the live site is not updated: $RUN_URL"
+            else
+              body="The site deployed, but these tools failed to build or broke the playground tests, so the playground still serves their previous build: **${FALLBACK}**. See $RUN_URL"
+            fi
+            if [ -n "$issue" ]; then
+              gh issue comment "$issue" --body "$body"
+            else
+              gh issue create --title "$TITLE" --body "$body"
+            fi
+          elif [ -n "$issue" ]; then
+            gh issue close "$issue" --comment "Fixed: $RUN_URL"
+          fi
