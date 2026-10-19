@@ -89,6 +89,7 @@ Click one and watch where it points
   <button class="playground-example">printf %5.2c q</button>
   <button class="playground-example">head -c 1fb fruits.txt</button>
   <button class="playground-example">csplit fruits.txt '/a(b/'</button>
+  <button class="playground-example">sed -e 's/apple/🍎/' -e 's/banana/🍌/gx' fruits.txt</button>
 </div>
 
 28 utilities do this in 0.11.0 🎯 - the [blog post](/blog/2026-08-error-diagnostics/)
