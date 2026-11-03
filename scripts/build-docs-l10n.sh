@@ -93,8 +93,8 @@ merge_ftl() {
   fi
 }
 
-# Build one language in its own sandbox. Reads COREUTILS_DIR, WORK_ROOT, UUDOC
-# and EN_TLDR_DIR from the environment; the parent exports them before fanning
+# Build one language in its own sandbox. Reads COREUTILS_DIR, WORK_ROOT, UUDOC,
+# EN_TLDR_DIR and SRC_SNAPSHOT from the environment; the parent exports them before fanning
 # out. The checkout is only read (so the en-US.ftl files there stay pristine for
 # every other worker) and only written to for the finished book-<lang>/.
 build_one_lang() {
@@ -106,16 +106,9 @@ build_one_lang() {
   rm -rf "$work"
   mkdir -p "$work"
 
-  # A copy of the checkout for this language to scribble en-US.ftl into. It has
-  # to be the whole thing rather than just the locales: uudoc shells out to
-  # ./util/show-utils.sh, which runs `cargo metadata` and therefore needs the
-  # workspace manifests. target/ is not needed (nothing is compiled here) and
-  # docs/book*/ is previously built output that would only be copied and thrown
-  # away, so both are left behind — that is most of the checkout's weight.
-  tar -C "$COREUTILS_DIR" -cf - \
-    --exclude='./target' --exclude='./.git' \
-    --exclude='./docs/book' --exclude='./docs/book-*' . \
-    | tar -C "$work" -xf -
+  # A copy of the checkout for this language to scribble en-US.ftl into, taken
+  # from the snapshot rather than the live checkout (see SRC_SNAPSHOT below).
+  cp -a "$SRC_SNAPSHOT/." "$work/"
 
   # Download and repack the translated tldr archive (uudoc expects a pages/
   # prefix), merged over English so untranslated examples still show up.
@@ -262,7 +255,23 @@ if [ -f "$COREUTILS_DIR/docs/tldr.zip" ]; then
   (cd "$EN_TLDR_DIR" && unzip -o "$COREUTILS_DIR/docs/tldr.zip" > /dev/null 2>&1)
 fi
 
-export COREUTILS_DIR WORK_ROOT UUDOC EN_TLDR_DIR
+# Snapshot the checkout once, before fanning out, for every worker to copy. The
+# workers can't tar the live checkout: finished ones move their book-<lang>/
+# into docs/ while others are still reading it, and GNU tar fails with "file
+# changed as we read it". It has to be the whole checkout rather than just the
+# locales: uudoc shells out to ./util/show-utils.sh, which runs `cargo metadata`
+# and therefore needs the workspace manifests. target/ is not needed (nothing
+# is compiled here) and docs/book*/ is previously built output that would only
+# be copied and thrown away, so both are left behind — that is most of the
+# checkout's weight.
+SRC_SNAPSHOT="$WORK_ROOT/src"
+mkdir -p "$SRC_SNAPSHOT"
+tar -C "$COREUTILS_DIR" -cf - \
+  --exclude='./target' --exclude='./.git' \
+  --exclude='./docs/book' --exclude='./docs/book-*' . \
+  | tar -C "$SRC_SNAPSHOT" -xf -
+
+export COREUTILS_DIR WORK_ROOT UUDOC EN_TLDR_DIR SRC_SNAPSHOT
 
 JOBS="${DOC_JOBS:-$(nproc)}"
 echo "Building ${#LANG_MAP[@]} languages with $JOBS parallel jobs"
