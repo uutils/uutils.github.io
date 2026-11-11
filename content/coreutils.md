@@ -4,7 +4,7 @@ title = "coreutils"
 template = "project.html"
 
 [extra]
-playground = "sort fruits.txt | uniq -c | sort -rn"
+playground = "printf '🍎\\n🍌\\n🍎\\n🍒\\n🍎\\n🍌\\n' | sort | uniq -c | sort -rn"
 status = "ready"
 
 +++

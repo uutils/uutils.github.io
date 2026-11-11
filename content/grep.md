@@ -4,7 +4,7 @@ title = "grep"
 template = "project.html"
 
 [extra]
-playground = "grep -n an fruits.txt"
+playground = "grep -ri banana ."
 status = "beta"
 
 +++
