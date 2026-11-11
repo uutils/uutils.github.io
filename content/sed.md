@@ -4,6 +4,7 @@ title = "sed"
 template = "project.html"
 
 [extra]
+playground = "sed -e 's/banana/🍌/g' -e 's/date/🌴/g' fruits.txt"
 wip = true
 status = "alpha"
 

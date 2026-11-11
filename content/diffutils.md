@@ -4,6 +4,7 @@ title = "diffutils"
 template = "project.html"
 
 [extra]
+playground = "diff -u shopping-old.txt shopping-new.txt"
 status = "beta"
 
 +++

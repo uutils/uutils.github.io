@@ -4,6 +4,7 @@ title = "findutils"
 template = "project.html"
 
 [extra]
+playground = "find . -name '*.md'"
 status = "beta"
 
 +++

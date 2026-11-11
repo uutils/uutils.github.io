@@ -4,6 +4,7 @@ title = "coreutils"
 template = "project.html"
 
 [extra]
+playground = "sort fruits.txt | uniq -c | sort -rn"
 status = "ready"
 
 +++
