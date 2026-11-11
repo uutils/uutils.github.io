@@ -41,6 +41,8 @@ Being a drop-in replacement still leaves room to do better where nothing depends
   </div>
 </div>
 
+[Try it in the playground](/playground?cmd=tr%20%27qw%5By-b%5D%27%20x).
+
 Scripts, pipes and test harnesses still get the plain GNU one-line message, so nothing that reads stderr can tell the difference. See [Pointing at the error](/blog/2026-08-error-diagnostics/) for the utilities this covers and how to turn it on and off.
 
 # Contributing
