@@ -28,6 +28,34 @@ GNU reports every error as a single line on stderr, which says *what* went wrong
 
 Scripts and pipes still get the plain GNU one-line message. See [Pointing at the error](/blog/2026-08-error-diagnostics/) for how it works.
 
+# Installation
+
+## Homebrew (macOS, Linux)
+
+```bash
+brew install uutils-sed
+```
+
+The command is installed as `uu-sed`. To use it under its normal name, add the `uubin` directory to your `PATH`:
+
+```bash
+export PATH="$(brew --prefix)/opt/uutils-sed/libexec/uubin:$PATH"
+```
+
+See the [Homebrew formula](https://formulae.brew.sh/formula/uutils-sed).
+
+## Debian
+
+Available in Debian unstable:
+
+```bash
+sudo apt install rust-sed
+```
+
+The command is installed as `rust-sed`; the unprefixed binary is available at `/usr/lib/cargo/bin/sed/sed`.
+
+See the [Debian package tracker](https://tracker.debian.org/pkg/rust-sed).
+
 # Contributing
 
 To contribute to uutils sed, please see [CONTRIBUTING](https://github.com/uutils/sed/blob/main/CONTRIBUTING.md).

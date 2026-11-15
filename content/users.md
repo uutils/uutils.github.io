@@ -256,7 +256,7 @@ prefix, as drop-in replacements).
 
 uutils is available on macOS via two package managers:
 
-- **Homebrew**: `brew install uutils-coreutils`
+- **Homebrew**: `brew install uutils-coreutils` (also `uutils-findutils`, `uutils-diffutils`, `uutils-grep` and `uutils-sed`)
 - **MacPorts**: `port install coreutils-uutils`
 
 This makes uutils a practical cross-platform development tool: scripts written
